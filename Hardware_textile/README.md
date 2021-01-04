@@ -1,6 +1,5 @@
 # eTextile-Synthetizer
-
-### Transforming textiles into an intuitive way to interact with computers
+### Exploring music through textile
 
 ![eTextile Synthetizer](https://farm1.staticflickr.com/798/40904680852_d5c9b1b35d_z_d.jpg)
 
