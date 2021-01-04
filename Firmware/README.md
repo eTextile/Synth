@@ -1,4 +1,4 @@
-# E256 textile-synthetizer (STANDALONE_BRANCH)
+# eTextile-synthetizer
 ### Transforming textiles into an intuitive way to interact with computers. 
 This project is part of an electronic textiles research on HCI gesture interaction that was started in 2005.
 
