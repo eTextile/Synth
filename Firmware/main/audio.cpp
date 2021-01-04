@@ -1,10 +1,9 @@
 /*
-  This file is part of the eTextile-matrix-sensor project - http://matrix.eTextile.org
+  This file is part of the eTextile-Synthetizer project - http://synth.eTextile.org
   Copyright (c) 2014- Maurin Donneaud <maurin@etextile.org>
   This work is licensed under Creative Commons Attribution-ShareAlike 4.0 International license, see the LICENSE file for details.
 */
 
-//https://www.pjrc.com/teensy/td_libs_Audio.html
 #include "audio.h"
 
 void SETUP_DAC(
