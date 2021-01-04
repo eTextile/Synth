@@ -1,6 +1,6 @@
-# eTextile Synthetizer #E256_STANDALONE
+# eTextile-Synthetizer
+### Exploring music through textile
 
-### Transforming textiles into an intuitive way to interact with computers
 - Author: Maurin Donneaud <maurin@etextile.org>
 - Repository: https://github.com/eTextile/Matrix/tree/E256_STANDALONE/
 - Project web page: https://matrix.eTextile.org
