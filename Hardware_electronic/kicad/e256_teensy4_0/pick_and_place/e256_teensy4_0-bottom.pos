@@ -1,0 +1,7 @@
+### Module positions - created on ven. 23 oct. 2020 14:36:16 CEST ###
+### Printed by Pcbnew version kicad 5.0.2+dfsg1-1
+## Unit = mm, Angle = deg.
+## Side : bottom
+# Ref     Val       Package                                           PosX       PosY       Rot  Side
+R15       10K       R_0805_2012Metric_Pad1.20x1.40mm_HandSolder  -117.8999   -76.5949  180.0000  bottom
+## End

@@ -1,0 +1,307 @@
+EESchema Schematic File Version 4
+LIBS:e256_teensy4_0-cache
+EELAYER 26 0
+EELAYER END
+$Descr A4 11693 8268
+encoding utf-8
+Sheet 4 4
+Title "E256 textile-synthesizer / MIDI-IO"
+Date "2020-09-30"
+Rev "1.0"
+Comp "www.etextile.org"
+Comment1 "See : https://www.pjrc.com/teensy/td_libs_MIDI.html"
+Comment2 ""
+Comment3 ""
+Comment4 ""
+$EndDescr
+$Comp
+L power:GND #PWR0101
+U 1 1 5F74890A
+P 5150 4550
+F 0 "#PWR0101" H 5150 4300 50  0001 C CNN
+F 1 "GND" H 5155 4377 50  0000 C CNN
+F 2 "" H 5150 4550 50  0001 C CNN
+F 3 "" H 5150 4550 50  0001 C CNN
+	1    5150 4550
+	1    0    0    -1  
+$EndComp
+$Comp
+L Connector:AudioJack4 J1
+U 1 1 5F748930
+P 2750 3900
+F 0 "J1" H 2705 4225 50  0000 C CNN
+F 1 "MIDI_IN" H 2705 4134 50  0000 C CNN
+F 2 "e256:PJ-320A" H 2750 3900 50  0001 C CNN
+F 3 "~" H 2750 3900 50  0001 C CNN
+	1    2750 3900
+	1    0    0    -1  
+$EndComp
+$Comp
+L Connector:AudioJack4 J2
+U 1 1 5F748937
+P 8650 4300
+F 0 "J2" H 8605 4625 50  0000 C CNN
+F 1 "MIDI_OUT" H 8605 4534 50  0000 C CNN
+F 2 "e256:PJ-320A" H 8650 4300 50  0001 C CNN
+F 3 "~" H 8650 4300 50  0001 C CNN
+	1    8650 4300
+	-1   0    0    1   
+$EndComp
+Wire Wire Line
+	8450 4400 8200 4400
+Text GLabel 5800 4100 2    50   Input ~ 0
+MIDI_IN
+Text GLabel 7450 4100 0    50   Input ~ 0
+MIDI_OUT
+$Comp
+L power:+5V #PWR?
+U 1 1 5F74C054
+P 6550 3800
+AR Path="/5F74C054" Ref="#PWR?"  Part="1" 
+AR Path="/5F748823/5F74C054" Ref="#PWR0153"  Part="1" 
+F 0 "#PWR0153" H 6550 3650 50  0001 C CNN
+F 1 "+5V" H 6565 3973 50  0000 C CNN
+F 2 "" H 6550 3800 50  0001 C CNN
+F 3 "" H 6550 3800 50  0001 C CNN
+	1    6550 3800
+	1    0    0    -1  
+$EndComp
+$Comp
+L Isolator:6N138 U1
+U 1 1 5F74C5EC
+P 4750 4000
+F 0 "U1" H 4750 4467 50  0000 C CNN
+F 1 "6N138SM" H 4750 4376 50  0000 C CNN
+F 2 "e256:6N138SM_8-SMD" H 5040 3700 50  0001 C CNN
+F 3 "http://www.onsemi.com/pub/Collateral/HCPL2731-D.pdf" H 5040 3700 50  0001 C CNN
+	1    4750 4000
+	1    0    0    -1  
+$EndComp
+Wire Wire Line
+	5050 3800 5150 3800
+Wire Wire Line
+	5150 3800 5150 3500
+$Comp
+L Device:R_US R10
+U 1 1 5F760ED6
+P 5550 3800
+F 0 "R10" H 5618 3846 50  0000 L CNN
+F 1 "470 Ohm" H 5618 3755 50  0000 L CNN
+F 2 "Resistor_SMD:R_0603_1608Metric" V 5590 3790 50  0001 C CNN
+F 3 "~" H 5550 3800 50  0001 C CNN
+	1    5550 3800
+	1    0    0    -1  
+$EndComp
+Wire Wire Line
+	5050 4100 5550 4100
+Wire Wire Line
+	5550 3950 5550 4100
+Connection ~ 5550 4100
+Wire Wire Line
+	5550 4100 5800 4100
+$Comp
+L power:VCC #PWR0104
+U 1 1 5F76235F
+P 5550 3500
+F 0 "#PWR0104" H 5550 3350 50  0001 C CNN
+F 1 "VCC" H 5567 3673 50  0000 C CNN
+F 2 "" H 5550 3500 50  0001 C CNN
+F 3 "" H 5550 3500 50  0001 C CNN
+	1    5550 3500
+	1    0    0    -1  
+$EndComp
+Wire Wire Line
+	5550 3650 5550 3500
+Wire Wire Line
+	3950 3750 3950 3650
+Wire Wire Line
+	3950 4150 3950 4250
+Wire Wire Line
+	4350 4250 4350 4100
+Wire Wire Line
+	4350 4100 4450 4100
+Wire Wire Line
+	4350 3650 4350 3900
+Wire Wire Line
+	4350 3900 4450 3900
+Wire Wire Line
+	3100 4100 3100 4250
+Wire Wire Line
+	3100 4250 3950 4250
+Wire Wire Line
+	2950 4100 3100 4100
+Wire Wire Line
+	3950 4250 4350 4250
+Connection ~ 3950 4250
+Wire Wire Line
+	3100 4000 3100 3650
+$Comp
+L Device:R_US R7
+U 1 1 5F76FFEE
+P 3500 3650
+F 0 "R7" V 3295 3650 50  0000 C CNN
+F 1 "220 Ohm" V 3386 3650 50  0000 C CNN
+F 2 "Resistor_SMD:R_0805_2012Metric" V 3540 3640 50  0001 C CNN
+F 3 "~" H 3500 3650 50  0001 C CNN
+	1    3500 3650
+	0    1    1    0   
+$EndComp
+Wire Wire Line
+	3100 3650 3350 3650
+Wire Wire Line
+	3650 3650 3950 3650
+Wire Wire Line
+	3950 3650 4350 3650
+Connection ~ 3950 3650
+$Comp
+L Device:R_US R11
+U 1 1 5F77EFE8
+P 7700 4100
+F 0 "R11" V 7495 4100 50  0000 C CNN
+F 1 "47 Ohm 1/8W" V 7586 4100 50  0000 C CNN
+F 2 "Resistor_SMD:R_0805_2012Metric" V 7740 4090 50  0001 C CNN
+F 3 "~" H 7700 4100 50  0001 C CNN
+	1    7700 4100
+	0    1    1    0   
+$EndComp
+Wire Wire Line
+	7550 4100 7450 4100
+$Comp
+L Device:C C19
+U 1 1 5F787AC6
+P 6550 4100
+F 0 "C19" H 6665 4146 50  0000 L CNN
+F 1 "0.1uF" H 6665 4055 50  0000 L CNN
+F 2 "Capacitor_SMD:C_0805_2012Metric" H 6588 3950 50  0001 C CNN
+F 3 "~" H 6550 4100 50  0001 C CNN
+	1    6550 4100
+	1    0    0    -1  
+$EndComp
+$Comp
+L power:GND #PWR0124
+U 1 1 5F7885B3
+P 6550 4400
+F 0 "#PWR0124" H 6550 4150 50  0001 C CNN
+F 1 "GND" H 6555 4227 50  0000 C CNN
+F 2 "" H 6550 4400 50  0001 C CNN
+F 3 "" H 6550 4400 50  0001 C CNN
+	1    6550 4400
+	1    0    0    -1  
+$EndComp
+Wire Wire Line
+	6550 4250 6550 4400
+Wire Wire Line
+	6550 3800 6550 3950
+Wire Wire Line
+	5150 4550 5150 4200
+Wire Wire Line
+	5150 4200 5050 4200
+$Comp
+L power:+5V #PWR?
+U 1 1 5F78C258
+P 5150 3500
+AR Path="/5F78C258" Ref="#PWR?"  Part="1" 
+AR Path="/5F748823/5F78C258" Ref="#PWR0154"  Part="1" 
+F 0 "#PWR0154" H 5150 3350 50  0001 C CNN
+F 1 "+5V" H 5165 3673 50  0000 C CNN
+F 2 "" H 5150 3500 50  0001 C CNN
+F 3 "" H 5150 3500 50  0001 C CNN
+	1    5150 3500
+	1    0    0    -1  
+$EndComp
+Wire Wire Line
+	2950 4000 3100 4000
+Wire Wire Line
+	8450 4300 8200 4300
+Wire Wire Line
+	8200 4300 8200 4400
+Wire Wire Line
+	5050 3900 5400 3900
+Wire Wire Line
+	5400 3900 5400 4150
+$Comp
+L Device:R_US R15
+U 1 1 5F769330
+P 5400 4300
+F 0 "R15" H 5468 4346 50  0000 L CNN
+F 1 "10K" H 5468 4255 50  0000 L CNN
+F 2 "Resistor_SMD:R_0805_2012Metric_Pad1.20x1.40mm_HandSolder" V 5440 4290 50  0001 C CNN
+F 3 "~" H 5400 4300 50  0001 C CNN
+	1    5400 4300
+	1    0    0    -1  
+$EndComp
+$Comp
+L power:GND #PWR0166
+U 1 1 5F76A2F0
+P 5400 4550
+F 0 "#PWR0166" H 5400 4300 50  0001 C CNN
+F 1 "GND" H 5405 4377 50  0000 C CNN
+F 2 "" H 5400 4550 50  0001 C CNN
+F 3 "" H 5400 4550 50  0001 C CNN
+	1    5400 4550
+	1    0    0    -1  
+$EndComp
+Wire Wire Line
+	5400 4450 5400 4550
+Connection ~ 8200 4400
+NoConn ~ 2950 3800
+NoConn ~ 2950 3900
+$Comp
+L pspice:DIODE D3
+U 1 1 5F769066
+P 3950 3950
+F 0 "D3" V 3996 3822 50  0000 R CNN
+F 1 "1N4148" V 3905 3822 50  0000 R CNN
+F 2 "Diode_SMD:D_SOD-523" H 3950 3950 50  0001 C CNN
+F 3 "https://www.mouser.fr/datasheet/2/427/1n4148w-1767905.pdf" H 3950 3950 50  0001 C CNN
+	1    3950 3950
+	0    -1   -1   0   
+$EndComp
+$Comp
+L power:GND #PWR0105
+U 1 1 5F7820C3
+P 8200 4750
+F 0 "#PWR0105" H 8200 4500 50  0001 C CNN
+F 1 "GND" H 8205 4577 50  0000 C CNN
+F 2 "" H 8200 4750 50  0001 C CNN
+F 3 "" H 8200 4750 50  0001 C CNN
+	1    8200 4750
+	1    0    0    -1  
+$EndComp
+Wire Wire Line
+	8200 4400 8200 4750
+$Comp
+L Device:R_US R14
+U 1 1 5F7862A0
+P 8200 3600
+F 0 "R14" V 7995 3600 50  0000 C CNN
+F 1 "47 Ohm 1/3W" V 8086 3600 50  0000 C CNN
+F 2 "Resistor_SMD:R_1210_3225Metric" V 8240 3590 50  0001 C CNN
+F 3 "~" H 8200 3600 50  0001 C CNN
+	1    8200 3600
+	1    0    0    -1  
+$EndComp
+$Comp
+L power:VCC #PWR0155
+U 1 1 5F7883C8
+P 8200 3350
+F 0 "#PWR0155" H 8200 3200 50  0001 C CNN
+F 1 "VCC" H 8217 3523 50  0000 C CNN
+F 2 "" H 8200 3350 50  0001 C CNN
+F 3 "" H 8200 3350 50  0001 C CNN
+	1    8200 3350
+	1    0    0    -1  
+$EndComp
+Wire Wire Line
+	8200 3350 8200 3450
+Wire Wire Line
+	8200 3750 8200 4200
+Wire Wire Line
+	8200 4200 8450 4200
+Wire Wire Line
+	7850 4100 8450 4100
+Text Notes 2450 4750 0    50   ~ 0
+PINMAPPING\nDIN-5 | Mini Jack | Fonction\n--------------------\nPIN-5 | TIP     | current sink\nPIN-4 | RING_1 | current source\n
+Text Notes 8550 3900 0    50   ~ 0
+PINMAPPING\nDIN-5 | Mini Jack | Fonction\n--------------------\nPIN-5 | TIP     | current sink\nPIN-4 | RING_1 | current source\nPIN-2 | SLEEVE | shield\n
+$EndSCHEMATC

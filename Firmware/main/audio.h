@@ -1,0 +1,38 @@
+/*
+  This file is part of the eTextile-matrix-sensor project - http://matrix.eTextile.org
+  Copyright (c) 2014- Maurin Donneaud <maurin@etextile.org>
+  This work is licensed under Creative Commons Attribution-ShareAlike 4.0 International license, see the LICENSE file for details.
+*/
+
+#ifndef __AUDIO_H__
+#define __AUDIO_H__
+
+#include "config.h"
+#include "llist.h"
+#include "blob.h"
+#include "hardware.h"
+
+#include <Audio.h>
+#include <Wire.h>
+#include <SPI.h>
+#include <SD.h>
+#include <SerialFlash.h>
+
+typedef struct preset preset_t; // Forward declaration
+typedef struct llist llist_t;   // Forward declaration
+
+void SETUP_DAC(
+  AudioControlSGTL5000* dac_ptr,
+  preset_t* presets_ptr,
+  AudioSynthWaveform* wfA_ptr,
+  AudioSynthWaveform* wfB_ptr
+);
+
+void e256_make_noise(
+  llist_t* blobs_ptr,
+  AudioControlSGTL5000* dac_ptr,
+  AudioSynthWaveform* wfA_ptr,
+  AudioSynthWaveform* wfB_ptr
+);
+
+#endif /*__AUDIO_H__*/
