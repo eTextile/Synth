@@ -1,4 +1,4 @@
-# eTextile Synthetizer #E256_STANDALONE
+# eTextile-Synthetizer
 
 ### Transforming textiles into an intuitive way to interact with computers
 
