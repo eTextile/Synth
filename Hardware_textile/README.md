@@ -1,9 +1,9 @@
 # eTextile-Synthetizer
+## HARDWARE_TEXTILE / HOWTO
 ### Exploring music through textile
 
 ![eTextile Synthetizer](https://farm1.staticflickr.com/798/40904680852_d5c9b1b35d_z_d.jpg)
 
-## HARDWARE_TEXTILE HOWTO
 The eTextile hardware have been designed to be easy to make with accessible and cheap tools.
 Here are the tricks to make the conductive textile pattern on a woven cotton fabric.
 First of all we will need to add the fusing material (hot melt adhesive) to the conductive fabric.
