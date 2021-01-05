@@ -57,7 +57,7 @@ void SETUP_INTERP(
 }
 
 // Bilinear interpolation
-void e256_interp_matrix(image_t* outputFrame_ptr, image_t* inputFrame_ptr, interp_t* interp) {
+void interp_matrix(image_t* outputFrame_ptr, image_t* inputFrame_ptr, interp_t* interp) {
   //Serial.println(inputFrame_ptr->numRows);
 
   uint8_t inIndexA = 0;
@@ -94,7 +94,7 @@ void e256_interp_matrix(image_t* outputFrame_ptr, image_t* inputFrame_ptr, inter
   }
 }
 
-void e256_print_interp(image_t* image_ptr) {
+void print_interp(image_t* image_ptr) {
   for (uint8_t posY = 0; posY < image_ptr->numRows; posY++) {
     uint8_t* row_ptr = COMPUTE_IMAGE_ROW_PTR(image_ptr, posY);
     for (int posX = 0; posX < image_ptr->numCols; posX++) {

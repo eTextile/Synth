@@ -33,12 +33,12 @@ void SETUP_INTERP(
   interp_t* interp
 );
 
-void e256_interp_matrix(
+void interp_matrix(
   image_t* outputFrame_ptr,
   image_t* inputFrame_ptr,
   interp_t* interp
 );
 
-void e256_print_interp(image_t* array_ptr);
+void print_interp(image_t* array_ptr);
 
 #endif /*__INTERP_H__*/

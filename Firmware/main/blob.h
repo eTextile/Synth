@@ -149,7 +149,7 @@ void SETUP_BLOB(
 
 float distance(blob_t* blobA, blob_t* blobB);
 
-void e256_find_blobs(
+void find_blobs(
   uint8_t   Threshold,
   image_t*  inputFrame_ptr,
   image_t*  bitmap_ptr,
@@ -160,7 +160,7 @@ void e256_find_blobs(
   llist_t*  outputBlobs_ptr
 );
 
-void e256_print_bitmap(image_t* bitmap);
-void e256_print_blobs(llist_t* inputBlobs_ptr);
+void print_bitmap(image_t* bitmap);
+void print_blobs(llist_t* inputBlobs_ptr);
 
 #endif /*__BLOB_H__*/

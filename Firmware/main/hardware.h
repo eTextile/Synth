@@ -39,11 +39,11 @@ typedef struct preset {
 void SETUP_SWITCHES(Button* buttonA_ptr, Button* buttonB_ptr);
 void SETUP_LEDS(void);
 
-void e256_update_buttons(
+void update_buttons(
+  preset_t* preset_ptr,
   Button* buttonA_ptr,
   Button* buttonB_ptr,
   Encoder* encoder_ptr,
-  preset_t* preset_ptr,
   uint8_t* mode_ptr,
   uint8_t* lastMode_ptr,
   uint8_t* iter_ptr,
@@ -52,26 +52,24 @@ void e256_update_buttons(
 );
 
 //
-void e256_update_preset(
-  Encoder* encoder_ptr,
+void update_preset(
   preset_t* preset_ptr,
-  uint8_t* threshold_ptr,
-  uint8_t* blobSelector_ptr,
+  Encoder* encoder_ptr,
   boolean* calibrate_ptr,
   boolean* save_ptr,
   AudioControlSGTL5000* dac_ptr,
   elapsedMillis* timer_ptr
 );
 
-void e256_update_leds(
+void update_leds(
   preset_t* preset_ptr,
-  elapsedMillis* timer_ptr,
   uint8_t* curentMode_ptr,
-  uint8_t* lastMode_ptr
+  uint8_t* lastMode_ptr,
+  elapsedMillis* timer_ptr
 );
 
-void e256_preset_load(preset_t* preset_ptr, boolean* state_ptr);
-void e256_preset_save(preset_t* preset_ptr, boolean* state_ptr);
+void preset_load(preset_t* preset_ptr, boolean* state_ptr);
+void preset_save(preset_t* preset_ptr, boolean* state_ptr);
 
 boolean setLevel(preset_t* preset_ptr, Encoder* encoder_ptr);
 

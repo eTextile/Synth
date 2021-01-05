@@ -62,7 +62,7 @@ uint8_t setDualRows[DUAL_ROWS] = {
 #endif /*__SET_ORIGIN_Y__*/
 };
 
-uint8_t lastMode = CALIBRATE;    // Initialise lastMode with the DEFAULT_MODE
+uint8_t lastMode = CALIBRATE;
 uint8_t currentMode = LINE_OUT;  // Initialise currentMode with the DEFAULT_MODE
 uint8_t blobValSelector = 0;     // Used for MIDI_LEARN mode
 //uint8_t zThreshold = 3;          //
@@ -105,8 +105,8 @@ void setup() {
   SETUP_SWITCHES(&BUTTON_L, &BUTTON_R);
   SETUP_SPI();
   SETUP_ADC(adc);
-  
-  SETUP_DAC(&sgtl5000, &presets[0], &waveform1, &sine_fm1, &fade1);
+
+  SETUP_DAC(&presets[0], &sgtl5000, &waveform1, &sine_fm1, &fade1);
 
   SETUP_INTERP(
     &inputFrame,          // image_t*
@@ -133,14 +133,14 @@ void setup() {
 //////////////////// LOOP
 void loop() {
 
-  if (loadPreset) e256_preset_load(&presets[0], &loadPreset);
-  if (savePreset) e256_preset_save(&presets[0], &savePreset);
+  if (loadPreset) preset_load(&presets[0], &loadPreset);
+  if (savePreset) preset_save(&presets[0], &savePreset);
 
-  e256_update_buttons(
+  update_buttons(
+    &presets[0],
     &BUTTON_L,
     &BUTTON_R,
     &encoder,
-    &presets[0],
     &currentMode,
     &lastMode,
     &ledIterations,
@@ -148,27 +148,25 @@ void loop() {
     &ledTimer
   );
 
-  e256_update_preset(
-    &encoder,
+  update_preset(
     &presets[currentMode],
-    &presets[3].val,
-    &blobValSelector,
+    &encoder,
     &calibrateMatrix,
     &savePreset,
     &sgtl5000,
     &ledTimer
   );
 
-  e256_update_leds(
+  update_leds(
     &presets[currentMode],
-    &ledTimer,
     &currentMode,
-    &lastMode
+    &lastMode,
+    &ledTimer
   );
 
   if (calibrateMatrix) {
     calibrateMatrix = false;
-    e256_calibrate_matrix(
+    calibrate_matrix(
       adc,
       &result,
       &offsetArray[0],
@@ -176,7 +174,7 @@ void loop() {
     );
   }
 
-  e256_scan_matrix(
+  scan_matrix(
     adc,
     &result,
     &frameArray[0],
@@ -187,20 +185,20 @@ void loop() {
 #if DEBUG_ADC
   if (timerDebug >= 200) {
     timerDebug = 0;
-    e256_print_adc(&inputFrame);
+    print_adc(&inputFrame);
   }
 #endif
 
-  e256_interp_matrix(&interpolatedFrame, &inputFrame, &interp);
+  interp_matrix(&interpolatedFrame, &inputFrame, &interp);
 
 #if DEBUG_INTERP
   if (timerDebug >= 200) {
     timerDebug = 0;
-    e256_print_interp(&interpolatedFrame);
+    print_interp(&interpolatedFrame);
   }
 #endif
 
-  e256_find_blobs(
+  find_blobs(
     presets[3].val,     // uint8_t zThreshold
     &interpolatedFrame, // image_t (uint8_t array[NEW_FRAME] - 64*64 1D array)
     &bitmap,            // image_t (uint8_t array[NEW_FRAME] - 64*64 1D array)
@@ -214,15 +212,21 @@ void loop() {
 #if DEBUG_BITMAP
   if (timerDebug >= 200) {
     timerDebug = 0;
-    e256_print_bitmap(&bitmap);
+    print_bitmap(&bitmap);
   }
 #endif
 
 #if DEBUG_BLOBS
-  e256_print_blobs(&outputBlobs);
+  print_blobs(&outputBlobs);
 #endif
 
-  e256_make_noise(&outputBlobs, &sgtl5000, &waveform1, &sine_fm1, &fade1);
+  make_noise(
+    &presets[0],
+    &outputBlobs,
+    &sgtl5000,
+    &waveform1,
+    &sine_fm1,
+    &fade1);
 
 #if DEBUG_FPS
   if (curentMillisFps >= 1000) {

@@ -22,14 +22,15 @@ typedef struct preset preset_t; // Forward declaration
 typedef struct llist llist_t;   // Forward declaration
 
 void SETUP_DAC(
-  AudioControlSGTL5000* dac_ptr,
   preset_t* presets_ptr,
+  AudioControlSGTL5000* dac_ptr,
   AudioSynthWaveform* wfA_ptr,
   AudioSynthWaveformSineModulated* sine_fm_ptr,
   AudioEffectFade* fade_ptr
 );
 
-void e256_make_noise(
+void make_noise(
+  preset_t* presets_ptr,
   llist_t* blobs_ptr,
   AudioControlSGTL5000* dac_ptr,
   AudioSynthWaveform* wfA_ptr,

@@ -39,7 +39,7 @@ void SETUP_ADC(ADC *adc) {
 
 // Rows are analog INPUT PINS reded two by two
 // Columns are digital OUTPUT PINS supplyed one by one sequentially with 3.3V
-void e256_calibrate_matrix(ADC* adc_ptr, ADC::Sync_result* result_ptr, uint8_t* ofsetArray_ptr, uint8_t* shiftOutArray_ptr) {
+void calibrate_matrix(ADC* adc_ptr, ADC::Sync_result* result_ptr, uint8_t* ofsetArray_ptr, uint8_t* shiftOutArray_ptr) {
 
   uint16_t setCols;
 
@@ -77,7 +77,7 @@ void e256_calibrate_matrix(ADC* adc_ptr, ADC::Sync_result* result_ptr, uint8_t* 
 
 // Rows are analog INPUT PINS reded two by two
 // Columns are digital OUTPUT PINS supplyed one by one sequentially with 3.3V
-void e256_scan_matrix(ADC* adc_ptr, ADC::Sync_result* result_ptr, uint8_t* array_ptr, uint8_t* offsetArray_ptr, uint8_t* shiftOutArray_ptr) {
+void scan_matrix(ADC* adc_ptr, ADC::Sync_result* result_ptr, uint8_t* array_ptr, uint8_t* offsetArray_ptr, uint8_t* shiftOutArray_ptr) {
 
   uint16_t setCols;
 
@@ -111,7 +111,7 @@ void e256_scan_matrix(ADC* adc_ptr, ADC::Sync_result* result_ptr, uint8_t* array
   }
 }
 
-void e256_print_adc(image_t* image_ptr) {
+void print_adc(image_t* image_ptr) {
   for (uint8_t posY = 0; posY < image_ptr->numRows; posY++) {
     uint8_t* row_ptr = COMPUTE_IMAGE_ROW_PTR(image_ptr, posY);
     for (uint8_t posX = 0; posX < image_ptr->numCols; posX++) {

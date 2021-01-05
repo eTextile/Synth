@@ -46,7 +46,7 @@ static int sum_m_to_n(int m, int n) {
   return ((n * (n + 1)) - (m * (m - 1))) / 2;
 }
 
-void e256_find_blobs(
+void find_blobs(
   uint8_t   Threshold,
   image_t*  inputFrame_ptr,
   image_t*  bitmap_ptr,
@@ -424,7 +424,7 @@ void blob_raz(blob_t* node) {
   node->pixels = 0;
 }
 
-void e256_print_bitmap(image_t* bitmap_ptr) {
+void print_bitmap(image_t* bitmap_ptr) {
   for (uint8_t posY = 0; posY < bitmap_ptr->numRows; posY++) {
     uint8_t* row_ptr = COMPUTE_BINARY_IMAGE_ROW_PTR(bitmap_ptr, posY);
     for (uint8_t posX = 0; posX < bitmap_ptr->numCols; posX++) {
@@ -436,7 +436,7 @@ void e256_print_bitmap(image_t* bitmap_ptr) {
   //delay(100);
 }
 
-void e256_print_blobs(llist_t* inputBlobs_ptr) {
+void print_blobs(llist_t* inputBlobs_ptr) {
   for (blob_t* blob = ITERATOR_START_FROM_HEAD(inputBlobs_ptr); blob != NULL; blob = ITERATOR_NEXT(blob)) {
     Serial.printf("ID:%d\t", blob->UID);
     Serial.printf("S:%d\t", blob->alive);

@@ -7,8 +7,8 @@
 #include "audio.h"
 
 void SETUP_DAC(
-  AudioControlSGTL5000* dac_ptr,
   preset_t* presets_ptr,
+  AudioControlSGTL5000* dac_ptr,
   AudioSynthWaveform* wfA_ptr,
   AudioSynthWaveformSineModulated* sine_fm_ptr,
   AudioEffectFade* fade_ptr
@@ -28,7 +28,8 @@ void SETUP_DAC(
   wfA_ptr->begin(WAVEFORM_SINE);
 }
 
-void e256_make_noise(
+void make_noise(
+  preset_t* presets_ptr,
   llist_t* blobs_ptr,
   AudioControlSGTL5000* dac_ptr,
   AudioSynthWaveform* wfA_ptr,
@@ -36,6 +37,10 @@ void e256_make_noise(
   AudioEffectFade* fade_ptr
 ) {
   static uint8_t lastAlive = 0;
+
+  if (presets_ptr[LINE_OUT].val != presets_ptr[LINE_OUT].lastVal) {
+    dac_ptr->dacVolume(presets_ptr[LINE_OUT].val);
+  }
 
   for (blob_t* blob = ITERATOR_START_FROM_HEAD(blobs_ptr); blob != NULL; blob = ITERATOR_NEXT(blob)) {
 

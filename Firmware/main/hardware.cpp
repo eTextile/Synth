@@ -18,11 +18,11 @@ void SETUP_SWITCHES(Button* buttonA_ptr, Button* buttonB_ptr) {
   buttonB_ptr->interval(15);                        // Debounce interval of 15 millis
 }
 
-void e256_update_buttons(
+void update_buttons(
+  preset_t* presets_ptr,
   Button* buttonA_ptr,
   Button* buttonB_ptr,
   Encoder* encoder_ptr,
-  preset_t* presets_ptr,
   uint8_t* curentMode_ptr,
   uint8_t* lastMode_ptr,
   uint8_t* iter_ptr,
@@ -88,11 +88,9 @@ void e256_update_buttons(
 }
 
 //
-void e256_update_preset(
-  Encoder* encoder_ptr,
+void update_preset(
   preset_t* preset_ptr,
-  uint8_t* threshold_ptr,
-  uint8_t* blobSelector_ptr,
+  Encoder* encoder_ptr,
   boolean* calibrate_ptr,
   boolean* save_ptr,
   AudioControlSGTL5000* dac_ptr,
@@ -106,8 +104,10 @@ void e256_update_preset(
     // HIGHEST level is 13 (3.16 Volts p-p)
     case LINE_OUT:
       if (setLevel(preset_ptr, encoder_ptr)) {
-#if DEBUG_ENCODER == 1
-        Serial.printf("\nLINE_OUT : %d", abs((preset_ptr->val - preset_ptr->minVal) - (preset_ptr->maxVal - preset_ptr->minVal)) + preset_ptr->minVal);
+#if DEBUG_ENCODER
+        uint8_t val = abs((preset_ptr->val - preset_ptr->minVal) - (preset_ptr->maxVal - preset_ptr->minVal)) + preset_ptr->minVal;
+        dac_ptr->dacVolume(val);
+        Serial.printf("\nLINE_OUT : %d", val);
 #else
         dac_ptr->dacVolume(abs((preset_ptr->val - preset_ptr->minVal) - (preset_ptr->maxVal - preset_ptr->minVal)) + preset_ptr->minVal);
 #endif
@@ -120,8 +120,10 @@ void e256_update_preset(
     // HIGHEST level is 0 (3.12 Volts p-p)
     case SIG_IN:
       if (setLevel(preset_ptr, encoder_ptr)) {
-#if DEBUG_ENCODER == 1
-        Serial.printf("\nSIG_IN : %d", abs((preset_ptr->val - preset_ptr->minVal) - (preset_ptr->maxVal - preset_ptr->minVal)) + preset_ptr->minVal);
+#if DEBUG_ENCODER
+        uint8_t val = abs((preset_ptr->val - preset_ptr->minVal) - (preset_ptr->maxVal - preset_ptr->minVal)) + preset_ptr->minVal;
+        dac_ptr->lineInLevel(val);
+        Serial.printf("\nSIG_IN : %d", val);
 #else
         dac_ptr->lineInLevel(abs((preset_ptr->val - preset_ptr->minVal) - (preset_ptr->maxVal - preset_ptr->minVal)) + preset_ptr->minVal);
 #endif
@@ -134,8 +136,10 @@ void e256_update_preset(
     // HIGHEST level is 13
     case SIG_OUT:
       if (setLevel(preset_ptr, encoder_ptr)) {
-#if DEBUG_ENCODER == 1
-        Serial.printf("\nSIG_OUT : %d", abs((preset_ptr->val - preset_ptr->minVal) - (preset_ptr->maxVal - preset_ptr->minVal)) + preset_ptr->minVal);
+#if DEBUG_ENCODER
+        uint8_t val = abs((preset_ptr->val - preset_ptr->minVal) - (preset_ptr->maxVal - preset_ptr->minVal)) + preset_ptr->minVal;
+        dac_ptr->lineOutLevel(val);
+        Serial.printf("\nSIG_OUT : %d", val);
 #else
         dac_ptr->lineOutLevel(abs((preset_ptr->val - preset_ptr->minVal) - (preset_ptr->maxVal - preset_ptr->minVal)) + preset_ptr->minVal);
 #endif
@@ -145,9 +149,8 @@ void e256_update_preset(
     // FONCTION : zThreshold value adjustment using rotary encoder
     case THRESHOLD:
       if (setLevel(preset_ptr, encoder_ptr)) {
-        *threshold_ptr = preset_ptr->val;
-#if DEBUG_ENCODER == 1
-        Serial.printf("\nTHRESHOLD : %d", *threshold_ptr);
+#if DEBUG_ENCODER
+        Serial.printf("\nTHRESHOLD : %d", preset_ptr->val);
 #endif
       }
       break;
@@ -155,9 +158,8 @@ void e256_update_preset(
     // FONCTION : select the Blob value to transmit via MIDI using rotary encoder
     case MIDI_LEARN:
       if (setLevel(preset_ptr, encoder_ptr)) {
-        *blobSelector_ptr = preset_ptr->val;
-#if DEBUG_ENCODER == 1
-        Serial.printf("\nMIDI_LEARN : %d", *blobSelector_ptr);
+#if DEBUG_ENCODER
+        Serial.printf("\nMIDI_LEARN : %d", preset_ptr->val);
 #endif
       }
       break;
@@ -166,7 +168,8 @@ void e256_update_preset(
     case CALIBRATE:
       if (calibrate_ptr == false) {
         *calibrate_ptr = true;
-#if DEBUG_BUTTONS == 1
+        
+#if DEBUG_BUTTONS
         Serial.println("DO_CALIBRATE");
 #endif
         *timer_ptr = 0;
@@ -191,11 +194,11 @@ void e256_update_preset(
 }
 
 // Setup LEDs according to the mode and rotary encoder values
-void e256_update_leds(
+void update_leds(
   preset_t* preset_ptr,
-  elapsedMillis* timer_ptr,
   uint8_t* curentMode_ptr,
-  uint8_t* lastMode_ptr
+  uint8_t* lastMode_ptr,
+  elapsedMillis* timer_ptr
 ) {
 
   static uint8_t iter = 0;
@@ -302,17 +305,16 @@ boolean setLevel(preset_t* preset_ptr, Encoder* encoder_ptr) {
   if (preset_ptr->val != preset_ptr->lastVal) {
 
     if (preset_ptr->val > preset_ptr->maxVal) {
-      preset_ptr->lastVal = preset_ptr->val;
       preset_ptr->val--;
       encoder_ptr->write(preset_ptr->val << 2);
       return false;
     }
     else if (preset_ptr->val < preset_ptr->minVal) {
-      preset_ptr->lastVal = preset_ptr->val;
       preset_ptr->val++;
       encoder_ptr->write(preset_ptr->val << 2);
       return false;
     }
+    //preset_ptr->lastVal = preset_ptr->val;
     return true;
   }
   else {
@@ -320,17 +322,17 @@ boolean setLevel(preset_t* preset_ptr, Encoder* encoder_ptr) {
   }
 }
 
-//TODO
-void e256_preset_load(preset_t* preset_ptr, boolean * state_ptr) {
+// TODO
+void preset_load(preset_t* preset_ptr, boolean * state_ptr) {
 
   for (int i = 0; i < 4; i++) {
-    //EEPROM.read(i, preset_ptr[i].val); // uint8_t
+    // EEPROM.read(i, preset_ptr[i].val); // uint8_t
   }
   *state_ptr = false;
 }
 
-//TODO
-void e256_preset_save(preset_t* preset_ptr, boolean * state_ptr) {
+// TODO
+void preset_save(preset_t* preset_ptr, boolean * state_ptr) {
 
   for (int i = 0; i < 4; i++) {
     //EEPROM.write(i, preset_ptr[i].val); // uint8_t
