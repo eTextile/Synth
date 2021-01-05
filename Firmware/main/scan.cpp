@@ -109,11 +109,11 @@ void e256_scan_matrix(ADC* adc_ptr, ADC::Sync_result* result_ptr, uint8_t* array
   }
 }
 
-void e256_print_adc(image_t* frame_ptr) {
-  for (uint8_t posY = 0; posY < frame_ptr->numRows; posY++) {
-    uint8_t* frame_row_ptr = COMPUTE_IMAGE_ROW_PTR(frame_ptr, posY);
-    for (uint8_t posX = 0; posX < frame_ptr->numCols; posX++) {
-      Serial.printf("\t%d", IMAGE_GET_PIXEL_FAST(frame_row_ptr, posX));
+void e256_print_adc(image_t* image_ptr) {
+  for (uint8_t posY = 0; posY < image_ptr->numRows; posY++) {
+    uint8_t* row_ptr = COMPUTE_IMAGE_ROW_PTR(image_ptr, posY);
+    for (uint8_t posX = 0; posX < image_ptr->numCols; posX++) {
+      Serial.printf("\t%d", IMAGE_GET_PIXEL_FAST(row_ptr, posX));
     }
     Serial.println();
   }
