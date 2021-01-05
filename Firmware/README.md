@@ -25,9 +25,10 @@ This project is part of an electronic textiles research on HCI gesture interacti
 - Optimize      Faster
 
 ### E256 textile-synthetizer & Teensy 4.0 Benchmark
-  - ADC_INPUT : 1579 FPS
-  - ADC_INPUT / BILINEAR_INTERPOLATION : 907 FPS
-  - ADC_INPUT / BILINEAR_INTERPOLATION / BLOB_TRACKING : 870 FPS
+  - ADC_INPUT : 1853 FPS
+  - ADC_INPUT / BILINEAR_INTERPOLATION : 987 FPS
+  - ADC_INPUT / BILINEAR_INTERPOLATION / BLOB_TRACKING : 950 FPS
+  - ADC_INPUT / BILINEAR_INTERPOLATION / BLOB_TRACKING / AUDIO : 955 FPS
 
 ## E256 textile-synthetizer Program Synopsis
 - The Arduio sketch implemant rows and columns scaning algorithm with synchronous **dual ADC sampling**.
