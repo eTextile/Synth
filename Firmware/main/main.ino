@@ -58,13 +58,13 @@ uint8_t currentMode = LINE_OUT;  // Initialise currentMode with the DEFAULT_MODE
 uint8_t blobValSelector = 0;     // Used for MIDI_LEARN mode
 uint8_t zThreshold = 10;         //
 
-#if DEBUG_FPS == 1
+#if DEBUG_FPS
 elapsedMillis curentMillisFps;
 unsigned int fps = 0;
 #endif
 
-#if DEBUG_BITMAP == 1
-elapsedMillis timerBitmap;
+#if DEBUG_ADC || DEBUG_BITMAP || DEBUG_INTERP
+elapsedMillis timerDebug;
 #endif
 
 boolean toggleSwitch = false;
@@ -96,7 +96,7 @@ AudioConnection          patchCord4(waveform_B, 0, dacs1, 1);
 
 void setup() {
 
-#if (DEBUG_ADC == 1 || DEBUG_INTERP == 1 || DEBUG_BLOBS == 1 || DEBUG_SFF_BITMAP == 1 || DEBUG_FPS == 1)
+#if DEBUG_ADC || DEBUG_INTERP || DEBUG_BLOBS || DEBUG_SFF_BITMAP || DEBUG_FPS
   Serial.begin(BAUD_RATE);       // Start Serial communication using 230400 baud
   //while (!Serial.dtr());         // Wait for user to start the serial monitor
 #endif
@@ -105,8 +105,7 @@ void setup() {
   SETUP_SWITCHES(&BUTTON_L, &BUTTON_R);
   SETUP_SPI();
   SETUP_ADC(adc);
-  SETUP_DAC(&sgtl5000, &presets[0], &waveform_A, &waveform_B);
-  //SETUP_DAC(&sgtl5000, &waveform_A, &waveform_B);
+  //SETUP_DAC(&sgtl5000, &presets[0], &waveform_A, &waveform_B);
 
   SETUP_INTERP(
     &inputFrame,          // image_t*
@@ -115,6 +114,7 @@ void setup() {
     &interpFrameArray[0], // uint8_t*
     &interp               // interp_t*
   );
+  
   SETUP_BLOB(
     &inputFrame,          // image_t*
     &bitmap,              // image_t*
@@ -183,14 +183,20 @@ void loop() {
     &setDualRows[0]
   );
 
-#if DEBUG_ADC == 1
-  e256_print_adc(&inputFrame);
+#if DEBUG_ADC
+  if (timerDebug >= 100) {
+    timerDebug = 0;
+    e256_print_adc(&inputFrame);
+  }
 #endif
 
   e256_interp_matrix(&interpolatedFrame, &inputFrame, &interp);
 
-#if DEBUG_INTERP == 1
-  e256_print_interp(&interpolatedFrame);
+#if DEBUG_INTERP
+  if (timerDebug >= 100) {
+    timerDebug = 0;
+    e256_print_interp(&interpolatedFrame);
+  }
 #endif
 
   e256_find_blobs(
@@ -204,20 +210,20 @@ void loop() {
     &outputBlobs        // list_t
   );
 
-#if DEBUG_BLOBS == 1
+#if DEBUG_BLOBS
   e256_print_blobs(&outputBlobs);
 #endif
 
-#if DEBUG_BITMAP == 1
-  if (timerBitmap >= 1000) {
-    timerBitmap = 0;
+#if DEBUG_BITMAP
+  if (timerDebug >= 1000) {
+    timerDebug = 0;
     e256_print_bitmap(&bitmap);
   }
 #endif
 
   e256_make_noise(&outputBlobs, &sgtl5000, &waveform_A, &waveform_B);
 
-#if DEBUG_FPS == 1
+#if DEBUG_FPS
   if (curentMillisFps >= 1000) {
     curentMillisFps = 0;
     Serial.println(fps);
