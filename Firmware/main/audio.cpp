@@ -10,46 +10,52 @@ void SETUP_DAC(
   AudioControlSGTL5000* dac_ptr,
   preset_t* presets_ptr,
   AudioSynthWaveform* wfA_ptr,
-  AudioSynthWaveform* wfB_ptr
+  AudioSynthWaveformSineModulated* sine_fm_ptr,
+  AudioEffectFade* fade_ptr
 ) {
 
-  AudioMemory(10);
+  AudioMemory(20);
 
   dac_ptr->enable();
+
   dac_ptr->dacVolume(presets_ptr[LINE_OUT].val);
-  //dac_ptr->lineInLevel(presets_ptr[SIG_IN].val);
+  dac_ptr->lineInLevel(presets_ptr[SIG_IN].val);
   dac_ptr->lineOutLevel(presets_ptr[SIG_OUT].val);
-
-  //wfA_ptr->frequency(440);
-  //wfB_ptr->frequency(440);
-
+  fade_ptr->fadeOut(0);
   wfA_ptr->amplitude(1.0);
-  wfB_ptr->amplitude(1.0);
+  sine_fm_ptr->amplitude(1.0);
 
   wfA_ptr->begin(WAVEFORM_SINE);
-  wfB_ptr->begin(WAVEFORM_SINE);
 }
 
 void e256_make_noise(
   llist_t* blobs_ptr,
   AudioControlSGTL5000* dac_ptr,
   AudioSynthWaveform* wfA_ptr,
-  AudioSynthWaveform* wfB_ptr
+  AudioSynthWaveformSineModulated* sine_fm_ptr,
+  AudioEffectFade* fade_ptr
 ) {
+  static uint8_t lastAlive = 0;
 
   for (blob_t* blob = ITERATOR_START_FROM_HEAD(blobs_ptr); blob != NULL; blob = ITERATOR_NEXT(blob)) {
 
     AudioNoInterrupts();
-    if (blob->alive == 1) {
-      wfA_ptr->frequency(blob->centroid.X * 10.0);
-      wfB_ptr->frequency(blob->centroid.Y * 10.0);
-      //waveform1.phase(knob_A3 * 360.0);
+    if (blob->UID == 0) {
+      if (blob->alive == 1 && lastAlive == 0) {
+        fade_ptr->fadeIn(80);
+      }
+      if (blob->alive == 1) {
+        wfA_ptr->frequency((blob->centroid.X / 4) + 10);
+        //wfA_ptr->phase((blob->box.D / 64) * 360.0);
+        sine_fm_ptr->frequency((blob->centroid.Y / 8.0) + 8);
+      }
+      else {
+        fade_ptr->fadeOut(500);
+        //wfA_ptr->frequency(0);
+        //sine_fm_ptr->frequency(0);
+      }
+      lastAlive = blob->alive;
     }
-    else {
-      wfA_ptr->frequency(0);
-      wfB_ptr->frequency(0);
-    }
-
     AudioInterrupts();
     /*
       blob->UID;        // uint8_t unique session ID

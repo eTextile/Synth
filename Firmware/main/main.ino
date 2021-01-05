@@ -38,10 +38,19 @@ Encoder encoder(ENCODER_PIN_A, ENCODER_PIN_B);
 Button BUTTON_L = Button();
 Button BUTTON_R = Button();
 
-AudioControlSGTL5000 sgtl5000;
-
 ADC* adc = new ADC();           // ADC object
 ADC::Sync_result result;        // Store ADC_0 & ADC_1
+
+AudioControlSGTL5000 sgtl5000;
+
+AudioSynthWaveform       waveform1;
+AudioSynthWaveformSineModulated sine_fm1;
+AudioEffectFade          fade1;
+AudioOutputI2S           i2s1;
+AudioConnection          patchCord1(waveform1, sine_fm1);
+AudioConnection          patchCord2(sine_fm1, fade1);
+AudioConnection          patchCord3(fade1, 0, i2s1, 0);
+AudioConnection          patchCord4(fade1, 0, i2s1, 1);
 
 // Array to store all parameters used to configure the two 8:1 analog multiplexeurs
 // Each byte |ENA|A|B|C|ENA|A|B|C|
@@ -56,7 +65,7 @@ uint8_t setDualRows[DUAL_ROWS] = {
 uint8_t lastMode = CALIBRATE;    // Initialise lastMode with the DEFAULT_MODE
 uint8_t currentMode = LINE_OUT;  // Initialise currentMode with the DEFAULT_MODE
 uint8_t blobValSelector = 0;     // Used for MIDI_LEARN mode
-uint8_t zThreshold = 10;         //
+//uint8_t zThreshold = 3;          //
 
 #if DEBUG_FPS
 elapsedMillis curentMillisFps;
@@ -68,8 +77,8 @@ elapsedMillis timerDebug;
 #endif
 
 boolean toggleSwitch = false;
-boolean doLoadPreset = true;
-boolean doSavePreset = false;
+boolean loadPreset = true;
+boolean savePreset = false;
 boolean calibrateMatrix = true;
 
 elapsedMillis ledTimer;
@@ -79,20 +88,11 @@ preset_t presets[7] = {
   {0, 13, 31, 21, 21, true, LOW, LOW },   // LINE_OUT
   {1, 0, 15, 5, 5, true, HIGH, LOW },     // SIG_IN
   {2, 0, 31, 17, 17, true, LOW, HIGH },   // SIG_OUT / min 13
-  {3, 0, 50, 8, 8, true, HIGH, HIGH },    // THRESHOLD
+  {3, 0, 20, 3, 3, true, HIGH, HIGH },    // THRESHOLD
   {4, 0, 6, 0, 0, true, NULL, NULL },     // MIDI_LEARN [ID, alive, X, Y, W, H, D]
   {5, 0, 0, 0, 0, true, NULL, NULL },     // CALIBRATE
   {6, 0, 0, 0, 0, true, NULL, NULL }      // SAVE
 };
-
-AudioSynthWaveform       waveform_A;
-AudioSynthWaveform       waveform_B;
-AudioOutputI2S           i2s1;
-AudioOutputAnalogStereo  dacs1;
-AudioConnection          patchCord1(waveform_A, 0, i2s1, 0);
-AudioConnection          patchCord2(waveform_A, 0, dacs1, 0);
-AudioConnection          patchCord3(waveform_B, 0, i2s1, 1);
-AudioConnection          patchCord4(waveform_B, 0, dacs1, 1);
 
 void setup() {
 
@@ -105,7 +105,8 @@ void setup() {
   SETUP_SWITCHES(&BUTTON_L, &BUTTON_R);
   SETUP_SPI();
   SETUP_ADC(adc);
-  //SETUP_DAC(&sgtl5000, &presets[0], &waveform_A, &waveform_B);
+  
+  SETUP_DAC(&sgtl5000, &presets[0], &waveform1, &sine_fm1, &fade1);
 
   SETUP_INTERP(
     &inputFrame,          // image_t*
@@ -114,7 +115,7 @@ void setup() {
     &interpFrameArray[0], // uint8_t*
     &interp               // interp_t*
   );
-  
+
   SETUP_BLOB(
     &inputFrame,          // image_t*
     &bitmap,              // image_t*
@@ -132,8 +133,8 @@ void setup() {
 //////////////////// LOOP
 void loop() {
 
-  if (doLoadPreset) e256_preset_load(&presets[0], &doLoadPreset);
-  if (doSavePreset) e256_preset_save(&presets[0], &doSavePreset);
+  if (loadPreset) e256_preset_load(&presets[0], &loadPreset);
+  if (savePreset) e256_preset_save(&presets[0], &savePreset);
 
   e256_update_buttons(
     &BUTTON_L,
@@ -150,10 +151,10 @@ void loop() {
   e256_update_preset(
     &encoder,
     &presets[currentMode],
-    &zThreshold,
+    &presets[3].val,
     &blobValSelector,
     &calibrateMatrix,
-    &doSavePreset,
+    &savePreset,
     &sgtl5000,
     &ledTimer
   );
@@ -184,7 +185,7 @@ void loop() {
   );
 
 #if DEBUG_ADC
-  if (timerDebug >= 100) {
+  if (timerDebug >= 200) {
     timerDebug = 0;
     e256_print_adc(&inputFrame);
   }
@@ -193,14 +194,14 @@ void loop() {
   e256_interp_matrix(&interpolatedFrame, &inputFrame, &interp);
 
 #if DEBUG_INTERP
-  if (timerDebug >= 100) {
+  if (timerDebug >= 200) {
     timerDebug = 0;
     e256_print_interp(&interpolatedFrame);
   }
 #endif
 
   e256_find_blobs(
-    zThreshold,         // uint8_t zThreshold
+    presets[3].val,     // uint8_t zThreshold
     &interpolatedFrame, // image_t (uint8_t array[NEW_FRAME] - 64*64 1D array)
     &bitmap,            // image_t (uint8_t array[NEW_FRAME] - 64*64 1D array)
     &lifo_stack,        // lifo_t
@@ -210,18 +211,18 @@ void loop() {
     &outputBlobs        // list_t
   );
 
-#if DEBUG_BLOBS
-  e256_print_blobs(&outputBlobs);
-#endif
-
 #if DEBUG_BITMAP
-  if (timerDebug >= 1000) {
+  if (timerDebug >= 200) {
     timerDebug = 0;
     e256_print_bitmap(&bitmap);
   }
 #endif
 
-  e256_make_noise(&outputBlobs, &sgtl5000, &waveform_A, &waveform_B);
+#if DEBUG_BLOBS
+  e256_print_blobs(&outputBlobs);
+#endif
+
+  e256_make_noise(&outputBlobs, &sgtl5000, &waveform1, &sine_fm1, &fade1);
 
 #if DEBUG_FPS
   if (curentMillisFps >= 1000) {

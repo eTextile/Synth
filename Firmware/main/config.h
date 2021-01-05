@@ -14,12 +14,12 @@
 
 // Arduino serial monitor
 #define DEBUG_FPS             0 // Print Frames Per Second
-#define DEBUG_ENCODER         0 // Print...
+#define DEBUG_ENCODER         1 // Print...
 #define DEBUG_BUTTONS         0 // Print...
 #define DEBUG_ADC             0 // Print 16x16 Analog raw values
 #define DEBUG_INTERP          0 // Print 64x64 interpolated values
 #define DEBUG_BITMAP          0 // Print 64x64 binary image based on threshold
-#define DEBUG_BLOBS           0 // Print blobs values
+#define DEBUG_BLOBS           1 // Print blobs values
 #define DEBUG_BLOBS_ID        0 // Debug lowlevel blobs values
 
 #define LED_PIN_D1            5

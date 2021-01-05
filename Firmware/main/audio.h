@@ -25,14 +25,16 @@ void SETUP_DAC(
   AudioControlSGTL5000* dac_ptr,
   preset_t* presets_ptr,
   AudioSynthWaveform* wfA_ptr,
-  AudioSynthWaveform* wfB_ptr
+  AudioSynthWaveformSineModulated* sine_fm_ptr,
+  AudioEffectFade* fade_ptr
 );
 
 void e256_make_noise(
   llist_t* blobs_ptr,
   AudioControlSGTL5000* dac_ptr,
   AudioSynthWaveform* wfA_ptr,
-  AudioSynthWaveform* wfB_ptr
+  AudioSynthWaveformSineModulated* sine_fm_ptr,
+  AudioEffectFade* fade_ptr
 );
 
 #endif /*__AUDIO_H__*/
