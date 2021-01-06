@@ -36,7 +36,7 @@ void make_noise(
   AudioSynthWaveformSineModulated* sine_fm_ptr,
   AudioEffectFade* fade_ptr
 ) {
-  static uint8_t lastAlive = 0;
+  static uint8_t lastState = 0;
 
   if (presets_ptr[LINE_OUT].val != presets_ptr[LINE_OUT].lastVal) {
     dac_ptr->dacVolume(presets_ptr[LINE_OUT].val);
@@ -46,12 +46,14 @@ void make_noise(
 
     AudioNoInterrupts();
     if (blob->UID == 0) {
-      if (blob->alive == 1 && lastAlive == 0) {
+      if (blob->alive == 1 && lastState == 0) {
         fade_ptr->fadeIn(80);
       }
       if (blob->alive == 1) {
-        wfA_ptr->frequency((blob->centroid.X / 4) + 10);
-        //wfA_ptr->phase((blob->box.D / 64) * 360.0);
+        wfA_ptr->frequency((blob->centroid.X / 8) + 10);
+        uint8_t _phase = constrain(blob->box.D, 0, 64);
+        _phase = (_phase / 64) * 360.0;
+        wfA_ptr->phase(_phase);
         sine_fm_ptr->frequency((blob->centroid.Y / 8.0) + 8);
       }
       else {
@@ -59,7 +61,7 @@ void make_noise(
         //wfA_ptr->frequency(0);
         //sine_fm_ptr->frequency(0);
       }
-      lastAlive = blob->alive;
+      lastState = blob->alive;
     }
     AudioInterrupts();
     /*

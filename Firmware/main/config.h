@@ -29,11 +29,16 @@
 #define ENCODER_PIN_A         22
 #define ENCODER_PIN_B         9
 
-#define SS1_PIN               0        // Teensy4.0 hardware SPI1 (SELECT : STCP)
-#define SCK1_PIN              27       // Teensy4.0 hardware SPI1 (CLOCK - SHCP)
-#define MOSI1_PIN             26       // Teensy4.0 hardware SPI1 (DATA - DS)
-#define ADC0_PIN              A2       // The output of multiplexerA (SIG pin) is connected to Teensy 4.0 pin 16
-#define ADC1_PIN              A3       // The output of multiplexerB (SIG pin) is connected to Teensy 4.0 pin 17
+#define SS1_PIN               0       // Teensy4.0 hardware SPI1 (SELECT : STCP)
+#define SCK1_PIN              27      // Teensy4.0 hardware SPI1 (CLOCK - SHCP)
+#define MOSI1_PIN             26      // Teensy4.0 hardware SPI1 (DATA - DS)
+#define ADC0_PIN              A2      // The output of multiplexerA (SIG pin) is connected to Teensy 4.0 pin 16
+#define ADC1_PIN              A3      // The output of multiplexerB (SIG pin) is connected to Teensy 4.0 pin 17
+
+#define MEM_MOSI              11      // Teensy4.0 hardware SPI
+#define MEM_MISO              12      // Teensy4.0 hardware SPI
+#define MEM_SCK               13      // Teensy4.0 hardware SPI
+#define MEM_SC                6       // Teensy4.0 hardware SPI
 
 #define BAUD_RATE             230400
 #define RAW_COLS              16

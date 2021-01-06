@@ -199,14 +199,14 @@ void loop() {
 #endif
 
   find_blobs(
-    presets[3].val,     // uint8_t zThreshold
-    &interpolatedFrame, // image_t (uint8_t array[NEW_FRAME] - 64*64 1D array)
-    &bitmap,            // image_t (uint8_t array[NEW_FRAME] - 64*64 1D array)
-    &lifo_stack,        // lifo_t
-    &lifo,              // lifo_t
-    &blobs_stack,       // list_t
-    &blobs,             // list_t
-    &outputBlobs        // list_t
+    presets[THRESHOLD].val, // uint8_t zThreshold
+    &interpolatedFrame,     // image_t (uint8_t array[NEW_FRAME] - 64*64 1D array)
+    &bitmap,                // image_t (uint8_t array[NEW_FRAME] - 64*64 1D array)
+    &lifo_stack,            // lifo_t
+    &lifo,                  // lifo_t
+    &blobs_stack,           // list_t
+    &blobs,                 // list_t
+    &outputBlobs            // list_t
   );
 
 #if DEBUG_BITMAP
@@ -226,7 +226,8 @@ void loop() {
     &sgtl5000,
     &waveform1,
     &sine_fm1,
-    &fade1);
+    &fade1
+  );
 
 #if DEBUG_FPS
   if (curentMillisFps >= 1000) {

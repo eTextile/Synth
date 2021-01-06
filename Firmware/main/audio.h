@@ -12,11 +12,11 @@
 #include "blob.h"
 #include "hardware.h"
 
-#include <Audio.h>        // https://www.pjrc.com/teensy/td_libs_Audio.html
-#include <Wire.h>         //
-#include <SPI.h>          //
-#include <SD.h>           //
-#include <SerialFlash.h>  //
+#include <Audio.h>              // https://github.com/PaulStoffregen/Audio
+#include <Wire.h>               // https://github.com/PaulStoffregen/Wire
+#include <SPI.h>                // https://github.com/PaulStoffregen/SPI
+#include <SD.h>                 // https://github.com/PaulStoffregen/SD
+#include <SerialFlash.h>        // https://github.com/PaulStoffregen/SerialFlash
 
 typedef struct preset preset_t; // Forward declaration
 typedef struct llist llist_t;   // Forward declaration
