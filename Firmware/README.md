@@ -1,10 +1,11 @@
 # eTextile-Synthetizer
-### Transforming textiles into an intuitive way to interact with computers. 
-This project is part of an electronic textiles research on HCI gesture interaction that was started in 2005.
+### Exploring music through textile
 
 ## Requirements
+
 - Teensy 4.0
-- E256 shield
+- eTextile-Synthetizer PCB
+
 - Arduino IDE 1.8.13 or higher
   - https://www.arduino.cc/en/Main/Software
 - Arduino IDE additional board
