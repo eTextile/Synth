@@ -2,8 +2,8 @@
 ### Exploring music through textile
 
 - Author: Maurin Donneaud <maurin@etextile.org>
-- Repository: https://github.com/eTextile/Matrix/tree/E256_STANDALONE/
-- Project web page: https://matrix.eTextile.org
+- Repository: https://github.com/eTextile/Synth/tree/master/
+- Project web page: https://contact.eTextile.org
 - License: CC-BY-SA (see the License file)
 
 ![eTextile Synthetizer](https://live.staticflickr.com/65535/50747231422_db241da26b_c_d.jpg)
