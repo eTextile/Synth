@@ -15,9 +15,9 @@ After setting up the **E256 eTextile matrix sensor** it is now time to use it fo
 * **Pictures:** [flickr.com](https://www.flickr.com/photos/maurin/albums/72157673740361510/ "Share your pictures with us")
 
 ## Project content
-* **Hardware_textile:** eTextile matrix sensor tutorial
-* **Hardware_electronic:** extension board PCB sources
-* **Firmware:** arduino Textile-Synthetizer firmware (blob detection, MIDI communication, etc.).
+* **Hardware_textile:** eTextile-Synthetizer tutorial
+* **Hardware_electronic:** Open Hardware electronic parts (Made with KiCad) 
+* **Firmware:** eTextile-Synthetizer firmware (Compile with Arduino)
 * **Softwear:** demos applications (PureData, MaxMSP, Max4Live, etc.). 
 
 ## Publications
@@ -25,12 +25,12 @@ After setting up the **E256 eTextile matrix sensor** it is now time to use it fo
 - [MOCO17](http://moco17.movementcomputing.org/) - Music Skin: Fabric Interface for Expressive Music Control / [Paper](https://github.com/eTextile/Matrix/blob/teensy_matrix/docs/publications/MOCO17-MusicSkin.pdf)
 
 ## Copyright
-Except as otherwise noted, all files in the resistiveMatrix project folder
+Except as otherwise noted, all files in the eTextile-Synthetizer project folder
 
     Copyright (c) 2014-2018 Maurin Donneaud and others.
 
 For information on usage and redistribution, and for a DISCLAIMER OF ALL
-WARRANTIES, see LICENSE.txt included in the resistiveMatrix project folder.
+WARRANTIES, see LICENSE.txt included in this folder.
 
 ## Docs
 - [Video made at Schmiede 2014](http://www.kobakant.at/DIY/?p=4305/)
