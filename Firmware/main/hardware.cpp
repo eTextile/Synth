@@ -11,7 +11,7 @@ void SETUP_LEDS(void) {
   pinMode(LED_PIN_D2, OUTPUT);
 }
 
-// Hear it should not compile if you don't install manually the library 
+// Hear it should not compile if you didn't install the library (Manually!)
 // [Bounce2](https://github.com/thomasfredericks/Bounce2)
 // in your /Applications/Arduino/library
 void SETUP_SWITCHES(Button* buttonA_ptr, Button* buttonB_ptr) {

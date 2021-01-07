@@ -1,5 +1,5 @@
 /*
-  FORKED FROM https://github.com/openmv/openmv/tree/master/src/omv/img
+  FORKED FROM https://github.com/openmv/openmv/blob/master/src/omv/imlib/blob.c
     - This file is part of the OpenMV project.
     - Copyright (c) 2013- Ibrahim Abdelkader <iabdalkader@openmv.io> & Kwabena W. Agyeman <kwagyeman@openmv.io>
     - This work is licensed under the MIT license, see the file LICENSE for details.
