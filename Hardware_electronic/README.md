@@ -11,7 +11,7 @@
 #### HARDWARE_ELECTRONIC
 ##### Features
 - Teensy 4.0 (600MHz MCU)
-- E256 PCB made with **KiCad** (V5.0.2)
+- eTextile-Synthetizer PCB made with **KiCad** (V5.0.2)
 - Daisy chainable design using **3.5 stereo mini Jack**
     - **LINE-OUT** : High quality 16 bit DAC OUTPUT (Headphones)
     - **SIG-IN** : Audio stereo input sampling rate 44.1 kHz
