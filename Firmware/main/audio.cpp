@@ -22,8 +22,8 @@ void SETUP_DAC(
   dac_ptr->lineInLevel(presets_ptr[SIG_IN].val);
   dac_ptr->lineOutLevel(presets_ptr[SIG_OUT].val);
   fade_ptr->fadeOut(0);
-  wfA_ptr->amplitude(1.0);
-  sine_fm_ptr->amplitude(1.0);
+  wfA_ptr->amplitude(0.9);
+  sine_fm_ptr->amplitude(0.9);
 
   wfA_ptr->begin(WAVEFORM_SINE);
 }
@@ -49,17 +49,15 @@ void make_noise(
       if (blob->alive == 1 && lastState == 0) {
         fade_ptr->fadeIn(80);
       }
-      if (blob->alive == 1) {
+      if (blob->alive) {
         wfA_ptr->frequency((blob->centroid.X / 8) + 10);
-        uint8_t _phase = constrain(blob->box.D, 0, 64);
-        _phase = (_phase / 64) * 360.0;
-        wfA_ptr->phase(_phase);
+        //uint8_t _phase = constrain(blob->box.D, 0, 64);
+        //_phase = (_phase / 64) * 360.0;
+        //wfA_ptr->phase(_phase);
         sine_fm_ptr->frequency((blob->centroid.Y / 8.0) + 8);
       }
       else {
         fade_ptr->fadeOut(500);
-        //wfA_ptr->frequency(0);
-        //sine_fm_ptr->frequency(0);
       }
       lastState = blob->alive;
     }
