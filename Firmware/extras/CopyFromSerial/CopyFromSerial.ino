@@ -55,45 +55,36 @@
    standalone sample).
 */
 
-// *** Flash the Teensy 4.0 With USB Type : Row HID *** 
+// *** Flash the Teensy 4.0 With USB Type : Row HID ***
 
-#include <SerialFlash.h>
+#include <SerialFlash.h> // https://github.com/PaulStoffregen/SerialFlash
 #include <SPI.h>
 
 // Buffer sizes
-#define USB_BUFFER_SIZE      128
-#define FLASH_BUFFER_SIZE    4096
+#define USB_BUFFER_SIZE       128
+#define FLASH_BUFFER_SIZE     4096
 
 // Max filename length (8.3 plus a null char terminator)
-#define FILENAME_STRING_SIZE      13
+#define FILENAME_STRING_SIZE  8
 
 // State machine
-#define STATE_START       0
-#define STATE_SIZE        1
-#define STATE_CONTENT     2
+#define STATE_START           0
+#define STATE_SIZE            1
+#define STATE_CONTENT         2
 
 // Special bytes in the communication protocol
-#define BYTE_START        0x7e
-#define BYTE_ESCAPE       0x7d
-#define BYTE_SEPARATOR    0x7c
+#define BYTE_START            0x7e
+#define BYTE_ESCAPE           0x7d
+#define BYTE_SEPARATOR        0x7c
 
-// SPI Pins (Teensy 4.0)
-#define MOSI              11
-#define MISO              12
-#define SCK               13
-#define CS                6
-#define LED_PIN           5
+#define CS                    6
+#define LED_PIN               5
 
 void setup() {
 
   Serial.begin(115200);  // Teensy serial is always at full USB speed and buffered... the baud rate here is required but ignored
 
   pinMode(LED_PIN, OUTPUT);
-
-  // Setup SPI
-  SPI.setMOSI(MOSI);
-  SPI.setMISO(MISO);
-  SPI.setSCK(SCK);
 
   if (!SerialFlash.begin(CS)) {
     while (1) {
@@ -265,7 +256,7 @@ void setup() {
 }
 
 void loop() {
-  //Do nothing.
+  // Do nothing.
 }
 
 void flushError() {
