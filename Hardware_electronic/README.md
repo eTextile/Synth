@@ -3,7 +3,7 @@
 
 - Author: Maurin Donneaud <maurin@etextile.org>
 - Repository: https://github.com/eTextile/Synth/tree/master/
-- Project web page: https://contact.eTextile.org
+- Project web page: https://synth.eTextile.org
 - License: CC-BY-SA (see the License file)
 
 ![eTextile Synthetizer](https://live.staticflickr.com/65535/50747231422_db241da26b_c_d.jpg)
@@ -74,5 +74,9 @@
     matrix/Hardware_electronic/kicad/e256_teensy4_0/pick_and_place/BOM_e256_teensy4_0.xls
     matrix/Hardware_electronic/kicad/e256_teensy4_0/pick_and_place/BOM_e256_teensy4_0.cvs
 ```
+
+## Acknowledgements
+-  Matt Venn : for his [teensy 4.0 Open-Hardware soundCard](https://github.com/mattvenn/teensy-audio-fx) made with KiCad ;-)
+
 ## TODO
 - Make E256-Dasy PCB
