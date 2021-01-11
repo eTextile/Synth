@@ -88,7 +88,7 @@ preset_t presets[7] = {
   {0, 13, 31, 21, 21, true, LOW, LOW },   // LINE_OUT
   {1, 0, 15, 5, 5, true, HIGH, LOW },     // SIG_IN
   {2, 0, 31, 17, 17, true, LOW, HIGH },   // SIG_OUT / min 13
-  {3, 0, 40, 30, 30, true, HIGH, HIGH },    // THRESHOLD
+  {3, 0, 50, 20, 20, true, HIGH, HIGH },  // THRESHOLD
   {4, 0, 6, 0, 0, true, NULL, NULL },     // MIDI_LEARN [ID, alive, X, Y, W, H, D]
   {5, 0, 0, 0, 0, true, NULL, NULL },     // CALIBRATE
   {6, 0, 0, 0, 0, true, NULL, NULL }      // SAVE
