@@ -26,10 +26,10 @@ typedef struct preset preset_t; // Forward declaration
 typedef struct llist llist_t;   // Forward declaration
 typedef struct blob blob_t;     // Forward declaration
 
-void TRANSMIT_SLIP_OSC_SETUP();
+void TRANSMIT_SLIP_OSC_SETUP(void);
 void transmit_blobs_slipOsc(llist_t* blobList_ptr, preset_t* preset_ptr);
 
-void TRANSMIT_MISI_SETUP();
+void USB_MIDI_SETUP(void);
 void transmit_blobs_midi(llist_t* blobList_ptr, preset_t* preset_ptr);
 
 #endif /*__TRANSMIT_H__*/

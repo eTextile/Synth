@@ -12,7 +12,7 @@
   }
 */
 
-void TRANSMIT_MIDI_SETUP() {
+void USB_MIDI_SETUP() {
   usbMIDI.begin();
 }
 
