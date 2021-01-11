@@ -298,7 +298,7 @@ void find_blobs(
     // If the distance between curent blob and last blob position is less than minDist:
     // Copy the ID of the nearestBlob found in outputBlobs linked list and give it to the curent input blob.
     // Set the curent input blob state to TO_UPDATE.
-    if (minDist < 5.0f) { // TODO: set it as global variable
+    if (minDist < 3.0f) {
 #if DEBUG_BLOBS_ID == 1
       Serial.printf("\n DEBUG_BLOBS_ID / Found corresponding blob: %p in the **outputBlobs** linked list", nearestBlob);
 #endif /*__DEBUG_BLOBS_ID__*/
