@@ -128,9 +128,11 @@ void setup() {
     &blobArray[0],        // blob_t*
     &outputBlobs          // list_t*
   );
-  
-  //void TRANSMIT_SLIP_OSC_SETUP();
-  //void TRANSMIT_MIDI_SETUP();
+
+#if USB_MIDI
+  USB_MIDI_SETUP();
+#endif
+  //TRANSMIT_SLIP_OSC_SETUP();
 }
 
 //////////////////// LOOP
@@ -216,13 +218,25 @@ void loop() {
   if (timerDebug >= 200) {
     timerDebug = 0;
     print_bitmap(&bitmap);
-    delay(100);
   }
 #endif
 
 #if DEBUG_BLOBS
   print_blobs(&outputBlobs);
 #endif
+
+  //transmit_blobs_slipOsc(&outputBlobs, blobValSelector);
+#if USB_MIDI
+  transmit_blobs_midi(&outputBlobs, &presets[MIDI_LEARN]);
+#else
+
+  // Make some mapping
+  for (blob_t* blob = ITERATOR_START_FROM_HEAD(&outputBlobs); blob != NULL; blob = ITERATOR_NEXT(blob)) {
+    polar_t polarCoord;
+    //polarCoord = polarCoordinates(blob, POLAR_X, POLAR_Y);
+    keyCode_t key;
+    //key = gridLayout(blob, NEW_COLS, NEW_ROWS, 20, 20, 0, 0); // ARGS [blob/gridW/gridH/stepX/stepY/posX/posY]
+  }
 
   make_noise(
     &presets[0],
@@ -232,9 +246,7 @@ void loop() {
     &sine_fm1,
     &fade1
   );
-
-  //transmit_blobs_slipOsc(&outputBlobs, blobValSelector);
-  //transmit_blobs_midi(&outputBlobs, &presets[MIDI_LEARN]);
+#endif
 
 #if DEBUG_FPS
   if (curentMillisFps >= 1000) {
