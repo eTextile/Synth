@@ -24,9 +24,9 @@ typedef struct {
   uint8_t posY;
 } keyCode_t;
 
-polar_t polarCoordinates(blob_t* blob_ptr);
+polar_t polarCoordinates(blob_t* blob_ptr, uint8_t Xcenter, uint8_t Ycenter);
 
-keyCode_t gridLayout(blob_t* blob_ptr, uint8_t posX, uint8_t posY, uint8_t gridW, uint8_t gridH, uint8_t stepX, uint8_t stepY );
+keyCode_t gridLayout(blob_t* blob_ptr, uint8_t gridW, uint8_t gridH, uint8_t stepX, uint8_t stepY, uint8_t posX, uint8_t posY);
 
 void harmonicKeyboardLayout(blob_t* blob_ptr);
 
