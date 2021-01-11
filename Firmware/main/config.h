@@ -57,6 +57,7 @@
 #define Y_STRIDE              1
 #define MIN_BLOB_PIX          16       // Set the minimum blob pixels
 #define MAX_BLOB_PIX          4095     // Set the maximum blob pixels
+#define DEBOUNCE_TIME         10       // TOTEST 
 #define BLOB_PACKET_SIZE      7        // Blob data packet (bytes)
 #define CALIBRATION_CYCLES    10
 
