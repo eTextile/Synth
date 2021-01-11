@@ -9,18 +9,23 @@
 
 #include <Arduino.h>
 
-#define SET_ORIGIN_X          1 // X-axis origine position [-1:1]
-#define SET_ORIGIN_Y          1 // Y-axis origine position [-1:1]
+#define USB_MIDI              0 // [0:1] Set the eTextile-Synthesizer as USB MIDI divice
 
 // Arduino serial monitor
-#define DEBUG_FPS             0 // Print Frames Per Second
-#define DEBUG_ENCODER         0 // Print...
-#define DEBUG_BUTTONS         0 // Print...
-#define DEBUG_ADC             0 // Print 16x16 Analog raw values
-#define DEBUG_INTERP          0 // Print 64x64 interpolated values
-#define DEBUG_BITMAP          0 // Print 64x64 binary image based on threshold
-#define DEBUG_BLOBS           0 // Print blobs values
-#define DEBUG_BLOBS_ID        0 // Debug lowlevel blobs values
+#define DEBUG_FPS             0 // [0:1] Print Frames Per Second
+#define DEBUG_ENCODER         0 // [0:1] Print encoder value 
+#define DEBUG_BUTTONS         0 // [0:1] Print buttons states
+#define DEBUG_ADC             0 // [0:1] Print 16x16 Analog raw values
+#define DEBUG_INTERP          0 // [0:1] Print 64x64 interpolated values
+#define DEBUG_BITMAP          0 // [0:1] Print 64x64 binary image based on threshold
+#define DEBUG_BLOBS           1 // [0:1] Print blobs values
+#define DEBUG_BLOBS_ID        0 // [0:1] Print lowlevel blobs values
+
+
+
+// DO NOT CHANGE
+#define SET_ORIGIN_X          1 // [-1:1] X-axis origine position
+#define SET_ORIGIN_Y          1 // [-1:1] Y-axis origine position
 
 #define LED_PIN_D1            5
 #define LED_PIN_D2            4
@@ -51,6 +56,8 @@
 #define NEW_COLS              (RAW_COLS * SCALE_X)
 #define NEW_ROWS              (RAW_ROWS * SCALE_Y)
 #define NEW_FRAME             (NEW_COLS * NEW_ROWS)
+#define POLAR_X               (NEW_COLS / 2)
+#define POLAR_Y               (NEW_ROWS / 2)
 #define MAX_NODES             40       // Set the maximum nodes number
 #define LIFO_MAX_NODES        127      // Set the maximum nodes number
 #define X_STRIDE              4
