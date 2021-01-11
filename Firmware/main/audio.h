@@ -8,9 +8,9 @@
 #define __AUDIO_H__
 
 #include "config.h"
+#include "presets.h"
 #include "llist.h"
 #include "blob.h"
-#include "hardware.h"
 
 #include <Audio.h>              // https://github.com/PaulStoffregen/Audio
 #include <Wire.h>               // https://github.com/PaulStoffregen/Wire
@@ -20,6 +20,7 @@
 
 typedef struct preset preset_t; // Forward declaration
 typedef struct llist llist_t;   // Forward declaration
+typedef struct blob blob_t;     // Forward declaration
 
 void SETUP_DAC(
   preset_t* presets_ptr,

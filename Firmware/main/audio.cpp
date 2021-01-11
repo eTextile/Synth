@@ -50,11 +50,11 @@ void make_noise(
         fade_ptr->fadeIn(80);
       }
       if (blob->alive) {
-        wfA_ptr->frequency((blob->centroid.X / 8) + 10);
+        wfA_ptr->frequency((blob->centroid.X / 4.0) + 1);
         //uint8_t _phase = constrain(blob->box.D, 0, 64);
         //_phase = (_phase / 64) * 360.0;
         //wfA_ptr->phase(_phase);
-        sine_fm_ptr->frequency((blob->centroid.Y / 8.0) + 8);
+        sine_fm_ptr->frequency((blob->centroid.Y / 2.0) + 1);
       }
       else {
         fade_ptr->fadeOut(500);
@@ -65,8 +65,8 @@ void make_noise(
     /*
       blob->UID;        // uint8_t unique session ID
       blob->alive;      // uint8_t
-      blob->centroid.X; // uint8_t
-      blob->centroid.Y; // uint8_t
+      blob->centroid.X; // float_t
+      blob->centroid.Y; // float_t
       blob->box.W;      // uint8_t
       blob->box.H;      // uint8_t
       blob->box.D;      // uint8_t
