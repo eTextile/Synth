@@ -222,14 +222,15 @@ void find_blobs(
           blob_t* blob = llist_pop_front(blobs_stack_ptr);
           blob_raz(blob);
 
-          blob->centroid.X = (uint8_t)round(blob_cx / ((float) blob_pixels));
-          blob->centroid.Y = (uint8_t)round(blob_cy / ((float) blob_pixels));
-
+          //blob->centroid.X = (uint8_t)round(blob_cx / ((float) blob_pixels));
+          //blob->centroid.Y = (uint8_t)round(blob_cy / ((float) blob_pixels));
+          blob->centroid.X = blob_cx / (float) blob_pixels;
+          blob->centroid.Y = blob_cy / (float) blob_pixels;
           blob->box.W = (blob_x2 - blob_x1);
           blob->box.H = blob_height;
           blob->box.D = blob_depth;
           /*
-            Serial.printf("\n DEBUG_SFF / blob_cx:%d \tblob_cy:%d \tblob_W:%d \tblob_H:%d \tblob_D:%d",
+            Serial.printf("\n DEBUG_SFF / blob_X:%f \tblob_Y:%f \tblob_W:%d \tblob_H:%d \tblob_D:%d",
                         blob->centroid.X,
                         blob->centroid.Y,
                         blob->box.W,
@@ -254,6 +255,7 @@ void find_blobs(
 #endif /*__DEBUG_BLOBS_ID__*/
 
   // Suppress blobs from the outputBlobs linked list
+  // TODO: Add blob->timeTag to debounce the blobs
   while (1) {
     boolean found = false;
     for (blob_t* blob = ITERATOR_START_FROM_HEAD(outputBlobs_ptr); blob != NULL; blob = ITERATOR_NEXT(blob)) {
@@ -338,14 +340,16 @@ void find_blobs(
       if (blobB->state == TO_UPDATE && blobB->UID == blobA->UID) {
         found = true;
         blob_copy(blobA, blobB);
-        blobA->alive = 1;
+        blobA->alive = 1; // IS IT NECESSARY?
+        blobA->timeTag = millis();
 #if DEBUG_BLOBS_ID == 1
         Serial.printf("\n DEBUG_BLOBS_ID / Copy blob: %p (inputBlobs linked list) to the blob: %p (outputBlobs linked list)", blobB, blobA);
 #endif /*__DEBUG_BLOBS_ID__*/
         break;
       }
     }
-    if (!found) {
+    // if (!found) {
+    if (!found && millis() - blobA->timeTag > DEBOUNCE_TIME) {
       blobA->state = TO_REMOVE;
       blobA->alive = 0;
     }
@@ -378,17 +382,11 @@ void bitmap_clear(image_t* bitmap_ptr) {
   memset(bitmap_ptr->pData, 0, NEW_FRAME * sizeof(uint8_t));
 }
 
-/*
-  void bitmap_clear(image_t* bitmap_ptr){
-    memset(bitmap_ptr->pData, 0, ((NEW_FRAME + CHAR_MASK) >> CHAR_SHIFT) * sizeof(uint8_t));
-  }
-*/
-
 float distance(blob_t* blobA, blob_t* blobB) {
   float sum = 0.0f;
   sum += (blobA->centroid.X - blobB->centroid.X) * (blobA->centroid.X - blobB->centroid.X);
   sum += (blobA->centroid.Y - blobB->centroid.Y) * (blobA->centroid.Y - blobB->centroid.Y);
-  return sqrtf(sum);;
+  return sqrtf(sum);
 }
 
 /* DO NOT WORK!
@@ -433,15 +431,14 @@ void print_bitmap(image_t* bitmap_ptr) {
     Serial.println();
   }
   Serial.println();
-  //delay(100);
 }
 
 void print_blobs(llist_t* inputBlobs_ptr) {
   for (blob_t* blob = ITERATOR_START_FROM_HEAD(inputBlobs_ptr); blob != NULL; blob = ITERATOR_NEXT(blob)) {
     Serial.printf("ID:%d\t", blob->UID);
     Serial.printf("S:%d\t", blob->alive);
-    Serial.printf("X:%d\t", blob->centroid.X);
-    Serial.printf("Y:%d\t", blob->centroid.Y);
+    Serial.printf("X:%f\t", blob->centroid.X);
+    Serial.printf("Y:%f\t", blob->centroid.Y);
     Serial.printf("W:%d\t", blob->box.W);
     Serial.printf("H:%d\t", blob->box.H);
     Serial.printf("D:%d\t", blob->box.D);

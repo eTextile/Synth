@@ -101,8 +101,8 @@ typedef struct image {
 void bitmap_clear(image_t* bitmap_ptr);
 
 typedef struct {
-  uint8_t X;
-  uint8_t Y;
+  float X;
+  float Y;
 } point_t;
 
 typedef struct {
@@ -122,6 +122,7 @@ typedef enum {
 // What about the TUIO 1.1 Protocol Specification
 // http://www.tuio.org/?specification
 typedef struct blob {
+  unsigned long timeTag; // TODO
   uint16_t pixels;
   uint8_t UID;
   uint8_t alive;
