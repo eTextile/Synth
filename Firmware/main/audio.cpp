@@ -48,12 +48,10 @@ void make_noise(
     if (blob->UID == 0) {
       if (blob->alive == 1 && lastState == 0) {
         fade_ptr->fadeIn(80);
+        wfA_ptr->phase(0);
       }
       if (blob->alive) {
         wfA_ptr->frequency((blob->centroid.X / 4.0) + 1);
-        //uint8_t _phase = constrain(blob->box.D, 0, 64);
-        //_phase = (_phase / 64) * 360.0;
-        //wfA_ptr->phase(_phase);
         sine_fm_ptr->frequency((blob->centroid.Y / 2.0) + 1);
       }
       else {
