@@ -8,16 +8,29 @@
 #define __MAPPING_H__
 
 #include "config.h"
-#include "llist.h"
 #include "blob.h"
 
-typedef struct llist llist_t; // Forward declaration
+#define   PI 3.1415926535897932384626433832795
+
 typedef struct blob blob_t;   // Forward declaration
 
-void KeyboardGrid(llist_t* blobs_ptr);
-void KeyboardHarmonic(llist_t* blobs_ptr);
+typedef struct {
+  float r;
+  float phi;
+} polar_t;
 
-void velocity(llist_t* blobs_ptr);
+typedef struct {
+  uint8_t posX;
+  uint8_t posY;
+} keyCode_t;
+
+polar_t polarCoordinates(blob_t* blob_ptr);
+
+keyCode_t gridLayout(blob_t* blob_ptr, uint8_t posX, uint8_t posY, uint8_t gridW, uint8_t gridH, uint8_t stepX, uint8_t stepY );
+
+void harmonicKeyboardLayout(blob_t* blob_ptr);
+
+void velocity(blob_t* blob_ptr);
 
 void hSlider(void);
 void vSlider(void);
