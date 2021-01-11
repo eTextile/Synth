@@ -14,7 +14,7 @@ void SETUP_SPI(void) {
   digitalWrite(SS1_PIN, HIGH);          // Set latchPin HIGH
   SPI1.begin();                         // Start the SPI module
   // 74HC595BQ Shift out register frequency is 100 MHz = 100000000 Hz
-  SPI1.beginTransaction(SPISettings(30000000, MSBFIRST, SPI_MODE0));
+  SPI1.beginTransaction(SPISettings(25000000, MSBFIRST, SPI_MODE0));
 }
 
 void SETUP_ADC(ADC *adc) {
@@ -33,7 +33,7 @@ void SETUP_ADC(ADC *adc) {
   adc->adc1->setResolution(8);                                            // Set bits of resolution
   adc->adc1->setConversionSpeed(ADC_CONVERSION_SPEED::VERY_HIGH_SPEED);   // Change the conversion speed
   adc->adc1->setSamplingSpeed(ADC_SAMPLING_SPEED::VERY_HIGH_SPEED);       // Change the sampling speed
-  //adc->adc1->setConversionSpeed(ADC_CONVERSION_SPEED::HIGH_SPEED);      // Change the conversion speed
+  //adc->adc1->setConversionSpeed(ADC_CONVERSION_SPEED::HIGH_SPEED);      // Change the conversion speed/*
   //adc->adc1->setSamplingSpeed(ADC_SAMPLING_SPEED::HIGH_SPEED);          // Change the sampling speed
 }
 
@@ -57,7 +57,7 @@ void calibrate_matrix(ADC* adc_ptr, ADC::Sync_result* result_ptr, uint8_t* ofset
         SPI1.transfer((uint8_t)((setCols >> 8) & 0xFF));  // Shift out one byte to setup one OUTPUT shift register
         SPI1.transfer(shiftOutArray_ptr[row]);            // Shift out one byte that setup the two INPUT 8:1 analog multiplexers
         digitalWrite(SS1_PIN, HIGH);                      // Set the Slave Select Pin HIGH
-        delayMicroseconds(8);
+        //delayMicroseconds(8);
         uint8_t indexA = row * RAW_COLS + col;            // Compute 1D array indexA
         uint8_t indexB = indexA + DUAL_RAW_FRAME;         // Compute 1D array indexB
         *result_ptr = adc_ptr->analogSynchronizedRead(ADC1_PIN, ADC0_PIN);
@@ -94,7 +94,7 @@ void scan_matrix(ADC* adc_ptr, ADC::Sync_result* result_ptr, uint8_t* array_ptr,
       SPI1.transfer((uint8_t)((setCols >> 8) & 0xFF));  // Shift out MSB byte to setup one OUTPUT shift register
       SPI1.transfer(shiftOutArray_ptr[row]);            // Shift out one byte that setup the two INPUT 8:1 analog multiplexers
       digitalWrite(SS1_PIN, HIGH);                      // Set the Slave Select Pin HIGH
-      delayMicroseconds(8);
+      //delayMicroseconds(8);
       uint8_t indexA = row * RAW_COLS + col;            // Compute 1D array indexA
       uint8_t indexB = indexA + DUAL_RAW_FRAME;         // Compute 1D array indexB
       *result_ptr = adc_ptr->analogSynchronizedRead(ADC1_PIN, ADC0_PIN);
