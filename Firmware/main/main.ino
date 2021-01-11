@@ -6,11 +6,13 @@
 */
 
 #include "config.h"
-#include "hardware.h"
+#include "presets.h"
 #include "scan.h"
 #include "interp.h"
 #include "blob.h"
+#include "mapping.h"
 #include "audio.h"
+#include "transmit.h"
 
 uint8_t offsetArray[RAW_FRAME] = {0};             // 1D Array to store smallest values
 uint8_t frameArray[RAW_FRAME] = {0};              // 1D Array to store ofseted analog input values
@@ -21,7 +23,7 @@ uint8_t interpFrameArray[NEW_FRAME] = {0};        // 1D Array to store bilinear 
 xylr_t lifoArray[LIFO_MAX_NODES] = {0};           // 1D Array to store lifo nodes
 blob_t blobArray[MAX_NODES] = {0};                // 1D Array to store all blobs
 
-uint8_t blobPacket[BLOB_PACKET_SIZE] = {0};       // 1D Array to store blob values
+uint8_t blobPacket[BLOB_PACKET_SIZE] = {0};       // 1D Array to store blobs in OSC format
 
 image_t  inputFrame;            // Input frame values
 interp_t interp;                //
@@ -64,8 +66,6 @@ uint8_t setDualRows[DUAL_ROWS] = {
 
 uint8_t lastMode = CALIBRATE;
 uint8_t currentMode = LINE_OUT;  // Initialise currentMode with the DEFAULT_MODE
-uint8_t blobValSelector = 0;     // Used for MIDI_LEARN mode
-//uint8_t zThreshold = 3;          //
 
 #if DEBUG_FPS
 elapsedMillis curentMillisFps;
@@ -88,7 +88,7 @@ preset_t presets[7] = {
   {0, 13, 31, 21, 21, true, LOW, LOW },   // LINE_OUT
   {1, 0, 15, 5, 5, true, HIGH, LOW },     // SIG_IN
   {2, 0, 31, 17, 17, true, LOW, HIGH },   // SIG_OUT / min 13
-  {3, 0, 20, 3, 3, true, HIGH, HIGH },    // THRESHOLD
+  {3, 0, 40, 30, 30, true, HIGH, HIGH },    // THRESHOLD
   {4, 0, 6, 0, 0, true, NULL, NULL },     // MIDI_LEARN [ID, alive, X, Y, W, H, D]
   {5, 0, 0, 0, 0, true, NULL, NULL },     // CALIBRATE
   {6, 0, 0, 0, 0, true, NULL, NULL }      // SAVE
@@ -128,6 +128,9 @@ void setup() {
     &blobArray[0],        // blob_t*
     &outputBlobs          // list_t*
   );
+  
+  //void TRANSMIT_SLIP_OSC_SETUP();
+  //void TRANSMIT_MIDI_SETUP();
 }
 
 //////////////////// LOOP
@@ -213,6 +216,7 @@ void loop() {
   if (timerDebug >= 200) {
     timerDebug = 0;
     print_bitmap(&bitmap);
+    delay(100);
   }
 #endif
 
@@ -228,6 +232,9 @@ void loop() {
     &sine_fm1,
     &fade1
   );
+
+  //transmit_blobs_slipOsc(&outputBlobs, blobValSelector);
+  //transmit_blobs_midi(&outputBlobs, &presets[MIDI_LEARN]);
 
 #if DEBUG_FPS
   if (curentMillisFps >= 1000) {
