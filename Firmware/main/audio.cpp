@@ -42,13 +42,14 @@ void make_noise(
     dac_ptr->dacVolume(presets_ptr[LINE_OUT].val);
   }
 
+  // TODO : Add 8 Synthetizers for multitouch polyphonic   
   for (blob_t* blob = ITERATOR_START_FROM_HEAD(blobs_ptr); blob != NULL; blob = ITERATOR_NEXT(blob)) {
 
     AudioNoInterrupts();
     if (blob->UID == 0) {
       if (blob->alive == 1 && lastState == 0) {
-        fade_ptr->fadeIn(80);
         wfA_ptr->phase(0);
+        fade_ptr->fadeIn(5);
       }
       if (blob->alive) {
         wfA_ptr->frequency((blob->centroid.X / 4.0) + 1);

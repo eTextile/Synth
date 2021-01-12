@@ -57,7 +57,6 @@ void calibrate_matrix(ADC* adc_ptr, ADC::Sync_result* result_ptr, uint8_t* ofset
         SPI1.transfer((uint8_t)((setCols >> 8) & 0xFF));  // Shift out one byte to setup one OUTPUT shift register
         SPI1.transfer(shiftOutArray_ptr[row]);            // Shift out one byte that setup the two INPUT 8:1 analog multiplexers
         digitalWrite(SS1_PIN, HIGH);                      // Set the Slave Select Pin HIGH
-        //delayMicroseconds(8);
         uint8_t indexA = row * RAW_COLS + col;            // Compute 1D array indexA
         uint8_t indexB = indexA + DUAL_RAW_FRAME;         // Compute 1D array indexB
         *result_ptr = adc_ptr->analogSynchronizedRead(ADC1_PIN, ADC0_PIN);
@@ -94,7 +93,6 @@ void scan_matrix(ADC* adc_ptr, ADC::Sync_result* result_ptr, uint8_t* array_ptr,
       SPI1.transfer((uint8_t)((setCols >> 8) & 0xFF));  // Shift out MSB byte to setup one OUTPUT shift register
       SPI1.transfer(shiftOutArray_ptr[row]);            // Shift out one byte that setup the two INPUT 8:1 analog multiplexers
       digitalWrite(SS1_PIN, HIGH);                      // Set the Slave Select Pin HIGH
-      //delayMicroseconds(8);
       uint8_t indexA = row * RAW_COLS + col;            // Compute 1D array indexA
       uint8_t indexB = indexA + DUAL_RAW_FRAME;         // Compute 1D array indexB
       *result_ptr = adc_ptr->analogSynchronizedRead(ADC1_PIN, ADC0_PIN);

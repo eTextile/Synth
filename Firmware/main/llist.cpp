@@ -138,8 +138,6 @@ void llist_save_blobs(llist_t* dst, llist_t* src) {
   //if (DEBUG_LIST) Serial.printf(F("\n DEBUG_LIST / list_save_blobs / SRC linked list is umpty!"));
 }
 
-boolean DEBUG_SORT = false;
-
 // Sort a given linked list
 void llist_sort(llist_t* src) {
 

@@ -23,8 +23,6 @@ uint8_t interpFrameArray[NEW_FRAME] = {0};        // 1D Array to store bilinear 
 xylr_t lifoArray[LIFO_MAX_NODES] = {0};           // 1D Array to store lifo nodes
 blob_t blobArray[MAX_NODES] = {0};                // 1D Array to store all blobs
 
-uint8_t blobPacket[BLOB_PACKET_SIZE] = {0};       // 1D Array to store blobs in OSC format
-
 image_t  inputFrame;            // Input frame values
 interp_t interp;                //
 image_t  interpolatedFrame;     //
@@ -89,7 +87,7 @@ preset_t presets[7] = {
   {1, 0, 15, 5, 5, true, HIGH, LOW },     // SIG_IN
   {2, 0, 31, 17, 17, true, LOW, HIGH },   // SIG_OUT / min 13
   {3, 0, 50, 20, 20, true, HIGH, HIGH },  // THRESHOLD
-  {4, 0, 6, 0, 0, true, NULL, NULL },     // MIDI_LEARN [ID, alive, X, Y, W, H, D]
+  {4, 1, 6, 0, 0, true, NULL, NULL },     // MIDI_LEARN [ID, alive, X, Y, W, H, D]
   {5, 0, 0, 0, 0, true, NULL, NULL },     // CALIBRATE
   {6, 0, 0, 0, 0, true, NULL, NULL }      // SAVE
 };
@@ -132,7 +130,10 @@ void setup() {
 #if USB_MIDI
   USB_MIDI_SETUP();
 #endif
-  //TRANSMIT_SLIP_OSC_SETUP();
+
+#if USB_SLIP_OSC
+  USB_SLIP_OSC_SETUP();
+#endif
 }
 
 //////////////////// LOOP
@@ -204,7 +205,7 @@ void loop() {
 #endif
 
   find_blobs(
-    presets[THRESHOLD].val, // uint8_t zThreshold
+    presets[THRESHOLD].val, // uint8_t (Z)Threshold
     &interpolatedFrame,     // image_t (uint8_t array[NEW_FRAME] - 64*64 1D array)
     &bitmap,                // image_t (uint8_t array[NEW_FRAME] - 64*64 1D array)
     &lifo_stack,            // lifo_t
@@ -225,11 +226,26 @@ void loop() {
   print_blobs(&outputBlobs);
 #endif
 
-  //transmit_blobs_slipOsc(&outputBlobs, blobValSelector);
 #if USB_MIDI
-  transmit_blobs_midi(&outputBlobs, &presets[MIDI_LEARN]);
-#else
+  if (currentMode == MIDI_LEARN) {
+    blob_usb_midi_learn(&outputBlobs, &presets[MIDI_LEARN]);
+  }
+  else {
+    blob_usb_midi_play(&outputBlobs);
+  }
+#endif
 
+#if USB_SLIP_OSC
+  OSCBundle OSCbundle;
+  for (blob_t* blob = ITERATOR_START_FROM_HEAD(&outputBlobs); blob != NULL; blob = ITERATOR_NEXT(blob)) {
+    blob_usb_slipOsc(blob, &presets[THRESHOLD], &OSCbundle);
+  }
+  SLIPSerial.beginPacket();     //
+  OSCbundle.send(SLIPSerial);   // Send the bytes to the SLIP stream
+  SLIPSerial.endPacket();       // Mark the end of the OSC Packet
+#endif
+
+#if STANDALONE
   // Make some mapping
   for (blob_t* blob = ITERATOR_START_FROM_HEAD(&outputBlobs); blob != NULL; blob = ITERATOR_NEXT(blob)) {
     polar_t polarCoord;

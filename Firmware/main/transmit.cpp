@@ -6,77 +6,70 @@
 
 #include "transmit.h"
 
-/*
-  void TRANSMIT_SLIP_OSC_SETUP() {
-  SLIPSerial.begin(BAUD_RATE);
-  }
-*/
+#if USB_SLIP_OSC
+void USB_SLIP_OSC_SETUP() {
+  SLIPSerial.begin(BAUD_RATE); // FIXME
+}
 
+void blobs_usb_slipOsc(blob_t* blob_ptr, preset_t* preset_ptr, OSCBundle* synthOSC) {
+
+  OSCMessage msg("/b");
+  msg.add((uint8_t)blob_ptr->UID);                        // uint8_t unique session ID
+  msg.add((uint8_t)blob_ptr->alive);                      // uint8_t
+  msg.add((float)blob_ptr->centroid.X);                   // float
+  msg.add((float)blob_ptr->centroid.Y);                   // float
+  msg.add((uint8_t)blob_ptr->box.W);                      // uint8_t
+  msg.add((uint8_t)blob_ptr->box.H);                      // uint8_t
+  msg.add((uint8_t)(blob_ptr->box.D - preset_ptr->val));  // uint8_t
+  synthOSC->add(msg);
+}
+#endif
+
+#if USB_MIDI
 void USB_MIDI_SETUP() {
   usbMIDI.begin();
 }
 
-/*
-  void transmit_blobs_slipOsc(llist_t* blobs_ptr, uint8_t* valSelector_ptr) {
-
-  OSCBundle OSCbundle;
+// Send blobs in ControlChange MIDI format
+// Separate blob's values to allow the mapping into Max4Live
+void blob_usb_midi_learn(llist_t* blobs_ptr, preset_t* preset_ptr) {
 
   for (blob_t* blob = ITERATOR_START_FROM_HEAD(blobs_ptr); blob != NULL; blob = ITERATOR_NEXT(blob)) {
-
-    blobPacket[0] = blob->UID;        // uint8_t unique session ID
-    blobPacket[1] = blob->alive;      // uint8_t
-    blobPacket[2] = blob->centroid.X; // uint8_t
-    blobPacket[3] = blob->centroid.Y; // uint8_t
-    blobPacket[4] = blob->box.W;      // uint8_t
-    blobPacket[5] = blob->box.H;      // uint8_t
-    blobPacket[6] = (blob->box.D - threshold); // uint8_t
-
-    OSCMessage msg("/b");
-    msg.add(blobPacket, BLOB_PACKET_SIZE);
-    OSCbundle.add(msg);
-  }
-  SLIPSerial.beginPacket();     //
-  OSCbundle.send(SLIPSerial);   // Send the bytes to the SLIP stream
-  SLIPSerial.endPacket();       // Mark the end of the OSC Packet
-  }
-*/
-
-// Send all blobs in MIDI format (AfterTouchPoly)
-// usbMIDI.sendControlChange(control, value, channel);
-void transmit_blobs_midi(llist_t* blobs_ptr, preset_t* preset_ptr) {
-
-  int pos = 0;
-  for (blob_t* blob = ITERATOR_START_FROM_HEAD(blobs_ptr); blob != NULL; blob = ITERATOR_NEXT(blob)) {
-
-    pos = blob->UID * 10;
 
     switch (preset_ptr->val) {
-      case 0:
-        usbMIDI.sendAfterTouchPoly(0 + pos, blob->alive, 1);
-        usbMIDI.sendAfterTouchPoly(1 + pos, blob->centroid.X, 1);
-        usbMIDI.sendAfterTouchPoly(2 + pos, blob->centroid.Y, 1);
-        usbMIDI.sendAfterTouchPoly(3 + pos, blob->box.W, 1);
-        usbMIDI.sendAfterTouchPoly(4 + pos, blob->box.H, 1);
-        usbMIDI.sendAfterTouchPoly(5 + pos, blob->box.D >> 1, 1);
       case 1:
-        usbMIDI.sendAfterTouchPoly(0 + pos, blob->alive, 1);
+        usbMIDI.sendControlChange(1, blob->alive, blobs_ptr->index + 1);
         break;
       case 2:
-        usbMIDI.sendAfterTouchPoly(1 + pos, blob->centroid.X, 1);
+        usbMIDI.sendControlChange(2, (uint8_t)round(blob->centroid.X), blobs_ptr->index + 1);
         break;
       case 3:
-        usbMIDI.sendAfterTouchPoly(2 + pos, blob->centroid.Y, 1);
+        usbMIDI.sendControlChange(3, (uint8_t)round(blob->centroid.Y), blobs_ptr->index + 1);
         break;
       case 4:
-        usbMIDI.sendAfterTouchPoly(3 + pos, blob->box.W, 1);
+        usbMIDI.sendControlChange(4, blob->box.W, blobs_ptr->index + 1);
         break;
       case 5:
-        usbMIDI.sendAfterTouchPoly(4 + pos, blob->box.H, 1);
+        usbMIDI.sendControlChange(5, blob->box.H, blobs_ptr->index + 1);
         break;
       case 6:
-        usbMIDI.sendAfterTouchPoly(5 + pos, blob->box.D >> 1, 1);
+        usbMIDI.sendControlChange(6, blob->box.D >> 1, blobs_ptr->index + 1);
         break;
     }
   }
   while (usbMIDI.read()); // Read and discard any incoming MIDI messages
 }
+
+void blob_usb_midi_play(llist_t* blobs_ptr) {
+
+  for (blob_t* blob = ITERATOR_START_FROM_HEAD(blobs_ptr); blob != NULL; blob = ITERATOR_NEXT(blob)) {
+    usbMIDI.sendControlChange(0, blob->alive, blob->UID + 1);
+    usbMIDI.sendControlChange(1, (uint8_t)round(blob->centroid.X), blob->UID + 1);
+    usbMIDI.sendControlChange(2, (uint8_t)round(blob->centroid.Y), blob->UID + 1);
+    usbMIDI.sendControlChange(3, blob->box.W, blob->UID + 1);
+    usbMIDI.sendControlChange(4, blob->box.H, blob->UID + 1);
+    usbMIDI.sendControlChange(5, blob->box.D >> 1, blob->UID + 1);
+  }
+}
+
+#endif
