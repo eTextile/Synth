@@ -86,7 +86,7 @@ preset_t presets[7] = {
   {0, 13, 31, 21, 21, true, LOW, LOW },   // LINE_OUT
   {1, 0, 15, 5, 5, true, HIGH, LOW },     // SIG_IN
   {2, 0, 31, 17, 17, true, LOW, HIGH },   // SIG_OUT / min 13
-  {3, 0, 50, 20, 20, true, HIGH, HIGH },  // THRESHOLD
+  {3, 5, 60, 20, 20, true, HIGH, HIGH },  // THRESHOLD
   {4, 1, 6, 0, 0, true, NULL, NULL },     // MIDI_LEARN [ID, alive, X, Y, W, H, D]
   {5, 0, 0, 0, 0, true, NULL, NULL },     // CALIBRATE
   {6, 0, 0, 0, 0, true, NULL, NULL }      // SAVE
@@ -246,14 +246,15 @@ void loop() {
 #endif
 
 #if STANDALONE
-  // Make some mapping
-  for (blob_t* blob = ITERATOR_START_FROM_HEAD(&outputBlobs); blob != NULL; blob = ITERATOR_NEXT(blob)) {
-    polar_t polarCoord;
-    //polarCoord = polarCoordinates(blob, POLAR_X, POLAR_Y);
-    keyCode_t key;
-    //key = gridLayout(blob, NEW_COLS, NEW_ROWS, 20, 20, 0, 0); // ARGS [blob/gridW/gridH/stepX/stepY/posX/posY]
-  }
-
+  /*
+    // Make some mapping
+    for (blob_t* blob = ITERATOR_START_FROM_HEAD(&outputBlobs); blob != NULL; blob = ITERATOR_NEXT(blob)) {
+      polar_t polarCoord;
+      //polarCoord = polarCoordinates(blob, POLAR_X, POLAR_Y);
+      keyCode_t key;
+      //key = gridLayout(blob, NEW_COLS, NEW_ROWS, 20, 20, 0, 0); // ARGS [blob/gridW/gridH/stepX/stepY/posX/posY]
+    }
+  */
   make_noise(
     &presets[0],
     &outputBlobs,
