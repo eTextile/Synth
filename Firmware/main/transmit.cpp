@@ -30,12 +30,11 @@ void USB_MIDI_SETUP() {
   usbMIDI.begin();
 }
 
-// Send blobs in ControlChange MIDI format
+// Send blobs values using ControlChange MIDI format
 // Separate blob's values to allow the mapping into Max4Live
 void blob_usb_midi_learn(llist_t* blobs_ptr, preset_t* preset_ptr) {
 
   for (blob_t* blob = ITERATOR_START_FROM_HEAD(blobs_ptr); blob != NULL; blob = ITERATOR_NEXT(blob)) {
-
     switch (preset_ptr->val) {
       case 1:
         usbMIDI.sendControlChange(1, blob->alive, blobs_ptr->index + 1);
@@ -53,23 +52,25 @@ void blob_usb_midi_learn(llist_t* blobs_ptr, preset_t* preset_ptr) {
         usbMIDI.sendControlChange(5, blob->box.H, blobs_ptr->index + 1);
         break;
       case 6:
-        usbMIDI.sendControlChange(6, blob->box.D >> 1, blobs_ptr->index + 1);
+        usbMIDI.sendControlChange(6, constrain(blob->box.D, 0, 127), blobs_ptr->index + 1);
         break;
     }
   }
   while (usbMIDI.read()); // Read and discard any incoming MIDI messages
 }
 
+// Send all blobs values using ControlChange MIDI format
 void blob_usb_midi_play(llist_t* blobs_ptr) {
 
   for (blob_t* blob = ITERATOR_START_FROM_HEAD(blobs_ptr); blob != NULL; blob = ITERATOR_NEXT(blob)) {
-    usbMIDI.sendControlChange(0, blob->alive, blob->UID + 1);
-    usbMIDI.sendControlChange(1, (uint8_t)round(blob->centroid.X), blob->UID + 1);
-    usbMIDI.sendControlChange(2, (uint8_t)round(blob->centroid.Y), blob->UID + 1);
-    usbMIDI.sendControlChange(3, blob->box.W, blob->UID + 1);
-    usbMIDI.sendControlChange(4, blob->box.H, blob->UID + 1);
-    usbMIDI.sendControlChange(5, blob->box.D >> 1, blob->UID + 1);
+    usbMIDI.sendControlChange(1, blob->alive, blob->UID + 1);
+    usbMIDI.sendControlChange(2, (uint8_t)round(blob->centroid.X), blob->UID + 1);
+    usbMIDI.sendControlChange(3, (uint8_t)round(blob->centroid.Y), blob->UID + 1);
+    usbMIDI.sendControlChange(4, blob->box.W, blob->UID + 1);
+    usbMIDI.sendControlChange(5, blob->box.H, blob->UID + 1);
+    usbMIDI.sendControlChange(6, constrain(blob->box.D, 0, 127), blob->UID + 1);
   }
+  while (usbMIDI.read()); // Read and discard any incoming MIDI messages
 }
 
 #endif
