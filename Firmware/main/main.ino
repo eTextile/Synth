@@ -228,21 +228,15 @@ void loop() {
 
 #if USB_MIDI
   if (currentMode == MIDI_LEARN) {
-    blob_usb_midi_learn(&outputBlobs, &presets[MIDI_LEARN]);
+    blobs_usb_midi_learn(&outputBlobs, &presets[MIDI_LEARN]);
   }
   else {
-    blob_usb_midi_play(&outputBlobs);
+    blobs_usb_midi_play(&outputBlobs);
   }
 #endif
 
 #if USB_SLIP_OSC
-  OSCBundle OSCbundle;
-  for (blob_t* blob = ITERATOR_START_FROM_HEAD(&outputBlobs); blob != NULL; blob = ITERATOR_NEXT(blob)) {
-    blob_usb_slipOsc(blob, &presets[THRESHOLD], &OSCbundle);
-  }
-  SLIPSerial.beginPacket();     //
-  OSCbundle.send(SLIPSerial);   // Send the bytes to the SLIP stream
-  SLIPSerial.endPacket();       // Mark the end of the OSC Packet
+  blobs_usb_slipOsc(&outputBlobs, &presets[THRESHOLD]);
 #endif
 
 #if STANDALONE
