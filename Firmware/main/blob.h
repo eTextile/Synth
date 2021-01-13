@@ -151,7 +151,7 @@ void SETUP_BLOB(
 float distance(blob_t* blobA, blob_t* blobB);
 
 void find_blobs(
-  uint8_t   Threshold,
+  uint8_t   zThreshold,
   image_t*  inputFrame_ptr,
   image_t*  bitmap_ptr,
   lifo_t*   lifo_stack_ptr,
