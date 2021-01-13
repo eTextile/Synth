@@ -22,7 +22,7 @@
 #define DEBUG_BITMAP            0 // [0:1] Print 64x64 binary image based on threshold
 #define DEBUG_BLOBS             0 // [0:1] Print blobs values
 #define DEBUG_BLOBS_ID          0 // [0:1] Print lowlevel blobs values
-#define DEBUG_SORT              0
+#define DEBUG_SORT              0 // [0:1] Print lowlevel blobs sort
 
 // DO NOT CHANGE
 #define SET_ORIGIN_X           -1 // [-1:1] X-axis origine position
@@ -63,10 +63,9 @@
 #define LIFO_MAX_NODES          127      // Set the maximum nodes number
 #define X_STRIDE                4
 #define Y_STRIDE                1
-#define MIN_BLOB_PIX            16       // Set the minimum blob pixels
+#define MIN_BLOB_PIX            8        // Set the minimum blob pixels
 #define MAX_BLOB_PIX            4095     // Set the maximum blob pixels
-#define DEBOUNCE_TIME           10       // TOTEST 
-#define BLOB_PACKET_SIZE        7        // Blob data packet (bytes)
+#define DEBOUNCE_TIME           15       // TOTEST 
 #define CALIBRATION_CYCLES      10
 
 #define LINE_OUT                0
