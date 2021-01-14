@@ -20,7 +20,8 @@ After setting up the **E256 eTextile matrix sensor** it is now time to use it fo
 * **Firmware:** eTextile-Synthetizer firmware (Compile with Arduino)
 * **Softwear:** demos applications (PureData, MaxMSP, Max4Live, etc.)
 
-##Specifications
+## Specifications
+
 |         eTextile-Synthetizer                                     |
 | :---------------------- | -------------------------------------: |
 | Power-IN                | DC-5V                                  |
