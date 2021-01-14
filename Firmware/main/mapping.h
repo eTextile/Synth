@@ -12,9 +12,8 @@
 #include "presets.h"
 
 #define   PI 3.1415926535897932384626433832795
-#define   MAPP_DEBOUNCE_TIME  500
+#define   MAPP_DEBOUNCE_TIME  100
 
-typedef struct blob blob_t;   // Forward declaration
 typedef struct blob blob_t;   // Forward declaration
 
 typedef struct {

@@ -13,8 +13,10 @@ boolean toggle(blob_t* blob_ptr, switch_t* tSwitch) {
       if (tSwitch->debounceTimer > MAPP_DEBOUNCE_TIME) {
         tSwitch->debounceTimer = 0;
         tSwitch->state = !tSwitch->state;
+        //Serial.printf("\nDEBUG_TOGGLE : STATE:%d", tSwitch->state);
         return tSwitch->state;
       }
+      tSwitch->debounceTimer = 0;
     }
   }
 }
@@ -25,8 +27,10 @@ boolean trigger(blob_t* blob_ptr, switch_t* tSwitch) {
     if (blob_ptr->centroid.Y > tSwitch->posY - tSwitch->rSize && blob_ptr->centroid.Y < tSwitch->posY + tSwitch->rSize) {
       if (tSwitch->debounceTimer > MAPP_DEBOUNCE_TIME) {
         tSwitch->debounceTimer = 0;
+        //Serial.printf("\nDEBUG_TRIGGER : POSX:%f\tPOSY:%f", blob_ptr->centroid.X, blob_ptr->centroid.Y);
         return true;
       }
+      tSwitch->debounceTimer = 0;
     }
   }
   else {
@@ -49,7 +53,7 @@ keyCode_t gridLayout(blob_t* blob_ptr, uint8_t gridW, uint8_t gridH, uint8_t ste
     // Look for the X and Y cell position
     key.posX = (uint8_t)round(((blob_ptr->centroid.X - posX) / gridW) * stepX);
     key.posY = (uint8_t)round(((blob_ptr->centroid.Y - posY) / gridH) * stepY);
-    Serial.printf("\n DEBUG_GRID : posX:%d \t posY:%d", key.posX, key.posY);
+    //Serial.printf("\n DEBUG_GRID : posX:%d \t posY:%d", key.posX, key.posY);
     return key;
   }
 }
@@ -58,16 +62,19 @@ void harmonicKeyboardLayout(blob_t* blob_ptr) {
   // TODO
 }
 
-void vSlider(blob_t* blob_ptr, uint8_t posX, uint8_t Ymin, uint8_t Ymax, uint8_t width) {
-  if (blob_ptr->centroid.X > posX - width / 2 && blob_ptr->centroid.X < posX + width / 2) {
+void vSlider(blob_t* blob_ptr, uint8_t posX, uint8_t Ymin, uint8_t Ymax, uint8_t wSize) {
+  if (blob_ptr->centroid.X > posX - wSize && blob_ptr->centroid.X < posX + wSize) {
     if (blob_ptr->centroid.Y > Ymin && blob_ptr->centroid.Y < Ymax) {
+
+      //blob_ptr->centroid.Y - Ymin
+
       //return val [0:127]
     }
   }
 }
 
-void hSlider(blob_t* blob_ptr, uint8_t posY, uint8_t Xmin, uint8_t Xmax, uint8_t height) {
-  if (blob_ptr->centroid.Y > posY - height / 2 && blob_ptr->centroid.Y < posY + height / 2) {
+void hSlider(blob_t* blob_ptr, uint8_t posY, uint8_t Xmin, uint8_t Xmax, uint8_t hSize) {
+  if (blob_ptr->centroid.Y > posY - hSize && blob_ptr->centroid.Y < posY + hSize) {
     if (blob_ptr->centroid.X > Xmin && blob_ptr->centroid.X < Xmax) {
       //return val [0:127]
     }

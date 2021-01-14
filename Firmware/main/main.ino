@@ -92,6 +92,8 @@ preset_t presets[7] = {
   {6, 0, 0, 0, 0, true, NULL, NULL }      // SAVE
 };
 
+switch_t tapSwitch = {10, 10, 5, 1000, false};
+
 void setup() {
 
 #if DEBUG_ADC || DEBUG_INTERP || DEBUG_BLOBS || DEBUG_SFF_BITMAP || DEBUG_FPS
@@ -240,15 +242,15 @@ void loop() {
 #endif
 
 #if STANDALONE
-  /*
-    // Make some mapping
-    for (blob_t* blob = ITERATOR_START_FROM_HEAD(&outputBlobs); blob != NULL; blob = ITERATOR_NEXT(blob)) {
-      polar_t polarCoord;
-      //polarCoord = polarCoordinates(blob, POLAR_X, POLAR_Y);
-      keyCode_t key;
-      //key = gridLayout(blob, NEW_COLS, NEW_ROWS, 20, 20, 0, 0); // ARGS [blob/gridW/gridH/stepX/stepY/posX/posY]
-    }
-  */
+  // Make some mapping
+  for (blob_t* blob = ITERATOR_START_FROM_HEAD(&outputBlobs); blob != NULL; blob = ITERATOR_NEXT(blob)) {
+
+    //polar_t polarCoord = polarCoordinates(blob, POLAR_X, POLAR_Y);
+    //keyCode_t key = gridLayout(blob, NEW_COLS, NEW_ROWS, 20, 20, 0, 0); // ARGS [blob/gridW/gridH/stepX/stepY/posX/posY]
+    boolean tog = toggle(blob, &tapSwitch);
+    //boolean trig = trigger(blob, &tapSwitch);
+  }
+
   make_noise(
     &presets[0],
     &outputBlobs,
