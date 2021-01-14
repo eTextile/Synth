@@ -20,6 +20,24 @@ After setting up the **E256 eTextile matrix sensor** it is now time to use it fo
 * **Firmware:** eTextile-Synthetizer firmware (Compile with Arduino)
 * **Softwear:** demos applications (PureData, MaxMSP, Max4Live, etc.)
 
+##Specifications
+|         eTextile-Synthetizer                                     |
+| :---------------------- | -------------------------------------: |
+| Power-IN                | DC-5V                                  |
+| Hardware resolution     | 16x16 FSRs with hardware interpolation |
+| Software X-Y resolution | [0:64] floating point unit             |
+| Software Z resolution   | [0:127] integer unit                   |
+| Multi-Touch capability  | Max points - User defined              |
+| Points characteristics  | PosX, PosY, sizeX, sizeY, ZPressure    |
+| Latency                 | 950 FPS (xms)                          |
+| Audio IN                | ADC 16bits (mini-jack)                 |
+| Audio OUT               | DAC 16bits (mini-jack)                 |
+| Audio OUT               | Headphone (mini-jack)                  |
+| Connectivity            | MIDI I/O (mini-jack)                   |
+| Connectivity            | USB_SLIP-OSC (FIXME)                   |
+| Connectivity            | USB_MIDI                               |
+| Connectivity            | USB_MPE (TODO)                         |
+
 ## Publications
 - [NIME17](http://www.nime2017.org/) - Designing a Multi-Touch eTextile for Music Performances / [Paper](https://github.com/eTextile/Matrix/blob/teensy_matrix/docs/publications/NIME17-eTextile.pdf) - [Video](https://vimeo.com/217690743)
 - [MOCO17](http://moco17.movementcomputing.org/) - Music Skin: Fabric Interface for Expressive Music Control / [Paper](https://github.com/eTextile/Matrix/blob/teensy_matrix/docs/publications/MOCO17-MusicSkin.pdf)
