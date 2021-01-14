@@ -3,29 +3,31 @@
 
 ## Requirements
 
-- Teensy 4.0
 - eTextile-Synthetizer PCB
+- Teensy 4.0
 
 - Arduino IDE 1.8.13 or higher
   - https://www.arduino.cc/en/Main/Software
 - Arduino IDE additional board
   - Teensyduino(1.53): https://www.pjrc.com/teensy/teensyduino.html
-  - Teensyduino(1.54): https://forum.pjrc.com/threads/64592-Teensyduino-1-54-Beta-5
-- Arduino IDE additional library (all include in Teensyduino)
+- Arduino IDE additional library : **Include in Teensyduino**
   - **SPI**: https://github.com/PaulStoffregen/SPI
   - **ADC**: https://github.com/pedvide/ADC
   - **Encoder** : https://github.com/PaulStoffregen/Encoder 
   - **elapsedMillis** : https://github.com/pfeerick/elapsedMillis
-  - **Bounce2** : https://github.com/thomasfredericks/Bounce2 **(Not include in Teensyduino/TeensyLoader!)**
   - **Audio** : https://github.com/PaulStoffregen/Audio
+  - **MIDI** : https://github.com/PaulStoffregen/MIDI
+- Arduino IDE additional library : **Installed with Arduino library manager**
+  - **Bounce2** : https://github.com/thomasfredericks/Bounce2
+  - **OSC** : https://github.com/CNMAT/OSC
 
-### Settings for Arduino IDE for Teensy 4.0
+### Arduino IDE Settings for Teensy 4.0
 - Board:        Teensy 4.0
-- USB Type:     Serial
+- USB Type:     Serial or MIDI
 - CPUSpeed:     600MHz
 - Optimize      Faster
 
-### E256 textile-synthetizer & Teensy 4.0 Benchmark
+### eTextile-Synthetizer Benchmark
   - ADC_INPUT : 1853 FPS
   - ADC_INPUT / BILINEAR_INTERPOLATION : 987 FPS
   - ADC_INPUT / BILINEAR_INTERPOLATION / BLOB_TRACKING : 950 FPS
@@ -38,7 +40,7 @@
 - The 16x16 Analog sensors values are interpolated into 64x64 with a bilinear algorithm.
 - The blob tracking algorithm (connected component labeling) is applyed onto the interpolated matrix.
 - Blobs are tracked with persistent ID (this is done with linked list implementation).
-- Blobs coordinates, size and pressure are used to control synthesizers parameters.
+- Blobs coordinates, size and pressure are used to control a Polyphonic-Synthesizer.
 
 ## Copyright
 Except as otherwise noted, all files in the resistiveMatrix project folder
@@ -55,6 +57,7 @@ Thanks to Vincent Roudaut, Hannah Perner Willson, Cedric Honnet, Antoine Meisso,
 - Optimise interpolation method
   - Retrieval method from Microchip TB3064 white paper (p12)
   - microchip.com/stellent/groups/techpub_sg/documents/devicedoc/en550192.pdf
+- $1-Gesture Recognizer
 
 ## E256 PCB Hardware routing 
 
