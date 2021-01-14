@@ -9,9 +9,12 @@
 
 #include "config.h"
 #include "blob.h"
+#include "presets.h"
 
 #define   PI 3.1415926535897932384626433832795
+#define   MAPP_DEBOUNCE_TIME  500
 
+typedef struct blob blob_t;   // Forward declaration
 typedef struct blob blob_t;   // Forward declaration
 
 typedef struct {
@@ -24,7 +27,16 @@ typedef struct {
   uint8_t posY;
 } keyCode_t;
 
-polar_t polarCoordinates(blob_t* blob_ptr, uint8_t Xcenter, uint8_t Ycenter);
+typedef struct {
+  uint8_t posX;
+  uint8_t posY;
+  uint8_t rSize; // width/2 and height/2
+  elapsedMillis debounceTimer;
+  boolean state;
+} switch_t;
+
+boolean toggle(blob_t* blob_ptr, switch_t* tSwitch);
+boolean trigger(blob_t* blob_ptr, switch_t* tSwitch);
 
 keyCode_t gridLayout(blob_t* blob_ptr, uint8_t gridW, uint8_t gridH, uint8_t stepX, uint8_t stepY, uint8_t posX, uint8_t posY);
 
@@ -32,12 +44,10 @@ void harmonicKeyboardLayout(blob_t* blob_ptr);
 
 void velocity(blob_t* blob_ptr);
 
-void hSlider(void);
-void vSlider(void);
-void cSlider(void);
+void hSlider(blob_t* blob_ptr, uint8_t posY, uint8_t Xmin, uint8_t Xmax, uint8_t height);
+void vSlider(blob_t* blob_ptr, uint8_t posX, uint8_t Ymin, uint8_t Ymax, uint8_t width);
 
-void toggle(void);
-void trigger(void);
-
+polar_t polarCoordinates(blob_t* blob_ptr, uint8_t Xcenter, uint8_t Ycenter);
+void cSlidercSlider(polar_t blob, float radius, float tetaMin, float tetaMax, uint8_t width);
 
 #endif /*__MAPPING_H__*/
