@@ -22,8 +22,8 @@ After setting up the **E256 eTextile matrix sensor** it is now time to use it fo
 
 ## Specifications
 
-|         eTextile-Synthetizer                                     |
-| :---------------------- | -------------------------------------: |
+| Subject                 | Description                            |
+| :---------------------- | :------------------------------------- |
 | Power-IN                | DC-5V                                  |
 | Hardware resolution     | 16x16 FSRs with hardware interpolation |
 | Software X-Y resolution | [0:64] floating point unit             |
