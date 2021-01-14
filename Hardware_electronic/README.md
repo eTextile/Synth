@@ -79,4 +79,4 @@
 -  Matt Venn : for his [teensy 4.0 Open-Hardware soundCard](https://github.com/mattvenn/teensy-audio-fx) made with KiCad ;-)
 
 ## TODO
-- Make E256-Dasy PCB
+- Make eTextile-Synthetizer/Dasy PCB
