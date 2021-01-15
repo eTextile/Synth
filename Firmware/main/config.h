@@ -11,7 +11,7 @@
 
 #define USB_MIDI                0 // [0:1] Set the eTextile-Synthesizer as USB MIDI divice
 #define USB_SLIP_OSC            0 // [0:1] Set the eTextile-Synthesizer as SLIP_OSC divice
-#define STANDALONE              1 // [0:1] Set the eTextile-Synthesizer as STANDALONE divice
+#define STANDALONE              0 // [0:1] Set the eTextile-Synthesizer as STANDALONE divice
 
 // Arduino serial monitor
 #define DEBUG_FPS               0 // [0:1] Print Frames Per Second
@@ -20,12 +20,12 @@
 #define DEBUG_ADC               0 // [0:1] Print 16x16 Analog raw values
 #define DEBUG_INTERP            0 // [0:1] Print 64x64 interpolated values
 #define DEBUG_BITMAP            0 // [0:1] Print 64x64 binary image based on threshold
-#define DEBUG_BLOBS             0 // [0:1] Print blobs values
+#define DEBUG_BLOBS             1 // [0:1] Print blobs values
 #define DEBUG_BLOBS_ID          0 // [0:1] Print lowlevel blobs values
 #define DEBUG_SORT              0 // [0:1] Print lowlevel blobs sort
 
 // DO NOT CHANGE
-#define SET_ORIGIN_X           -1 // [-1:1] X-axis origine position
+#define SET_ORIGIN_X            1 // [-1:1] X-axis origine position
 #define SET_ORIGIN_Y            1 // [-1:1] Y-axis origine position
 
 #define LED_PIN_D1              5
@@ -38,8 +38,8 @@
 #define SS1_PIN                 0       // Teensy4.0 hardware SPI1 (SELECT : STCP)
 #define SCK1_PIN                27      // Teensy4.0 hardware SPI1 (CLOCK - SHCP)
 #define MOSI1_PIN               26      // Teensy4.0 hardware SPI1 (DATA - DS)
-#define ADC0_PIN                A2      // The output of multiplexerA (SIG pin) is connected to Teensy 4.0 pin 16
-#define ADC1_PIN                A3      // The output of multiplexerB (SIG pin) is connected to Teensy 4.0 pin 17
+#define ADC0_PIN                A3      // The output of multiplexerA (SIG pin) is connected to Teensy 4.0 pin 16
+#define ADC1_PIN                A2      // The output of multiplexerB (SIG pin) is connected to Teensy 4.0 pin 17
 
 #define MEM_MOSI                11      // Teensy4.0 hardware SPI
 #define MEM_MISO                12      // Teensy4.0 hardware SPI
@@ -48,12 +48,12 @@
 
 #define BAUD_RATE               230400
 #define RAW_COLS                16
+#define DUAL_COLS               (RAW_COLS / 2)
 #define RAW_ROWS                16
-#define DUAL_ROWS               (RAW_ROWS / 2)
 #define SCALE_X                 4
 #define SCALE_Y                 4
 #define RAW_FRAME               (RAW_COLS * RAW_ROWS)
-#define DUAL_RAW_FRAME          (RAW_FRAME / 2)
+#define DUAL_FRAME              (RAW_COLS / 2)
 #define NEW_COLS                (RAW_COLS * SCALE_X)
 #define NEW_ROWS                (RAW_ROWS * SCALE_Y)
 #define NEW_FRAME               (NEW_COLS * NEW_ROWS)

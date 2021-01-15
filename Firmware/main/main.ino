@@ -14,6 +14,16 @@
 #include "audio.h"
 #include "transmit.h"
 
+// Array to store all parameters used to configure the two 8:1 analog multiplexeurs
+// Each byte |ENA|A|B|C|ENA|A|B|C|
+uint8_t setDualRows[DUAL_COLS] = {
+#if SET_ORIGIN_X
+  0x55, 0x77, 0x66, 0x44, 0x22, 0x11, 0x00, 0x33
+#else
+  0x33, 0x00, 0x11, 0x22, 0x44, 0x66, 0x77, 0x55
+#endif /*__SET_ORIGIN_Y__*/
+};
+
 uint8_t offsetArray[RAW_FRAME] = {0};             // 1D Array to store smallest values
 uint8_t frameArray[RAW_FRAME] = {0};              // 1D Array to store ofseted analog input values
 
@@ -52,15 +62,6 @@ AudioConnection          patchCord2(sine_fm1, fade1);
 AudioConnection          patchCord3(fade1, 0, i2s1, 0);
 AudioConnection          patchCord4(fade1, 0, i2s1, 1);
 
-// Array to store all parameters used to configure the two 8:1 analog multiplexeurs
-// Each byte |ENA|A|B|C|ENA|A|B|C|
-uint8_t setDualRows[DUAL_ROWS] = {
-#if SET_ORIGIN_Y == 1
-  0x33, 0x00, 0x11, 0x22, 0x44, 0x66, 0x77, 0x55
-#else
-  0x55, 0x77, 0x66, 0x44, 0x22, 0x11, 0x00, 0x33
-#endif /*__SET_ORIGIN_Y__*/
-};
 
 uint8_t lastMode = CALIBRATE;
 uint8_t currentMode = LINE_OUT;  // Initialise currentMode with the DEFAULT_MODE
@@ -92,13 +93,14 @@ preset_t presets[7] = {
   {6, 0, 0, 0, 0, true, NULL, NULL }      // SAVE
 };
 
+// Testing
 switch_t tapSwitch = {10, 10, 5, 1000, false};
+switch_t modeSwitch = {30, 10, 5, 1000, false};
 
 void setup() {
 
 #if DEBUG_ADC || DEBUG_INTERP || DEBUG_BLOBS || DEBUG_SFF_BITMAP || DEBUG_FPS
-  Serial.begin(BAUD_RATE);       // Start Serial communication using 230400 baud
-  //while (!Serial.dtr());         // Wait for user to start the serial monitor
+  Serial.begin(BAUD_RATE); // Start Serial communication using 230400 baud
 #endif
 
   SETUP_LEDS();
@@ -244,11 +246,12 @@ void loop() {
 #if STANDALONE
   // Make some mapping
   for (blob_t* blob = ITERATOR_START_FROM_HEAD(&outputBlobs); blob != NULL; blob = ITERATOR_NEXT(blob)) {
-
     //polar_t polarCoord = polarCoordinates(blob, POLAR_X, POLAR_Y);
     //keyCode_t key = gridLayout(blob, NEW_COLS, NEW_ROWS, 20, 20, 0, 0); // ARGS [blob/gridW/gridH/stepX/stepY/posX/posY]
-    boolean tog = toggle(blob, &tapSwitch);
-    //boolean trig = trigger(blob, &tapSwitch);
+    //boolean togSwitchVal = toggle(blob, &modeSwitch);
+    //boolean tapSwitchVal = trigger(blob, &tapSwitch);
+    //float hSliderPos = hSlider(blob, 10, 20, 50, 5); // ARGS [blob/posY/Xmin/Xmax/hSize (FIXME)
+    //float vSliderPos = vSlider(blob, 10, 20, 50, 5); // ARGS [blob/posX/Ymin/Ymax/wSize (FIXME)
   }
 
   make_noise(

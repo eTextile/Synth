@@ -41,34 +41,37 @@ void SETUP_ADC(ADC *adc) {
 // Columns are digital OUTPUT PINS supplyed one by one sequentially with 3.3V
 void calibrate_matrix(ADC* adc_ptr, ADC::Sync_result* result_ptr, uint8_t* ofsetArray_ptr, uint8_t* shiftOutArray_ptr) {
 
-  uint16_t setCols;
+  uint16_t setRows;
 
   for (uint8_t i = 0; i < CALIBRATION_CYCLES; i++) {
-    for (uint8_t row = 0; row < DUAL_ROWS; row++) {
-#if SET_ORIGIN_X == 1
-      setCols = 0x1;                                      // Reset to [0000 0000 0000 0001]
+
+    for (uint8_t col = 0; col < DUAL_COLS; col++) {       // ANNALOG_PINS [0-7] with [8-15]
+#if SET_ORIGIN_Y
+      setRows = 0x1;                                      // Reset to [0000 0000 0000 0001]
 #else
-      setCols = 0x8000;                                   // Reset to [1000 0000 0000 0000]
-#endif /*__SET_ORIGIN_X__*/
-      for (uint8_t col = 0; col < RAW_COLS; col++) {
+      setRows = 0x8000;                                   // Reset to [1000 0000 0000 0000]
+#endif
+      for (uint8_t row = 0; row < RAW_ROWS; row++) {
         digitalWrite(SS1_PIN, LOW);                       // Set the Slave Select Pin LOW
-        //SPI1.transfer16(setCols);                       // Set up the two OUTPUT shift registers (FIXME)
-        SPI1.transfer((uint8_t)(setCols & 0xFF));         // Shift out one byte to setup one OUTPUT shift register
-        SPI1.transfer((uint8_t)((setCols >> 8) & 0xFF));  // Shift out one byte to setup one OUTPUT shift register
-        SPI1.transfer(shiftOutArray_ptr[row]);            // Shift out one byte that setup the two INPUT 8:1 analog multiplexers
+        //SPI1.transfer16(setRows);                       // Set up the two OUTPUT shift registers (FIXME)
+        SPI1.transfer((uint8_t)(setRows & 0xFF));         // Shift out one byte to setup one OUTPUT shift register
+        SPI1.transfer((uint8_t)((setRows >> 8) & 0xFF));  // Shift out one byte to setup one OUTPUT shift register
+        SPI1.transfer(shiftOutArray_ptr[col]);            // Shift out one byte that setup the two INPUT 8:1 analog multiplexers
         digitalWrite(SS1_PIN, HIGH);                      // Set the Slave Select Pin HIGH
+
         uint8_t indexA = row * RAW_COLS + col;            // Compute 1D array indexA
-        uint8_t indexB = indexA + DUAL_RAW_FRAME;         // Compute 1D array indexB
-        *result_ptr = adc_ptr->analogSynchronizedRead(ADC1_PIN, ADC0_PIN);
+        uint8_t indexB = indexA + DUAL_FRAME;             // Compute 1D array indexB
+
+        *result_ptr = adc_ptr->analogSynchronizedRead(ADC0_PIN, ADC1_PIN);
         uint8_t ADC0_val = result_ptr->result_adc0;
         if (ADC0_val > ofsetArray_ptr[indexA]) ofsetArray_ptr[indexA] = ADC0_val;
         uint8_t ADC1_val = result_ptr->result_adc1;
         if (ADC1_val > ofsetArray_ptr[indexB]) ofsetArray_ptr[indexB] = ADC1_val;
-#if SET_ORIGIN_X == 1
-        setCols = setCols << 1;
+#if SET_ORIGIN_Y
+        setRows = setRows << 1;
 #else
-        setCols = setCols >> 1;
-#endif /*__SET_ORIGIN_X__*/
+        setRows = setRows >> 1;
+#endif
       }
     }
   }
@@ -78,33 +81,35 @@ void calibrate_matrix(ADC* adc_ptr, ADC::Sync_result* result_ptr, uint8_t* ofset
 // Columns are digital OUTPUT PINS supplyed one by one sequentially with 3.3V
 void scan_matrix(ADC* adc_ptr, ADC::Sync_result* result_ptr, uint8_t* array_ptr, uint8_t* offsetArray_ptr, uint8_t* shiftOutArray_ptr) {
 
-  uint16_t setCols;
+  uint16_t setRows;
 
-  for (uint8_t row = 0; row < DUAL_ROWS; row++) {       // ANNALOG_PINS [0-7] with [8-15]
-#if SET_ORIGIN_X == 1
-    setCols = 0x1;                                      // Reset to [0000 0000 0000 0001]
+  for (uint8_t col = 0; col < DUAL_COLS; col++) {       // ANNALOG_PINS [0-7] with [8-15]
+#if SET_ORIGIN_Y
+    setRows = 0x1;                                      // Reset to [0000 0000 0000 0001]
 #else
-    setCols = 0x8000;                                   // Reset to [1000 0000 0000 0000]
-#endif /*__SET_ORIGIN_X__*/
-    for (uint8_t col = 0; col < RAW_COLS; col++) {      // DIGITAL_PINS [0-15]
+    setRows = 0x8000;                                   // Reset to [1000 0000 0000 0000]
+#endif
+    for (uint8_t row = 0; row < RAW_ROWS; row++) {          // DIGITAL_PINS [0-15]
       digitalWrite(SS1_PIN, LOW);                       // Set the Slave Select Pin LOW
-      //SPI1.transfer16(setCols);                       // Set up the two OUTPUT shift registers (FIXME)
-      SPI1.transfer((uint8_t)(setCols & 0xFF));         // Shift out LSB byte to setup one OUTPUT shift register
-      SPI1.transfer((uint8_t)((setCols >> 8) & 0xFF));  // Shift out MSB byte to setup one OUTPUT shift register
-      SPI1.transfer(shiftOutArray_ptr[row]);            // Shift out one byte that setup the two INPUT 8:1 analog multiplexers
+      //SPI1.transfer16(setRows);                       // Set up the two OUTPUT shift registers (FIXME)
+      SPI1.transfer((uint8_t)(setRows & 0xFF));         // Shift out LSB byte to setup one OUTPUT shift register
+      SPI1.transfer((uint8_t)((setRows >> 8) & 0xFF));  // Shift out MSB byte to setup one OUTPUT shift register
+      SPI1.transfer(shiftOutArray_ptr[col]);            // Shift out one byte that setup the two INPUT 8:1 analog multiplexers
       digitalWrite(SS1_PIN, HIGH);                      // Set the Slave Select Pin HIGH
+
       uint8_t indexA = row * RAW_COLS + col;            // Compute 1D array indexA
-      uint8_t indexB = indexA + DUAL_RAW_FRAME;         // Compute 1D array indexB
-      *result_ptr = adc_ptr->analogSynchronizedRead(ADC1_PIN, ADC0_PIN);
+      uint8_t indexB = indexA + DUAL_FRAME;             // Compute 1D array indexB
+
+      *result_ptr = adc_ptr->analogSynchronizedRead(ADC0_PIN, ADC1_PIN);
       uint8_t valA = result_ptr->result_adc0;
       valA > offsetArray_ptr[indexA] ? array_ptr[indexA] = (uint8_t)(valA - offsetArray_ptr[indexA]) : array_ptr[indexA] = 0;
       uint8_t valB = result_ptr->result_adc1;
       valB > offsetArray_ptr[indexB] ? array_ptr[indexB] = (uint8_t)(valB - offsetArray_ptr[indexB]) : array_ptr[indexB] = 0;
-#if SET_ORIGIN_X == 1
-      setCols = setCols << 1;
+#if SET_ORIGIN_Y
+      setRows = setRows << 1;
 #else
-      setCols = setCols >> 1;
-#endif /*__SET_ORIGIN_X__*/
+      setRows = setRows >> 1;
+#endif
     }
   }
 }
