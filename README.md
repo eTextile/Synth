@@ -4,7 +4,6 @@
 ![eTextile Synthetizer](https://live.staticflickr.com/65535/48916850368_dd34d00418_c_d.jpg)
 
 ## About The project
-
 After setting up the **E256 eTextile matrix sensor** it is now time to use it for live electronic music performances. **eTextile-Synthesizers** are handcrafted multi-touch digital interfaces based on smart textile processes and custom electronic solutions. These eTextile-synthesizers open up new possibilities for electronic music playing. The project features a fully embedded **multitouch eTextile-Synthesizer** that combines the powerful **Teensy 4.0** MCU and its audio library with the E256 eTextile matrix sensor technology. One of the main purpose of this project is to give priority to the tactility of this textile interface. To promote an intuitive music interpretation and deep listening, the eTextile-Synthesizer offers different textures that guide the touch and form tactile cues.
 
 ### Development tools & DOCs
@@ -21,8 +20,7 @@ After setting up the **E256 eTextile matrix sensor** it is now time to use it fo
 * **Softwear:** demos applications (PureData, MaxMSP, Max4Live, etc.)
 
 ## Specifications
-
-| Subject                 | Description                            |
+| Feature                 | Description                            |
 | :---------------------- | :------------------------------------- |
 | Power-IN                | DC-5V                                  |
 | Hardware resolution     | 16x16 FSRs with hardware interpolation |
