@@ -4,7 +4,7 @@
 ![eTextile Synthetizer](https://live.staticflickr.com/65535/48916850368_dd34d00418_c_d.jpg)
 
 ## About The project
-After setting up the **E256 eTextile matrix sensor** it is now time to use it for live electronic music performances. **eTextile-Synthesizers** are handcrafted multi-touch digital interfaces based on smart textile processes and custom electronic solutions. These eTextile-synthesizers open up new possibilities for electronic music playing. The project features a fully embedded **multitouch eTextile-Synthesizer** that combines the powerful **Teensy 4.0** MCU and its audio library with the E256 eTextile matrix sensor technology. One of the main purpose of this project is to give priority to the tactility of this textile interface. To promote an intuitive music interpretation and deep listening, the eTextile-Synthesizer offers different textures that guide the touch and form tactile cues.
+After setting up the **E256 eTextile matrix sensor** it is now time to use it for live electronic music performances. **eTextile-Synthesizers** are handcrafted multi-touch digital interfaces based on smart textile processes and custom electronic solutions. These eTextile-synthesizers open up new possibilities for electronic music playing. The project features a fully embedded **multitouch eTextile-Synthesizer** that combines the powerful **Teensy 4.0** MCU and its audio library with the E256 eTextile matrix sensor technology. One of the main purpose of this project is to promote an intuitive music interpretation and deep listening as well as taking benefit of textile textures diversity that wil be use to guide the touch and form tactile cues. This project is strongly inspired by the modular synthesis logic where all modules have dedicated functionalities and strong identity. The eTextile-Synthesizers can thus connect to each other via stereo mini-jack in order to share them rhythm as well as notes and audio streams.
 
 ### Development tools & DOCs
 * **Web page:** [https://synth.eTextile.org/](https://synth.eTextile.org "Project web page")
@@ -20,22 +20,22 @@ After setting up the **E256 eTextile matrix sensor** it is now time to use it fo
 * **Softwear:** demos applications (PureData, MaxMSP, Max4Live, etc.)
 
 ## Specifications
-| Feature                 | Description                            |
-| :---------------------- | :------------------------------------- |
-| Power-IN                | DC-5V                                  |
-| Hardware resolution     | 16x16 FSRs with hardware interpolation |
-| Software X-Y resolution | [0:64] floating point unit             |
-| Software Z resolution   | [0:127] integer unit                   |
-| Multi-Touch capability  | Max points - User defined              |
-| Points characteristics  | PosX, PosY, sizeX, sizeY, ZPressure    |
-| Latency                 | 950 FPS (xms)                          |
-| Audio IN                | ADC 16bits (mini-jack)                 |
-| Audio OUT               | DAC 16bits (mini-jack)                 |
-| Audio OUT               | Headphone (mini-jack)                  |
-| Connectivity            | MIDI I/O (mini-jack)                   |
-| Connectivity            | USB_SLIP-OSC (FIXME)                   |
-| Connectivity            | USB_MIDI                               |
-| Connectivity            | USB_MPE (TODO)                         |
+| Feature                 | Description                               |
+| :---------------------- | :---------------------------------------- |
+| Power-IN                | DC-5V                                     |
+| Hardware resolution     | 16x16 FSRs with hardware interpolation    |
+| Multi-Touch (Max points)| User defined                              |
+| Points characteristics  | [ID, STATE, CX, CY, WIDTH, HEIGHT, DEPTH] |
+| X-Y resolution          | [0:64] floating point unit                |
+| Z resolution            | [0:127] integer unit                      |
+| FPS                     | 1100                                      |
+| Audio IN                | ADC 16bits (mini-jack)                    |
+| Audio OUT               | DAC 16bits (mini-jack)                    |
+| Audio OUT               | Headphone (mini-jack)                     |
+| Connectivity            | MIDI I/O (mini-jack)                      |
+| Connectivity            | USB_SLIP-OSC (FIXME)                      |
+| Connectivity            | USB_MIDI                                  |
+| Connectivity            | USB_MPE (TODO)                            |
 
 ## Publications
 - [NIME17](http://www.nime2017.org/) - Designing a Multi-Touch eTextile for Music Performances / [Paper](https://github.com/eTextile/Matrix/blob/teensy_matrix/docs/publications/NIME17-eTextile.pdf) - [Video](https://vimeo.com/217690743)
