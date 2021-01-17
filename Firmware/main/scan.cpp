@@ -10,11 +10,11 @@
 void SETUP_SPI(void) {
 
   pinMode(SS1_PIN, OUTPUT);             // Set the Slave Select Pin as OUTPUT
-  digitalWrite(SS1_PIN, LOW);           // Set latchPin LOW
-  digitalWrite(SS1_PIN, HIGH);          // Set latchPin HIGH
   SPI1.begin();                         // Start the SPI module
   // 74HC595BQ Shift out register frequency is 100 MHz = 100000000 Hz
-  SPI1.beginTransaction(SPISettings(25000000, MSBFIRST, SPI_MODE0));
+  SPI1.beginTransaction(SPISettings(30000000, MSBFIRST, SPI_MODE0));
+  digitalWrite(SS1_PIN, LOW);           // Set latchPin LOW
+  digitalWrite(SS1_PIN, HIGH);          // Set latchPin HIGH
 }
 
 void SETUP_ADC(ADC *adc) {
@@ -45,23 +45,22 @@ void calibrate_matrix(ADC* adc_ptr, ADC::Sync_result* result_ptr, uint8_t* ofset
 
   for (uint8_t i = 0; i < CALIBRATION_CYCLES; i++) {
 
-    for (uint8_t col = 0; col < DUAL_COLS; col++) {       // ANNALOG_PINS [0-7] with [8-15]
+    for (uint8_t col = 0; col < DUAL_COLS; col++) {         // ANNALOG_PINS [0-7] with [8-15]
 #if SET_ORIGIN_Y
-      setRows = 0x1;                                      // Reset to [0000 0000 0000 0001]
+      setRows = 0x1;                                        // Reset to [0000 0000 0000 0001]
 #else
-      setRows = 0x8000;                                   // Reset to [1000 0000 0000 0000]
+      setRows = 0x8000;                                     // Reset to [1000 0000 0000 0000]
 #endif
-      for (uint8_t row = 0; row < RAW_ROWS; row++) {
-        digitalWrite(SS1_PIN, LOW);                       // Set the Slave Select Pin LOW
-        //SPI1.transfer16(setRows);                       // Set up the two OUTPUT shift registers (FIXME)
-        SPI1.transfer((uint8_t)(setRows & 0xFF));         // Shift out one byte to setup one OUTPUT shift register
-        SPI1.transfer((uint8_t)((setRows >> 8) & 0xFF));  // Shift out one byte to setup one OUTPUT shift register
-        SPI1.transfer(shiftOutArray_ptr[col]);            // Shift out one byte that setup the two INPUT 8:1 analog multiplexers
-        digitalWrite(SS1_PIN, HIGH);                      // Set the Slave Select Pin HIGH
-
-        uint8_t indexA = row * RAW_COLS + col;            // Compute 1D array indexA
-        uint8_t indexB = indexA + DUAL_FRAME;             // Compute 1D array indexB
-
+      for (uint8_t row = 0; row < RAW_ROWS; row++) {        // DIGITAL_PINS [0-15]
+        digitalWrite(SS1_PIN, LOW);                         // Set the Slave Select Pin LOW
+        //SPI1.transfer16(setRows);                         // Set up the two OUTPUT shift registers (FIXME)
+        SPI1.transfer((uint8_t)(setRows & 0xFF));           // Shift out one byte to setup one OUTPUT shift register
+        SPI1.transfer((uint8_t)((setRows >> 8) & 0xFF));    // Shift out one byte to setup one OUTPUT shift register
+        SPI1.transfer(shiftOutArray_ptr[col]);              // Shift out one byte that setup the two INPUT 8:1 analog multiplexers
+        digitalWrite(SS1_PIN, HIGH);                        // Set the Slave Select Pin HIGH
+        uint8_t indexA = row * RAW_COLS + col;              // Compute 1D array indexA
+        uint8_t indexB = indexA + DUAL_COLS;                // Compute 1D array indexB
+        delayMicroseconds(15);
         *result_ptr = adc_ptr->analogSynchronizedRead(ADC0_PIN, ADC1_PIN);
         uint8_t ADC0_val = result_ptr->result_adc0;
         if (ADC0_val > ofsetArray_ptr[indexA]) ofsetArray_ptr[indexA] = ADC0_val;
@@ -83,28 +82,27 @@ void scan_matrix(ADC* adc_ptr, ADC::Sync_result* result_ptr, uint8_t* array_ptr,
 
   uint16_t setRows;
 
-  for (uint8_t col = 0; col < DUAL_COLS; col++) {       // ANNALOG_PINS [0-7] with [8-15]
+  for (uint8_t col = 0; col < DUAL_COLS; col++) {         // ANNALOG_PINS [0-7] with [8-15]
 #if SET_ORIGIN_Y
-    setRows = 0x1;                                      // Reset to [0000 0000 0000 0001]
+    setRows = 0x1;                                        // Reset to [0000 0000 0000 0001]
 #else
-    setRows = 0x8000;                                   // Reset to [1000 0000 0000 0000]
+    setRows = 0x8000;                                     // Reset to [1000 0000 0000 0000]
 #endif
-    for (uint8_t row = 0; row < RAW_ROWS; row++) {          // DIGITAL_PINS [0-15]
-      digitalWrite(SS1_PIN, LOW);                       // Set the Slave Select Pin LOW
-      //SPI1.transfer16(setRows);                       // Set up the two OUTPUT shift registers (FIXME)
-      SPI1.transfer((uint8_t)(setRows & 0xFF));         // Shift out LSB byte to setup one OUTPUT shift register
-      SPI1.transfer((uint8_t)((setRows >> 8) & 0xFF));  // Shift out MSB byte to setup one OUTPUT shift register
-      SPI1.transfer(shiftOutArray_ptr[col]);            // Shift out one byte that setup the two INPUT 8:1 analog multiplexers
-      digitalWrite(SS1_PIN, HIGH);                      // Set the Slave Select Pin HIGH
-
-      uint8_t indexA = row * RAW_COLS + col;            // Compute 1D array indexA
-      uint8_t indexB = indexA + DUAL_FRAME;             // Compute 1D array indexB
-
+    for (uint8_t row = 0; row < RAW_ROWS; row++) {        // DIGITAL_PINS [0-15]
+      digitalWrite(SS1_PIN, LOW);                         // Set the Slave Select Pin LOW
+      //SPI1.transfer16(setRows);                         // Set up the two OUTPUT shift registers (FIXME)
+      SPI1.transfer((uint8_t)(setRows & 0xFF));           // Shift out LSB byte to setup one OUTPUT shift register
+      SPI1.transfer((uint8_t)((setRows >> 8) & 0xFF));    // Shift out MSB byte to setup one OUTPUT shift register
+      SPI1.transfer(shiftOutArray_ptr[col]);              // Shift out one byte that setup the two INPUT 8:1 analog multiplexers
+      digitalWrite(SS1_PIN, HIGH);                        // Set the Slave Select Pin HIGH
+      uint8_t indexA = row * RAW_COLS + col;              // Compute 1D array indexA
+      uint8_t indexB = indexA + DUAL_COLS;                // Compute 1D array indexB
+      delayMicroseconds(15);
       *result_ptr = adc_ptr->analogSynchronizedRead(ADC0_PIN, ADC1_PIN);
       uint8_t valA = result_ptr->result_adc0;
-      valA > offsetArray_ptr[indexA] ? array_ptr[indexA] = (uint8_t)(valA - offsetArray_ptr[indexA]) : array_ptr[indexA] = 0;
+      valA > offsetArray_ptr[indexA] ? array_ptr[indexA] = valA - offsetArray_ptr[indexA] : array_ptr[indexA] = 0;
       uint8_t valB = result_ptr->result_adc1;
-      valB > offsetArray_ptr[indexB] ? array_ptr[indexB] = (uint8_t)(valB - offsetArray_ptr[indexB]) : array_ptr[indexB] = 0;
+      valB > offsetArray_ptr[indexB] ? array_ptr[indexB] = valB - offsetArray_ptr[indexB] : array_ptr[indexB] = 0;
 #if SET_ORIGIN_Y
       setRows = setRows << 1;
 #else
@@ -120,8 +118,7 @@ void print_adc(image_t* image_ptr) {
     for (uint8_t posX = 0; posX < image_ptr->numCols; posX++) {
       Serial.printf("\t%d", IMAGE_GET_PIXEL_FAST(row_ptr, posX));
     }
-    Serial.println();
+    Serial.printf("\n");
   }
-  Serial.println();
-  delay(100);
+  Serial.printf("\n");
 }
