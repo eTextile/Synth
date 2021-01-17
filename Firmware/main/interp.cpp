@@ -50,7 +50,7 @@ void SETUP_INTERP(
       int index = row * interp->scale_X + col;
       interp->pCoefA[index] = (interp->scale_X - col) * (interp->scale_Y - row) / sFactor;
       interp->pCoefB[index] = col * (interp->scale_Y - row) / sFactor;
-      interp->pCoefC[index] = (interp->scale_X - col) *  row / sFactor;
+      interp->pCoefC[index] = (interp->scale_X - col) * row / sFactor;
       interp->pCoefD[index] = row * col / sFactor;
     }
   }
@@ -65,7 +65,7 @@ void interp_matrix(image_t* outputFrame_ptr, image_t* inputFrame_ptr, interp_t* 
   uint8_t inIndexC = 0;
   uint8_t inIndexD = 0;
 
-  for (uint8_t rowPos = 0; rowPos < inputFrame_ptr->numRows; rowPos++) {
+  for (uint8_t rowPos = 0; rowPos < inputFrame_ptr->numRows - 1; rowPos++) {
     for (uint8_t colPos = 0; colPos < inputFrame_ptr->numCols - 1; colPos++) {
 
       inIndexA = rowPos * inputFrame_ptr->numCols + colPos;
@@ -98,9 +98,9 @@ void print_interp(image_t* image_ptr) {
   for (uint8_t posY = 0; posY < image_ptr->numRows; posY++) {
     uint8_t* row_ptr = COMPUTE_IMAGE_ROW_PTR(image_ptr, posY);
     for (int posX = 0; posX < image_ptr->numCols; posX++) {
-      Serial.print(IMAGE_GET_PIXEL_FAST(row_ptr, posX));
+      Serial.printf("%d-", IMAGE_GET_PIXEL_FAST(row_ptr, posX));
     }
-    Serial.println();
+    Serial.printf("\n");
   }
-  Serial.println();
+  Serial.printf("\n\n");
 }
