@@ -28,7 +28,7 @@ After setting up the **E256 eTextile matrix sensor** it is now time to use it fo
 | Points characteristics  | [ID, STATE, CX, CY, WIDTH, HEIGHT, DEPTH] |
 | X-Y resolution          | [0:64] floating point unit                |
 | Z resolution            | [0:127] integer unit                      |
-| FPS                     | 1100                                      |
+| FPS                     | 360                                       |
 | Audio IN                | ADC 16bits (mini-jack)                    |
 | Audio OUT               | DAC 16bits (mini-jack)                    |
 | Audio OUT               | Headphone (mini-jack)                     |
