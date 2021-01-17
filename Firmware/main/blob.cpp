@@ -28,16 +28,16 @@ void SETUP_BLOB(
   // bitmap init config (struct image_t)
   bitmap_ptr->numCols = NEW_COLS;           //
   bitmap_ptr->numRows = NEW_ROWS;           //
-  bitmap_ptr->pData = &bitmapArray_ptr[0];  // uint8_t bitmapArray[RAW_FRAME];(16x16) array containing (64x64) values
+  bitmap_ptr->pData = &bitmapArray_ptr[0];  //
 
   // Lifo init
   lifo_raz(lifo_stack_ptr);
-  lifo_init(lifo_stack_ptr, &lifoArray_ptr[0], (uint8_t)LIFO_MAX_NODES); // Add X nodes in the lifo_stack
+  lifo_init(lifo_stack_ptr, &lifoArray_ptr[0], (uint8_t)LIFO_MAX_NODES); // Add X nodes to the lifo_stack
   lifo_raz(lifo_ptr);
 
   // Linked list init
   llist_raz(blobs_stack_ptr);
-  llist_init(blobs_stack_ptr, &blobArray_ptr[0], (uint8_t)MAX_NODES); // Add X nodes in the blobs_stack linked list
+  llist_init(blobs_stack_ptr, &blobArray_ptr[0], (uint8_t)MAX_NODES); // Add X nodes to the blobs_stack linked list
   llist_raz(blobs_ptr);
   llist_raz(outputBlobs_ptr);
 }
@@ -64,12 +64,12 @@ void find_blobs(
 
   for (uint8_t posY = 0, yy = inputFrame_ptr->numRows, y_max = yy - 1; posY < yy; posY += Y_STRIDE) {
 
-    uint8_t* row_ptr = COMPUTE_IMAGE_ROW_PTR (inputFrame_ptr, posY);
-    uint8_t* bmp_row_ptr = COMPUTE_BINARY_IMAGE_ROW_PTR (bitmap_ptr, posY);
+    uint8_t* row_ptr_A = COMPUTE_IMAGE_ROW_PTR(inputFrame_ptr, posY);
+    uint8_t* bmp_row_ptr_A = COMPUTE_BINARY_IMAGE_ROW_PTR(bitmap_ptr, posY);
 
     for (uint8_t posX = (posY % X_STRIDE), xx = inputFrame_ptr->numCols, x_max = xx - 1; posX < xx; posX += X_STRIDE) {
-      if (!IMAGE_GET_BINARY_PIXEL_FAST(bmp_row_ptr, posX)
-          && PIXEL_THRESHOLD(IMAGE_GET_PIXEL_FAST(row_ptr, posX), zThreshold)) {
+      if (!IMAGE_GET_BINARY_PIXEL_FAST(bmp_row_ptr_A, posX)
+          && PIXEL_THRESHOLD(IMAGE_GET_PIXEL_FAST(row_ptr_A, posX), zThreshold)) {
 
         uint8_t oldX = posX;
         uint8_t oldY = posY;
@@ -89,18 +89,18 @@ void find_blobs(
           uint8_t left = posX;
           uint8_t right = posX;
 
-          uint8_t* row = COMPUTE_IMAGE_ROW_PTR (inputFrame_ptr, posY);
-          uint8_t* bmp_row = COMPUTE_BINARY_IMAGE_ROW_PTR (bitmap_ptr, posY);
+          uint8_t* row_ptr_B = COMPUTE_IMAGE_ROW_PTR (inputFrame_ptr, posY);
+          uint8_t* bmp_row_ptr_B = COMPUTE_BINARY_IMAGE_ROW_PTR (bitmap_ptr, posY);
 
           while ((left > 0)
-                 && (!IMAGE_GET_BINARY_PIXEL_FAST(bmp_row, left - 1))
-                 && PIXEL_THRESHOLD(IMAGE_GET_PIXEL_FAST(row, left - 1), zThreshold)) {
+                 && (!IMAGE_GET_BINARY_PIXEL_FAST(bmp_row_ptr_B, left - 1))
+                 && PIXEL_THRESHOLD(IMAGE_GET_PIXEL_FAST(row_ptr_B, left - 1), zThreshold)) {
             left--;
           }
 
           while (right < (inputFrame_ptr->numCols - 1)
-                 && (!IMAGE_GET_BINARY_PIXEL_FAST(bmp_row, right + 1))
-                 && PIXEL_THRESHOLD(IMAGE_GET_PIXEL_FAST(row, right + 1), zThreshold)) {
+                 && (!IMAGE_GET_BINARY_PIXEL_FAST(bmp_row_ptr_B, right + 1))
+                 && PIXEL_THRESHOLD(IMAGE_GET_PIXEL_FAST(row_ptr_B, right + 1), zThreshold)) {
             right++;
           }
 
@@ -108,8 +108,8 @@ void find_blobs(
           blob_x2 = MAX(blob_x2, right);
 
           for (uint8_t i = left; i <= right; i++) {
-            IMAGE_SET_BINARY_PIXEL_FAST(bmp_row, i);
-            blob_depth = MAX(blob_depth, IMAGE_GET_PIXEL_FAST(row, i));
+            IMAGE_SET_BINARY_PIXEL_FAST(bmp_row_ptr_B, i);
+            blob_depth = MAX(blob_depth, IMAGE_GET_PIXEL_FAST(row_ptr_B, i));
           }
 
           int sum = sum_m_to_n(left, right);
@@ -128,14 +128,14 @@ void find_blobs(
 
               if (posY > 0) {
 
-                row = COMPUTE_IMAGE_ROW_PTR (inputFrame_ptr, posY - 1);
-                bmp_row = COMPUTE_BINARY_IMAGE_ROW_PTR (bitmap_ptr, posY - 1);
+                row_ptr_B = COMPUTE_IMAGE_ROW_PTR(inputFrame_ptr, posY - 1);
+                bmp_row_ptr_B = COMPUTE_BINARY_IMAGE_ROW_PTR(bitmap_ptr, posY - 1);
 
                 boolean recurse = false;
                 for (uint8_t i = top_left; i <= right; i++) {
 
-                  if ((!IMAGE_GET_BINARY_PIXEL_FAST(bmp_row, i))
-                      && (PIXEL_THRESHOLD(IMAGE_GET_PIXEL_FAST(row, i), zThreshold))) {
+                  if ((!IMAGE_GET_BINARY_PIXEL_FAST(bmp_row_ptr_B, i))
+                      && (PIXEL_THRESHOLD(IMAGE_GET_PIXEL_FAST(row_ptr_B, i), zThreshold))) {
 
                     xylr_t* context = lifo_dequeue(lifo_stack_ptr);
                     //Serial.printf("\n DEBUG_LIFO / A / lifo_stack_ptr / Dequeue_node: %p", context);
@@ -161,14 +161,14 @@ void find_blobs(
 
               if (posY < (inputFrame_ptr->numRows - 1)) {
 
-                row = COMPUTE_IMAGE_ROW_PTR (inputFrame_ptr, posY + 1);
-                bmp_row = COMPUTE_BINARY_IMAGE_ROW_PTR (bitmap_ptr, posY + 1);
+                row_ptr_B = COMPUTE_IMAGE_ROW_PTR(inputFrame_ptr, posY + 1);
+                bmp_row_ptr_B = COMPUTE_BINARY_IMAGE_ROW_PTR(bitmap_ptr, posY + 1);
 
                 boolean recurse = false;
                 for (uint8_t i = bot_left; i <= right; i++) {
 
-                  if (!IMAGE_GET_BINARY_PIXEL_FAST(bmp_row, i)
-                      && PIXEL_THRESHOLD(IMAGE_GET_PIXEL_FAST(row, i), zThreshold)) {
+                  if (!IMAGE_GET_BINARY_PIXEL_FAST(bmp_row_ptr_B, i)
+                      && PIXEL_THRESHOLD(IMAGE_GET_PIXEL_FAST(row_ptr_B, i), zThreshold)) {
 
                     xylr_t* context = lifo_dequeue(lifo_stack_ptr);
                     //Serial.printf("\n DEBUG_LIFO / B / lifo_stack_ptr / Dequeue_node: %p", context);
@@ -222,10 +222,8 @@ void find_blobs(
           blob_t* blob = llist_pop_front(blobs_stack_ptr);
           blob_raz(blob);
 
-          //blob->centroid.X = (uint8_t)round(blob_cx / ((float) blob_pixels));
-          //blob->centroid.Y = (uint8_t)round(blob_cy / ((float) blob_pixels));
-          blob->centroid.X = blob_cx / (float) blob_pixels;
-          blob->centroid.Y = blob_cy / (float) blob_pixels;
+          blob->centroid.X = blob_cx / (float)blob_pixels;
+          blob->centroid.Y = blob_cy / (float)blob_pixels;
           blob->box.W = (blob_x2 - blob_x1);
           blob->box.H = blob_height;
           blob->box.D = blob_depth - zThreshold;
@@ -248,7 +246,7 @@ void find_blobs(
   }
   /////////////////////////////// PERSISTANT BLOB ID
 
-#if DEBUG_BLOBS_ID == 1
+#if DEBUG_BLOBS_ID
   Serial.printf("\n DEBUG_BLOBS_ID / **inputBlobs** linked list index: %d", inputBlobs_ptr->index);
   Serial.printf("\n DEBUG_BLOBS_ID / **blobs_stack** linked list index: %d", blobs_stack_ptr->index);
   Serial.printf("\n DEBUG_BLOBS_ID / **outputBlobs** linked list index: %d", outputBlobs_ptr->index);
@@ -280,16 +278,16 @@ void find_blobs(
     float minDist = 255.0f;
     blob_t* nearestBlob = NULL;
 
-#if DEBUG_BLOBS_ID == 1
+#if DEBUG_BLOBS_ID
     Serial.printf("\n DEBUG_BLOBS_ID / Is input blob: %p have a coresponding blob in **outputBlobs**", blobA);
-#endif /*__DEBUG_BLOBS_ID__*/
+#endif
     for (blob_t* blobB = ITERATOR_START_FROM_HEAD(outputBlobs_ptr); blobB != NULL; blobB = ITERATOR_NEXT(blobB)) {
 
       float dist = distance(blobA, blobB);
 
-#if DEBUG_BLOBS_ID == 1
+#if DEBUG_BLOBS_ID
       Serial.printf("\n DEBUG_BLOBS_ID / Distance between input & output blobs positions: %f ", dist);
-#endif /*__DEBUG_BLOBS_ID__*/
+#endif
       if (dist < minDist) {
         minDist = dist;
         nearestBlob = blobB;
@@ -298,8 +296,8 @@ void find_blobs(
     // If the distance between curent blob and last blob position is less than minDist:
     // Copy the ID of the nearestBlob found in outputBlobs linked list and give it to the curent input blob.
     // Set the curent input blob state to TO_UPDATE.
-    if (minDist < 2.5f) {
-#if DEBUG_BLOBS_ID == 1
+    if (minDist < 3.0f) {
+#if DEBUG_BLOBS_ID
       Serial.printf("\n DEBUG_BLOBS_ID / Found corresponding blob: %p in the **outputBlobs** linked list", nearestBlob);
 #endif /*__DEBUG_BLOBS_ID__*/
       blobA->UID = nearestBlob->UID;
@@ -307,10 +305,9 @@ void find_blobs(
     }
     // Found a new blob! We nead to give it an ID
     else {
-#if DEBUG_BLOBS_ID == 1
+#if DEBUG_BLOBS_ID
       Serial.print("\n DEBUG_BLOBS_ID / Found new blob without ID");
-#endif /*__DEBUG_BLOBS_ID__*/
-
+#endif
       // Find the smallest missing UID in the sorted linked list
       uint8_t minID = 0;
       while (1) {
@@ -329,9 +326,9 @@ void find_blobs(
         }
       } // while_end / The blob have a new ID
     }
-  } //
+  }
 
-  // Update outputBlobs linked list with new inputs blobs that have ben flaged TO_UPDATE.
+  // Update outputBlobs linked list with inputs blobs that have ben flaged TO_UPDATE.
   // If a blob in the outputBlobs linked do not have corresponding blob in the input blobs linked list (inputBlobs_ptr), flag it to TO_REMOVE.
   for (blob_t* blobA = ITERATOR_START_FROM_HEAD(outputBlobs_ptr); blobA != NULL; blobA = ITERATOR_NEXT(blobA)) {
     boolean found = false;
@@ -340,15 +337,12 @@ void find_blobs(
       if (blobB->state == TO_UPDATE && blobB->UID == blobA->UID) {
         found = true;
         blob_copy(blobA, blobB);
-        blobA->alive = 1; // IS IT NECESSARY?
-        blobA->timeTag = millis();
-#if DEBUG_BLOBS_ID == 1
+#if DEBUG_BLOBS_ID
         Serial.printf("\n DEBUG_BLOBS_ID / Copy blob: %p (inputBlobs linked list) to the blob: %p (outputBlobs linked list)", blobB, blobA);
-#endif /*__DEBUG_BLOBS_ID__*/
+#endif
         break;
       }
     }
-    // if (!found) {
     if (!found && millis() - blobA->timeTag > DEBOUNCE_TIME) {
       blobA->state = TO_REMOVE;
       blobA->alive = 0;
@@ -360,18 +354,17 @@ void find_blobs(
     if (blob->state == TO_ADD) {
       blob_t* newBlob = llist_pop_front(blobs_stack_ptr);
       blob_copy(newBlob, blob);
-      newBlob->alive = 1;
       llist_push_back(outputBlobs_ptr, newBlob);
-#if DEBUG_BLOBS_ID == 1
+#if DEBUG_BLOBS_ID
       Serial.printf("\n DEBUG_BLOBS_ID / Blob: %p added to **outputBlobs** linked list", blob);
-#endif /*__DEBUG_BLOBS_ID__*/
+#endif
     }
   }
 
   // Clear the input blobs Linked list
   llist_save_blobs(blobs_stack_ptr, inputBlobs_ptr); // TODO : can we live without it ?
 
-#if DEBUG_BLOBS_ID == 1
+#if DEBUG_BLOBS_ID
   Serial.println("\n DEBUG_BLOBS_ID / END OFF BLOB FONCTION");
 #endif /*__DEBUG_BLOBS_ID__*/
 }
@@ -397,9 +390,11 @@ float distance(blob_t* blobA, blob_t* blobB) {
 
 // FIXME: can be optimized
 void blob_copy(blob_t* dst, blob_t* src) {
-  //dst->timeTag = millis(); // TODO?
+  //dst->timeTag = src->timeTag;
+  dst->timeTag = millis();
   dst->UID = src->UID;
-  dst->alive = src->alive;
+  //dst->alive = src->alive;
+  dst->alive = 1;
   dst->centroid.X = src->centroid.X;
   dst->centroid.Y = src->centroid.Y;
   dst->box.W = src->box.W;
@@ -414,8 +409,8 @@ void blob_raz(blob_t* node) {
   node->UID = 0;
   node->alive = 0;
   node->state = FREE;
-  node->centroid.X = 0;
-  node->centroid.Y = 0;
+  node->centroid.X = 0.0f;
+  node->centroid.Y = 0.0f;
   node->box.W = 0;
   node->box.H = 0;
   node->box.D = 0;
@@ -427,11 +422,11 @@ void print_bitmap(image_t* bitmap_ptr) {
     uint8_t* row_ptr = COMPUTE_BINARY_IMAGE_ROW_PTR(bitmap_ptr, posY);
     for (uint8_t posX = 0; posX < bitmap_ptr->numCols; posX++) {
       //Serial.print(IMAGE_GET_BINARY_PIXEL_FAST(row_ptr, posX));
-      IMAGE_GET_BINARY_PIXEL_FAST(row_ptr, posX) == 0 ? Serial.print(".") : Serial.print("o");
+      IMAGE_GET_BINARY_PIXEL_FAST(row_ptr, posX) == 0 ? Serial.printf(".") : Serial.printf("o");
     }
-    Serial.println();
+    Serial.printf("\n");
   }
-  Serial.println();
+  Serial.printf("\n");
 }
 
 void print_blobs(llist_t* inputBlobs_ptr) {
