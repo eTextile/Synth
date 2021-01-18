@@ -26,16 +26,17 @@ typedef struct interp {
 } interp_t;
 
 void SETUP_INTERP(
-  image_t* inputFrame_ptr,
-  uint8_t* inputArray_ptr,
-  image_t* outputFrame,
-  uint8_t* outputArray,
+  image_t*  inputFrame_ptr,
+  uint8_t*  inputArray_ptr,
+  image_t*  outputFrame,
+  uint8_t*  outputArray,
   interp_t* interp
 );
 
 void interp_matrix(
-  image_t* outputFrame_ptr,
-  image_t* inputFrame_ptr,
+  uint8_t   zThreshold,
+  image_t*  outputFrame_ptr,
+  image_t*  inputFrame_ptr,
   interp_t* interp
 );
 
