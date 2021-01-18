@@ -45,7 +45,7 @@ void update_buttons(
     *iter_ptr = 0;
     *lastMode_ptr = *curentMode_ptr;
     *curentMode_ptr = CALIBRATE;
-#if DEBUG_BUTTONS == 1
+#if DEBUG_BUTTONS
     Serial.printf("\nBUTTON_L : CALIBRATE : %d", *curentMode_ptr);
 #endif
   }
@@ -59,7 +59,7 @@ void update_buttons(
     *iter_ptr = 0;
     *lastMode_ptr = *curentMode_ptr;
     *curentMode_ptr = SAVE;
-#if DEBUG_BUTTONS == 1
+#if DEBUG_BUTTONS
     Serial.printf("\nBUTTON_L : SAVE : %d", *curentMode_ptr);
 #endif
   }
@@ -71,7 +71,7 @@ void update_buttons(
     *lastMode_ptr = *curentMode_ptr;                                // Save last Mode
     *curentMode_ptr = (*curentMode_ptr + 1) % 4;                    // Loop into the modes
     encoder_ptr->write(presets_ptr[*curentMode_ptr].val << 2);      // Set encoder value
-#if DEBUG_BUTTONS == 1
+#if DEBUG_BUTTONS
     Serial.printf("\nBUTTON_R : SELECT_MODE : %d", *curentMode_ptr);
 #endif
   }
@@ -81,10 +81,10 @@ void update_buttons(
   // LEDs : alternates durring all the learning process
   if (buttonB_ptr->rose() && buttonB_ptr->previousDuration() > LONG_HOLD) {
     *timer_ptr = 0;
-    encoder_ptr->write(0xFFFF);
+    encoder_ptr->write(0x1);
     *lastMode_ptr = *curentMode_ptr;
     *curentMode_ptr = MIDI_LEARN;
-#if DEBUG_BUTTONS == 1
+#if DEBUG_BUTTONS
     Serial.printf("\nMIDI_LEARN : %d", *curentMode_ptr);
 #endif
   }

@@ -18,10 +18,10 @@
 // Each byte |ENA|A|B|C|ENA|A|B|C|
 uint8_t setDualRows[DUAL_COLS] = {
 #if SET_ORIGIN_X
-  0x55, 0x77, 0x66, 0x44, 0x22, 0x11, 0x00, 0x33
-#else
   0x33, 0x00, 0x11, 0x22, 0x44, 0x66, 0x77, 0x55
-#endif /*__SET_ORIGIN_Y__*/
+#else
+  0x55, 0x77, 0x66, 0x44, 0x22, 0x11, 0x00, 0x33
+#endif
 };
 
 uint8_t offsetArray[RAW_FRAME] = {0};             // 1D Array to store smallest values
@@ -86,16 +86,19 @@ uint8_t ledIterations = 0;
 preset_t presets[7] = {
   {0, 13, 31, 21, 21, true, LOW, LOW },   // LINE_OUT
   {1, 0, 15, 5, 5, true, HIGH, LOW },     // SIG_IN
-  {2, 0, 31, 17, 17, true, LOW, HIGH },   // SIG_OUT / min 13
-  {3, 5, 60, 20, 20, true, HIGH, HIGH },  // THRESHOLD
-  {4, 1, 6, 0, 0, true, NULL, NULL },     // MIDI_LEARN [ID, alive, X, Y, W, H, D]
+  {2, 0, 31, 17, 17, true, LOW, HIGH },   // SIG_OUT
+  {3, 5, 60, 30, 30, true, HIGH, HIGH },  // THRESHOLD
+  {4, 1, 6, 1, 1, true, NULL, NULL },     // MIDI_LEARN [ID, alive, X, Y, W, H, D]
   {5, 0, 0, 0, 0, true, NULL, NULL },     // CALIBRATE
   {6, 0, 0, 0, 0, true, NULL, NULL }      // SAVE
 };
 
-// Testing
-switch_t tapSwitch = {10, 10, 5, 1000, false};
-switch_t modeSwitch = {30, 10, 5, 1000, false};
+// Testing mapping fonctions
+switch_t tapSwitch_A = {10, 10, 5, 1000, false}; // ARGS [posX, posY, rSize, debounceTimer, state]
+switch_t tapSwitch_B = {40, 30, 5, 1000, false}; // ARGS [posX, posY, rSize, debounceTimer, state]
+
+switch_t modeSwitch_A = {30, 10, 5, 1000, false};
+switch_t modeSwitch_B = {40, 25, 5, 1000, false};
 
 void setup() {
 
@@ -193,16 +196,21 @@ void loop() {
   );
 
 #if DEBUG_ADC
-  if (timerDebug >= 200) {
+  if (timerDebug >= 1000) {
     timerDebug = 0;
     print_adc(&inputFrame);
   }
 #endif
 
-  interp_matrix(&interpolatedFrame, &inputFrame, &interp);
+  interp_matrix(
+    presets[THRESHOLD].val,
+    &interpolatedFrame,
+    &inputFrame,
+    &interp
+  );
 
 #if DEBUG_INTERP
-  if (timerDebug >= 200) {
+  if (timerDebug >= 1000) {
     timerDebug = 0;
     print_interp(&interpolatedFrame);
   }
@@ -220,7 +228,7 @@ void loop() {
   );
 
 #if DEBUG_BITMAP
-  if (timerDebug >= 200) {
+  if (timerDebug >= 100) {
     timerDebug = 0;
     print_bitmap(&bitmap);
   }
@@ -245,13 +253,19 @@ void loop() {
 
 #if STANDALONE
   // Make some mapping
+  // config.h
+  //    SET_ORIGIN_X == 1
+  //    SET_ORIGIN_Y == 1
+  //    The sensor surface origine [X:0-Y:0] is TOP_LEFT
+
   for (blob_t* blob = ITERATOR_START_FROM_HEAD(&outputBlobs); blob != NULL; blob = ITERATOR_NEXT(blob)) {
     //polar_t polarCoord = polarCoordinates(blob, POLAR_X, POLAR_Y);
     //keyCode_t key = gridLayout(blob, NEW_COLS, NEW_ROWS, 20, 20, 0, 0); // ARGS [blob/gridW/gridH/stepX/stepY/posX/posY]
-    //boolean togSwitchVal = toggle(blob, &modeSwitch);
+    //boolean togSwitchVal_A = toggle(blob, &modeSwitch_A);
+    //boolean togSwitchVal_B = toggle(blob, &modeSwitch_B);
     //boolean tapSwitchVal = trigger(blob, &tapSwitch);
-    //float hSliderPos = hSlider(blob, 10, 20, 50, 5); // ARGS [blob/posY/Xmin/Xmax/hSize (FIXME)
-    //float vSliderPos = vSlider(blob, 10, 20, 50, 5); // ARGS [blob/posX/Ymin/Ymax/wSize (FIXME)
+    //float hSliderPos = hSlider(blob, 30, 5, 50, 5); // ARGS [blob/posY/Xmin/Xmax/hSize
+    //float vSliderPos = vSlider(blob, 30, 5, 50, 5); // ARGS [blob/posX/Ymin/Ymax/wSize
   }
 
   make_noise(
