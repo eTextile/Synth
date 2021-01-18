@@ -203,7 +203,7 @@ void loop() {
 #endif
 
   interp_matrix(
-    presets[THRESHOLD].val,
+    10,
     &interpolatedFrame,
     &inputFrame,
     &interp
