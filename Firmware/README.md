@@ -19,28 +19,28 @@
     - **OSC** : https://github.com/CNMAT/OSC
 
 ### Arduino IDE Settings for Teensy 4.0
-- Board:        Teensy 4.0
-- USB Type:     MIDI
-- CPUSpeed:     600MHz
-- Optimize      Faster
+- **Board** :     Teensy 4.0
+- **USB Type** :  MIDI
+- **CPUSpeed** :  600MHz
+- **Optimize** :  Faster
 
 ### eTextile-Synthetizer / Firmware
-- Load /Synth-master/Firmware/main/main.ino
+- **Arduino** : /Synth-master/Firmware/main/main.ino
  
-### eTextile-Synthetizer / Powering
+### eTextile-Synthetizer / Powering !
 - The Teensy **Micro USB Type B** will not power the eTextile-Synthetizer
 - You must connect the included power cable with a power adapter or your laptop USB plug
 
 ### eTextile-Synthetizer / Benchmark
-  - ADC_INPUT : 1853 FPS
-  - ADC_INPUT / BILINEAR_INTERPOLATION : 987 FPS
-  - ADC_INPUT / BILINEAR_INTERPOLATION / BLOB_TRACKING : 950 FPS
-  - ADC_INPUT / BILINEAR_INTERPOLATION / BLOB_TRACKING / AUDIO : 955 FPS
+  - ADC_INPUT : ... FPS
+  - ADC_INPUT / BILINEAR_INTERPOLATION : ... FPS
+  - ADC_INPUT / BILINEAR_INTERPOLATION / BLOB_TRACKING : ... FPS
+  - ADC_INPUT / BILINEAR_INTERPOLATION / BLOB_TRACKING / AUDIO : 400 FPS
 
 ## eTextile-Synthetizer / Program Synopsis
 - The Arduio sketch implemant rows and columns scaning algorithm with synchronous **dual ADC sampling**.
+  - COLS : Two analog multiplexers connected to the matrix columns
   - ROWS : Two 8_Bits shift register connected to the matrix rows
-  - COLS : Two analog multiplexers connected to the matrix columns 
 - The 16x16 Analog sensors values are interpolated into 64x64 with a bilinear algorithm
 - The blob tracking algorithm (connected component labeling) is applyed onto the interpolated matrix
 - Blobs are tracked with persistent ID (this is done with linked list implementation)
