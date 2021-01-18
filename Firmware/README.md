@@ -17,15 +17,19 @@
   - **elapsedMillis** : https://github.com/pfeerick/elapsedMillis
   - **Audio** : https://github.com/PaulStoffregen/Audio
   - **MIDI** : https://github.com/PaulStoffregen/MIDI
-- Arduino IDE additional library : **Installed with Arduino library manager**
+- Arduino IDE additional library : **Install with Arduino library manager**
   - **Bounce2** : https://github.com/thomasfredericks/Bounce2
+- Arduino IDE additional library : **Install by hand in library folder**
   - **OSC** : https://github.com/CNMAT/OSC
 
 ### Arduino IDE Settings for Teensy 4.0
 - Board:        Teensy 4.0
-- USB Type:     Serial or MIDI
+- USB Type:     IDI
 - CPUSpeed:     600MHz
 - Optimize      Faster
+
+### eTextile-Synthetizer Firmware
+- Load /Synth-master/Firmware/main/main.ino 
 
 ### eTextile-Synthetizer / Benchmark
   - ADC_INPUT : 1853 FPS
