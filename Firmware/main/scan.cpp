@@ -6,15 +6,13 @@
 
 #include "scan.h"
 
-//////////////////////////////////////////////////// FONCTIONS
 void SETUP_SPI(void) {
 
-  pinMode(SS1_PIN, OUTPUT);             // Set the Slave Select Pin as OUTPUT
-  SPI1.begin();                         // Start the SPI module
-  // 74HC595BQ Shift out register frequency is 100 MHz = 100000000 Hz
-  SPI1.beginTransaction(SPISettings(30000000, MSBFIRST, SPI_MODE0));
-  digitalWrite(SS1_PIN, LOW);           // Set latchPin LOW
-  digitalWrite(SS1_PIN, HIGH);          // Set latchPin HIGH
+  pinMode(SS1_PIN, OUTPUT);                                               // Set the Slave Select Pin as OUTPUT
+  SPI1.begin();                                                           // Start the SPI module
+  SPI1.beginTransaction(SPISettings(30000000, MSBFIRST, SPI_MODE0));      // 74HC595BQ Shift out register frequency is 100 MHz = 100000000 Hz
+  digitalWrite(SS1_PIN, LOW);                                             // Set latchPin LOW
+  digitalWrite(SS1_PIN, HIGH);                                            // Set latchPin HIGH
 }
 
 void SETUP_ADC(ADC *adc) {
@@ -37,8 +35,8 @@ void SETUP_ADC(ADC *adc) {
   //adc->adc1->setSamplingSpeed(ADC_SAMPLING_SPEED::HIGH_SPEED);          // Change the sampling speed
 }
 
-// Rows are analog INPUT PINS reded two by two
-// Columns are digital OUTPUT PINS supplyed one by one sequentially with 3.3V
+// Columns are analog INPUT_PINS reded two by two
+// Rows are digital OUTPUT_PINS supplyed one by one sequentially with 3.3V
 void calibrate_matrix(ADC* adc_ptr, ADC::Sync_result* result_ptr, uint8_t* ofsetArray_ptr, uint8_t* shiftOutArray_ptr) {
 
   uint16_t setRows;
@@ -76,8 +74,8 @@ void calibrate_matrix(ADC* adc_ptr, ADC::Sync_result* result_ptr, uint8_t* ofset
   }
 }
 
-// Rows are analog INPUT PINS reded two by two
-// Columns are digital OUTPUT PINS supplyed one by one sequentially with 3.3V
+// Columns are analog INPUT_PINS reded two by two
+// Rows are digital OUTPUT_PINS supplyed one by one sequentially with 3.3V
 void scan_matrix(ADC* adc_ptr, ADC::Sync_result* result_ptr, uint8_t* array_ptr, uint8_t* offsetArray_ptr, uint8_t* shiftOutArray_ptr) {
 
   uint16_t setRows;
