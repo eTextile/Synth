@@ -2,25 +2,21 @@
 ### Exploring music through textile
 
 ## Requirements
-
-- eTextile-Synthetizer PCB
-- Teensy 4.0
-
-- Arduino IDE 1.8.13 or higher
-  - https://www.arduino.cc/en/Main/Software
-- Arduino IDE additional board
-  - Teensyduino(1.53): https://www.pjrc.com/teensy/teensyduino.html
-- Arduino IDE additional library : **Include in Teensyduino**
-  - **SPI**: https://github.com/PaulStoffregen/SPI
-  - **ADC**: https://github.com/pedvide/ADC
-  - **Encoder** : https://github.com/PaulStoffregen/Encoder 
-  - **elapsedMillis** : https://github.com/pfeerick/elapsedMillis
-  - **Audio** : https://github.com/PaulStoffregen/Audio
-  - **MIDI** : https://github.com/PaulStoffregen/MIDI
-- Arduino IDE additional library : **Install with Arduino library manager**
-  - **Bounce2** : https://github.com/thomasfredericks/Bounce2
-- Arduino IDE additional library : **Install by hand in /Documents/Arduino/library**
-  - **OSC** : https://github.com/CNMAT/OSC
+- **eTextile-Synthetizer PCB** & **Teensy 4.0**
+- **Arduino IDE** : Arduino 1.8.13 or higher [DOWNLOAD](https://www.arduino.cc/en/Main/Software)
+- **Arduino IDE additional board** : Teensyduino (1.53 or higher) [DOWNLOAD](https://www.pjrc.com/teensy/teensyduino.html)
+- **Arduino IDE additional library**
+  - **Included in Teensyduino**
+    - **SPI**: https://github.com/PaulStoffregen/SPI
+    - **ADC**: https://github.com/pedvide/ADC
+    - **Encoder** : https://github.com/PaulStoffregen/Encoder 
+    - **elapsedMillis** : https://github.com/pfeerick/elapsedMillis
+    - **Audio** : https://github.com/PaulStoffregen/Audio
+    - **MIDI** : https://github.com/PaulStoffregen/MIDI
+  - **To install with Arduino library manager**
+    - **Bounce2** : https://github.com/thomasfredericks/Bounce2
+  - **To install by hand in /Documents/Arduino/library**
+    - **OSC** : https://github.com/CNMAT/OSC
 
 ### Arduino IDE Settings for Teensy 4.0
 - Board:        Teensy 4.0
@@ -43,12 +39,17 @@
 
 ## eTextile-Synthetizer / Program Synopsis
 - The Arduio sketch implemant rows and columns scaning algorithm with synchronous **dual ADC sampling**.
-  - COLS = Two 8_Bits shift registers connected directly to the matrix columns.
-  - ROWS = One 8_Bits shift register connected to two analog multiplexers that sens the matrix rows.
-- The 16x16 Analog sensors values are interpolated into 64x64 with a bilinear algorithm.
-- The blob tracking algorithm (connected component labeling) is applyed onto the interpolated matrix.
-- Blobs are tracked with persistent ID (this is done with linked list implementation).
-- Blobs coordinates, size and pressure are used to control a Polyphonic-Synthesizer.
+  - ROWS : Two 8_Bits shift register connected to the matrix rows
+  - COLS : Two analog multiplexers connected to the matrix columns 
+- The 16x16 Analog sensors values are interpolated into 64x64 with a bilinear algorithm
+- The blob tracking algorithm (connected component labeling) is applyed onto the interpolated matrix
+- Blobs are tracked with persistent ID (this is done with linked list implementation)
+- Blobs coordinates, size and pressure are used to play music.
+
+## eTextile-Synthetizer / Modes
+  - **STANDALONE** : Blobs values are used to control embeded custom polyphonic synthesizers
+  - **MIDI_USB** : Blobs values are transmitted via MIDI_USB to control Audio Applications software like Pd, Max...
+  - **MIDI** : Blobs values are translated into MIDI-NOTES that are transmitted via MIDI OUT miniJack socket
 
 ## Copyright
 Except as otherwise noted, all files in the resistiveMatrix project folder
