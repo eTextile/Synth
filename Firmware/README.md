@@ -4,7 +4,7 @@
 ## Requirements
 - **eTextile-Synthetizer PCB** & **Teensy 4.0**
 - **Arduino IDE** : Arduino 1.8.13 or higher [DOWNLOAD](https://www.arduino.cc/en/Main/Software)
-- **Arduino IDE additional board** : Teensyduino (1.53 or higher) [DOWNLOAD](https://www.pjrc.com/teensy/teensyduino.html)
+- **Arduino IDE additional board** : Teensyduino 1.53 or higher [DOWNLOAD](https://www.pjrc.com/teensy/teensyduino.html)
 - **Arduino IDE additional library**
   - **Included in Teensyduino**
     - **SPI**: https://github.com/PaulStoffregen/SPI
