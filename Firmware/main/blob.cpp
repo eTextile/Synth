@@ -250,7 +250,7 @@ void find_blobs(
   Serial.printf("\n DEBUG_BLOBS_ID / **inputBlobs** linked list index: %d", inputBlobs_ptr->index);
   Serial.printf("\n DEBUG_BLOBS_ID / **blobs_stack** linked list index: %d", blobs_stack_ptr->index);
   Serial.printf("\n DEBUG_BLOBS_ID / **outputBlobs** linked list index: %d", outputBlobs_ptr->index);
-#endif /*__DEBUG_BLOBS_ID__*/
+#endif
 
   // Suppress blobs from the outputBlobs linked list
   // TODO: Add blob->timeTag to debounce the blobs
@@ -261,10 +261,10 @@ void find_blobs(
         found = true;
         llist_remove_blob(outputBlobs_ptr, blob);
         llist_push_back(blobs_stack_ptr, blob);
-#if DEBUG_BLOBS_ID == 1
+#if DEBUG_BLOBS_ID
         Serial.printf("\n DEBUG_BLOBS_ID / Blob: %p removed from **outputBlobs** linked list", blob);
         Serial.printf("\n DEBUG_BLOBS_ID / Blob: %p saved to **freeBlobList** linked list", blob);
-#endif /*__DEBUG_BLOBS_ID__*/
+#endif
         break;
       }
     }
@@ -299,7 +299,7 @@ void find_blobs(
     if (minDist < 3.0f) {
 #if DEBUG_BLOBS_ID
       Serial.printf("\n DEBUG_BLOBS_ID / Found corresponding blob: %p in the **outputBlobs** linked list", nearestBlob);
-#endif /*__DEBUG_BLOBS_ID__*/
+#endif
       blobA->UID = nearestBlob->UID;
       blobA->state = TO_UPDATE;
     }
@@ -366,7 +366,7 @@ void find_blobs(
 
 #if DEBUG_BLOBS_ID
   Serial.println("\n DEBUG_BLOBS_ID / END OFF BLOB FONCTION");
-#endif /*__DEBUG_BLOBS_ID__*/
+#endif
 }
 
 ////////////////////////////////
