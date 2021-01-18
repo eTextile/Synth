@@ -30,7 +30,7 @@ typedef struct blob blob_t;     // Forward declaration
 
 #if USB_SLIP_OSC
 void USB_SLIP_OSC_SETUP(void);
-void blobs_usb_slipOsc(llist_t* blobs_ptr, preset_t* preset_ptr);
+void blobs_usb_slipOsc(llist_t* blobs_ptr);
 #endif
 
 #if USB_MIDI
