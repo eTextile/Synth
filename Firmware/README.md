@@ -28,8 +28,12 @@
 - CPUSpeed:     600MHz
 - Optimize      Faster
 
-### eTextile-Synthetizer Firmware
-- Load /Synth-master/Firmware/main/main.ino 
+### eTextile-Synthetizer / Firmware
+- Load /Synth-master/Firmware/main/main.ino
+ 
+### eTextile-Synthetizer / Powering
+- The Teensy **Micro USB Type B** will not power the eTextile-Synthetizer
+- You must connect the included power cable with a power adapter or your laptop USB plug
 
 ### eTextile-Synthetizer / Benchmark
   - ADC_INPUT : 1853 FPS
