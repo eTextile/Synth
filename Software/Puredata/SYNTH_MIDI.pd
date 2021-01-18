@@ -1,6 +1,6 @@
-#N canvas 1955 153 1152 606 12;
+#N canvas 0 91 1920 963 12;
 #X text 96 14 eTextile-Synthetizer / MIDI / Pure-Data;
-#X obj 540 580 cnv 15 80 20 empty B-1 empty 20 12 0 14 -262144 -66577
+#X obj 930 430 cnv 15 100 70 empty B-1 empty 20 12 0 14 -262144 -66577
 0;
 #X text 96 74 Channel == Blob ID;
 #X floatatom 623 192 0 0 0 0 - - -;
@@ -9,7 +9,7 @@
 #X obj 610 284 send;
 #X obj 656 216 change;
 #X obj 610 161 ctlin 4;
-#X obj 160 270 cnv 15 30 50 empty B-2 empty 20 12 0 14 -262144 -66577
+#X obj 1010 460 cnv 15 40 30 empty B-2 empty 20 12 0 14 -262144 -66577
 0;
 #X msg 656 243 symbol \$1-WIDTH;
 #X text 564 162 Value;
@@ -53,13 +53,13 @@
 #X msg 486 243 symbol \$1-POSY;
 #X msg 826 243 symbol \$1-HEIGHT;
 #X msg 996 243 symbol \$1-DEPTH;
-#X obj 450 160 cnv 15 30 20 empty B-3 empty 20 12 0 14 -262144 -66577
+#X obj 770 750 cnv 15 80 60 empty B-3 empty 20 12 0 14 -262131 -66577
 0;
-#X obj 200 280 cnv 15 20 50 empty B-4 empty 20 12 0 14 -262144 -66577
+#X obj 440 520 cnv 15 20 50 empty B-4 empty 20 12 0 14 -262144 -66577
 0;
-#X obj 580 320 cnv 15 50 110 empty B-6 empty 20 12 0 14 -262144 -66577
+#X obj 530 630 cnv 15 50 100 empty B-6 empty 20 12 0 14 -262144 -66577
 0;
-#X obj 570 160 cnv 15 50 30 empty B-5 empty 20 12 0 14 -262144 -66577
+#X obj 440 430 cnv 15 10 30 empty B-5 empty 20 12 0 14 -262144 -66577
 0;
 #X msg 100 382 vis 3 1;
 #X text 97 132 Blob / STATE;
