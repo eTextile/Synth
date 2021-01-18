@@ -19,12 +19,12 @@
   - **MIDI** : https://github.com/PaulStoffregen/MIDI
 - Arduino IDE additional library : **Install with Arduino library manager**
   - **Bounce2** : https://github.com/thomasfredericks/Bounce2
-- Arduino IDE additional library : **Install by hand in library folder**
+- Arduino IDE additional library : **Install by hand in /Documents/Arduino/library**
   - **OSC** : https://github.com/CNMAT/OSC
 
 ### Arduino IDE Settings for Teensy 4.0
 - Board:        Teensy 4.0
-- USB Type:     IDI
+- USB Type:     MIDI
 - CPUSpeed:     600MHz
 - Optimize      Faster
 
