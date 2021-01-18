@@ -1,6 +1,6 @@
 #N canvas 1955 153 1152 606 12;
 #X text 96 14 eTextile-Synthetizer / MIDI / Pure-Data;
-#X obj 430 580 cnv 15 110 20 empty B-1 empty 20 12 0 14 -262144 -66577
+#X obj 540 580 cnv 15 80 20 empty B-1 empty 20 12 0 14 -262144 -66577
 0;
 #X text 96 74 Channel == Blob ID;
 #X floatatom 623 192 0 0 0 0 - - -;
