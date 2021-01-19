@@ -10,9 +10,9 @@
 #include <Arduino.h>
 
 //#if defined(USB_SERIAL)
-//#elif defined(USB_HID)
+//#if defined(USB_MIDI)
 
-#define USB_MIDI                0 // [0:1] Set the eTextile-Synthesizer as USB MIDI divice
+#define MIDI_USB                0 // [0:1] Set the eTextile-Synthesizer as USB MIDI divice
 #define USB_SLIP_OSC            0 // [0:1] Set the eTextile-Synthesizer as SLIP_OSC divice
 #define STANDALONE              1 // [0:1] Set the eTextile-Synthesizer as STANDALONE divice
 
