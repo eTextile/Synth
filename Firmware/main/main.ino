@@ -67,28 +67,79 @@ ADC::Sync_result result;        // Store ADC_0 & ADC_1
 
 AudioControlSGTL5000            sgtl5000;
 
-AudioSynthWaveform              wfA;
-AudioSynthWaveform              wfB;
-AudioEffectFade                 fadeA;
-AudioEffectFade                 fadeB;
-AudioSynthWaveformSineModulated fmA;
-AudioSynthWaveformSineModulated fmB;
+AudioSynthWaveform              wf_1;
+AudioSynthWaveform              wf_2;
+AudioSynthWaveform              wf_3;
+AudioSynthWaveform              wf_4;
+AudioSynthWaveform              wf_5;
+AudioSynthWaveform              wf_6;
+AudioSynthWaveform              wf_7;
+AudioSynthWaveform              wf_8;
 
-AudioMixer4                     mixA;
+AudioSynthWaveformSineModulated fm_1;
+AudioSynthWaveformSineModulated fm_2;
+AudioSynthWaveformSineModulated fm_3;
+AudioSynthWaveformSineModulated fm_4;
+AudioSynthWaveformSineModulated fm_5;
+AudioSynthWaveformSineModulated fm_6;
+AudioSynthWaveformSineModulated fm_7;
+AudioSynthWaveformSineModulated fm_8;
+
+AudioEffectFade                 fade_1;
+AudioEffectFade                 fade_2;
+AudioEffectFade                 fade_3;
+AudioEffectFade                 fade_4;
+AudioEffectFade                 fade_5;
+AudioEffectFade                 fade_6;
+AudioEffectFade                 fade_7;
+AudioEffectFade                 fade_8;
+
+AudioMixer4                     mix_1;
+AudioMixer4                     mix_2;
+AudioMixer4                     mix_3;
+
 AudioOutputI2S                  i2s1;
 
-AudioConnection                 patchCord1(wfA, fadeA);
-AudioConnection                 patchCord2(wfB, fadeB);
-AudioConnection                 patchCord3(fadeA, fmA);
-AudioConnection                 patchCord4(fadeB, fmB);
-AudioConnection                 patchCord5(fmA, 0, mixA, 0);
-AudioConnection                 patchCord6(fmB, 0, mixA, 1);
-AudioConnection                 patchCord7(mixA, 0, i2s1, 0);
-AudioConnection                 patchCord8(mixA, 0, i2s1, 1);
+AudioConnection                 patchCord1(wf_1, fm_1);
+AudioConnection                 patchCord2(wf_2, fm_2);
+AudioConnection                 patchCord3(wf_3, fm_3);
+AudioConnection                 patchCord4(wf_4, fm_4);
+AudioConnection                 patchCord5(wf_5, fm_5);
+AudioConnection                 patchCord6(wf_6, fm_6);
+AudioConnection                 patchCord7(wf_7, fm_7);
+AudioConnection                 patchCord8(wf_8, fm_8);
 
-synth_t allSynth[2] = {
-  {&wfA, &fmA, &fadeA, &mixA, 0},
-  {&wfB, &fmB, &fadeB, &mixA, 0}
+AudioConnection                 patchCord9(fm_1, fade_1);
+AudioConnection                 patchCord10(fm_2, fade_2);
+AudioConnection                 patchCord11(fm_3, fade_3);
+AudioConnection                 patchCord12(fm_4, fade_4);
+AudioConnection                 patchCord13(fm_5, fade_5);
+AudioConnection                 patchCord14(fm_6, fade_6);
+AudioConnection                 patchCord15(fm_7, fade_7);
+AudioConnection                 patchCord16(fm_8, fade_8);
+
+AudioConnection                 patchCord17(fade_1, 0, mix_1, 0);
+AudioConnection                 patchCord18(fade_2, 0, mix_1, 1);
+AudioConnection                 patchCord19(fade_3, 0, mix_1, 3);
+AudioConnection                 patchCord20(fade_4, 0, mix_1, 4);
+
+AudioConnection                 patchCord21(fade_5, 0, mix_2, 0);
+AudioConnection                 patchCord22(fade_6, 0, mix_2, 1);
+AudioConnection                 patchCord23(fade_7, 0, mix_2, 3);
+AudioConnection                 patchCord24(fade_8, 0, mix_2, 4);
+
+AudioConnection                 patchCord25(mix_1, 0, i2s1, 0);
+AudioConnection                 patchCord26(mix_2, 0, i2s1, 1);
+
+synth_t allSynth[8] = {
+  {&wf_1, &fm_1, &fade_1, &mix_1, 0},
+  {&wf_2, &fm_2, &fade_2, &mix_1, 0},
+  {&wf_3, &fm_3, &fade_3, &mix_1, 0},
+  {&wf_4, &fm_4, &fade_4, &mix_1, 0},
+  {&wf_5, &fm_5, &fade_5, &mix_2, 0},
+  {&wf_6, &fm_6, &fade_6, &mix_2, 0},
+  {&wf_7, &fm_7, &fade_7, &mix_2, 0},
+  {&wf_8, &fm_8, &fade_8, &mix_2, 0}
 };
 
 uint8_t lastMode = CALIBRATE;
@@ -310,7 +361,7 @@ void loop() {
 #if DEBUG_FPS
   if (curentMillisFps >= 1000) {
     curentMillisFps = 0;
-    Serial.println(fps);
+    Serial.printf("\nFPS : %d CPU : %f", fps, AudioProcessorUsageMax());
     fps = 0;
   }
   fps++;
