@@ -35,7 +35,7 @@
   - ADC_INPUT : ... FPS
   - ADC_INPUT / BILINEAR_INTERPOLATION : ... FPS
   - ADC_INPUT / BILINEAR_INTERPOLATION / BLOB_TRACKING : ... FPS
-  - ADC_INPUT / BILINEAR_INTERPOLATION / BLOB_TRACKING / AUDIO : 400 FPS
+  - ADC_INPUT / BILINEAR_INTERPOLATION / BLOB_TRACKING / AUDIO : 420 FPS
 
 ## eTextile-Synthetizer / Program Synopsis
 - The Arduio sketch implemant rows and columns scaning algorithm with synchronous **dual ADC sampling**.
