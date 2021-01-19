@@ -10,13 +10,15 @@ boolean toggle(blob_t* blob_ptr, switch_t* tSwitch) {
 
   if (blob_ptr->centroid.X > tSwitch->posX - tSwitch->rSize && blob_ptr->centroid.X < tSwitch->posX + tSwitch->rSize) {
     if (blob_ptr->centroid.Y > tSwitch->posY - tSwitch->rSize && blob_ptr->centroid.Y < tSwitch->posY + tSwitch->rSize) {
-      if (tSwitch->debounceTimer > MAPP_DEBOUNCE_TIME) {
-        tSwitch->debounceTimer = 0;
+      if (millis() - tSwitch->debounce > MAPP_DEBOUNCE_TIME) {
+        tSwitch->debounce = millis();
         tSwitch->state = !tSwitch->state;
-        //Serial.printf("\nDEBUG_TOGGLE : STATE:%d", tSwitch->state);
+#if DEBUG_MAPPING
+        Serial.printf("\nDEBUG_TOGGLE : STATE:%d", tSwitch->state);
+#endif
         return tSwitch->state;
       }
-      tSwitch->debounceTimer = 0;
+      tSwitch->debounce = millis();
     }
   }
 }
@@ -25,12 +27,14 @@ boolean trigger(blob_t* blob_ptr, switch_t* tSwitch) {
 
   if (blob_ptr->centroid.X > tSwitch->posX - tSwitch->rSize && blob_ptr->centroid.X < tSwitch->posX + tSwitch->rSize) {
     if (blob_ptr->centroid.Y > tSwitch->posY - tSwitch->rSize && blob_ptr->centroid.Y < tSwitch->posY + tSwitch->rSize) {
-      if (tSwitch->debounceTimer > MAPP_DEBOUNCE_TIME) {
-        tSwitch->debounceTimer = 0;
-        //Serial.printf("\nDEBUG_TRIGGER : POSX:%f\tPOSY:%f", blob_ptr->centroid.X, blob_ptr->centroid.Y);
+      if (millis() - tSwitch->debounce > MAPP_DEBOUNCE_TIME) {
+        tSwitch->debounce = millis();
+#if DEBUG_MAPPING
+        Serial.printf("\nDEBUG_TRIGGER : POSX:%f\tPOSY:%f", blob_ptr->centroid.X, blob_ptr->centroid.Y);
+#endif
         return true;
       }
-      tSwitch->debounceTimer = 0;
+      tSwitch->debounce = millis();
     }
   }
   else {
@@ -53,39 +57,47 @@ keyCode_t gridLayout(blob_t* blob_ptr, uint8_t gridW, uint8_t gridH, uint8_t ste
     // Look for the X and Y cell position
     key.posX = (uint8_t)round(((blob_ptr->centroid.X - posX) / gridW) * stepX);
     key.posY = (uint8_t)round(((blob_ptr->centroid.Y - posY) / gridH) * stepY);
-    //Serial.printf("\n DEBUG_GRID : posX:%d \t posY:%d", key.posX, key.posY);
+#if DEBUG_MAPPING
+    Serial.printf("\n DEBUG_GRID : posX:%d \t posY:%d", key.posX, key.posY);
+#endif
     return key;
   }
 }
 
-void harmonicKeyboardLayout(blob_t* blob_ptr) {
+keyCode_t harmonicKeyboardLayout(blob_t* blob_ptr, uint8_t gridW, uint8_t gridH, uint8_t stepX, uint8_t stepY, uint8_t posX, uint8_t posY) {
   // TODO
 }
 
-void vSlider(blob_t* blob_ptr, uint8_t posX, uint8_t Ymin, uint8_t Ymax, uint8_t wSize) {
+// FIXME
+float vSlider(blob_t* blob_ptr, uint8_t posX, uint8_t Ymin, uint8_t Ymax, uint8_t wSize) {
   if (blob_ptr->centroid.X > posX - wSize && blob_ptr->centroid.X < posX + wSize) {
     if (blob_ptr->centroid.Y > Ymin && blob_ptr->centroid.Y < Ymax) {
 
-      //blob_ptr->centroid.Y - Ymin
-
-      //return val [0:127]
+      float posVal = (blob_ptr->centroid.Y - (float)Ymin) * ((Ymax - Ymin) / 127); // [0:127]
+      Serial.printf("\nDEBUG_V_SLIDER : POS_VAL:%f", posVal);
+      return posVal;
     }
   }
 }
 
-void hSlider(blob_t* blob_ptr, uint8_t posY, uint8_t Xmin, uint8_t Xmax, uint8_t hSize) {
+// FIXME
+float hSlider(blob_t* blob_ptr, uint8_t posY, uint8_t Xmin, uint8_t Xmax, uint8_t hSize) {
   if (blob_ptr->centroid.Y > posY - hSize && blob_ptr->centroid.Y < posY + hSize) {
     if (blob_ptr->centroid.X > Xmin && blob_ptr->centroid.X < Xmax) {
-      //return val [0:127]
+      float posVal = (blob_ptr->centroid.X - Xmin) * ((Xmax - Xmin) / 127); // [0:127]
+#if DEBUG_MAPPING
+      Serial.printf("\nDEBUG_H_SLIDER : POS_VAL:%f", posVal);
+#endif
+      return posVal;
     }
   }
 }
 
-void cSlider(blob_t* blob_ptr, float radius, float tetaMin, float tetaMax, uint8_t width) {
+void cSlider(blob_t* blob_ptr, float radius, float tetaMin, float tetaMax, uint8_t wSize) {
 
   polar_t blob = polarCoordinates(blob_ptr, POLAR_X, POLAR_Y);
 
-  if ( blob.r > radius - width / 2 && blob.r < radius + width / 2) {
+  if ( blob.r > radius - wSize && blob.r < radius + wSize) {
     if ( blob.phi > tetaMin && blob.phi < tetaMin) {
       //return val [0:127]
     }
@@ -118,6 +130,8 @@ polar_t polarCoordinates(blob_t* blob_ptr, uint8_t Xcenter, uint8_t Ycenter) {
   } else {
     coord.phi = atan(posY / posX);
   }
-  //Serial.printf("\nDEBUG_POLAR : R:%f\tPHY:%f", coord.r, coord.phi);
+#if DEBUG_MAPPING
+  Serial.printf("\nDEBUG_POLAR : R:%f\tPHY:%f", coord.r, coord.phi);
+#endif
   return coord;
 }
