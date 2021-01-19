@@ -9,9 +9,12 @@
 
 #include <Arduino.h>
 
+//#if defined(USB_SERIAL)
+//#elif defined(USB_HID)
+
 #define USB_MIDI                0 // [0:1] Set the eTextile-Synthesizer as USB MIDI divice
 #define USB_SLIP_OSC            0 // [0:1] Set the eTextile-Synthesizer as SLIP_OSC divice
-#define STANDALONE              0 // [0:1] Set the eTextile-Synthesizer as STANDALONE divice
+#define STANDALONE              1 // [0:1] Set the eTextile-Synthesizer as STANDALONE divice
 
 // Arduino serial monitor
 #define DEBUG_FPS               0 // [0:1] Print Frames Per Second
@@ -20,14 +23,15 @@
 #define DEBUG_ADC               0 // [0:1] Print 16x16 Analog raw values
 #define DEBUG_INTERP            0 // [0:1] Print 64x64 interpolated values
 #define DEBUG_BITMAP            0 // [0:1] Print 64x64 binary image based on threshold
-#define DEBUG_BLOBS             1 // [0:1] Print blobs values
+#define DEBUG_BLOBS             0 // [0:1] Print blobs values
+
 #define DEBUG_BLOBS_ID          0 // [0:1] Print lowlevel blobs values
 #define DEBUG_SORT              0 // [0:1] Print lowlevel blobs sort
 
-// DO NOT CHANGE
 #define SET_ORIGIN_X            1 // [-1:1] X-axis origine position
 #define SET_ORIGIN_Y            1 // [-1:1] Y-axis origine position
 
+// DO NOT CHANGE
 #define LED_PIN_D1              5
 #define LED_PIN_D2              4
 #define BUTTON_PIN_L            2
@@ -53,7 +57,6 @@
 #define SCALE_X                 4
 #define SCALE_Y                 4
 #define RAW_FRAME               (RAW_COLS * RAW_ROWS)
-#define DUAL_FRAME              (RAW_COLS / 2)
 #define NEW_COLS                (RAW_COLS * SCALE_X)
 #define NEW_ROWS                (RAW_ROWS * SCALE_Y)
 #define NEW_FRAME               (NEW_COLS * NEW_ROWS)
@@ -61,11 +64,11 @@
 #define POLAR_Y                 (NEW_ROWS / 2)
 #define MAX_NODES               40       // Set the maximum nodes number
 #define LIFO_MAX_NODES          127      // Set the maximum nodes number
-#define X_STRIDE                4
-#define Y_STRIDE                1
-#define MIN_BLOB_PIX            8        // Set the minimum blob pixels
+#define X_STRIDE                3        // 
+#define Y_STRIDE                3        // 
+#define MIN_BLOB_PIX            6        // Set the minimum blob pixels
 #define MAX_BLOB_PIX            4095     // Set the maximum blob pixels
-#define DEBOUNCE_TIME           15       // TOTEST 
+#define DEBOUNCE_TIME           15       // TESTING 
 #define CALIBRATION_CYCLES      10
 
 #define LINE_OUT                0
@@ -76,7 +79,7 @@
 #define CALIBRATE               5
 #define SAVE                    6
 
-#define LONG_HOLD               2000
+#define LONG_HOLD               1500
 #define MIDI_LEARN_LED_TIMEON   600
 #define CALIBRATE_LED_TIMEON    40
 #define CALIBRATE_LED_TIMEOFF   150
