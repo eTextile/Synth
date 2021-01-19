@@ -87,7 +87,7 @@ preset_t presets[7] = {
   {0, 13, 31, 21, 21, true, LOW, LOW },   // LINE_OUT
   {1, 0, 15, 5, 5, true, HIGH, LOW },     // SIG_IN
   {2, 0, 31, 17, 17, true, LOW, HIGH },   // SIG_OUT
-  {3, 5, 60, 30, 30, true, HIGH, HIGH },  // THRESHOLD
+  {3, 10, 60, 40, 40, true, HIGH, HIGH },  // THRESHOLD
   {4, 1, 6, 1, 1, true, NULL, NULL },     // MIDI_LEARN [ID, alive, X, Y, W, H, D]
   {5, 0, 0, 0, 0, true, NULL, NULL },     // CALIBRATE
   {6, 0, 0, 0, 0, true, NULL, NULL }      // SAVE
@@ -203,7 +203,7 @@ void loop() {
 #endif
 
   interp_matrix(
-    10,
+    constrain(presets[THRESHOLD].val - 10, presets[THRESHOLD].minVal, presets[THRESHOLD].maxVal),
     &interpolatedFrame,
     &inputFrame,
     &interp
