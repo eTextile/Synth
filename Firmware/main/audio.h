@@ -22,21 +22,25 @@ typedef struct preset preset_t; // Forward declaration
 typedef struct llist llist_t;   // Forward declaration
 typedef struct blob blob_t;     // Forward declaration
 
+typedef struct synth {
+  AudioSynthWaveform* wf_ptr;
+  AudioSynthWaveformSineModulated* fm_ptr;
+  AudioEffectFade* fade_ptr;
+  AudioMixer4* mix_ptr;
+  uint8_t lastBlobState; 
+} synth_t;
+
 void SETUP_DAC(
   preset_t* presets_ptr,
-  AudioControlSGTL5000* dac_ptr,
-  AudioSynthWaveform* wfA_ptr,
-  AudioSynthWaveformSineModulated* sine_fm_ptr,
-  AudioEffectFade* fade_ptr
+  synth_t* synths_ptr,
+  AudioControlSGTL5000* dac_ptr
 );
 
 void make_noise(
   preset_t* presets_ptr,
   llist_t* blobs_ptr,
-  AudioControlSGTL5000* dac_ptr,
-  AudioSynthWaveform* wfA_ptr,
-  AudioSynthWaveformSineModulated* sine_fm_ptr,
-  AudioEffectFade* fade_ptr
+  synth_t* synths_ptr,
+  AudioControlSGTL5000* dac_ptr
 );
 
 #endif /*__AUDIO_H__*/

@@ -51,17 +51,45 @@ Button BUTTON_R = Button();
 ADC* adc = new ADC();           // ADC object
 ADC::Sync_result result;        // Store ADC_0 & ADC_1
 
-AudioControlSGTL5000 sgtl5000;
+/*
+  AudioControlSGTL5000 sgtl5000;
 
-AudioSynthWaveform       waveform1;
-AudioSynthWaveformSineModulated sine_fm1;
-AudioEffectFade          fade1;
-AudioOutputI2S           i2s1;
-AudioConnection          patchCord1(waveform1, sine_fm1);
-AudioConnection          patchCord2(sine_fm1, fade1);
-AudioConnection          patchCord3(fade1, 0, i2s1, 0);
-AudioConnection          patchCord4(fade1, 0, i2s1, 1);
+  AudioSynthWaveform       waveform1;
+  AudioSynthWaveformSineModulated sine_fm1;
+  AudioEffectFade          fade1;
+  AudioOutputI2S           i2s1;
 
+  AudioConnection          patchCord1(waveform1, sine_fm1);
+  AudioConnection          patchCord2(sine_fm1, fade1);
+  AudioConnection          patchCord3(fade1, 0, i2s1, 0);
+  AudioConnection          patchCord4(fade1, 0, i2s1, 1);
+*/
+
+AudioControlSGTL5000            sgtl5000;
+
+AudioSynthWaveform              wfA;
+AudioSynthWaveform              wfB;
+AudioEffectFade                 fadeA;
+AudioEffectFade                 fadeB;
+AudioSynthWaveformSineModulated fmA;
+AudioSynthWaveformSineModulated fmB;
+
+AudioMixer4                     mixA;
+AudioOutputI2S                  i2s1;
+
+AudioConnection                 patchCord1(wfA, fadeA);
+AudioConnection                 patchCord2(wfB, fadeB);
+AudioConnection                 patchCord3(fadeA, fmA);
+AudioConnection                 patchCord4(fadeB, fmB);
+AudioConnection                 patchCord5(fmA, 0, mixA, 0);
+AudioConnection                 patchCord6(fmB, 0, mixA, 1);
+AudioConnection                 patchCord7(mixA, 0, i2s1, 0);
+AudioConnection                 patchCord8(mixA, 0, i2s1, 1);
+
+synth_t allSynth[2] = {
+  {&wfA, &fmA, &fadeA, &mixA, 0},
+  {&wfB, &fmB, &fadeB, &mixA, 0}
+};
 
 uint8_t lastMode = CALIBRATE;
 uint8_t currentMode = LINE_OUT;  // Initialise currentMode with the DEFAULT_MODE
@@ -84,21 +112,20 @@ elapsedMillis ledTimer;
 uint8_t ledIterations = 0;
 
 preset_t presets[7] = {
-  {0, 13, 31, 21, 21, true, LOW, LOW },   // LINE_OUT
-  {1, 0, 15, 5, 5, true, HIGH, LOW },     // SIG_IN
-  {2, 0, 31, 17, 17, true, LOW, HIGH },   // SIG_OUT
+  {0, 13, 31, 21, 21, true, LOW, LOW },    // LINE_OUT
+  {1, 0, 15, 5, 5, true, HIGH, LOW },      // SIG_IN
+  {2, 0, 31, 17, 17, true, LOW, HIGH },    // SIG_OUT
   {3, 10, 60, 40, 40, true, HIGH, HIGH },  // THRESHOLD
-  {4, 1, 6, 1, 1, true, NULL, NULL },     // MIDI_LEARN [ID, alive, X, Y, W, H, D]
-  {5, 0, 0, 0, 0, true, NULL, NULL },     // CALIBRATE
-  {6, 0, 0, 0, 0, true, NULL, NULL }      // SAVE
+  {4, 1, 6, 1, 1, true, NULL, NULL },      // MIDI_LEARN [ID, alive, X, Y, W, H, D]
+  {5, 0, 0, 0, 0, true, NULL, NULL },      // CALIBRATE
+  {6, 0, 0, 0, 0, true, NULL, NULL }       // SAVE
 };
 
 // Testing mapping fonctions
-switch_t tapSwitch_A = {10, 10, 5, 1000, false}; // ARGS [posX, posY, rSize, debounceTimer, state]
-switch_t tapSwitch_B = {40, 30, 5, 1000, false}; // ARGS [posX, posY, rSize, debounceTimer, state]
-
-switch_t modeSwitch_A = {30, 10, 5, 1000, false};
-switch_t modeSwitch_B = {40, 25, 5, 1000, false};
+//switch_t tapSwitch_A = {10, 10, 5, 1000, false};  // ARGS [posX, posY, rSize, debounceTimer, state]
+//switch_t tapSwitch_B = {40, 30, 5, 1000, false};  // ARGS [posX, posY, rSize, debounceTimer, state]
+//switch_t modeSwitch_A = {30, 10, 5, 1000, false}; // ARGS []
+//switch_t modeSwitch_B = {40, 25, 5, 1000, false}; // ARGS []
 
 void setup() {
 
@@ -111,7 +138,11 @@ void setup() {
   SETUP_SPI();
   SETUP_ADC(adc);
 
-  SETUP_DAC(&presets[0], &sgtl5000, &waveform1, &sine_fm1, &fade1);
+  SETUP_DAC(
+    &presets[0],
+    &allSynth[0],
+    &sgtl5000
+  );
 
   SETUP_INTERP(
     &inputFrame,          // image_t*
@@ -134,8 +165,8 @@ void setup() {
     &outputBlobs          // list_t*
   );
 
-#if USB_MIDI
-  USB_MIDI_SETUP();
+#if MIDI_USB
+  MIDI_USB_SETUP();
 #endif
 
 #if USB_SLIP_OSC
@@ -238,7 +269,7 @@ void loop() {
   print_blobs(&outputBlobs);
 #endif
 
-#if USB_MIDI
+#if MIDI_USB
   if (currentMode == MIDI_LEARN) {
     blobs_usb_midi_learn(&outputBlobs, &presets[MIDI_LEARN]);
   }
@@ -271,10 +302,8 @@ void loop() {
   make_noise(
     &presets[0],
     &outputBlobs,
-    &sgtl5000,
-    &waveform1,
-    &sine_fm1,
-    &fade1
+    &allSynth[0],
+    &sgtl5000
   );
 #endif
 
