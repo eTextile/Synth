@@ -27,7 +27,7 @@ typedef struct synth {
   AudioSynthWaveformSineModulated* fm_ptr;
   AudioEffectFade* fade_ptr;
   AudioMixer4* mix_ptr;
-  uint8_t lastBlobState; 
+  uint8_t lastBlobState;
 } synth_t;
 
 void SETUP_DAC(

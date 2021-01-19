@@ -44,8 +44,6 @@ void make_noise(
   AudioControlSGTL5000* dac_ptr
 ) {
 
-  static uint8_t lastState = 0;
-
   if (presets_ptr[LINE_OUT].val != presets_ptr[LINE_OUT].lastVal) {
     dac_ptr->dacVolume(presets_ptr[LINE_OUT].val);
   }
@@ -55,17 +53,17 @@ void make_noise(
 
   for (blob_t* blob = ITERATOR_START_FROM_HEAD(blobs_ptr); blob != NULL; blob = ITERATOR_NEXT(blob)) {
 
-    if (blob->UID < 8) {
+    if (blob->UID < MAX_SYNTH) {
       
       if (blob->alive && allSynth_ptr[blob->UID].lastBlobState == 0) {
         allSynth_ptr[blob->UID].wf_ptr->phase(0);
-        allSynth_ptr[blob->UID].fade_ptr->fadeIn(4);
+        allSynth_ptr[blob->UID].fade_ptr->fadeIn(3);
       }
       if (blob->alive) {
-        //allSynth_ptr[blob->UID].wf_ptr->frequency((blob->centroid.X / 4.0) + 1);
-        //allSynth_ptr[blob->UID].fm_ptr->frequency((blob->centroid.Y / 2.0) + 1);
-        allSynth_ptr[blob->UID].wf_ptr->frequency(blob->centroid.X * 2);
-        allSynth_ptr[blob->UID].fm_ptr->frequency(blob->centroid.Y * 2);
+        allSynth_ptr[blob->UID].wf_ptr->frequency((blob->centroid.X / 4.0) + 1);
+        allSynth_ptr[blob->UID].fm_ptr->frequency((blob->centroid.Y / 2.0) + 5);
+        //allSynth_ptr[blob->UID].wf_ptr->frequency(blob->centroid.X * 2);
+        //allSynth_ptr[blob->UID].fm_ptr->frequency(blob->centroid.Y * 2);
       }
       else {
         allSynth_ptr[blob->UID].fade_ptr->fadeOut(500);
