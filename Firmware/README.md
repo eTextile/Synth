@@ -66,4 +66,7 @@ Thanks to Vincent Roudaut, Hannah Perner Willson, Cedric Honnet, Antoine Meisso,
 - Optimise interpolation method
   - Retrieval method from Microchip TB3064 white paper (p12)
   - microchip.com/stellent/groups/techpub_sg/documents/devicedoc/en550192.pdf
-- $1-Gesture Recognizer
+- To Add $1-Gesture Recognizer
+- To Add velocity in (mapping.cpp)
+- To Add MIDI_OUT via minjack
+- ...
