@@ -106,9 +106,9 @@ typedef struct {
 } point_t;
 
 typedef struct {
-  uint8_t W; // Width
-  uint8_t H; // Height
-  uint8_t D; // Depth
+  uint8_t W; // TODO Make it as float
+  uint8_t H; // TODO Make it as float
+  uint8_t D; // TODO Make it as float
 } bbox_t;
 
 // Blob states
@@ -122,7 +122,7 @@ typedef enum {
 // What about the TUIO 1.1 Protocol Specification
 // http://www.tuio.org/?specification
 typedef struct blob {
-  unsigned long timeTag; // TODO
+  unsigned long timeTag;
   uint16_t pixels;
   uint8_t UID;
   uint8_t alive;

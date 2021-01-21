@@ -390,10 +390,8 @@ float distance(blob_t* blobA, blob_t* blobB) {
 
 // FIXME: can be optimized
 void blob_copy(blob_t* dst, blob_t* src) {
-  //dst->timeTag = src->timeTag;
   dst->timeTag = millis();
   dst->UID = src->UID;
-  //dst->alive = src->alive;
   dst->alive = 1;
   dst->centroid.X = src->centroid.X;
   dst->centroid.Y = src->centroid.Y;
@@ -405,7 +403,7 @@ void blob_copy(blob_t* dst, blob_t* src) {
 
 // FIXME: can be optimized
 void blob_raz(blob_t* node) {
-  //node->timeTag = 0; // TODO?
+  node->timeTag = millis();
   node->UID = 0;
   node->alive = 0;
   node->state = FREE;
@@ -421,7 +419,6 @@ void print_bitmap(image_t* bitmap_ptr) {
   for (uint8_t posY = 0; posY < bitmap_ptr->numRows; posY++) {
     uint8_t* row_ptr = COMPUTE_BINARY_IMAGE_ROW_PTR(bitmap_ptr, posY);
     for (uint8_t posX = 0; posX < bitmap_ptr->numCols; posX++) {
-      //Serial.print(IMAGE_GET_BINARY_PIXEL_FAST(row_ptr, posX));
       IMAGE_GET_BINARY_PIXEL_FAST(row_ptr, posX) == 0 ? Serial.printf(".") : Serial.printf("o");
     }
     Serial.printf("\n");
