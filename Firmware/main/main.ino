@@ -155,7 +155,7 @@ preset_t presets[7] = {
 };
 
 // Testing mapping fonctions
-//switch_t tapSwitch = {10, 10, 5, 1000, false};  // ARGS [posX, posY, rSize, debounceTimer, state]
+//switch_t tapSwitch = {10, 10, 5, 1000, false};   // ARGS [posX, posY, rSize, debounceTimer, state]
 //switch_t modeSwitch = {40, 30, 5, 1000, false};  // ARGS [posX, posY, rSize, debounceTimer, state]
 
 keyPos_t keyPos[MAX_BLOBS];
@@ -328,9 +328,9 @@ void loop() {
   //    SET_ORIGIN_X == 1
   //    SET_ORIGIN_Y == 1
 
-  //gridLayoutPlay(&outputBlobs, &keyPos[0], 0, 0, 58, 58); // ARGS[llist_t*, keyPos_t*, posX, posY, gridW, gridH]
-  getPolarCoordinates(&outputBlobs, &polarPos[0]);
-  getVelocity(&outputBlobs, &velocity[0]);
+  gridLayoutPlay(&outputBlobs, &keyPos[0], 0, 0, 58, 58); // ARGS[llist_t*, keyPos_t*, posX, posY, gridW, gridH]
+  //getPolarCoordinates(&outputBlobs, &polarPos[0]);
+  //getVelocity(&outputBlobs, &velocity[0]);
   //hSlider(&outputBlobs, &hSlider); // ARGS[llist_ptr, sliderH_t]
   //vSlider(&outputBlobs, &vSlider); // ARGS[llist_ptr, sliderV_t]
 
