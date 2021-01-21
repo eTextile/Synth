@@ -54,8 +54,8 @@ void gridLayoutPlay(
         if (key_ptr[blob_ptr->UID].keyPos != key_ptr[blob_ptr->UID].lastKeyPos &&
             millis() - key_ptr[blob_ptr->UID].debounce > DEBOUNCE_SWITCH_TIME) {
           key_ptr[blob_ptr->UID].debounce = millis();
-          MIDI.sendNoteOff(key_ptr[blob_ptr->UID].lastKeyPos, 0, 1);  // Send a NoteOff
-          MIDI.sendNoteOn(key_ptr[blob_ptr->UID].keyPos, 127, 1);     // Send a NoteOn
+          MIDI.sendNoteOff(key_ptr[blob_ptr->UID].lastKeyPos, 0, blob_ptr->UID);  // Send a NoteOff
+          MIDI.sendNoteOn(key_ptr[blob_ptr->UID].keyPos, 127, blob_ptr->UID);     // Send a NoteOn
 #if DEBUG_MAPPING
           Serial.printf("\nKEY_OFF : %d \t KEY_ON : %d", key_ptr[blob_ptr->UID].lastKeyPos, key_ptr[blob_ptr->UID].keyPos);
 #endif
@@ -65,7 +65,7 @@ void gridLayoutPlay(
     }
     else {
       key_ptr[blob_ptr->UID].lastKeyPos = key_ptr[blob_ptr->UID].keyPos;
-      MIDI.sendNoteOff(key_ptr[blob_ptr->UID].keyPos, 0, 1);  // Send a Note (pitch 42, velo 127 on channel 1)
+      MIDI.sendNoteOff(key_ptr[blob_ptr->UID].keyPos, 0, blob_ptr->UID);  // Send a Note (pitch 42, velo 127 on channel 1)
 #if DEBUG_MAPPING
       Serial.printf("\nKEY_OFF : %d", key_ptr[blob_ptr->UID].keyPos);
 #endif

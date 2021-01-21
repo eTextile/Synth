@@ -17,8 +17,8 @@
 
 #define   PI 3.1415926535897932384626433832795
 #define   DEBOUNCE_SWITCH_TIME  80
-#define   GRID_STEPS_X 16
-#define   GRID_STEPS_Y 16
+#define   GRID_STEPS_X 8
+#define   GRID_STEPS_Y 8
 
 typedef struct blob blob_t;    // Forward declaration
 typedef struct llist llist_t;  // Forward declaration
