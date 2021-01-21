@@ -6,8 +6,8 @@
 
 #include "transmit.h"
 
-#if USB_SLIP_OSC
-void USB_SLIP_OSC_SETUP() {
+#if SLIP_OSC
+void SLIP_OSC_SETUP() {
   SLIPSerial.begin(BAUD_RATE); // FIXME
 }
 

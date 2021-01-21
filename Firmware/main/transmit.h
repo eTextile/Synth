@@ -28,8 +28,8 @@ typedef struct preset preset_t; // Forward declaration
 typedef struct llist llist_t;   // Forward declaration
 typedef struct blob blob_t;     // Forward declaration
 
-#if USB_SLIP_OSC
-void USB_SLIP_OSC_SETUP(void);
+#if SLIP_OSC
+void SLIP_OSC_SETUP(void);
 void blobs_usb_slipOsc(llist_t* blobs_ptr);
 #endif
 
