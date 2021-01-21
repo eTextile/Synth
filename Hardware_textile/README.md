@@ -43,5 +43,5 @@ sudo python setup.py install
 
 ![alt tag](https://farm1.staticflickr.com/789/40837526952_12d6bf42cf_z_d.jpg)
 
-
 ### TODO
+- Add non-slip Silicon
