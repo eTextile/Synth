@@ -12,11 +12,13 @@
 //#if defined(USB_SERIAL)
 //#if defined(USB_MIDI)
 
-#define STANDALONE              1 // [0:1] Set the eTextile-Synthesizer as STANDALONE divice
+#define STANDALONE_SYNTH        1 // [0:1] Set the eTextile-Synthesizer as STANDALONE divice
 #define MIDI_USB                0 // [0:1] Set the eTextile-Synthesizer as USB MIDI divice
-#define USB_SLIP_OSC            0 // [0:1] Set the eTextile-Synthesizer as SLIP_OSC divice
+#define SLIP_OSC                0 // [0:1] Set the eTextile-Synthesizer as SLIP_OSC divice
+#define MIDI_HARDWARE           1 // [0:1] Set the eTextile-Synthesizer as MIDI I/O divice
 
-#define MAX_SYNTH               2 // [1:8] Set how many synthesizers can play at the same time
+#define MAX_BLOBS               8 // [1:8] Set how many synthesizers can play at the same time
+#define MAX_SYNTH               8 // [1:8] Set how many synthesizers can play at the same time
 
 // Arduino serial monitor
 #define DEBUG_FPS               0 // [0:1] Print Frames Per Second
@@ -26,7 +28,7 @@
 #define DEBUG_INTERP            0 // [0:1] Print 64x64 interpolated values
 #define DEBUG_BITMAP            0 // [0:1] Print 64x64 binary image based on threshold
 #define DEBUG_BLOBS             0 // [0:1] Print blobs values
-#define DEBUG_MAPPING           0 // [0:1] Print blobs values
+#define DEBUG_MAPPING           1 // [0:1] Print blobs values
 
 #define DEBUG_BLOBS_ID          0 // [0:1] Print lowlevel blobs values
 #define DEBUG_SORT              0 // [0:1] Print lowlevel blobs sort
@@ -73,7 +75,7 @@
 #define MAX_BLOB_PIX            4095     // Set the maximum blob pixels
 #define DEBOUNCE_TIME           15       // TESTING 
 #define CALIBRATION_CYCLES      10
-
+#define VELOCITY_WINDOW         10       // WINDOWING TO COMPUTE VELOCITY
 #define LINE_OUT                0
 #define SIG_IN                  1
 #define SIG_OUT                 2

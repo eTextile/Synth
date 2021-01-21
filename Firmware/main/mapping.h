@@ -9,12 +9,21 @@
 
 #include "config.h"
 #include "blob.h"
-//#include "presets.h"
+#include "llist.h"
+
+#if MIDI_HARDWARE
+#include <MIDI.h>
+#endif
 
 #define   PI 3.1415926535897932384626433832795
-#define   MAPP_DEBOUNCE_TIME  100
+#define   DEBOUNCE_SWITCH_TIME  80
+#define   GRID_STEPS_X 16
+#define   GRID_STEPS_Y 16
 
-typedef struct blob blob_t;   // Forward declaration
+typedef struct blob blob_t;    // Forward declaration
+typedef struct llist llist_t;  // Forward declaration
+
+void MIDI_SETUP(void);
 
 typedef struct {
   float r;
@@ -22,9 +31,14 @@ typedef struct {
 } polar_t;
 
 typedef struct {
-  uint8_t posX;
-  uint8_t posY;
-} keyCode_t;
+  uint8_t index;
+  float windowX[VELOCITY_WINDOW];
+  float windowY[VELOCITY_WINDOW];
+  float windowZ[VELOCITY_WINDOW];
+  float velocityX;
+  float velocityY;
+  float velocityZ;
+} velocity_t;
 
 typedef struct {
   uint8_t posX;
@@ -34,18 +48,62 @@ typedef struct {
   boolean state;
 } switch_t;
 
-boolean toggle(blob_t* blob_ptr, switch_t* tSwitch);
-boolean trigger(blob_t* blob_ptr, switch_t* tSwitch);
+typedef struct {
+  uint16_t keyPos;
+  uint16_t lastKeyPos;
+  unsigned long debounce;
+} keyPos_t;
 
-keyCode_t gridLayout(blob_t* blob_ptr, uint8_t gridW, uint8_t gridH, uint8_t stepX, uint8_t stepY, uint8_t posX, uint8_t posY);
-keyCode_t harmonicKeyboardLayout(blob_t* blob_ptr, uint8_t gridW, uint8_t gridH, uint8_t stepX, uint8_t stepY, uint8_t posX, uint8_t posY);
+typedef struct {
+  uint8_t posX;
+  uint8_t Ymin;
+  uint8_t Ymax;
+  uint8_t width;
+  uint8_t val;
+} sliderV_t;
 
-float hSlider(blob_t* blob_ptr, uint8_t posY, uint8_t Xmin, uint8_t Xmax, uint8_t hSize);
-float vSlider(blob_t* blob_ptr, uint8_t posX, uint8_t Ymin, uint8_t Ymax, uint8_t wSize);
+typedef struct {
+  uint8_t posY;
+  uint8_t Xmin;
+  uint8_t Xmax;
+  uint8_t height;
+  uint8_t val;
+} sliderH_t;
 
-polar_t polarCoordinates(blob_t* blob_ptr, uint8_t Xcenter, uint8_t Ycenter);
+void gridLayoutSet(
+  //TODO
+);
+
+void gridLayoutPlay(
+  llist_t* blobs_ptr,
+  keyPos_t* key_ptr,
+  uint8_t posX,
+  uint8_t posY,
+  uint8_t gridW,
+  uint8_t gridH
+);
+
+uint16_t harmonicKeyboardLayout(
+  llist_t* blobs_ptr,
+  keyPos_t* key_ptr,
+  uint8_t posX,
+  uint8_t posY,
+  uint8_t gridW,
+  uint8_t gridH
+);
+
+void hSlider(llist_t* blobs_ptr, sliderH_t* slider_ptr);
+
+void vSlider(llist_t* blobs_ptr, sliderV_t* slider_ptr);
+
 void cSlidercSlider(polar_t blob, float radius, float tetaMin, float tetaMax, uint8_t wSize);
 
-void velocity(blob_t* blob_ptr);
+void getPolarCoordinates(llist_t* blobs_ptr, polar_t* polarPos_ptr);
+
+void getVelocity(llist_t* blobs_ptr, velocity_t* velocity_ptr);
+
+boolean toggle(llist_t* blobs_ptr, switch_t* tSwitch);
+
+boolean trigger(llist_t* blobs_ptr, switch_t* tSwitch);
 
 #endif /*__MAPPING_H__*/

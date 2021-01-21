@@ -31,6 +31,7 @@ uint8_t bitmapArray[NEW_FRAME] = {0};             // 1D Array to store binary va
 uint8_t interpFrameArray[NEW_FRAME] = {0};        // 1D Array to store bilinear interpolated values
 
 xylr_t lifoArray[LIFO_MAX_NODES] = {0};           // 1D Array to store lifo nodes
+
 blob_t blobArray[MAX_NODES] = {0};                // 1D Array to store all blobs
 
 image_t  inputFrame;            // Input frame values
@@ -154,10 +155,12 @@ preset_t presets[7] = {
 };
 
 // Testing mapping fonctions
-//switch_t tapSwitch_A = {10, 10, 5, 1000, false};  // ARGS [posX, posY, rSize, debounceTimer, state]
-//switch_t tapSwitch_B = {40, 30, 5, 1000, false};  // ARGS [posX, posY, rSize, debounceTimer, state]
-//switch_t modeSwitch_A = {30, 10, 5, 1000, false}; // ARGS []
-//switch_t modeSwitch_B = {40, 25, 5, 1000, false}; // ARGS []
+//switch_t tapSwitch = {10, 10, 5, 1000, false};  // ARGS [posX, posY, rSize, debounceTimer, state]
+//switch_t modeSwitch = {40, 30, 5, 1000, false};  // ARGS [posX, posY, rSize, debounceTimer, state]
+
+keyPos_t keyPos[MAX_BLOBS];
+polar_t polarPos[MAX_BLOBS];
+velocity_t velocity[MAX_BLOBS];
 
 void setup() {
 
@@ -201,9 +204,14 @@ void setup() {
   MIDI_USB_SETUP();
 #endif
 
-#if USB_SLIP_OSC
-  USB_SLIP_OSC_SETUP();
+#if SLIP_OSC
+  SLIP_OSC_SETUP();
 #endif
+
+#if MIDI_HARDWARE
+  MIDI_SETUP();
+#endif
+
 }
 
 //////////////////// LOOP
@@ -314,23 +322,23 @@ void loop() {
   blobs_usb_slipOsc(&outputBlobs, &presets[THRESHOLD]);
 #endif
 
-#if STANDALONE
   // Make some mapping
+  // The sensor surface origine is TOP_LEFT
   // config.h
   //    SET_ORIGIN_X == 1
   //    SET_ORIGIN_Y == 1
-  //    The sensor surface origine [X:0-Y:0] is TOP_LEFT
 
-  for (blob_t* blob = ITERATOR_START_FROM_HEAD(&outputBlobs); blob != NULL; blob = ITERATOR_NEXT(blob)) {
-    //polar_t polarCoord = polarCoordinates(blob, POLAR_X, POLAR_Y);
-    //keyCode_t key = gridLayout(blob, NEW_COLS, NEW_ROWS, 20, 20, 0, 0); // ARGS [blob/gridW/gridH/stepX/stepY/posX/posY]
-    //boolean togSwitchVal_A = toggle(blob, &modeSwitch_A);
-    //boolean togSwitchVal_B = toggle(blob, &modeSwitch_B);
-    //boolean tapSwitchVal = trigger(blob, &tapSwitch);
-    //float hSliderPos = hSlider(blob, 30, 5, 50, 5); // ARGS [blob/posY/Xmin/Xmax/hSize
-    //float vSliderPos = vSlider(blob, 30, 5, 50, 5); // ARGS [blob/posX/Ymin/Ymax/wSize
-  }
+  //gridLayoutPlay(&outputBlobs, &keyPos[0], 0, 0, 58, 58); // ARGS[llist_t*, keyPos_t*, posX, posY, gridW, gridH]
+  getPolarCoordinates(&outputBlobs, &polarPos[0]);
+  getVelocity(&outputBlobs, &velocity[0]);
+  //hSlider(&outputBlobs, &hSlider); // ARGS[llist_ptr, sliderH_t]
+  //vSlider(&outputBlobs, &vSlider); // ARGS[llist_ptr, sliderV_t]
 
+  //boolean togSwitchVal = toggle(&outputBlobs, &modeSwitch);
+  //boolean tapSwitchVal = trigger(&outputBlobs, &tapSwitch);
+
+
+#if STANDALONE_SYNTH
   make_noise(
     &presets[0],
     &outputBlobs,
