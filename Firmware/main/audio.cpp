@@ -7,9 +7,9 @@
 #include "audio.h"
 
 void SETUP_DAC(
+  AudioControlSGTL5000* dac_ptr,
   preset_t* presets_ptr,
-  synth_t* allSynth_ptr,
-  AudioControlSGTL5000* dac_ptr
+  synth_t* allSynth_ptr
 ) {
 
   AudioMemory(30);
@@ -36,25 +36,36 @@ void SETUP_DAC(
   allSynth_ptr[5].mix_ptr->gain(3, 0.25);
 }
 
-/////////////////////////// MAKE NOISE FONCTION !
-void make_noise(
-  preset_t* presets_ptr,
-  llist_t* blobs_ptr,
-  synth_t* allSynth_ptr,
-  AudioControlSGTL5000* dac_ptr
+
+void set_volumes(
+  AudioControlSGTL5000* dac_ptr,
+  preset_t* presets_ptr
 ) {
 
   if (presets_ptr[LINE_OUT].val != presets_ptr[LINE_OUT].lastVal) {
     dac_ptr->dacVolume(presets_ptr[LINE_OUT].val);
   }
+  if (presets_ptr[SIG_OUT].val != presets_ptr[SIG_OUT].lastVal) {
+    dac_ptr->lineOutLevel(presets_ptr[LINE_OUT].val);
+  }
+  if (presets_ptr[SIG_IN].val != presets_ptr[SIG_IN].lastVal) {
+    dac_ptr->lineInLevel(presets_ptr[LINE_OUT].val);
+  }
+}
 
-  // TODO : Add 8 Synthetizers for multitouch polyphonic
+/////////////////////////// MAKE NOISE FONCTION !
+void make_noise(
+  AudioControlSGTL5000* dac_ptr,
+  llist_t* blobs_ptr,
+  synth_t* allSynth_ptr
+) {
+
   AudioNoInterrupts();
 
   for (blob_t* blob = ITERATOR_START_FROM_HEAD(blobs_ptr); blob != NULL; blob = ITERATOR_NEXT(blob)) {
 
     if (blob->UID < MAX_SYNTH) {
-      
+
       if (blob->alive && allSynth_ptr[blob->UID].lastBlobState == 0) {
         allSynth_ptr[blob->UID].wf_ptr->phase(0);
         allSynth_ptr[blob->UID].fade_ptr->fadeIn(3);
@@ -62,8 +73,8 @@ void make_noise(
       if (blob->alive) {
         allSynth_ptr[blob->UID].wf_ptr->frequency((blob->centroid.X / 4.0) + 1);
         allSynth_ptr[blob->UID].fm_ptr->frequency((blob->centroid.Y / 2.0) + 5);
-        //allSynth_ptr[blob->UID].wf_ptr->frequency(blob->centroid.X * 2);
-        //allSynth_ptr[blob->UID].fm_ptr->frequency(blob->centroid.Y * 2);
+        //allSynth_ptr[blob->UID].wf_ptr->frequency(blob->centroid.X * 3);
+        //allSynth_ptr[blob->UID].fm_ptr->frequency(blob->centroid.Y * 4 + 50);
       }
       else {
         allSynth_ptr[blob->UID].fade_ptr->fadeOut(500);
@@ -74,12 +85,9 @@ void make_noise(
   AudioInterrupts();
 }
 
-/*
-  blob->UID;        // uint8_t unique session ID
-  blob->alive;      // uint8_t
-  blob->centroid.X; // float_t
-  blob->centroid.Y; // float_t
-  blob->box.W;      // uint8_t
-  blob->box.H;      // uint8_t
-  blob->box.D;      // uint8_t
-*/
+// TODO
+void tapTempo(tSwitch_t* tSwitch_ptr, cSlider_t* slider_ptr) {
+
+}
+
+// [UID, alive, CX, CY, W, H, D]

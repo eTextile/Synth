@@ -11,6 +11,7 @@
 #include "presets.h"
 #include "llist.h"
 #include "blob.h"
+#include "mapping.h"
 
 #include <Audio.h>              // https://github.com/PaulStoffregen/Audio
 #include <Wire.h>               // https://github.com/PaulStoffregen/Wire
@@ -18,9 +19,11 @@
 #include <SD.h>                 // https://github.com/PaulStoffregen/SD
 #include <SerialFlash.h>        // https://github.com/PaulStoffregen/SerialFlash
 
-typedef struct preset preset_t; // Forward declaration
-typedef struct llist llist_t;   // Forward declaration
-typedef struct blob blob_t;     // Forward declaration
+typedef struct preset preset_t;     // Forward declaration
+typedef struct llist llist_t;       // Forward declaration
+typedef struct blob blob_t;         // Forward declaration
+typedef struct tSwitch tSwitch_t;   // Forward declaration
+typedef struct cSlider cSlider_t;   // Forward declaration
 
 typedef struct synth {
   AudioSynthWaveform* wf_ptr;
@@ -31,16 +34,26 @@ typedef struct synth {
 } synth_t;
 
 void SETUP_DAC(
+  AudioControlSGTL5000* dac_ptr,
   preset_t* presets_ptr,
-  synth_t* synths_ptr,
-  AudioControlSGTL5000* dac_ptr
+  synth_t* synths_ptr
+);
+
+void set_volumes(
+  AudioControlSGTL5000* dac_ptr,
+  preset_t* presets_ptr
 );
 
 void make_noise(
+  AudioControlSGTL5000* dac_ptr,
   preset_t* presets_ptr,
   llist_t* blobs_ptr,
-  synth_t* synths_ptr,
-  AudioControlSGTL5000* dac_ptr
+  synth_t* synths_ptr
+);
+
+void tapTempo(
+  tSwitch_t* tSwitch_ptr,
+  cSlider_t* slider_ptr
 );
 
 #endif /*__AUDIO_H__*/
