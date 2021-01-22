@@ -11,99 +11,107 @@
 #include "blob.h"
 #include "llist.h"
 
+typedef struct blob blob_t;    // Forward declaration
+typedef struct llist llist_t;  // Forward declaration
+
 #if MIDI_HARDWARE
 #include <MIDI.h>
 #endif
 
-#define   PI 3.1415926535897932384626433832795
-#define   DEBOUNCE_SWITCH_TIME  80
-#define   GRID_STEPS_X 8
-#define   GRID_STEPS_Y 8
-
-typedef struct blob blob_t;    // Forward declaration
-typedef struct llist llist_t;  // Forward declaration
-
 void MIDI_SETUP(void);
 
-typedef struct {
-  float r;
-  float phi;
-} polar_t;
-
-typedef struct {
-  uint8_t index;
-  float windowX[VELOCITY_WINDOW];
-  float windowY[VELOCITY_WINDOW];
-  float windowZ[VELOCITY_WINDOW];
+typedef struct velocity {
+  float lastValX;
+  float lastValY;
+  float lastValD;
   float velocityX;
   float velocityY;
-  float velocityZ;
+  float velocityD;
 } velocity_t;
 
-typedef struct {
+typedef struct tSwitch {
   uint8_t posX;
   uint8_t posY;
   uint8_t rSize; // width/2 and height/2
-  unsigned long debounce;
+  unsigned long debounceTime;
   boolean state;
-} switch_t;
+} tSwitch_t;
 
-typedef struct {
+typedef struct keyPos {
   uint16_t keyPos;
   uint16_t lastKeyPos;
-  unsigned long debounce;
+  unsigned long debounceTime;
 } keyPos_t;
 
-typedef struct {
+typedef struct vSlider {
   uint8_t posX;
   uint8_t Ymin;
   uint8_t Ymax;
   uint8_t width;
   uint8_t val;
-} sliderV_t;
+  uint8_t lastVal;
+} vSlider_t;
 
-typedef struct {
+typedef struct hSlider {
   uint8_t posY;
   uint8_t Xmin;
   uint8_t Xmax;
   uint8_t height;
   uint8_t val;
-} sliderH_t;
+  uint8_t lastVal;
+} hSlider_t;
 
-void gridLayoutSet(
-  //TODO
-);
+typedef struct cSlider {
+  float r;
+  uint8_t width;
+  float phiOffset;
+  float phiMin;
+  float phiMax;
+  uint8_t val;
+  uint8_t lastVal;
+} cSlider_t;
+
+typedef struct polar {
+  float r;
+  float phi;
+} polar_t;
+
+typedef struct grid {
+  uint8_t posX;
+  uint8_t posY;
+  uint8_t W;
+  uint8_t H;
+  uint8_t note[NOTES];
+} grid_t;
+
+
+// TODO
+void gridSetLayout(grid_t* grid_ptr);
 
 void gridLayoutPlay(
   llist_t* blobs_ptr,
   keyPos_t* key_ptr,
-  uint8_t posX,
-  uint8_t posY,
-  uint8_t gridW,
-  uint8_t gridH
+  grid_t* grid_ptr
 );
 
-uint16_t harmonicKeyboardLayout(
+void harmonicKeyboardLayout(
   llist_t* blobs_ptr,
   keyPos_t* key_ptr,
-  uint8_t posX,
-  uint8_t posY,
-  uint8_t gridW,
-  uint8_t gridH
+  grid_t* grid_ptr
 );
 
-void hSlider(llist_t* blobs_ptr, sliderH_t* slider_ptr);
+void hSlider(llist_t* blobs_ptr, hSlider_t* slider_ptr);
 
-void vSlider(llist_t* blobs_ptr, sliderV_t* slider_ptr);
+void vSlider(llist_t* blobs_ptr, vSlider_t* slider_ptr);
 
-void cSlidercSlider(polar_t blob, float radius, float tetaMin, float tetaMax, uint8_t wSize);
+void cSlider(llist_t* blobs_ptr, polar_t* polar_ptr, cSlider_t* slider_ptr);
 
 void getPolarCoordinates(llist_t* blobs_ptr, polar_t* polarPos_ptr);
 
+boolean toggle(llist_t* blobs_ptr, tSwitch_t* tSwitch);
+
+boolean trigger(llist_t* blobs_ptr, tSwitch_t* tSwitch);
+
 void getVelocity(llist_t* blobs_ptr, velocity_t* velocity_ptr);
-
-boolean toggle(llist_t* blobs_ptr, switch_t* tSwitch);
-
-boolean trigger(llist_t* blobs_ptr, switch_t* tSwitch);
 
 #endif /*__MAPPING_H__*/
