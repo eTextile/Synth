@@ -343,7 +343,7 @@ void find_blobs(
         break;
       }
     }
-    if (!found && millis() - blobA->timeTag > DEBOUNCE_TIME) {
+    if (!found && millis() - blobA->timeTag > DEBOUNCE_TIME_BLOB) {
       blobA->state = TO_REMOVE;
       blobA->alive = 0;
     }
