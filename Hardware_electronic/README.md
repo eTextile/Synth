@@ -20,10 +20,10 @@
     - **MIDI-OUT** : MIDI OUTPUT using mini jack
 
 - **BUILT_IN SWITCHES**
-    - **Button D1 (CALIB)** Short press : CALIBRATE THE SENSOR MATRIX
-    - **Button D1 (CALIB)** Long press : SAVE ALL PARAMETERS TO THE EEPROM MEMORY
+    - **Button D1 (DOT)** Short press : CALIBRATE THE SENSOR MATRIX
+    - **Button D1 (DOT)** Long press : SAVE ALL PARAMETERS TO THE EEPROM MEMORY
     - **Button D2 (STAR)** Short press : SELECT MODE (see below)
-    - **Button D2 (STAR)** Long press : MIDI LEARN
+    - **Button D2 (STAR)** Long press : MIDI LEARN MODE
 
 - **SELECT MODE**
 
@@ -33,6 +33,13 @@
 | **SIG_IN**    | D1-ON  / D2-OFF | sig_in level adjustment using rotary encoder    |
 | **SIG_OUT**   | D1-OFF / D2-ON  | sig_out level adjustment using rotary encoder   |
 | **THRESHOLD** | D1-ON  / D2-ON  | threshold value adjustment using rotary encoder |
+
+- **MIDI LEARN MODE**
+This MODE is setting the whole sensor in auto-mapp state.
+As experienced it is not possible to use software auto-mapping functionalities if a controller is sending more than one value at a time. In the MIDI LEARN mode we use the encoder button to select the blob value (STATE, CX, CY, WIDTH, HEIGHT, DEPTH) that you want to send to your computer. After the desired values have been mapped a short press on the STAR or DOT button will exit the MIDI LEARN MODE and you will be able to play your custom presets.
+
+- **MINI-JACK MIDI PLUG**
+![Hardware MIDI](../docs/docs/MIDI-wiring-diagram.jpg)
 
 ##### KICAD (Prerequisite)
 - Installing KiCad : https://kicad-pcb.org/
@@ -50,7 +57,7 @@
     KICAD_SYMBOL_DIR : (add your own path)/KiCad_Libraries/kicad-symbols
     KICAD_TEMPLATE_DIR : DO NOT CHANGE
     KICAD_USER_TEMPLATE_DIR : DO NOT CHANGE
-    KIGITHUB : DO NOT CHANGE
+    KIGITHUB : DO NOT CHANGEMIDI-wiring-diagram.jpg
     KISYS3DMOD : (add your own path)/KiCad_Libraries/kicad-packages3D
     KISYSMOD : (add your own path)/KiCad_Libraries/kicad-footprints
 ```
