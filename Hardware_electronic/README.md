@@ -39,6 +39,7 @@ This MODE is setting the whole sensor in auto-mapp state.
 As experienced it is not possible to use software auto-mapping functionalities if a controller is sending more than one value at a time. In the MIDI LEARN mode we use the encoder button to select the blob value (STATE, CX, CY, WIDTH, HEIGHT, DEPTH) that you want to send to your computer. After the desired values have been mapped a short press on the STAR or DOT button will exit the MIDI LEARN MODE and you will be able to play your custom presets.
 
 - **MINI-JACK MIDI PLUG**
+
 ![Hardware MIDI](../docs/docs/MIDI-wiring-diagram.jpg)
 
 ##### KICAD (Prerequisite)
