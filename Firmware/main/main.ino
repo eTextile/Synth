@@ -13,6 +13,7 @@
 #include "mapping.h"
 #include "audio.h"
 #include "transmit.h"
+#include "median.h"
 
 // Array to store all parameters used to configure the two 8:1 analog multiplexeurs
 // Each byte |ENA|A|B|C|ENA|A|B|C|
@@ -82,7 +83,6 @@ AudioMixer4                       mix_1;
 AudioMixer4                       mix_2;
 AudioMixer4                       mix_3;
 AudioOutputI2S                    i2s1;
-
 AudioConnection                   patchCord1(wf_1, fm_1);
 AudioConnection                   patchCord2(wf_2, fm_2);
 AudioConnection                   patchCord3(wf_3, fm_3);
@@ -91,7 +91,6 @@ AudioConnection                   patchCord5(wf_5, fm_5);
 AudioConnection                   patchCord6(wf_6, fm_6);
 AudioConnection                   patchCord7(wf_7, fm_7);
 AudioConnection                   patchCord8(wf_8, fm_8);
-
 AudioConnection                   patchCord9(fm_1, fade_1);
 AudioConnection                   patchCord10(fm_2, fade_2);
 AudioConnection                   patchCord11(fm_3, fade_3);
@@ -100,7 +99,6 @@ AudioConnection                   patchCord13(fm_5, fade_5);
 AudioConnection                   patchCord14(fm_6, fade_6);
 AudioConnection                   patchCord15(fm_7, fade_7);
 AudioConnection                   patchCord16(fm_8, fade_8);
-
 AudioConnection                   patchCord17(fade_1, 0, mix_1, 0);
 AudioConnection                   patchCord18(fade_2, 0, mix_1, 1);
 AudioConnection                   patchCord19(fade_3, 0, mix_1, 3);
@@ -109,7 +107,6 @@ AudioConnection                   patchCord21(fade_5, 0, mix_2, 0);
 AudioConnection                   patchCord22(fade_6, 0, mix_2, 1);
 AudioConnection                   patchCord23(fade_7, 0, mix_2, 3);
 AudioConnection                   patchCord24(fade_8, 0, mix_2, 4);
-
 AudioConnection                   patchCord25(mix_1, 0, i2s1, 0);
 AudioConnection                   patchCord26(mix_2, 0, i2s1, 1);
 
@@ -159,8 +156,29 @@ preset_t presets[7] = {
 //switch_t modeSwitch = {40, 30, 5, 1000, false};  // ARGS [posX, posY, rSize, debounceTimer, state]
 
 keyPos_t keyPos[MAX_BLOBS];
-polar_t polarPos[MAX_BLOBS];
-velocity_t velocity[MAX_BLOBS];
+
+polar_t polarCoord[MAX_BLOBS];
+
+cSlider_t cSliders[C_SLIDERS] {
+  {   6, 4,  3.8,  5, 0},  // ARGS[r, width, phiOffset, phiMax, val]
+  {13.5, 3,  3.8, 10, 0},    // ARGS[r, width, phiOffset, phiMax, val]
+  {  20, 4,  4.8,  5, 0}     // ARGS[r, width, phiOffset, phiMax, val]
+};
+
+median_t medianStorage[MAX_BLOBS] {
+  {true, {0}, {0}, 0},
+  {true, {0}, {0}, 0},
+  {true, {0}, {0}, 0},
+  {true, {0}, {0}, 0},
+  {true, {0}, {0}, 0},
+  {true, {0}, {0}, 0},
+  {true, {0}, {0}, 0},
+  {true, {0}, {0}, 0}
+};
+
+grid_t gridLayout {0, 0, 58, 58, {0}};
+
+velocity_t velocityStorage[MAX_BLOBS];
 
 void setup() {
 
@@ -174,9 +192,9 @@ void setup() {
   SETUP_ADC(adc);
 
   SETUP_DAC(
+    &sgtl5000,
     &presets[0],
-    &allSynth[0],
-    &sgtl5000
+    &allSynth[0]
   );
 
   SETUP_INTERP(
@@ -298,6 +316,8 @@ void loop() {
     &outputBlobs            // list_t
   );
 
+  median(&outputBlobs, &medianStorage[0]);
+
 #if DEBUG_BITMAP
   if (timerDebug >= 100) {
     timerDebug = 0;
@@ -328,15 +348,17 @@ void loop() {
   //    SET_ORIGIN_X == 1
   //    SET_ORIGIN_Y == 1
 
-  gridLayoutPlay(&outputBlobs, &keyPos[0], 0, 0, 58, 58); // ARGS[llist_t*, keyPos_t*, posX, posY, gridW, gridH]
-  //getPolarCoordinates(&outputBlobs, &polarPos[0]);
-  //getVelocity(&outputBlobs, &velocity[0]);
-  //hSlider(&outputBlobs, &hSlider); // ARGS[llist_ptr, sliderH_t]
-  //vSlider(&outputBlobs, &vSlider); // ARGS[llist_ptr, sliderV_t]
+  //gridLayoutPlay(&outputBlobs, &keyPos[0], &gridLayout);       // ARGS[llist_ptr, keyPos_ptr, gridLayout_ptr]
 
-  //boolean togSwitchVal = toggle(&outputBlobs, &modeSwitch);
-  //boolean tapSwitchVal = trigger(&outputBlobs, &tapSwitch);
+  //getVelocity(&outputBlobs, &velocityStorage[0]);              // ARGS[llist_ptr, velocityStorage_ptr]
+  //hSlider(&outputBlobs, &hSlider);                             // ARGS[llist_ptr, vSlider_ptr]
+  //vSlider(&outputBlobs, &vSlider);                             // ARGS[llist_ptr, vSlider_ptr]
 
+  //etPolarCoordinates(&outputBlobs, &polarCoord[0]);            // ARGS[llist_ptr, polar_ptr]
+  //cSlider(&outputBlobs, &polarCoord[0], &cSliders[0]);         // ARGS[llist_ptr, polar_ptr, cSliders_ptr]
+
+  //boolean togSwitchVal = toggle(&outputBlobs, &modeSwitch);    // ARGS[]
+  //boolean tapSwitchVal = trigger(&outputBlobs, &tapSwitch);    // ARGS[]
 
 #if STANDALONE_SYNTH
   make_noise(
