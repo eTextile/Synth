@@ -69,17 +69,13 @@ void lifo_enqueue(lifo_t* dst, xylr_t* src) {
   dst->index++;
 }
 
-
 void lifo_save(lifo_t* dst, lifo_t* src) {
 
   while (src->index > -1) {
     xylr_t* tmpNode = src->head_ptr->prev_ptr;
-
     src->head_ptr->prev_ptr = dst->head_ptr;
     dst->head_ptr = src->head_ptr;
-
     src->head_ptr = tmpNode;
-
     src->index--;
     dst->index++;
   }

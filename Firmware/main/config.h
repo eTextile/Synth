@@ -15,10 +15,10 @@
 #define STANDALONE_SYNTH        1 // [0:1] Set the eTextile-Synthesizer as STANDALONE divice
 #define MIDI_USB                0 // [0:1] Set the eTextile-Synthesizer as USB MIDI divice
 #define SLIP_OSC                0 // [0:1] Set the eTextile-Synthesizer as SLIP_OSC divice
-#define MIDI_HARDWARE           1 // [0:1] Set the eTextile-Synthesizer as MIDI I/O divice
+#define MIDI_HARDWARE           0 // [0:1] Set the eTextile-Synthesizer as MIDI I/O divice
 
-#define MAX_BLOBS               8 // [1:8] Set how many synthesizers can play at the same time
-#define MAX_SYNTH               8 // [1:8] Set how many synthesizers can play at the same time
+#define MAX_BLOBS               8 // [1:8] Set how many blobs can be tracked at the same time
+#define MAX_SYNTH               2 // [1:8] Set how many synthesizers can play at the same time
 
 // Arduino serial monitor
 #define DEBUG_FPS               0 // [0:1] Print Frames Per Second
@@ -28,10 +28,10 @@
 #define DEBUG_INTERP            0 // [0:1] Print 64x64 interpolated values
 #define DEBUG_BITMAP            0 // [0:1] Print 64x64 binary image based on threshold
 #define DEBUG_BLOBS             0 // [0:1] Print blobs values
-#define DEBUG_MAPPING           1 // [0:1] Print blobs values
+#define DEBUG_MAPPING           0 // [0:1] Print blobs values
 
 #define DEBUG_BLOBS_ID          0 // [0:1] Print lowlevel blobs values
-#define DEBUG_SORT              0 // [0:1] Print lowlevel blobs sort
+#define DEBUG_SORT              0 // [0:1] Print lowlevel blobs sort (NOT_USED)
 
 #define SET_ORIGIN_X            1 // [-1:1] X-axis origine position
 #define SET_ORIGIN_Y            1 // [-1:1] Y-axis origine position
@@ -65,17 +65,27 @@
 #define NEW_COLS                (RAW_COLS * SCALE_X)
 #define NEW_ROWS                (RAW_ROWS * SCALE_Y)
 #define NEW_FRAME               (NEW_COLS * NEW_ROWS)
-#define POLAR_X                 (NEW_COLS / 2)
-#define POLAR_Y                 (NEW_ROWS / 2)
+#define POLAR_CX                (NEW_COLS / 2)
+#define POLAR_CY                (NEW_ROWS / 2)
 #define MAX_NODES               40       // Set the maximum nodes number
 #define LIFO_MAX_NODES          127      // Set the maximum nodes number
 #define X_STRIDE                3        // 
 #define Y_STRIDE                3        // 
 #define MIN_BLOB_PIX            6        // Set the minimum blob pixels
 #define MAX_BLOB_PIX            4095     // Set the maximum blob pixels
-#define DEBOUNCE_TIME           15       // TESTING 
 #define CALIBRATION_CYCLES      10
-#define VELOCITY_WINDOW         10       // WINDOWING TO COMPUTE VELOCITY
+
+#define DEBOUNCE_TIME_BLOB      15
+#define DEBOUNCE_TIME_SWITCH    80
+
+#define C_SLIDERS               3  // Flavien Berger Synth
+#define GRID_STEPS_X            8
+#define GRID_STEPS_Y            8
+#define NOTES                   (GRID_STEPS_X * GRID_STEPS_Y)
+
+#define ALPHA                   0.3
+#define PI                      3.1415926535897932384626433832795
+
 #define LINE_OUT                0
 #define SIG_IN                  1
 #define SIG_OUT                 2
