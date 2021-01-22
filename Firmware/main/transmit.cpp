@@ -31,8 +31,8 @@ void blobs_usb_slipOsc(llist_t* blobs_ptr) {
 }
 #endif
 
-#if USB_MIDI
-void USB_MIDI_SETUP() {
+#if MIDI_USB
+void MIDI_USB_SETUP() {
   usbMIDI.begin();
 }
 

@@ -12,7 +12,7 @@
 #include "llist.h"
 #include "blob.h"
 
-#if USB_MIDI
+#if MIDI_USB
 #include <MIDI.h>                   // http://www.pjrc.com/teensy/td_midi.html
 #endif
 
@@ -33,8 +33,8 @@ void SLIP_OSC_SETUP(void);
 void blobs_usb_slipOsc(llist_t* blobs_ptr);
 #endif
 
-#if USB_MIDI
-void USB_MIDI_SETUP(void);
+#if MIDI_USB
+void MIDI_USB_SETUP(void);
 void blobs_usb_midi_learn(llist_t* blobs_ptr, preset_t* preset_ptr);
 void blobs_usb_midi_play(llist_t* blobs_ptr);
 #endif
