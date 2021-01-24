@@ -1,15 +1,14 @@
 # eTextile-Synthetizer
-### Exploring music through textile
-
+## Exploring music through textile
 - Author: Maurin Donneaud <maurin@etextile.org>
 - Repository: https://github.com/eTextile/Synth/tree/master/
 - Project web page: https://synth.eTextile.org
 - License: CC-BY-SA (see the License file)
 
-![eTextile Synthetizer](https://live.staticflickr.com/65535/50747231422_db241da26b_c_d.jpg)
+![eTextile-Synthetizer](https://live.staticflickr.com/65535/50866131211_85efdc979a_c_d.jpg)
 
-#### HARDWARE_ELECTRONIC
-##### Features
+### HARDWARE_ELECTRONIC
+#### FEATURES
 - Teensy 4.0 (600MHz MCU)
 - eTextile-Synthetizer PCB made with **KiCad** (V5.0.2)
 - Daisy chainable design using **3.5 stereo mini Jack**
@@ -19,30 +18,30 @@
     - **MIDI-IN** : MIDI INPUT using mini jack 
     - **MIDI-OUT** : MIDI OUTPUT using mini jack
 
-- **BUILT_IN SWITCHES**
-    - **Button D1 (DOT)** Short press : CALIBRATE THE SENSOR MATRIX
-    - **Button D1 (DOT)** Long press : SAVE ALL PARAMETERS TO THE EEPROM MEMORY
-    - **Button D2 (STAR)** Short press : SELECT MODE (see below)
-    - **Button D2 (STAR)** Long press : MIDI LEARN MODE
+#### BUILT_IN SWITCHES
+- **Button D1 (DOT)** Short press : CALIBRATE THE SENSOR MATRIX
+- **Button D1 (DOT)** Long press : (TODO)
+- **Button D2 (STAR)** Short press : SELECT MODE (see below)
+- **Button D2 (STAR)** Long press : MIDI LEARN MODE
 
-- **SELECT MODE**
+#### SELECT MODE
 
-|      MODE     |       LEDs      |                     FONCTION                    |
-| :------------ | :-------------  | :---------------------------------------------- |
-| **LINE_OUT**  | D1-OFF / D2-OFF | line_out level adjustment using rotary encoder  |
-| **SIG_IN**    | D1-ON  / D2-OFF | sig_in level adjustment using rotary encoder    |
-| **SIG_OUT**   | D1-OFF / D2-ON  | sig_out level adjustment using rotary encoder   |
-| **THRESHOLD** | D1-ON  / D2-ON  | threshold value adjustment using rotary encoder |
+    |      MODE     |       LEDs      |                     FONCTION                    |
+    | :------------ | :-------------  | :---------------------------------------------- |
+    | **LINE_OUT**  | D1-OFF / D2-OFF | line_out level adjustment using rotary encoder  |
+    | **SIG_IN**    | D1-ON  / D2-OFF | sig_in level adjustment using rotary encoder    |
+    | **SIG_OUT**   | D1-OFF / D2-ON  | sig_out level adjustment using rotary encoder   |
+    | **THRESHOLD** | D1-ON  / D2-ON  | threshold value adjustment using rotary encoder |
 
-- **MIDI LEARN MODE**
+#### MIDI LEARN
 This MODE is setting the whole sensor in auto-mapp state.
-As experienced it is not possible to use software auto-mapping functionalities if a controller is sending more than one value at a time. In the MIDI LEARN mode we use the encoder button to select the blob value (STATE, CX, CY, WIDTH, HEIGHT, DEPTH) that you want to send to your computer. After the desired values have been mapped a short press on the STAR or DOT button will exit the MIDI LEARN MODE and you will be able to play your custom presets.
+As experienced with most audio software it is not possible to use auto-mapping functionalities if the controller is sending more than one value at a time. In the MIDI LEARN mode we use the encoder button to select the blob value (STATE, CX, CY, WIDTH, HEIGHT, DEPTH) that you want to send to your computer. After the desired values have been mapped a short press on the STAR or DOT button will exit the MIDI LEARN MODE and you will be able to play your custom presets.
 
-- **MINI-JACK MIDI PLUG**
+#### MIDI PLUG
+**MIDI TRS-A (MIDI 2.0 Standard)**
+![Hardware MIDI](./docs/MIDI-wiring-diagram.jpg)
 
-![Hardware MIDI](../docs/docs/MIDI-wiring-diagram.jpg)
-
-##### KICAD (Prerequisite)
+#### KICAD (Prerequisite)
 - Installing KiCad : https://kicad-pcb.org/
 - Installing Github Libraries : https://github.com/KiCad/
 ```
@@ -77,7 +76,7 @@ As experienced it is not possible to use software auto-mapping functionalities i
 - **Plated Half-holes / Castellated Holes** : No
 - **Impedance Control** : No
 
-##### Bill of materials (BOM)
+##### BOM (Bill Of Materials)
 ```
     matrix/Hardware_electronic/kicad/e256_teensy4_0/pick_and_place/BOM_e256_teensy4_0.xls
     matrix/Hardware_electronic/kicad/e256_teensy4_0/pick_and_place/BOM_e256_teensy4_0.cvs
@@ -88,3 +87,4 @@ As experienced it is not possible to use software auto-mapping functionalities i
 
 ## TODO
 - Make eTextile-Synthetizer/Dasy PCB
+- ...
