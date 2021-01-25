@@ -48,8 +48,16 @@
 
 ## eTextile-Synthetizer / Modes
   - **STANDALONE** : Blobs values are used to control embeded custom polyphonic synthesizers
-  - **MIDI_USB** : Blobs values are transmitted via MIDI_USB to control Audio Applications software like Pd, Max...
-  - **MIDI** : Blobs values are translated into MIDI-NOTES that are transmitted via MIDI OUT miniJack socket
+  - **MIDI_USB** : Blobs values are translated into NOTES & CC transmitted via MIDI_USB to control Audio Applications software like Pd, Max...
+  - **MIDI_HARDWARE** : Blobs values are translated into NOTES & CC transmitted via **miniJack TRS-A** to control external synthesizers
+
+## eTextile-Synthetizer / Play Audio Files
+
+    cd /Synth-master/Firmware/extras/CopyFromSerial/
+    **Arduino** : CopyFromSerial.ino 
+    
+    cd /Synth-master/Firmware/medias/
+    **python** rawfile-uploader.py /dev/ttyACM0 RAW/*
 
 ## Copyright
 Except as otherwise noted, all files in the resistiveMatrix project folder
@@ -63,10 +71,9 @@ WARRANTIES, see LICENSE.txt included in the resistiveMatrix project folder.
 Thanks to Vincent Roudaut, Hannah Perner Willson, Cedric Honnet, Antoine Meisso, Paul Strohmeier
 
 ## TODO
-- Optimise interpolation method
-  - Retrieval method from Microchip TB3064 white paper (p12)
-  - microchip.com/stellent/groups/techpub_sg/documents/devicedoc/en550192.pdf
-- To Add $1-Gesture Recognizer
-- To Add velocity in (mapping.cpp)
-- To Add MIDI_OUT via minjack
-- ...
+- Optimise interpolation method (it have been already updated with windowing method)
+- **Gesture Recognizer** could be a nice feature that fitt the eTextile-Synthetizer tactile surface.
+- **MIDI MPE** : MIDI in general does not have continuous control of note parameters (pitch and velocity) after the note has been played. Some companies like Roli with MPE have tried to address these limitations, but support is not as wide as standard control changes.
+- **Teensy Synthesizer** / Open source
+    - [MicroDexed](https://www.parasitstudio.de/)
+    - [Dexed - FM Plugin Synth](https://github.com/asb2m10/dexed)
