@@ -53,7 +53,10 @@ Button BUTTON_R = Button();
 ADC* adc = new ADC();           // ADC object
 ADC::Sync_result result;        // Store ADC_0 & ADC_1
 
-AudioControlSGTL5000            sgtl5000;
+
+AudioControlSGTL5000              sgtl5000;
+
+AudioPlaySerialflashRaw           playFlashRaw;
 
 AudioSynthWaveform                wf_1;
 AudioSynthWaveform                wf_2;
@@ -82,7 +85,9 @@ AudioEffectFade                   fade_8;
 AudioMixer4                       mix_1;
 AudioMixer4                       mix_2;
 AudioMixer4                       mix_3;
-AudioOutputI2S                    i2s1;
+
+AudioOutputI2S                    i2s;
+
 AudioConnection                   patchCord1(wf_1, fm_1);
 AudioConnection                   patchCord2(wf_2, fm_2);
 AudioConnection                   patchCord3(wf_3, fm_3);
@@ -101,14 +106,19 @@ AudioConnection                   patchCord15(fm_7, fade_7);
 AudioConnection                   patchCord16(fm_8, fade_8);
 AudioConnection                   patchCord17(fade_1, 0, mix_1, 0);
 AudioConnection                   patchCord18(fade_2, 0, mix_1, 1);
-AudioConnection                   patchCord19(fade_3, 0, mix_1, 3);
-AudioConnection                   patchCord20(fade_4, 0, mix_1, 4);
+AudioConnection                   patchCord19(fade_3, 0, mix_1, 2);
+AudioConnection                   patchCord20(fade_4, 0, mix_1, 3);
 AudioConnection                   patchCord21(fade_5, 0, mix_2, 0);
 AudioConnection                   patchCord22(fade_6, 0, mix_2, 1);
-AudioConnection                   patchCord23(fade_7, 0, mix_2, 3);
-AudioConnection                   patchCord24(fade_8, 0, mix_2, 4);
-AudioConnection                   patchCord25(mix_1, 0, i2s1, 0);
-AudioConnection                   patchCord26(mix_2, 0, i2s1, 1);
+AudioConnection                   patchCord23(fade_7, 0, mix_2, 2);
+AudioConnection                   patchCord24(fade_8, 0, mix_2, 3);
+
+AudioConnection                   patchCord25(mix_1, 0, mix_3, 0);
+AudioConnection                   patchCord26(mix_2, 0, mix_3, 1);
+AudioConnection                   patchCord27(playFlashRaw, 0, mix_3, 2);
+AudioConnection                   patchCord28(playFlashRaw, 0, mix_3, 3);
+AudioConnection                   patchCord29(mix_3, 0, i2s, 0);
+AudioConnection                   patchCord30(mix_3, 0, i2s, 1);
 
 synth_t allSynth[8] = {
   {&wf_1, &fm_1, &fade_1, &mix_1, 0},
@@ -142,27 +152,13 @@ elapsedMillis ledTimer;
 uint8_t ledIterations = 0;
 
 preset_t presets[7] = {
-  {0, 13, 31, 21, 21, true, LOW, LOW },    // LINE_OUT
-  {1, 0, 15, 5, 5, true, HIGH, LOW },      // SIG_IN
+  {0, 13, 31, 29, 29, true, LOW, LOW },    // LINE_OUT
+  {1, 0, 15, 0, 0, true, HIGH, LOW },      // SIG_IN
   {2, 0, 31, 17, 17, true, LOW, HIGH },    // SIG_OUT
-  {3, 10, 60, 40, 40, true, HIGH, HIGH },  // THRESHOLD
+  {3, 1, 60, 20, 20, true, HIGH, HIGH },   // THRESHOLD
   {4, 1, 6, 1, 1, true, NULL, NULL },      // MIDI_LEARN [ID, alive, X, Y, W, H, D]
   {5, 0, 0, 0, 0, true, NULL, NULL },      // CALIBRATE
   {6, 0, 0, 0, 0, true, NULL, NULL }       // SAVE
-};
-
-// Testing mapping fonctions
-//switch_t tapSwitch = {10, 10, 5, 1000, false};   // ARGS [posX, posY, rSize, debounceTimer, state]
-//switch_t modeSwitch = {40, 30, 5, 1000, false};  // ARGS [posX, posY, rSize, debounceTimer, state]
-
-keyPos_t keyPos[MAX_BLOBS];
-
-polar_t polarCoord[MAX_BLOBS];
-
-cSlider_t cSliders[C_SLIDERS] {
-  {   6, 4,  3.8,  5, 0},  // ARGS[r, width, phiOffset, phiMax, val]
-  {13.5, 3,  3.8, 10, 0},    // ARGS[r, width, phiOffset, phiMax, val]
-  {  20, 4,  4.8,  5, 0}     // ARGS[r, width, phiOffset, phiMax, val]
 };
 
 median_t medianStorage[MAX_BLOBS] {
@@ -176,7 +172,25 @@ median_t medianStorage[MAX_BLOBS] {
   {true, {0}, {0}, 0}
 };
 
-grid_t gridLayout {0, 0, 58, 58, {0}};
+// Testing mapping fonctions
+//switch_t tapSwitch = {10, 10, 5, 1000, false};      // ARGS[posX, posY, rSize, debounceTimer, state]
+//switch_t modeSwitch = {40, 30, 5, 1000, false};     // ARGS[posX, posY, rSize, debounceTimer, state]
+
+
+gridPoint_t keyPosArray[KEYS] = {0, 0};                                 // Array of [X-Y] gridPoint to store precompute positions
+uint8_t midiLayout[20] = {127, 63, 44};                                         // 1D Array to store incoming midi notes
+grid_t gridLayout_A = {&keyPosArray[0], {0}, {0}, {0}, &midiLayout[0]};   // ARGS[blobKeyPress, lastBlobKeyPress, debounceTime, midiNotes]
+grid_t gridLayout_B = {&keyPosArray[0], {0}, {0}, {0}, &midiLayout[0]};   // ARGS[blobKeyPress, lastBlobKeyPress, debounceTime, midiNotes]
+
+grid_t gridLayout_C = {&keyPosArray[0], {0}, {0}, {0}, &midiLayout[0]};   // ARGS[blobKeyPress, lastBlobKeyPress, debounceTime, midiNotes]
+
+polar_t polarCoord[MAX_BLOBS];
+
+cSlider_t cSliders[C_SLIDERS] = {
+  {   6, 4,  3.8,  5, 0},    // ARGS[r, width, phiOffset, phiMax, val]
+  {13.5, 3,  3.8, 10, 0},    // ARGS[r, width, phiOffset, phiMax, val]
+  {  20, 4,  4.8,  5, 0}     // ARGS[r, width, phiOffset, phiMax, val]
+};
 
 velocity_t velocityStorage[MAX_BLOBS];
 
@@ -218,17 +232,20 @@ void setup() {
     &outputBlobs          // list_t*
   );
 
+  SETUP_KEYBOARD_LAYOUT(&keyPosArray[0]);
+
 #if MIDI_USB
-  MIDI_USB_SETUP();
+  SETUP_MIDI_USB();
 #endif
 
 #if SLIP_OSC
-  SLIP_OSC_SETUP();
+  SETUP_SLIP_OSC();
 #endif
 
 #if MIDI_HARDWARE
-  MIDI_SETUP();
+  SETUP_MIDI_HARDWARE();
 #endif
+
 
 }
 
@@ -256,6 +273,7 @@ void loop() {
     &calibrateMatrix,
     &savePreset,
     &sgtl5000,
+    &playFlashRaw,
     &ledTimer
   );
 
@@ -316,7 +334,7 @@ void loop() {
     &outputBlobs            // list_t
   );
 
-  median(&outputBlobs, &medianStorage[0]);
+  //median(&outputBlobs, &medianStorage[0]);
 
 #if DEBUG_BITMAP
   if (timerDebug >= 100) {
@@ -348,24 +366,26 @@ void loop() {
   //    SET_ORIGIN_X == 1
   //    SET_ORIGIN_Y == 1
 
-  //gridLayoutPlay(&outputBlobs, &keyPos[0], &gridLayout);       // ARGS[llist_ptr, keyPos_ptr, gridLayout_ptr]
+  gridLayoutMapping_A(&outputBlobs, &gridLayout_A);                // ARGS[llist_ptr, gridLayout_ptr]
+  //gridLayoutMapping_B(&outputBlobs, &gridLayout_B);              // ARGS[llist_ptr, gridLayout_ptr]
 
-  //getVelocity(&outputBlobs, &velocityStorage[0]);              // ARGS[llist_ptr, velocityStorage_ptr]
-  //hSlider(&outputBlobs, &hSlider);                             // ARGS[llist_ptr, vSlider_ptr]
-  //vSlider(&outputBlobs, &vSlider);                             // ARGS[llist_ptr, vSlider_ptr]
+  ControlChangeMapping(&outputBlobs, &gridLayout_C);
 
-  //etPolarCoordinates(&outputBlobs, &polarCoord[0]);            // ARGS[llist_ptr, polar_ptr]
-  //cSlider(&outputBlobs, &polarCoord[0], &cSliders[0]);         // ARGS[llist_ptr, polar_ptr, cSliders_ptr]
+  //getVelocity(&outputBlobs, &velocityStorage[0]);             // ARGS[llist_ptr, velocityStorage_ptr]
+  //hSlider(&outputBlobs, &hSlider);                            // ARGS[llist_ptr, vSlider_ptr]
+  //vSlider(&outputBlobs, &vSlider);                            // ARGS[llist_ptr, vSlider_ptr]
 
-  //boolean togSwitchVal = toggle(&outputBlobs, &modeSwitch);    // ARGS[]
-  //boolean tapSwitchVal = trigger(&outputBlobs, &tapSwitch);    // ARGS[]
+  //etPolarCoordinates(&outputBlobs, &polarCoord[0]);           // ARGS[llist_ptr, polar_ptr]
+  //cSlider(&outputBlobs, &polarCoord[0], &cSliders[0]);        // ARGS[llist_ptr, polar_ptr, cSliders_ptr]
+
+  //boolean togSwitchVal = toggle(&outputBlobs, &modeSwitch);   // ARGS[llist_ptr, switch_ptr]
+  //boolean tapSwitchVal = trigger(&outputBlobs, &tapSwitch);   // ARGS[llist_ptr, switch_ptr]
 
 #if STANDALONE_SYNTH
   make_noise(
-    &presets[0],
+    &sgtl5000,
     &outputBlobs,
-    &allSynth[0],
-    &sgtl5000
+    &allSynth[0]
   );
 #endif
 

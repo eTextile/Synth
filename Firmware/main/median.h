@@ -17,13 +17,13 @@
 typedef struct llist llist_t;  // Forward declaration
 typedef struct blob blob_t;    // Forward declaration
 
-#define TIME_WINDOW 7                  // Allowed filter window size : 3, 5, 7...
+#define TIME_WINDOW 5                  // Allowed filter window size : 3, 5, 7...
 #define MEDIAN_POS ((TIME_WINDOW-1)/2) // position of median in ordered list
 
 typedef struct {
   boolean init;             // Init flag
-  float val[TIME_WINDOW];  // Array of values
-  float sort[TIME_WINDOW]; // Array of order numbers
+  float val[TIME_WINDOW];   // Array of values
+  float sort[TIME_WINDOW];  // Array of order numbers
   int index;                // Current index of the ring storage
 } median_t;
 

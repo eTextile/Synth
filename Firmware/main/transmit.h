@@ -29,12 +29,12 @@ typedef struct llist llist_t;   // Forward declaration
 typedef struct blob blob_t;     // Forward declaration
 
 #if SLIP_OSC
-void SLIP_OSC_SETUP(void);
+void SETUP_SLIP_OSC(void);
 void blobs_usb_slipOsc(llist_t* blobs_ptr);
 #endif
 
 #if MIDI_USB
-void MIDI_USB_SETUP(void);
+void SETUP_MIDI_USB(void);
 void blobs_usb_midi_learn(llist_t* blobs_ptr, preset_t* preset_ptr);
 void blobs_usb_midi_play(llist_t* blobs_ptr);
 #endif

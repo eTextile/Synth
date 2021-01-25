@@ -12,9 +12,10 @@ void SETUP_DAC(
   synth_t* allSynth_ptr
 ) {
 
-  AudioMemory(30);
-
+  AudioMemory(20);
   dac_ptr->enable();
+  dac_ptr->inputSelect(AUDIO_INPUT_LINEIN);
+
   dac_ptr->dacVolume(presets_ptr[LINE_OUT].val);
   dac_ptr->lineInLevel(presets_ptr[SIG_IN].val);
   dac_ptr->lineOutLevel(presets_ptr[SIG_OUT].val);
@@ -34,6 +35,8 @@ void SETUP_DAC(
   allSynth_ptr[5].mix_ptr->gain(1, 0.25);
   allSynth_ptr[5].mix_ptr->gain(2, 0.25);
   allSynth_ptr[5].mix_ptr->gain(3, 0.25);
+
+  while(!SerialFlash.begin(6));
 }
 
 
@@ -54,6 +57,7 @@ void set_volumes(
 }
 
 /////////////////////////// MAKE NOISE FONCTION !
+// [UID, alive, CX, CY, W, H, D]
 void make_noise(
   AudioControlSGTL5000* dac_ptr,
   llist_t* blobs_ptr,
@@ -62,24 +66,24 @@ void make_noise(
 
   AudioNoInterrupts();
 
-  for (blob_t* blob = ITERATOR_START_FROM_HEAD(blobs_ptr); blob != NULL; blob = ITERATOR_NEXT(blob)) {
+  for (blob_t* blob_ptr = ITERATOR_START_FROM_HEAD(blobs_ptr); blob_ptr != NULL; blob_ptr = ITERATOR_NEXT(blob_ptr)) {
 
-    if (blob->UID < MAX_SYNTH) {
+    if (blob_ptr->UID < MAX_SYNTH) {
 
-      if (blob->alive && allSynth_ptr[blob->UID].lastBlobState == 0) {
-        allSynth_ptr[blob->UID].wf_ptr->phase(0);
-        allSynth_ptr[blob->UID].fade_ptr->fadeIn(3);
+      if (blob_ptr->alive && allSynth_ptr[blob_ptr->UID].lastBlobState == 0) {
+        allSynth_ptr[blob_ptr->UID].wf_ptr->phase(0);
+        allSynth_ptr[blob_ptr->UID].fade_ptr->fadeIn(3);
       }
-      if (blob->alive) {
-        allSynth_ptr[blob->UID].wf_ptr->frequency((blob->centroid.X / 4.0) + 1);
-        allSynth_ptr[blob->UID].fm_ptr->frequency((blob->centroid.Y / 2.0) + 5);
-        //allSynth_ptr[blob->UID].wf_ptr->frequency(blob->centroid.X * 3);
-        //allSynth_ptr[blob->UID].fm_ptr->frequency(blob->centroid.Y * 4 + 50);
+      if (blob_ptr->alive) {
+        allSynth_ptr[blob_ptr->UID].wf_ptr->frequency((blob_ptr->centroid.X / 4.0) + 1);
+        allSynth_ptr[blob_ptr->UID].fm_ptr->frequency((blob_ptr->centroid.Y / 2.0) + 5);
+        //allSynth_ptr[blob_ptr->UID].wf_ptr->frequency(blob_ptr->centroid.X * 3);
+        //allSynth_ptr[blob_ptr->UID].fm_ptr->frequency(blob_ptr->centroid.Y * 4 + 50);
       }
       else {
-        allSynth_ptr[blob->UID].fade_ptr->fadeOut(500);
+        allSynth_ptr[blob_ptr->UID].fade_ptr->fadeOut(500);
       }
-      allSynth_ptr[blob->UID].lastBlobState = blob->alive;
+      allSynth_ptr[blob_ptr->UID].lastBlobState = blob_ptr->alive;
     }
   }
   AudioInterrupts();
@@ -89,5 +93,3 @@ void make_noise(
 void tapTempo(tSwitch_t* tSwitch_ptr, cSlider_t* slider_ptr) {
 
 }
-
-// [UID, alive, CX, CY, W, H, D]

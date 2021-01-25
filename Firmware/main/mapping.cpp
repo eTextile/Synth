@@ -9,7 +9,7 @@
 #if MIDI_HARDWARE
 MIDI_CREATE_INSTANCE(HardwareSerial, Serial3, MIDI);
 
-void MIDI_SETUP() {
+void SETUP_MIDI_HARDWARE() {
   MIDI.begin(MIDI_CHANNEL_OMNI);
 }
 #endif
@@ -36,61 +36,212 @@ void gridLayoutSet() {
   //TODO
 }
 
-// Compute the grid Index location acording to blob X-Y positions
-// Return curent & last keys presed
-void gridLayoutPlay( llist_t* blobs_ptr, keyPos_t* key_ptr, grid_t* grid_ptr) {
+
+void ControlChangeMapping(llist_t* blobs_ptr, grid_t* grid_ptr) {
 
   for (blob_t* blob_ptr = ITERATOR_START_FROM_HEAD(blobs_ptr); blob_ptr != NULL; blob_ptr = ITERATOR_NEXT(blob_ptr)) {
-    if (blob_ptr->UID < MAX_BLOBS) {
-      // Test if the blob is alive
+    if (blob_ptr->UID == 0) {
       if (blob_ptr->alive) {
-        // Test if the blob is in the grid limits
-        if (blob_ptr->centroid.X > grid_ptr->posX && blob_ptr->centroid.X < grid_ptr->posX + grid_ptr->W &&
-            blob_ptr->centroid.Y > grid_ptr->posY && blob_ptr->centroid.Y < grid_ptr->posY + grid_ptr->H) {
-          // Compute X and Y key position
-          uint8_t keyPosX = (uint8_t)round(((blob_ptr->centroid.X - grid_ptr->posX) / grid_ptr->W) * GRID_STEPS_X);
-          uint8_t keyPosY = (uint8_t)round(((blob_ptr->centroid.Y - grid_ptr->posY) / grid_ptr->H) * GRID_STEPS_Y);
-          // Compute 1D index key position
-          key_ptr[blob_ptr->UID].keyPos = keyPosY * GRID_STEPS_Y + keyPosX;
-          if (key_ptr[blob_ptr->UID].keyPos != key_ptr[blob_ptr->UID].lastKeyPos &&
-              millis() - key_ptr[blob_ptr->UID].debounceTime > DEBOUNCE_TIME_SWITCH) {
-            key_ptr[blob_ptr->UID].debounceTime = millis();
+        if (millis() - grid_ptr->debounceTime[blob_ptr->UID] > DEBOUNCE_MIDI_HARDWARE) {
+          grid_ptr->debounceTime[blob_ptr->UID] = millis();
 #if MIDI_HARDWARE
-            MIDI.sendNoteOff(key_ptr[blob_ptr->UID].lastKeyPos, 0, blob_ptr->UID + 1);  // Send a NoteOff
-            MIDI.sendNoteOn(key_ptr[blob_ptr->UID].keyPos, 127, blob_ptr->UID + 1);     // Send a NoteOn
+          MIDI.sendControlChange(1, constrain(blob_ptr->box.D, 0, 127), 1);
 #endif
 #if MIDI_USB
-            usbMIDI.sendNoteOff(key_ptr[blob_ptr->UID].lastKeyPos, 0, blob_ptr->UID + 1);  // Send a NoteOff
-            usbMIDI.sendNoteOn(key_ptr[blob_ptr->UID].keyPos, 127, blob_ptr->UID + 1);     // Send a NoteOn
+          usbMIDI.sendControlChange(1, constrain(blob_ptr->box.D, 0, 127), 1);
 #endif
 #if DEBUG_MAPPING
-            Serial.printf("\nKEY_OFF : %d\tKEY_ON : %d", key_ptr[blob_ptr->UID].lastKeyPos, key_ptr[blob_ptr->UID].keyPos);
+          Serial.printf("\nCC:\tBLOB:%d\t\tCC_D:%d", blob_ptr->UID, constrain(blob_ptr->box.D, 0, 127));
 #endif
-            key_ptr[blob_ptr->UID].lastKeyPos = key_ptr[blob_ptr->UID].keyPos;
-          }
         }
       }
       else {
-        key_ptr[blob_ptr->UID].lastKeyPos = key_ptr[blob_ptr->UID].keyPos;
 #if MIDI_HARDWARE
-        MIDI.sendNoteOff(key_ptr[blob_ptr->UID].keyPos, 0, blob_ptr->UID + 1);  // Send a Note (pitch 42, velo 127 on channel 1)
+        MIDI.sendControlChange(1, 0, 1);
 #endif
 #if MIDI_USB
-        usbMIDI.sendNoteOff(key_ptr[blob_ptr->UID].keyPos, 0, blob_ptr->UID + 1);  // Send a Note (pitch 42, velo 127 on channel 1)
+        usbMIDI.sendControlChange(1, 0, 1);
 #endif
 #if DEBUG_MAPPING
-        Serial.printf("\nKEY_OFF : %d", key_ptr[blob_ptr->UID].keyPos);
+        Serial.printf("\nCC:\tBLOB:%d\t\tCC_D:%d", blob_ptr->UID, 0);
 #endif
-        key_ptr[blob_ptr->UID].keyPos = NULL;
-        key_ptr[blob_ptr->UID].lastKeyPos = NULL;
       }
     }
   }
 }
 
-// TODO
-void harmonicKeyboardLayout( blob_t* blob_ptr, keyPos_t* key_ptr, grid_t* grid_ptr) {
+// Compute the grid Index location acording to blob X-Y positions
+// Return curent & last keys presed
+// TODO : Adding dead zone (gap between each keys)
+void gridLayoutMapping_A(llist_t* blobs_ptr, grid_t* grid_ptr) {
 
+  int16_t keyIndex = 0;
+
+  for (blob_t* blob_ptr = ITERATOR_START_FROM_HEAD(blobs_ptr); blob_ptr != NULL; blob_ptr = ITERATOR_NEXT(blob_ptr)) {
+    // Test if we are within the blob limit
+    if (blob_ptr->UID < MAX_BLOBS) {
+      // Test if the blob is alive
+      if (blob_ptr->alive) {
+
+        // Compute X and Y key position // TODO add keyGap to separate each keys
+        uint8_t keyPosX = (uint8_t)round((blob_ptr->centroid.X / X_MAX) * X_GRID_STEP);        // Compute X window position
+        uint8_t keyPosY = (uint8_t)round((blob_ptr->centroid.Y / Y_MAX) * X_GRID_STEP);        // Compute Y window position
+        keyIndex = (keyPosY * Y_GRID_STEP + keyPosX);                                          // Compute 1D key index position
+        if (keyIndex != -1 && keyIndex != grid_ptr->lastKeyIndex[blob_ptr->UID] &&             // Send only if new key is pressed
+            millis() - grid_ptr->debounceTime[blob_ptr->UID] > DEBOUNCE_TIME_SWITCH) {         // Use some debounce to avoid erratic key triggering
+          grid_ptr->debounceTime[blob_ptr->UID] = millis();                                    // Reset debounce time
+#if MIDI_HARDWARE
+          if (grid_ptr->lastKeyIndex[blob_ptr->UID] != -1) {
+            MIDI.sendNoteOff(grid_ptr->lastKeyIndex[blob_ptr->UID], 0, blob_ptr->UID + 1);     // Send NoteOFF (ONE BLOB ID PER CHANNEL)
+            //MIDI.sendNoteOff(grid_ptr->lastKeyIndex[blob_ptr->UID], 0, 1);                   // Send NoteOFF (ALL BLOBS ON CHANNEL_1)
+          }
+          MIDI.sendNoteOn(keyIndex, 127, blob_ptr->UID + 1);                                   // Send NoteON (ONE BLOB ID PER CHANNEL)
+          //MIDI.sendNoteOn(keyIndex, 127, 1);                                                 // Send NoteON (ALL BLOBS ON CHANNEL_1)
+#endif
+#if MIDI_USB
+          if (grid_ptr->lastKeyIndex[blob_ptr->UID] != -1) {
+            usbMIDI.sendNoteOff(grid_ptr->lastKeyIndex[blob_ptr->UID], 0, blob_ptr->UID + 1);  // Send NoteOFF (ONE BLOB ID PER CHANNEL)
+            //usbMIDI.sendNoteOff(grid_ptr->lastKeyIndex[blob_ptr->UID], 0, 1);                // Send NoteOFF (ALL BLOBS ON CHANNEL_1)
+          }
+          usbMIDI.sendNoteOn(keyIndex, 127, blob_ptr->UID + 1);                                // Send NoteON (ONE BLOB ID PER CHANNEL)
+          //usbMIDI.sendNoteOn(keyIndex, 127, 1);                                              // Send NoteON (ALL BLOBS ON CHANNEL_1)
+#endif
+#if DEBUG_MAPPING
+          if (grid_ptr->lastKeyIndex[blob_ptr->UID] != -1) {
+            Serial.printf("\nGRID_A:BLOB:%d\tKEY_OFF:%d", blob_ptr->UID, grid_ptr->lastKeyIndex[blob_ptr->UID]);
+          }
+          Serial.printf("\nGRID_A:\tBLOB:%d\t\tKEY_ON:%d", blob_ptr->UID, keyIndex);
+#endif
+          grid_ptr->lastKeyIndex[blob_ptr->UID] = keyIndex;                                    // Save the current key position
+        }
+      }
+      else {
+        if (grid_ptr->lastKeyIndex[blob_ptr->UID] != -1) {
+#if MIDI_HARDWARE
+          MIDI.sendNoteOff(grid_ptr->lastKeyIndex[blob_ptr->UID], 0, blob_ptr->UID + 1);       // Send NoteOFF (ONE BLOB ID PER CHANNEL)
+          //MIDI.sendNoteOff(grid_ptr->lastKeyIndex[blob_ptr->UID], 0, 1);                     // Send NoteOFF (ALL BLOBS ON CHANNEL_1)
+#endif
+#if MIDI_USB
+          usbMIDI.sendNoteOff(grid_ptr->lastKeyIndex[blob_ptr->UID], 0, blob_ptr->UID + 1);    // Send NoteOFF (ONE BLOB ID PER CHANNEL)
+          //MIDI.sendNoteOff(grid_ptr->lastKeyIndex[blob_ptr->UID], 0, 1);                     // Send NoteOFF (ALL BLOBS ON CHANNEL_1)
+#endif
+#if DEBUG_MAPPING
+          Serial.printf("\nGRID_A:BLOB:%d\tKEY_OFF:%d", blob_ptr->UID, grid_ptr->lastKeyIndex[blob_ptr->UID]);
+#endif
+        }
+        grid_ptr->lastKeyIndex[blob_ptr->UID] = -1;
+      }
+    }
+  }
+}
+
+// Pre compute key X-Y centroid positions
+void SETUP_KEYBOARD_LAYOUT(gridPoint_t* keyPosArray_ptr) {
+
+  for (int row = 0; row < X_GRID_STEP; row++) {
+    for (int col = 0; col < Y_GRID_STEP; col++) {
+      int index = row * X_GRID_STEP + col;
+      keyPosArray_ptr[index].X = row + 1 * X_GRID_STRIDE;
+      keyPosArray_ptr[index].Y = col + 1 * Y_GRID_STRIDE;
+    }
+  }
+}
+
+// This Grid Layaout fonction is disigned to be more robust than previous one
+// By providing a better insolation (gap) betwin each keys
+// points_t based on the MAX_X and MAX_Y surface
+// Divide the grid ind sub window
+// Localise the blob in sub windows and compute the nearest point of the grid
+// Play it if it is not in the dead zone (gap between each keys)
+void gridLayoutMapping_B(llist_t* blobs_ptr, grid_t* grid_ptr) {
+
+  uint16_t keyIndex = 0;
+
+  for (blob_t* blob_ptr = ITERATOR_START_FROM_HEAD(blobs_ptr); blob_ptr != NULL; blob_ptr = ITERATOR_NEXT(blob_ptr)) {
+    // Test if we are within the blob limit
+    if (blob_ptr->UID < MAX_BLOBS) {
+      // Test if the blob is alive
+      if (blob_ptr->alive) {
+
+        // Compute X and Y window position
+        uint8_t winPosX = (uint8_t)round((blob_ptr->centroid.X / X_MAX) * X_GRID_WINDOW);   // Compute X window position
+        uint8_t winPosY = (uint8_t)round((blob_ptr->centroid.Y / Y_MAX) * Y_GRID_WINDOW);   // Compute Y window position
+        uint16_t winPos = winPosY * Y_GRID_WINDOW + winPosX;                                // Compute 1D window position
+
+        uint16_t indexArray[4] = {0};
+        if (winPos != grid_ptr[blob_ptr->UID].lastWinPos) {
+          // Compute 1D key index contained in the window
+          indexArray[0] = winPosX * 2 + winPosY * Y_GRID_STEP;
+          indexArray[1] = index[0] + 1;
+          indexArray[2] = index[0] + X_GRID_STEP;
+          indexArray[3] = index[2] + 1;
+        }
+        keyIndex = dist(blob_ptr, grid_ptr, &indexArray[0]);
+
+        if (keyIndex != -1 &&
+            keyIndex != grid_ptr->lastKeyIndex[blob_ptr->UID] &&
+            millis() - grid_ptr->debounceTime[blob_ptr->UID] > DEBOUNCE_TIME_SWITCH) {
+          grid_ptr->debounceTime[blob_ptr->UID] = millis();
+#if MIDI_HARDWARE
+          if (grid_ptr->lastKeyIndex[blob_ptr->UID] != -1) {
+            MIDI.sendNoteOff(grid_ptr->lastKeyIndex[blob_ptr->UID], 0, blob_ptr->UID + 1);      // Send NoteOFF
+          }
+          MIDI.sendNoteOn(keyIndex, 127, blob_ptr->UID + 1);           // Send NoteON
+#endif
+#if MIDI_USB
+          if (grid_ptr->lastKeyIndex[blob_ptr->UID] != -1) {
+            usbMIDI.sendNoteOff(grid_ptr->lastKeyIndex[blob_ptr->UID], 0, blob_ptr->UID + 1);   // Send NoteOFF
+          }
+          usbMIDI.sendNoteOn(keyIndex, 127, blob_ptr->UID + 1);        // Send NoteON
+#endif
+#if DEBUG_MAPPING
+          if (grid_ptr->lastKeyIndex[blob_ptr->UID] != -1) {
+            Serial.printf("\nGRID_B:BLOB:%d\tKEY_OFF:%d", blob_ptr->UID, grid_ptr->lastKeyIndex[blob_ptr->UID]);
+          }
+          Serial.printf("\nGRID_B:\tBLOB:%d\t\tKEY_ON:%d", blob_ptr->UID, keyIndex);
+#endif
+          grid_ptr->lastKeyIndex[blob_ptr->UID] = keyIndex; // Save the current position
+        }
+      }
+      else {
+        if (grid_ptr->lastKeyIndex[blob_ptr->UID] != -1) {
+#if MIDI_HARDWARE
+          MIDI.sendNoteOff(grid_ptr->lastKeyIndex[blob_ptr->UID], 0, blob_ptr->UID + 1);  // Send a Note (pitch 42, velo 127 on channel 1)
+#endif
+#if MIDI_USB
+          usbMIDI.sendNoteOff(grid_ptr->lastKeyIndex[blob_ptr->UID], 0, blob_ptr->UID + 1);  // Send a Note (pitch 42, velo 127 on channel 1)
+#endif
+#if DEBUG_MAPPING
+          Serial.printf("\nGRID_B:BLOB:%d\tKEY_OFF:%d", blob_ptr->UID, grid_ptr->lastKeyIndex[blob_ptr->UID]);
+#endif
+        }
+        grid_ptr->lastKeyIndex[blob_ptr->UID] = -1;
+      }
+    }
+  }
+}
+
+uint16_t dist(blob_t* blob_ptr, grid_t* grid_ptr, uint16_t* keyIndexArray_ptr) {
+
+  uint16_t id = 0;
+  float dist = 0.0f;
+  float lastDist = 255.0f;
+
+  for (int i = 0; i < 4; i++) {
+    float sum = (blob_ptr->centroid.X - grid_ptr->keyPosArray[keyIndexArray_ptr[i]].X) * (blob_ptr->centroid.X - grid_ptr->keyPosArray[keyIndexArray_ptr[i]].X) +
+                (blob_ptr->centroid.Y - grid_ptr->keyPosArray[keyIndexArray_ptr[i]].Y) * (blob_ptr->centroid.Y - grid_ptr->keyPosArray[keyIndexArray_ptr[i]].Y);
+    float dist = sqrtf(sum);
+    if (dist < lastDist) {
+      lastDist = dist;
+      id = keyIndexArray_ptr[i];
+    }
+  }
+  if (lastDist < GRID_GAP) {
+    return id;
+  }
+  else {
+    return -1;
+  }
 }
 
 void vSlider(llist_t* blobs_ptr, vSlider_t* slider_ptr) {

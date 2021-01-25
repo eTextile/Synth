@@ -12,10 +12,12 @@
 //#if defined(USB_SERIAL)
 //#if defined(USB_MIDI)
 
+#define ETEXTILE-SYNTHETIZER   "1.0.0" 
+ 
 #define STANDALONE_SYNTH        1 // [0:1] Set the eTextile-Synthesizer as STANDALONE divice
 #define MIDI_USB                0 // [0:1] Set the eTextile-Synthesizer as USB MIDI divice
-#define SLIP_OSC                0 // [0:1] Set the eTextile-Synthesizer as SLIP_OSC divice
 #define MIDI_HARDWARE           0 // [0:1] Set the eTextile-Synthesizer as MIDI I/O divice
+#define SLIP_OSC                0 // [0:1] Set the eTextile-Synthesizer as SLIP_OSC divice
 
 #define MAX_BLOBS               8 // [1:8] Set how many blobs can be tracked at the same time
 #define MAX_SYNTH               2 // [1:8] Set how many synthesizers can play at the same time
@@ -75,16 +77,26 @@
 #define MAX_BLOB_PIX            4095     // Set the maximum blob pixels
 #define CALIBRATION_CYCLES      10
 
-#define DEBOUNCE_TIME_BLOB      15
-#define DEBOUNCE_TIME_SWITCH    80
+#define DEBOUNCE_TIME_BLOB      13
+#define DEBOUNCE_TIME_SWITCH    16
+#define DEBOUNCE_MIDI_HARDWARE  20
 
-#define C_SLIDERS               3  // Flavien Berger Synth
-#define GRID_STEPS_X            8
-#define GRID_STEPS_Y            8
-#define NOTES                   (GRID_STEPS_X * GRID_STEPS_Y)
-
-#define ALPHA                   0.3
 #define PI                      3.1415926535897932384626433832795
+
+#define C_SLIDERS               3     // Flavien Berger Synth
+
+#define X_MAX                   58    // Blob X_MAX centroid position
+#define Y_MAX                   58    // Blob Y_MAX centroid position
+
+#define X_GRID_STEP             8
+#define Y_GRID_STEP             8
+#define KEYS                    (X_GRID_STEP * Y_GRID_STEP)
+#define X_GRID_STRIDE           (X_MAX / (X_GRID_STEP + 1))
+#define Y_GRID_STRIDE           (Y_MAX / (Y_GRID_STEP + 1))
+#define X_GRID_WINDOW           Y_GRID_STEP/2
+#define Y_GRID_WINDOW           Y_GRID_STEP/2
+#define GRID_GAP                4
+#define GRID_CELL               X_GRID_STRIDE - GRID_GAP
 
 #define LINE_OUT                0
 #define SIG_IN                  1

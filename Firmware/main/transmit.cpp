@@ -7,7 +7,7 @@
 #include "transmit.h"
 
 #if SLIP_OSC
-void SLIP_OSC_SETUP() {
+void SETUP_SLIP_OSC() {
   SLIPSerial.begin(BAUD_RATE); // FIXME
 }
 
@@ -32,7 +32,7 @@ void blobs_usb_slipOsc(llist_t* blobs_ptr) {
 #endif
 
 #if MIDI_USB
-void MIDI_USB_SETUP() {
+void SETUP_MIDI_USB() {
   usbMIDI.begin();
 }
 

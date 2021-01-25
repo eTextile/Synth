@@ -97,6 +97,7 @@ void update_preset(
   boolean* calibrate_ptr,
   boolean* save_ptr,
   AudioControlSGTL5000* dac_ptr,
+  AudioPlaySerialflashRaw* player_ptr,
   elapsedMillis* timer_ptr
 ) {
 
@@ -171,7 +172,7 @@ void update_preset(
     case CALIBRATE:
       if (calibrate_ptr == false) {
         *calibrate_ptr = true;
-        
+        player_ptr->play("A.RAW");
 #if DEBUG_BUTTONS
         Serial.println("DO_CALIBRATE");
 #endif

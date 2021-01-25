@@ -38,7 +38,7 @@ MCU_DEF = ARDUINO_TEENSY40
 #MCU_DEF = ARDUINO_TEENSY41
 
 # The name of your project (used to name the compiled .hex file)
-TARGET = e256_textle_stnth_01
+TARGET = main
 
 # configurable options
 OPTIONS = -DF_CPU=600000000 -DUSB_SERIAL -DLAYOUT_US_ENGLISH -DUSING_MAKEFILE
@@ -95,7 +95,7 @@ SPECS = --specs=nano.specs
 # the NO_ARDUINO behaviour.
 ifndef NO_ARDUINO
 # Path to your arduino installation
-ARDUINOPATH = /home/maurin/Applications/arduino-1.8.13 
+ARDUINOPATH = /home/maurin/Applications/arduino-1.8.13/ 
 endif
 
 ifdef ARDUINOPATH

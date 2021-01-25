@@ -21,7 +21,7 @@ void median(llist_t* blobs_ptr, median_t* storage_ptr) {
       storage_ptr[blob_ptr->UID].init = false;                    // Run initialization once
       for (int i = 0; i < TIME_WINDOW; i++) {
         storage_ptr[blob_ptr->UID].val[i] = blob_ptr->box.D;      // Fill array with new value
-        storage_ptr[blob_ptr->UID].sort[i] = 0;
+        storage_ptr[blob_ptr->UID].sort[i] = blob_ptr->box.D;     // Fill array with new value
       }
     }
     // Store new value
@@ -32,9 +32,9 @@ void median(llist_t* blobs_ptr, median_t* storage_ptr) {
       storage_ptr[blob_ptr->UID].val[storage_ptr[blob_ptr->UID].index] = blob_ptr->box.D;           // Store new value
       storage_ptr[blob_ptr->UID].sort[storage_ptr[blob_ptr->UID].index] = 0;                        // Reset order number for new value
 
-      // Loop
-      int c = storage_ptr[blob_ptr->UID].index;                                 // Index for loop through ring storage
-      if (++c >= TIME_WINDOW) c = 0;                                            // Go one step (don't process index position)
+      uint16_t c = storage_ptr[blob_ptr->UID].index;                            // Get index
+      if (++c >= TIME_WINDOW) c = 0;                                            // loop through array storage
+
       do {
         if (blob_ptr->box.D <= storage_ptr[blob_ptr->UID].val[c] &&
             oldOrd > storage_ptr[blob_ptr->UID].sort[c])
@@ -54,6 +54,6 @@ void median(llist_t* blobs_ptr, median_t* storage_ptr) {
       storage_ptr[blob_ptr->UID].init = true;                                   // Can run initialization again
     }
     blob_ptr->box.D = outputVal;                                                // Replace the value with the computed median value
-    Serial.printf("\n%f ; %f", inputVal, outputVal);
+    //Serial.printf("\n%f ; %f", inputVal, outputVal);
   }
 }

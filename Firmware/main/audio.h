@@ -46,9 +46,8 @@ void set_volumes(
 
 void make_noise(
   AudioControlSGTL5000* dac_ptr,
-  preset_t* presets_ptr,
   llist_t* blobs_ptr,
-  synth_t* synths_ptr
+  synth_t* allSynth_ptr
 );
 
 void tapTempo(

@@ -23,7 +23,8 @@
 #include <elapsedMillis.h>                              // https://github.com/pfeerick/elapsedMillis
 //#include "../library/elapsedMillis/elapsedMillis.h"   // https://github.com/pfeerick/elapsedMillis (FIXME)
 
-typedef struct AudioControlSGTL5000 AudioControlSGTL5000_t; // Forward declaration
+typedef struct AudioControlSGTL5000 AudioControlSGTL5000_t;        // Forward declaration
+typedef struct AudioPlaySerialflashRaw AudioPlaySerialflashRaw_t;  // Forward declaration
 
 typedef struct preset {
   uint8_t mode;
@@ -37,6 +38,7 @@ typedef struct preset {
 } preset_t;
 
 void SETUP_SWITCHES(Button* buttonA_ptr, Button* buttonB_ptr);
+
 void SETUP_LEDS(void);
 
 void update_buttons(
@@ -58,6 +60,7 @@ void update_preset(
   boolean* calibrate_ptr,
   boolean* save_ptr,
   AudioControlSGTL5000* dac_ptr,
+  AudioPlaySerialflashRaw* player,
   elapsedMillis* timer_ptr
 );
 

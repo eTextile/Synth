@@ -18,7 +18,8 @@ typedef struct llist llist_t;  // Forward declaration
 #include <MIDI.h>
 #endif
 
-void MIDI_SETUP(void);
+
+void SETUP_MIDI_HARDWARE(void);
 
 typedef struct velocity {
   float lastValX;
@@ -36,12 +37,6 @@ typedef struct tSwitch {
   unsigned long debounceTime;
   boolean state;
 } tSwitch_t;
-
-typedef struct keyPos {
-  uint16_t keyPos;
-  uint16_t lastKeyPos;
-  unsigned long debounceTime;
-} keyPos_t;
 
 typedef struct vSlider {
   uint8_t posX;
@@ -76,29 +71,32 @@ typedef struct polar {
   float phi;
 } polar_t;
 
+typedef struct gridPoint {
+  float X;
+  float Y;
+} gridPoint_t;
+
+void SETUP_KEYBOARD_LAYOUT(gridPoint_t* keyPosArray_ptr);
+
 typedef struct grid {
-  uint8_t posX;
-  uint8_t posY;
-  uint8_t W;
-  uint8_t H;
-  uint8_t note[NOTES];
+  gridPoint_t* keyPosArray;
+  uint16_t lastWinPos[MAX_BLOBS];
+  int16_t lastKeyIndex[MAX_BLOBS];
+  unsigned long debounceTime[MAX_BLOBS];
+  uint8_t* midiNotes;
 } grid_t;
 
-
 // TODO
+
+void ControlChangeMapping(llist_t* blobs_ptr, grid_t* grid_ptr);
+
+
 void gridSetLayout(grid_t* grid_ptr);
 
-void gridLayoutPlay(
-  llist_t* blobs_ptr,
-  keyPos_t* key_ptr,
-  grid_t* grid_ptr
-);
+void gridLayoutMapping_A(llist_t* blobs_ptr, grid_t* grid_ptr);
 
-void harmonicKeyboardLayout(
-  llist_t* blobs_ptr,
-  keyPos_t* key_ptr,
-  grid_t* grid_ptr
-);
+uint16_t dist(blob_t* blob_ptr, grid_t* grid_ptr, uint16_t* keyIndexArray_ptr);
+void gridLayoutMapping_B(llist_t* blobs_ptr, grid_t* grid_ptr);
 
 void hSlider(llist_t* blobs_ptr, hSlider_t* slider_ptr);
 
