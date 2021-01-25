@@ -26,7 +26,7 @@ BYTE_ESCAPE = "\x7d"
 BYTE_SEPARATOR = "\x7c"
 
 #Flash size (in MB).  Change this to match how much space you have on your chip.
-FLASH_SIZE = 16
+FLASH_SIZE = 128
 
 totalFileSize = 0;
 for i, filename in enumerate(sys.argv):
