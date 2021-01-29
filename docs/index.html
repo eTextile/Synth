@@ -1,240 +1,190 @@
 <!DOCTYPE html>
 <html lang="en">
-
-<head>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
-  <meta name="description" content="Exploring music through textile">
-  <meta name="keywords" content="HID, HCI, IHM, Wickedfabrics, e-textile, wearables, smart-textiles, sensors, actuators, interactivity, electronic, Processing, Arduino, DIY, opensource, open-hardware, interface, interaction-design" />
-  <meta name="author" content="Maurin Donneaud">
-  <link rel="icon" href="./favicon.png">
-  <title>eTextile.org</title>
-  <link href="vendor/bootstrap/css/bootstrap.min.css" rel="stylesheet">
-  <link href="css/full-slider.css" rel="stylesheet">
-</head>
-
-<body>
-
-<header>
-  <nav class="navbar fixed-top navbar-expand-lg navbar-light bg-light">
-    <div class="container">
-      <a class="navbar-brand" href="https://etextile.org">
-        <img src="./favicon.png" width="28" height="34" class="d-inline-block align-top" alt=""> www.eTextile.org
-      </a>
-      <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarResponsive" aria-controls="navbarResponsive" aria-expanded="false" aria-label="Toggle navigation">
-          <span class="navbar-toggler-icon"></span>
-        </button>
-      <div class="collapse navbar-collapse" id="navbarResponsive">
-        <ul class="navbar-nav ml-auto">
-          <li class="nav-item active">
-            <a class="nav-link" href="#">Home<span class="sr-only">(current)</span></a>
-          </li>
-          <li class="nav-item">
-            <a class="nav-link" href="#about">About</a>
-          </li>
-          <li class="nav-item">
-            <a class="nav-link" href="#docs">Documents</a>
-          </li>
-          <li class="nav-item">
-            <a class="nav-link" href="#contact">Contact</a>
-          </li>
-        </ul>
-      </div>
-    </div>
-  </nav>
-</header>
-
-<main>
-
-  <div id="myCarousel" class="carousel slide" data-bs-ride="carousel">
-    <ol class="carousel-indicators">
-      <li data-bs-target="#myCarousel" data-bs-slide-to="0" class="active"></li>
-      <li data-bs-target="#myCarousel" data-bs-slide-to="1"></li>
-      <li data-bs-target="#myCarousel" data-bs-slide-to="2"></li>
-    </ol>
-
-  <div class="carousel-inner">
-    <div class="carousel-item active">
-      <img class="bd-placeholder-img" width="100%" height="100%" style="background-image: url('https://live.staticflickr.com/65535/50866131211_1aa8a94dd0_k_d.jpg')">
-        <div class="container">
-          <div class="carousel-caption text-start">
-            <h1>Exploring music through textile</h1>
-            <h3>A universe of sound at your fingertips</h3>
-          </div>
-        </div>
-      </div>
-
-      <div class="carousel-item">
-        <img class="bd-placeholder-img" width="100%" height="100%" style="background-image: url('https://live.staticflickr.com/65535/49213806702_a075cddbdf_k_d.jpg')">
-          <div class="container">
-            <div class="carousel-caption text-start">
-            <h1>Electronic textile interfaces</h1>
-            <h3>ransforming textiles into an intuitive way to interact with computers</h3>
-          </div>
-        </div>
-      </div>
-
-      <div class="carousel-item">
-        <img class="bd-placeholder-img" width="100%" height="100%" style="background-image: url('https://live.staticflickr.com/65535/50747225617_04f6b70553_k_d.jpg')">
-          <div class="container">
-            <div class="carousel-caption text-start">
-            <h1>Opensource and open-hardware technology</h1>
-            <h3>eTextile-Synthetizer</h3>
-          </div>
-        </div>
-      </div>
-    </div>
-
-      <a class="carousel-control-prev" href="#myCarousel" role="button" data-bs-slide="prev">
-        <span class="carousel-control-prev-icon" aria-hidden="true"></span>
-        <span class="visually-hidden">Previous</span>
-      </a>
-      <a class="carousel-control-next" href="#myCarousel" role="button" data-bs-slide="next">
-        <span class="carousel-control-next-icon" aria-hidden="true"></span>
-        <span class="visually-hidden">Next</span>
-      </a>
-    </div>
-
-  <!-- Page Content -->
-  <section class="py-5">
-    <div id="about" class="container">
-      <div class="row">
-        <div class="col-sm-4">
-          <img src="./LOGO.png" class="float-right" alt="Responsive image">
-        </div>
-        <div class="col-sm-8">
-          <h2 class="featurette-heading"><a href="https://synth.eTextile.org">eTextile-Synthetizer</a></h2>
-          <h3><span class="text-muted">Exploring music through textile</span></h3>
-          <p class="lead">After setting up the <strong>E256 eTextile matrix sensor</strong> it is now time to use it for live electronic music performances.
-            <strong>eTextile-Synthesizers</strong> are handcrafted multi-touch digital interfaces based on smart textile materials and custom electronic solutions.
-            These eTextile-synthesizers open up new possibilities for electronic music playing.
-            The project features a fully embedded <strong>multitouch eTextile-Synthesizer</strong> that combines the powerful <strong>Teensy 4.0</strong> MCU and its audio library with the E256 eTextile matrix sensor technology.
-            One of the main purpose of this project is to promote an intuitive music playing as well as taking benefit of textile textures diversity to form tactile cues that guide the touch.
-            Like the popular <strong>Eurorack modules</strong> all eTextile-Synthesizers can connect each other via mini-jack and share them tempo as well as notes and audio streams.
-            Thus each eTextile-Synthesizer devices have dedicated audio functionalities to generate or filter audio signals.
-          </p>
-        </div>
-      </div>
-    </div>
-  </section>
-
-  <div class="container marketing">
-  <hr class="featurette-divider">
-  <div class="row featurette">
-    <div class="col-md-7">
-      <h2 class="featurette-heading">It’ll blow your mind!</h2>
-      <p class="lead">Donec ullamcorper nulla non metus auctor fringilla. Vestibulum id ligula porta felis euismod semper. Praesent commodo cursus magna, vel scelerisque nisl consectetur. Fusce dapibus, tellus ac cursus commodo.</p>
-    </div>
-    <div class="col-md-5">
-      <img class="bd-placeholder-img" width="500" height="500" style="background-image: url('https://live.staticflickr.com/65535/48584206007_b18dae27ce_c_d.jpg')">
-    </div>
-  </div>
-  <hr class="featurette-divider">
-</div><!-- /.container -->
-
-  <section class="py-5">
-    <div id="docs" class="container">
-      <div class="card-deck">
-        <div class="card border-success mb-3" style="max-width: 18rem;">
-          <div class="card-header bg-success border-success">Pictures & videos</div>
-          <div class="card-body">
-            <p class="card-text">
-              The project starts in 2014 during the <a href="http://schmiede.ca/">Schmiede festival</a> (Austria).<br>
-              One week of thinking and building amizing projects in collaboration with <a href="https://www.kobakant.at/DIY/?p=4305/">Kobakant</a><br>
-              <br>
-              <a href="https://www.flickr.com/photos/maurin/albums/72157673740361510/" title="Share your pictures with us">Pictures of the project</a><br>
-            </p>
-          </div>
-        </div>
-
-        <div class="card border-warning mb-3" style="max-width: 18rem;">
-          <div class="card-header bg-warning border-warning">Repository</div>
-          <div class="card-body">
-            <h5 class="card-title"><a href="https://github.com/eTextile/Synth/tree/master">github.com/eTextile/synth</a></h5>
-            <p class="card-text">
-              We like to give the user full control over their gear and encourage modifications to the software and hardware.
-              The full sourcecode and the schematics are available on GitHub and the firmware can be built using Arduino toolchain.
-              So feel free to look inside the "black box" and start tinkering. Feedback is more than appreciate and pull requests are welcome.
-            <h5 class="card-title">Branches</h5>
-              <strong><a href="https://github.com/eTextile/Synth/tree/master">eTextile-Synthetizer</a></strong> Standalone eTextile-Synthesizer build for live electronic music<br>
-              <strong><a href="https://github.com/eTextile/Matrix/tree/master">eTextile-matrix-sensor</a></strong> E256 eTextile-matrix-sensor is a development kit taht can be used in combination with any microcontroller<br>
-            </p>
-          </div>
-        </div>
-
-        <div class="card border-info mb-3" style="max-width: 18rem;">
-          <div class="card-header bg-info border-info">Publications</div>
-          <div class="card-body">
-            <p class="card-text">
-              <strong><a href="http://www.nime2017.org/">NIME17</a></strong><br> Designing a Multi-Touch eTextile for Music Performances - <a href="./docs/publications/NIME17-eTextile.pdf">Paper</a> - <a href="https://vimeo.com/217690743">Video</a><br>
-              <strong><a href="http://moco17.movementcomputing.org/">MOCO17</a></strong><br> Music Skin: Fabric Interface for Expressive Music Control - <a href="./docs/publications/MOCO17-MusicSkin.pdf">Paper</a><br>
-
-              <h5 class="card-title">Blogs</h5>
-              <a href="https://hackaday.com/2019/02/15/you-are-your-own-tactile-feedback">www.hackaday.com</a> You are your own tactile feedback
-              <a href="https://www.makery.info/en/2014/12/02/maurin-donneaud-invente-la-peau-de-robot/">www.makery.info</a> Maurin Donneaud invents "robot skin"
-            </p>
-          </div>
-        </div>
-
-      </div>
-    </div>
-  </section>
-
-  <section class="py-5">
-    <div id="contact" class="container">
-      <!-- Container (Contact Section) -->
-      <div class="row">
-        <div class="col-sm-5">
-          <p>The eTextile-Synthetizers are available for sale.
-            With this early stage technology we provide a set of open-source demo softwares and a strong suport to help you to get hands-on the project.
-            All Synthesizers are tested before shipping and comes with a one year guarantee.</p>
-          <ul class="list-unstyled">
-            <li><a class="text-black">Maurin Donneaud</a></li>
-            <li><a class="text-black">35 rue des Meuniers</a></li>
-            <li><a class="text-black">75012 Paris - France</a></li>
-            <li><a class="text-black">contact@eTextile.org</a></li>
-          </ul>
-        </div>
-        <div class="col-sm-7 slideanim">
-          <form action="https://formspree.io/contact@etextile.org" method="POST">
-            <div class="row">
-              <div class="col-sm-6 form-group">
-                <input class="form-control bg-light" id="name" name="name" placeholder="Name" type="text" required>
-              </div>
-              <div class="col-sm-6 form-group">
-                <input class="form-control bg-light" id="email" name="email" placeholder="Email" type="email" required>
-              </div>
+    <head>
+        <meta charset="utf-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+        <meta name="description" content="Exploring music through textile">
+        <meta name="keywords" content="HID, HCI, IHM, Wickedfabrics, e-textile, wearables, smart-textiles, sensors, actuators, interactivity, electronic, Processing, Arduino, DIY, opensource, open-hardware, interface, interaction-design" />
+        <meta name="author" content="Maurin Donneaud">
+        <link rel="icon" href="./assets/img/favicon.png">
+        <title>eTextile.org</title>
+        <!-- Font Awesome icons (free version)-->
+        <script src="https://use.fontawesome.com/releases/v5.15.1/js/all.js" crossorigin="anonymous"></script>
+        <!-- Google fonts-->
+        <link href="https://fonts.googleapis.com/css?family=Varela+Round" rel="stylesheet" />
+        <link href="https://fonts.googleapis.com/css?family=Nunito:200,200i,300,300i,400,400i,600,600i,700,700i,800,800i,900,900i" rel="stylesheet" />
+        <!-- Core theme CSS (includes Bootstrap)-->
+        <link href="css/styles.css" rel="stylesheet" />
+    </head>
+    <body id="page-top">
+        <!-- Navigation-->
+        <nav class="navbar navbar-expand-lg navbar-light fixed-top" id="mainNav">
+            <div class="container">
+                <a class="navbar-brand js-scroll-trigger" href="#page-top">eTextile.org</a>
+                <button class="navbar-toggler navbar-toggler-right" type="button" data-toggle="collapse" data-target="#navbarResponsive" aria-controls="navbarResponsive" aria-expanded="false" aria-label="Toggle navigation">
+                    Menu
+                    <i class="fas fa-bars"></i>
+                </button>
+                <div class="collapse navbar-collapse" id="navbarResponsive">
+                    <ul class="navbar-nav ml-auto">
+                        <li class="nav-item"><a class="nav-link js-scroll-trigger" href="#about">About</a></li>
+                        <li class="nav-item"><a class="nav-link js-scroll-trigger" href="#projects">Projects</a></li>
+                        <li class="nav-item"><a class="nav-link js-scroll-trigger" href="#signup">Contact</a></li>
+                    </ul>
+                </div>
             </div>
-            <textarea class="form-control bg-light" id="comments" name="comments" placeholder="Comment" rows="5"></textarea><br>
-            <div class="row">
-              <div class="col-sm-12 form-group">
-                <button class="btn btn-default pull-right" type="submit" value='Submit'>Send</button>
-              </div>
+        </nav>
+
+        <!-- Masthead-->
+        <header class="masthead">
+            <div class="container d-flex h-100 align-items-center">
+                <div class="mx-auto text-center">
+                    <h1 class="mx-auto my-0 ">eTextile Synth</h1>
+                    <h2 class="text-white-50 mx-auto mt-2 mb-5">Exploring music through textile</h2>
+                    <a class="btn btn-primary js-scroll-trigger" href="#about">Get Started</a>
+                </div>
             </div>
-          </form>
-        </div>
-      </div>
-    </div>
-  </section>
+        </header>
 
-  </div>
+        <!-- About-->
+        <section class="about-section text-center" id="about" >
+            <div class="container" >
+                <div class="row">
+                    <div class="col-lg-8 mx-auto">
+                        <h2 class="text-white mb-4">A universe of sound at your fingertips</h2>
+                        <p class="text-white-50">
+                          The eTextile-Synthesizer is featuring an intuitive multi-touch e-Textile controller linked to a polyphonic music synthesizer.
+                          This tactile textile interface open up new possibilities for electronic music creation.
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </section>
 
-  <!-- Footer -->
-  <footer class="footer font-small bg-secondary text-white">
-    <div class="container">
-      <div class="row">
-        <div class="col-md-12">
-          Copyright (c) Maurin Donneaud
-        </div>
-      </div>
-    </div>
-  </footer>
-</main>
+        <!-- Projects-->
+        <section class="projects-section bg-light" id="projects">
+            <div class="container">
 
-  <!-- Bootstrap core JavaScript -->
-  <script src="vendor/jquery/jquery.min.js"></script>
-  <script src="vendor/bootstrap/js/bootstrap.bundle.min.js"></script>
+              <!-- Featured Project Row-->
+              <div class="row align-items-center mb-4 mb-lg-5">
+                <div class="col-lg-6">
+                  <img class="img-fluid" src="https://live.staticflickr.com/65535/50866131211_85efdc979a_c_d.jpg" alt="eTextile-Synth" />
+                </div>
+                  <div class="col-lg-6">
+                    <div class="featured-text text-center text-lg-left">
+                      <h4 class="text-black">Buay it</h4>
+                      <p class="mb-0 text-black-50"> This early stage technology is available for sale with a set of demo softwares. All products are tested before shipping and comes with a one year guarantee.</p>
+                      </div>
+                    </div>
+                  </div>
 
-</body>
+                <!-- Featured Project Row-->
+                <div class="row align-items-center mb-4 mb-lg-5">
+                  <div class="col-lg-6">
+                    <img class="img-fluid" src="https://live.staticflickr.com/65535/48916850368_dd34d00418_c_d.jpg" alt="eTextile-Synth" />
+                  </div>
+                    <div class="col-lg-6">
+                      <div class="featured-text text-center text-lg-left">
+                        <h4 class="text-black">Use it</h4>
+                          <p class="mb-0 text-black-50">
+                            This plug and play synthesizer comes with a set of Audio functionalities and dedicated textile user interface.
+                            Mini-jacks sockets are midi-data and audio-signal INPUT and OUTPUT ports to connect it to other instruments.
+                            The eTextile-touchpad can also be configured as midi controller for Audio Software like Ableton Live, Max Msp, PureData, etc.
+                          </p>
+                        </div>
+                      </div>
+                    </div>
 
+                    <!-- Featured Project Row-->
+                    <div class="row align-items-center mb-4 mb-lg-5">
+                      <div class="col-lg-6">
+                        <img class="img-fluid" src="https://live.staticflickr.com/65535/50747231422_db241da26b_c_d.jpg" alt="Picture" />
+                      </div>
+                        <div class="col-lg-6">
+                          <div class="featured-text text-center text-lg-left">
+                            <h4 class="text-black">Open it</h4>
+                            <p class="mb-0 text-black-50">We like to give the user full control over their gear and encourage hardware and software modifications. The sourcecode and electronic schematics are all available on GitHub and the firmware can be easily compil using Arduino software. You should look inside the blackbox to see how bright it is and if you need to get hands-on the project you can count on our support.</p>
+                            </div>
+                          </div>
+                        </div>
+
+                        <!-- Featured Project Row-->
+                        <div class="row align-items-center mb-4 mb-lg-5">
+                          <div class="col-lg-6">
+                            <img class="img-fluid" src="./assets/img/synth_gitHub.png" alt="Picture" />
+                          </div>
+                            <div class="col-lg-6">
+                              <div class="featured-text text-center text-lg-left">
+                                <h4 class="text-black">Make it yours </h4>
+                                <p class="mb-0 text-black-50">This hakabel device have been made to facilitate the design of new contents. If you whant to make your own eTextile-Synth you can start by opening the README file contaned in every folder of the GtHub project.
+
+
+            </div>
+        </section>
+
+        <!-- Signup-->
+        <section class="signup-section" id="signup">
+            <div class="container">
+                <div class="row">
+                    <div class="col-md-10 col-lg-8 mx-auto text-center">
+                        <i class="far fa-paper-plane fa-2x mb-2 text-white"></i>
+                        <h2 class="text-white mb-5">Subscribe to receive updates!</h2>
+                        <form class="form-inline d-flex">
+                            <input class="form-control flex-fill mr-0 mr-sm-2 mb-3 mb-sm-0" id="inputEmail" type="email" placeholder="Enter email address..." />
+                            <button class="btn btn-primary mx-auto" type="submit">Subscribe</button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </section>
+        <!-- Contact-->
+        <section class="contact-section bg-black">
+            <div class="container">
+                <div class="row">
+                    <div class="col-md-4 mb-3 mb-md-0">
+                        <div class="card py-4 h-100">
+                            <div class="card-body text-center">
+                                <i class="fas fa-map-marked-alt text-primary mb-2"></i>
+                                <h4 class="text-uppercase m-0">Address</h4>
+                                <div class="small text-black-50"> 35 rue des Meuniers, 75012 Paris - FR</div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-4 mb-3 mb-md-0">
+                        <div class="card py-4 h-100">
+                            <div class="card-body text-center">
+                                <i class="fas fa-envelope text-primary mb-2"></i>
+                                <h4 class="text-uppercase m-0">Email</h4>
+                                <div class="small text-black-50"><a href="#!">contact[AT]etextile.org</a></div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-4 mb-3 mb-md-0">
+                        <div class="card py-4 h-100">
+                            <div class="card-body text-center">
+                                <i class="fas fa-mobile-alt text-primary mb-2"></i>
+                                <h4 class="text-uppercase m-0">Phone</h4>
+                                <div class="small text-black-50">+33 627 32I 6I6</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="social d-flex justify-content-center">
+                    <a class="mx-2" href="https://www.instagram.com/maurinelectrotextile/"><i class="fab fa-instagram"></i></a>
+                    <a class="mx-2" href="https://www.facebook.com/maurin.donneaud"><i class="fab fa-facebook-f"></i></a>
+                    <a class="mx-2" href="https://github.com/eTextile/synth/"><i class="fab fa-github"></i></a>
+                    <a class="mx-2" href="https://www.flickr.com/photos/maurin/albums/72157673740361510/"><i class="fab fa-flickr"></i></a>
+                </div>
+            </div>
+        </section>
+        <!-- Footer-->
+        <footer class="footer bg-black small text-center text-white-50"><div class="container">Copyright © Maurin DONNEAUD ~ 2021</div></footer>
+        <!-- Bootstrap core JS-->
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+        <script src="https://cdn.jsdelivr.net/npm/bootstrap@4.5.3/dist/js/bootstrap.bundle.min.js"></script>
+        <!-- Third party plugin JS-->
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery-easing/1.4.1/jquery.easing.min.js"></script>
+        <!-- Core theme JS-->
+        <script src="js/scripts.js"></script>
+    </body>
 </html>
