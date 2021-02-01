@@ -60,15 +60,12 @@
     **python** rawfile-uploader.py /dev/ttyACM0 RAW/*
 
 ## Copyright
-Except as otherwise noted, all files in the resistiveMatrix project folder
+Except as otherwise noted, all files in the eTextile-Synthetizer project folder
 
-    Copyright (c) 2005-2017 Maurin Donneaud and others.
+    Copyright (c) 20014- Maurin Donneaud
 
 For information on usage and redistribution, and for a DISCLAIMER OF ALL
-WARRANTIES, see LICENSE.txt included in the resistiveMatrix project folder.
-
-## Acknowledgements
-Thanks to Vincent Roudaut, Hannah Perner Willson, Cedric Honnet, Antoine Meisso, Paul Strohmeier
+WARRANTIES, see LICENSE.txt included in the eTextile-Synthetizer project folder.
 
 ## TODO
 - Optimise interpolation method (it have been already updated with windowing method)
