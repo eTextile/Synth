@@ -1,5 +1,5 @@
 # eTextile-Synthetizer 
-### Exploring music through textile in-progress
+### Exploring music through textile
 
 ![eTextile Synthetizer](https://live.staticflickr.com/65535/48916850368_dd34d00418_c_d.jpg)
 
