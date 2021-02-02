@@ -42,9 +42,9 @@ After setting up the **E256 eTextile matrix sensor** it is now time to use it fo
 - [MOCO17](http://moco17.movementcomputing.org/) - Music Skin: Fabric Interface for Expressive Music Control / [Paper](https://github.com/eTextile/Matrix/blob/teensy_matrix/docs/publications/MOCO17-MusicSkin.pdf)
 
 ## Copyright
-Except as otherwise noted, all files in the eTextile-Synthetizer project folder
+Except as otherwise noted, all files in the **eTextile-Synthetizer** project folder
 
-    Copyright (c) 2014-2018 Maurin Donneaud and others.
+    Copyright (c) 2014- Maurin Donneaud
 
 For information on usage and redistribution, and for a DISCLAIMER OF ALL
 WARRANTIES, see LICENSE.txt included in this folder.
