@@ -173,12 +173,11 @@ median_t medianStorage[MAX_BLOBS] {
 };
 
 // Testing mapping fonctions
-//switch_t tapSwitch = {10, 10, 5, 1000, false};      // ARGS[posX, posY, rSize, debounceTimer, state]
-//switch_t modeSwitch = {40, 30, 5, 1000, false};     // ARGS[posX, posY, rSize, debounceTimer, state]
+//switch_t tapSwitch = {10, 10, 5, 1000, false};                          // ARGS[posX, posY, rSize, debounceTimer, state]
+//switch_t modeSwitch = {40, 30, 5, 1000, false};                         // ARGS[posX, posY, rSize, debounceTimer, state]
 
-
-gridPoint_t keyPosArray[KEYS] = {0, 0};                                 // Array of [X-Y] gridPoint to store precompute positions
-uint8_t midiLayout[20] = {127, 63, 44};                                         // 1D Array to store incoming midi notes
+gridPoint_t keyPosArray[KEYS] = {0, 0};                                   // Array of [X-Y] gridPoint to store precompute positions
+uint8_t midiLayout[20] = {127, 63, 44};                                   // 1D Array to store incoming midi notes
 grid_t gridLayout_A = {&keyPosArray[0], {0}, {0}, {0}, &midiLayout[0]};   // ARGS[blobKeyPress, lastBlobKeyPress, debounceTime, midiNotes]
 grid_t gridLayout_B = {&keyPosArray[0], {0}, {0}, {0}, &midiLayout[0]};   // ARGS[blobKeyPress, lastBlobKeyPress, debounceTime, midiNotes]
 
@@ -193,6 +192,8 @@ cSlider_t cSliders[C_SLIDERS] = {
 };
 
 velocity_t velocityStorage[MAX_BLOBS];
+
+ccPesets_t CCpesets = {0, 2, 0, 1, 1, 0}; // ARGS[blobID, blobVal, lastVal, cchnage, midiChannel, 0]
 
 void setup() {
 
@@ -366,10 +367,10 @@ void loop() {
   //    SET_ORIGIN_X == 1
   //    SET_ORIGIN_Y == 1
 
-  gridLayoutMapping_A(&outputBlobs, &gridLayout_A);                // ARGS[llist_ptr, gridLayout_ptr]
-  //gridLayoutMapping_B(&outputBlobs, &gridLayout_B);              // ARGS[llist_ptr, gridLayout_ptr]
+  gridLayoutMapping_A(&outputBlobs, &gridLayout_A);             // ARGS[llist_ptr, gridLayout_ptr]
+  //gridLayoutMapping_B(&outputBlobs, &gridLayout_B);           // ARGS[llist_ptr, gridLayout_ptr]
 
-  ControlChangeMapping(&outputBlobs, &gridLayout_C);
+  //ControlChangeMapping(&outputBlobs, &CCpesets);                // ARGS[llist_ptr, CCPesets_ptr]
 
   //getVelocity(&outputBlobs, &velocityStorage[0]);             // ARGS[llist_ptr, velocityStorage_ptr]
   //hSlider(&outputBlobs, &hSlider);                            // ARGS[llist_ptr, vSlider_ptr]

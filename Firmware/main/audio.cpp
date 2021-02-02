@@ -36,7 +36,7 @@ void SETUP_DAC(
   allSynth_ptr[5].mix_ptr->gain(2, 0.25);
   allSynth_ptr[5].mix_ptr->gain(3, 0.25);
 
-  while(!SerialFlash.begin(6));
+  while (!SerialFlash.begin(6));
 }
 
 
@@ -74,11 +74,16 @@ void make_noise(
         allSynth_ptr[blob_ptr->UID].wf_ptr->phase(0);
         allSynth_ptr[blob_ptr->UID].fade_ptr->fadeIn(3);
       }
+
       if (blob_ptr->alive) {
-        allSynth_ptr[blob_ptr->UID].wf_ptr->frequency((blob_ptr->centroid.X / 4.0) + 1);
-        allSynth_ptr[blob_ptr->UID].fm_ptr->frequency((blob_ptr->centroid.Y / 2.0) + 5);
-        //allSynth_ptr[blob_ptr->UID].wf_ptr->frequency(blob_ptr->centroid.X * 3);
-        //allSynth_ptr[blob_ptr->UID].fm_ptr->frequency(blob_ptr->centroid.Y * 4 + 50);
+        if (blob_ptr->UID == 0) {
+          allSynth_ptr[blob_ptr->UID].wf_ptr->frequency((blob_ptr->centroid.X / 4.0) + 1);
+          allSynth_ptr[blob_ptr->UID].fm_ptr->frequency((blob_ptr->centroid.Y / 2.0) + 5);
+        }
+        else if (blob_ptr->UID == 1) {
+          allSynth_ptr[blob_ptr->UID].wf_ptr->frequency(blob_ptr->centroid.X * 3);
+          allSynth_ptr[blob_ptr->UID].fm_ptr->frequency(blob_ptr->centroid.Y * 4 + 50);
+        }
       }
       else {
         allSynth_ptr[blob_ptr->UID].fade_ptr->fadeOut(500);
@@ -88,6 +93,7 @@ void make_noise(
   }
   AudioInterrupts();
 }
+
 
 // TODO
 void tapTempo(tSwitch_t* tSwitch_ptr, cSlider_t* slider_ptr) {

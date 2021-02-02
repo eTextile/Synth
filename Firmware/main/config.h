@@ -12,7 +12,7 @@
 //#if defined(USB_SERIAL)
 //#if defined(USB_MIDI)
 
-#define ETEXTILE-SYNTHETIZER   "1.0.0" 
+#define ETEXTILE_SYNTHETIZER   "1.0.0" 
  
 #define STANDALONE_SYNTH        1 // [0:1] Set the eTextile-Synthesizer as STANDALONE divice
 #define MIDI_USB                0 // [0:1] Set the eTextile-Synthesizer as USB MIDI divice
@@ -73,13 +73,13 @@
 #define LIFO_MAX_NODES          127      // Set the maximum nodes number
 #define X_STRIDE                3        // 
 #define Y_STRIDE                3        // 
-#define MIN_BLOB_PIX            6        // Set the minimum blob pixels
+#define MIN_BLOB_PIX            8        // Set the minimum blob pixels
 #define MAX_BLOB_PIX            4095     // Set the maximum blob pixels
 #define CALIBRATION_CYCLES      10
 
-#define DEBOUNCE_TIME_BLOB      13
-#define DEBOUNCE_TIME_SWITCH    16
-#define DEBOUNCE_MIDI_HARDWARE  20
+#define DEBOUNCE_TIME_BLOB      15
+#define DEBOUNCE_TIME_SWITCH    15
+#define DEBOUNCE_TIME_MIDI      20
 
 #define PI                      3.1415926535897932384626433832795
 
@@ -93,10 +93,11 @@
 #define KEYS                    (X_GRID_STEP * Y_GRID_STEP)
 #define X_GRID_STRIDE           (X_MAX / (X_GRID_STEP + 1))
 #define Y_GRID_STRIDE           (Y_MAX / (Y_GRID_STEP + 1))
-#define X_GRID_WINDOW           Y_GRID_STEP/2
-#define Y_GRID_WINDOW           Y_GRID_STEP/2
+#define X_GRID_WINDOW           (Y_GRID_STEP/2)
+#define Y_GRID_WINDOW           (Y_GRID_STEP/2)
+
 #define GRID_GAP                4
-#define GRID_CELL               X_GRID_STRIDE - GRID_GAP
+#define GRID_CELL               (X_GRID_STRIDE - GRID_GAP)
 
 #define LINE_OUT                0
 #define SIG_IN                  1

@@ -126,6 +126,7 @@ typedef struct blob {
   uint16_t pixels;
   uint8_t UID;
   uint8_t alive;
+  uint8_t lastState;
   state_t state;
   point_t centroid;
   bbox_t box;
