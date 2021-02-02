@@ -12,13 +12,14 @@ CNC-Cutters or Plotters are tools that you can buy for cheap on second hand webs
 We suggest to look for an "obsolete" one that work with **parallel port** (NO USB!) This will be cheapest!
 Then you can buy a **parallel to USB adapter** and use the inkscape plugin to cut the conductive textile matrix pattern.
 After having cut the conductive fabric doubled with the bounding material you will need to fuse it to your woven fabric using a 
-heat press or an iron.
+heat press.
 
 ### BOM
-- Conductive fabric : silver-coated Polyester or nickel-coated Polyester
-- CNC cutter : 
-- fusing material : 
-- Interdigitation zig-zag pattern with built-in eTextile-bus (pitch 4.2mm)
+- **Conductive fabric** : silver-coated Polyester or nickel-coated Polyester
+- **CNC cutter** : 
+- **heat press** :
+- **Fusing material** :
+- **E256 path** : interdigitation zig-zag pattern with built-in eTextile-bus (pitch 4.2mm)
 
 ### SOFTWARE REQUIREMENTS
 - https://inkscape.org/
@@ -39,11 +40,12 @@ cd enamlx
 sudo python setup.py install
 ```
 
-[E256_path](./E256_path.svg)
+## E256 cutting the conductive textile
+Here is the unique file to cut for both TOP and BOTTOM layer matrix antenas : [E256_path](./E256_path.svg)
 
+## E256 fusing the conductive textile 
 ![Lost_parts](https://live.staticflickr.com/65535/48791432428_cccc5ecaf6_c_d.jpg)
 ![Heat_press](https://live.staticflickr.com/65535/48791938502_d166d7a995_c_d.jpg)
-
 
 ### TODO
 - Add non-slip Silicon
