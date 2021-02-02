@@ -1,19 +1,19 @@
+#paris
 #future
 #textiles
 #etextiles
 #e-textiles
-#smarttextiles
 #electronics
-#softbuttons
 #smarttextiles
 #smarttechnology
 #intelligenttextiles
 #conductivetextiles
 #tech
 #hardware
-#paris
 #wearables
 #wearabletech
 #wearabletechnology
-#fashtech
 #fashiontechnology
+
+
+paris, future, textiles, etextiles, e-textiles, electronics, smarttextiles, smarttechnology, intelligenttextiles, conductivetextiles, tech, hardware, wearables, wearabletech, wearabletechnology, fashiontechnology
