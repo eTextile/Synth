@@ -39,7 +39,7 @@ cd enamlx
 sudo python setup.py install
 ```
 
-![E256_path](./E256_path.svg)
+[E256_path](./E256_path.svg)
 
 ![Lost_parts](https://live.staticflickr.com/65535/48791432428_cccc5ecaf6_c_d.jpg)
 ![Heat_press](https://live.staticflickr.com/65535/48791938502_d166d7a995_c_d.jpg)
