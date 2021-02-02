@@ -41,7 +41,9 @@ sudo python setup.py install
 
 ![E256_path](./E256_path.svg)
 
-![alt tag](https://farm1.staticflickr.com/789/40837526952_12d6bf42cf_z_d.jpg)
+![Lost_parts](https://live.staticflickr.com/65535/48791432428_cccc5ecaf6_c_d.jpg)
+![Heat_press](https://live.staticflickr.com/65535/48791938502_d166d7a995_c_d.jpg)
+
 
 ### TODO
 - Add non-slip Silicon
