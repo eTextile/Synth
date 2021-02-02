@@ -41,7 +41,7 @@ sudo python setup.py install
 ```
 
 ## E256 cutting the conductive textile
-Here is the unique file to cut for both TOP and BOTTOM layer matrix antenas : [E256_path](./E256_path.svg)
+Here is the unique file to cut both TOP and BOTTOM antena layers of the E256 matrix : [E256_path](./E256_path.svg)
 
 ## E256 fusing the conductive textile 
 ![Lost_parts](https://live.staticflickr.com/65535/48791432428_cccc5ecaf6_c_d.jpg)
