@@ -34,10 +34,10 @@ void SETUP_INTERP(
 );
 
 void interp_matrix(
-  uint8_t   zThreshold,
+  uint8_t   interpThreshold,
   image_t*  outputFrame_ptr,
   image_t*  inputFrame_ptr,
-  interp_t* interp
+  interp_t* interp_ptr
 );
 
 void print_interp(image_t* array_ptr);

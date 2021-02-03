@@ -77,12 +77,12 @@ typedef struct gridPoint {
 } gridPoint_t;
 
 typedef struct cChange {
-  uint8_t blobID;
-  blob_t* blobVal;
+  llist* blobs;
+  uint8_t blobID;  
+  char blobVal;
   uint8_t lastVal;
   uint8_t cchnage;
   uint8_t midiChannel;
-  unsigned long timer;
 } ccPesets_t;
 
 typedef struct grid {
@@ -90,34 +90,31 @@ typedef struct grid {
   uint16_t lastWinPos[MAX_BLOBS];
   int16_t lastKeyIndex[MAX_BLOBS];
   unsigned long timer[MAX_BLOBS];
-  uint8_t* midiNotes;
+  int8_t* midiLayout;
 } grid_t;
 
-// TODO
+typedef struct seq {
+  uint16_t timeInterval[];
+  uint8_t* seqframe;
+} seq_t;
 
-void SETUP_KEYBOARD_LAYOUT(gridPoint_t* keyPosArray_ptr);
+void SETUP_KEYBOARD_LAYOUT(gridPoint_t* keyPosArray_ptr); // TODO
 
-void ControlChangeMapping(llist_t* blobs_ptr, ccPesets_t* pesets_ptr);
+void controlChangeMapping(llist_t* blobs_ptr, ccPesets_t* pesets_ptr);
 
 void gridSetLayout(grid_t* grid_ptr);
-
 void gridLayoutMapping_A(llist_t* blobs_ptr, grid_t* grid_ptr);
-
 uint16_t dist(blob_t* blob_ptr, grid_t* grid_ptr, uint16_t* keyIndexArray_ptr);
 void gridLayoutMapping_B(llist_t* blobs_ptr, grid_t* grid_ptr);
-
 void hSlider(llist_t* blobs_ptr, hSlider_t* slider_ptr);
-
 void vSlider(llist_t* blobs_ptr, vSlider_t* slider_ptr);
-
 void cSlider(llist_t* blobs_ptr, polar_t* polar_ptr, cSlider_t* slider_ptr);
-
 void getPolarCoordinates(llist_t* blobs_ptr, polar_t* polarPos_ptr);
-
 boolean toggle(llist_t* blobs_ptr, tSwitch_t* switch_ptr);
-
 boolean trigger(llist_t* blobs_ptr, tSwitch_t* switch_ptr);
-
 void getVelocity(llist_t* blobs_ptr, velocity_t* velocity_ptr);
+
+void tapTempo(tSwitch_t* tSwitch_ptr, cSlider_t* slider_ptr); // TODO
+void seq(tSwitch_t* tSwitch_ptr, seq_t* seq_ptr); // TODO
 
 #endif /*__MAPPING_H__*/

@@ -98,7 +98,8 @@ void update_preset(
   boolean* save_ptr,
   AudioControlSGTL5000* dac_ptr,
   AudioPlaySerialflashRaw* player_ptr,
-  elapsedMillis* timer_ptr
+  elapsedMillis* timer_ptr,
+  uint8_t* interpThreshold_ptr
 ) {
 
   switch (preset_ptr->mode) {
@@ -153,6 +154,7 @@ void update_preset(
     // FONCTION : zThreshold value adjustment using rotary encoder
     case THRESHOLD:
       if (setLevel(preset_ptr, encoder_ptr)) {
+        interpThreshold_ptr = constrain(preset_ptr->val - 10, preset_ptr->minVal, preset_ptr->maxVal);
 #if DEBUG_ENCODER
         Serial.printf("\nTHRESHOLD : %d", preset_ptr->val);
 #endif
@@ -172,7 +174,7 @@ void update_preset(
     case CALIBRATE:
       if (calibrate_ptr == false) {
         *calibrate_ptr = true;
-        player_ptr->play("A.RAW");
+        player_ptr->play("A.RAW"); // TESTING
 #if DEBUG_BUTTONS
         Serial.println("DO_CALIBRATE");
 #endif

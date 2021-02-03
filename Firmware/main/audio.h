@@ -50,9 +50,4 @@ void make_noise(
   synth_t* allSynth_ptr
 );
 
-void tapTempo(
-  tSwitch_t* tSwitch_ptr,
-  cSlider_t* slider_ptr
-);
-
 #endif /*__AUDIO_H__*/

@@ -58,10 +58,10 @@ void SETUP_INTERP(
 
 // Bilinear interpolation
 void interp_matrix(
-  uint8_t zThreshold,
+  uint8_t interpThreshold,
   image_t* outputFrame_ptr,
   image_t* inputFrame_ptr,
-  interp_t* interp
+  interp_t* interp_ptr
 ) {
 
   uint8_t inIndexA = 0;
@@ -74,32 +74,32 @@ void interp_matrix(
 
       inIndexA = rowPos * inputFrame_ptr->numCols + colPos;
 
-      if (inputFrame_ptr->pData[inIndexA] > zThreshold) { // Windowing implementation
+      if (inputFrame_ptr->pData[inIndexA] > interpThreshold) { // Windowing implementation
 
         inIndexB = inIndexA + 1;
         inIndexC = inIndexA + inputFrame_ptr->numCols;
         inIndexD = inIndexC + 1;
 
-        for (uint8_t row = 0; row < interp->scale_Y; row++) {
-          for (uint8_t col = 0; col < interp->scale_X; col++) {
+        for (uint8_t row = 0; row < interp_ptr->scale_Y; row++) {
+          for (uint8_t col = 0; col < interp_ptr->scale_X; col++) {
 
-            uint8_t coefIndex = row * interp->scale_X + col;
-            uint16_t outIndex = rowPos * interp->outputStride_Y + colPos * interp->scale_X + row * outputFrame_ptr->numCols + col;
+            uint8_t coefIndex = row * interp_ptr->scale_X + col;
+            uint16_t outIndex = rowPos * interp_ptr->outputStride_Y + colPos * interp_ptr->scale_X + row * outputFrame_ptr->numCols + col;
 
             outputFrame_ptr->pData[outIndex] =
               (uint8_t) round(
-                inputFrame_ptr->pData[inIndexA] * interp->pCoefA[coefIndex] +
-                inputFrame_ptr->pData[inIndexB] * interp->pCoefB[coefIndex] +
-                inputFrame_ptr->pData[inIndexC] * interp->pCoefC[coefIndex] +
-                inputFrame_ptr->pData[inIndexD] * interp->pCoefD[coefIndex]
+                inputFrame_ptr->pData[inIndexA] * interp_ptr->pCoefA[coefIndex] +
+                inputFrame_ptr->pData[inIndexB] * interp_ptr->pCoefB[coefIndex] +
+                inputFrame_ptr->pData[inIndexC] * interp_ptr->pCoefC[coefIndex] +
+                inputFrame_ptr->pData[inIndexD] * interp_ptr->pCoefD[coefIndex]
               );
           }
         }
       }
       else {
-        for (uint8_t row = 0; row < interp->scale_Y; row++) {
-          for (uint8_t col = 0; col < interp->scale_X; col++) {
-            uint16_t outIndex = rowPos * interp->outputStride_Y + colPos * interp->scale_X + row * outputFrame_ptr->numCols + col;
+        for (uint8_t row = 0; row < interp_ptr->scale_Y; row++) {
+          for (uint8_t col = 0; col < interp_ptr->scale_X; col++) {
+            uint16_t outIndex = rowPos * interp_ptr->outputStride_Y + colPos * interp_ptr->scale_X + row * outputFrame_ptr->numCols + col;
             outputFrame_ptr->pData[outIndex] = 0;
           }
         }

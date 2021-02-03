@@ -20,7 +20,7 @@
 #define SLIP_OSC                0 // [0:1] Set the eTextile-Synthesizer as SLIP_OSC divice
 
 #define MAX_BLOBS               8 // [1:8] Set how many blobs can be tracked at the same time
-#define MAX_SYNTH               2 // [1:8] Set how many synthesizers can play at the same time
+#define MAX_SYNTH               8 // [1:8] Set how many synthesizers can play at the same time
 
 // Arduino serial monitor
 #define DEBUG_FPS               0 // [0:1] Print Frames Per Second

@@ -60,8 +60,9 @@ void update_preset(
   boolean* calibrate_ptr,
   boolean* save_ptr,
   AudioControlSGTL5000* dac_ptr,
-  AudioPlaySerialflashRaw* player,
-  elapsedMillis* timer_ptr
+  AudioPlaySerialflashRaw* player_ptr,
+  elapsedMillis* timer_ptr,
+  uint8_t* interpThreshold_ptr
 );
 
 void update_leds(
@@ -71,8 +72,8 @@ void update_leds(
   elapsedMillis* timer_ptr
 );
 
-void preset_load(preset_t* preset_ptr, boolean* state_ptr);
-void preset_save(preset_t* preset_ptr, boolean* state_ptr);
+void preset_load(preset_t* preset_ptr, boolean* state_ptr); // TODO
+void preset_save(preset_t* preset_ptr, boolean* state_ptr); // TODO
 
 boolean setLevel(preset_t* preset_ptr, Encoder* encoder_ptr);
 

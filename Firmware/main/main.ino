@@ -1,5 +1,5 @@
 /*
-  ** eTextile-Synthetizer - Firmware v1.0 **
+  ** eTextile-Synthetizer - Firmware v1.0.0 **
   This file is part of the eTextile-Synthetizer project - http://synth.eTextile.org
   Copyright (c) 2014- Maurin Donneaud <maurin@etextile.org>
   This work is licensed under Creative Commons Attribution-ShareAlike 4.0 International license, see the LICENSE file for details.
@@ -161,6 +161,8 @@ preset_t presets[7] = {
   {6, 0, 0, 0, 0, true, NULL, NULL }       // SAVE
 };
 
+uint8_t interpThreshold = 10; // (THRESHOLD - 10)
+
 median_t medianStorage[MAX_BLOBS] {
   {true, {0}, {0}, 0},
   {true, {0}, {0}, 0},
@@ -173,15 +175,16 @@ median_t medianStorage[MAX_BLOBS] {
 };
 
 // Testing mapping fonctions
-//switch_t tapSwitch = {10, 10, 5, 1000, false};                          // ARGS[posX, posY, rSize, debounceTimer, state]
-//switch_t modeSwitch = {40, 30, 5, 1000, false};                         // ARGS[posX, posY, rSize, debounceTimer, state]
+//tSwitch_t tapSwitch = {10, 10, 5, 1000, false};                           // ARGS[posX, posY, rSize, debounceTimer, state]
+//tSwitch_t modeSwitch = {40, 30, 5, 1000, false};                          // ARGS[posX, posY, rSize, debounceTimer, state]
 
-gridPoint_t keyPosArray[KEYS] = {0, 0};                                   // Array of [X-Y] gridPoint to store precompute positions
-uint8_t midiLayout[20] = {127, 63, 44};                                   // 1D Array to store incoming midi notes
-grid_t gridLayout_A = {&keyPosArray[0], {0}, {0}, {0}, &midiLayout[0]};   // ARGS[blobKeyPress, lastBlobKeyPress, debounceTime, midiNotes]
-grid_t gridLayout_B = {&keyPosArray[0], {0}, {0}, {0}, &midiLayout[0]};   // ARGS[blobKeyPress, lastBlobKeyPress, debounceTime, midiNotes]
+gridPoint_t keyPosArray[KEYS] = {0, 0};                                     // Array of [X-Y] gridPoint to store precompute positions
+uint8_t midiLayout[20] = {127, 63, 44};                                     // 1D Array to store incoming midi notes
 
-grid_t gridLayout_C = {&keyPosArray[0], {0}, {0}, {0}, &midiLayout[0]};   // ARGS[blobKeyPress, lastBlobKeyPress, debounceTime, midiNotes]
+grid_t gridLayout_A = {&keyPosArray[0], {0}, {0}, {0}, &midiLayout[0]};     // ARGS[blobKeyPress, lastBlobKeyPress, debounceTime, midiNotes]
+//grid_t gridLayout_B = {&keyPosArray[0], {0}, {0}, {0}, &midiLayout[0]};   // ARGS[blobKeyPress, lastBlobKeyPress, debounceTime, midiNotes]
+
+grid_t gridLayout_C = {&keyPosArray[0], {0}, {0}, {0}, &midiLayout[0]};     // ARGS[blobKeyPress, lastBlobKeyPress, debounceTime, midiNotes]
 
 polar_t polarCoord[MAX_BLOBS];
 
@@ -193,7 +196,7 @@ cSlider_t cSliders[C_SLIDERS] = {
 
 velocity_t velocityStorage[MAX_BLOBS];
 
-ccPesets_t CCpesets = {0, 2, 0, 1, 1, 0}; // ARGS[blobID, blobVal, lastVal, cchnage, midiChannel, 0]
+ccPesets_t ccPesets = {NULL, 0, 'D', 0, 1, 1}; //ARGS[BlobsLList, blobID, [X,Y,W,H,D], lastVal, cChange, midiChannel]
 
 void setup() {
 
@@ -275,7 +278,8 @@ void loop() {
     &savePreset,
     &sgtl5000,
     &playFlashRaw,
-    &ledTimer
+    &ledTimer,
+    &interpThreshold
   );
 
   update_leds(
@@ -311,7 +315,7 @@ void loop() {
 #endif
 
   interp_matrix(
-    constrain(presets[THRESHOLD].val - 10, presets[THRESHOLD].minVal, presets[THRESHOLD].maxVal),
+    interpThreshold,
     &interpolatedFrame,
     &inputFrame,
     &interp
@@ -335,7 +339,7 @@ void loop() {
     &outputBlobs            // list_t
   );
 
-  //median(&outputBlobs, &medianStorage[0]);
+  median(&outputBlobs, &medianStorage[0]);
 
 #if DEBUG_BITMAP
   if (timerDebug >= 100) {
@@ -369,14 +373,12 @@ void loop() {
 
   gridLayoutMapping_A(&outputBlobs, &gridLayout_A);             // ARGS[llist_ptr, gridLayout_ptr]
   //gridLayoutMapping_B(&outputBlobs, &gridLayout_B);           // ARGS[llist_ptr, gridLayout_ptr]
-
-  //ControlChangeMapping(&outputBlobs, &CCpesets);                // ARGS[llist_ptr, CCPesets_ptr]
-
+  controlChangeMapping(&outputBlobs, &ccPesets);                // ARGS[llist_ptr, CCPesets_ptr]
   //getVelocity(&outputBlobs, &velocityStorage[0]);             // ARGS[llist_ptr, velocityStorage_ptr]
   //hSlider(&outputBlobs, &hSlider);                            // ARGS[llist_ptr, vSlider_ptr]
   //vSlider(&outputBlobs, &vSlider);                            // ARGS[llist_ptr, vSlider_ptr]
 
-  //etPolarCoordinates(&outputBlobs, &polarCoord[0]);           // ARGS[llist_ptr, polar_ptr]
+  //getPolarCoordinates(&outputBlobs, &polarCoord[0]);          // ARGS[llist_ptr, polar_ptr]
   //cSlider(&outputBlobs, &polarCoord[0], &cSliders[0]);        // ARGS[llist_ptr, polar_ptr, cSliders_ptr]
 
   //boolean togSwitchVal = toggle(&outputBlobs, &modeSwitch);   // ARGS[llist_ptr, switch_ptr]
