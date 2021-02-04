@@ -13,10 +13,10 @@
 //#if defined(USB_MIDI)
 
 #define ETEXTILE_SYNTHETIZER   "1.0.0" 
- 
-#define STANDALONE_SYNTH        0 // [0:1] Set the eTextile-Synthesizer as STANDALONE divice
+
+#define STANDALONE_SYNTH        1 // [0:1] Set the eTextile-Synthesizer as STANDALONE divice
 #define MIDI_USB                0 // [0:1] Set the eTextile-Synthesizer as USB MIDI divice
-#define MIDI_HARDWARE           1 // [0:1] Set the eTextile-Synthesizer as MIDI I/O divice
+#define MIDI_HARDWARE           0 // [0:1] Set the eTextile-Synthesizer as MIDI I/O divice
 #define SLIP_OSC                0 // [0:1] Set the eTextile-Synthesizer as SLIP_OSC divice
 
 #define MAX_BLOBS               8 // [1:8] Set how many blobs can be tracked at the same time
@@ -77,6 +77,8 @@
 #define MAX_BLOB_PIX            4095     // Set the maximum blob pixels
 #define CALIBRATION_CYCLES      10
 
+#define MAX_BLOB_PARAM          7        // [ID, alive, X, Y, W, H, D]
+
 #define DEBOUNCE_TIME_BLOB      15
 #define DEBOUNCE_TIME_SWITCH    15
 #define DEBOUNCE_TIME_MIDI      20
@@ -106,6 +108,14 @@
 #define MIDI_LEARN              4
 #define CALIBRATE               5
 #define SAVE                    6
+
+#define BI                      0
+#define BS                      1
+#define BX                      2
+#define BY                      3
+#define BW                      4
+#define BH                      5
+#define BD                      6
 
 #define LONG_HOLD               1500
 #define MIDI_LEARN_LED_TIMEON   600

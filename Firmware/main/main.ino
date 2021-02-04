@@ -194,7 +194,7 @@ cSlider_t cSliders[C_SLIDERS] = {
 
 velocity_t velocityStorage[MAX_BLOBS];
 
-ccPesets_t ccPesets = {NULL, 0, 'D', 0, 1, 1}; //ARGS[BlobsLList, blobID, [X,Y,W,H,D], lastVal, cChange, midiChannel]
+ccPesets_t ccPesets = {NULL, 0, BD, 0, 44, 1}; //ARGS[BlobsLList, blobID, [BX,BY,BW,BH,BD], lastVal, cChange, midiChannel]
 
 void setup() {
 
@@ -337,7 +337,7 @@ void loop() {
     &outputBlobs            // list_t
   );
 
-  median(&outputBlobs, &medianStorage[0]);
+  //median(&outputBlobs, &medianStorage[0]);
 
 #if DEBUG_BITMAP
   if (timerDebug >= 100) {
@@ -371,7 +371,7 @@ void loop() {
 
   gridLayoutMapping_A(&outputBlobs, &gridLayout_A);             // ARGS[llist_ptr, gridLayout_ptr]
   //gridLayoutMapping_B(&outputBlobs, &gridLayout_B);           // ARGS[llist_ptr, gridLayout_ptr]
-  //controlChangeMapping(&outputBlobs, &ccPesets);              // ARGS[llist_ptr, ccPesets_ptr]
+  controlChangeMapping(&outputBlobs, &ccPesets);                // ARGS[llist_ptr, ccPesets_ptr]
   //getVelocity(&outputBlobs, &velocityStorage[0]);             // ARGS[llist_ptr, velocityStorage_ptr]
   //hSlider(&outputBlobs, &hSlider);                            // ARGS[llist_ptr, vSlider_ptr]
   //vSlider(&outputBlobs, &vSlider);                            // ARGS[llist_ptr, vSlider_ptr]

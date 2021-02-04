@@ -49,10 +49,10 @@ void set_volumes(
     dac_ptr->dacVolume(presets_ptr[LINE_OUT].val);
   }
   if (presets_ptr[SIG_OUT].val != presets_ptr[SIG_OUT].lastVal) {
-    dac_ptr->lineOutLevel(presets_ptr[LINE_OUT].val);
+    dac_ptr->lineOutLevel(presets_ptr[SIG_OUT].val);
   }
   if (presets_ptr[SIG_IN].val != presets_ptr[SIG_IN].lastVal) {
-    dac_ptr->lineInLevel(presets_ptr[LINE_OUT].val);
+    dac_ptr->lineInLevel(presets_ptr[SIG_IN].val);
   }
 }
 

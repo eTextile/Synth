@@ -87,7 +87,7 @@ typedef struct grid {
 typedef struct cChange {
   llist* blobs_ptr;
   uint8_t blobID;
-  char blobVal;
+  uint8_t mappVal;  
   uint8_t lastVal;
   uint8_t cChange;
   uint8_t midiChannel;
