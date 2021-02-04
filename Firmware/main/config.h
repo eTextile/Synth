@@ -14,9 +14,9 @@
 
 #define ETEXTILE_SYNTHETIZER   "1.0.0" 
  
-#define STANDALONE_SYNTH        1 // [0:1] Set the eTextile-Synthesizer as STANDALONE divice
+#define STANDALONE_SYNTH        0 // [0:1] Set the eTextile-Synthesizer as STANDALONE divice
 #define MIDI_USB                0 // [0:1] Set the eTextile-Synthesizer as USB MIDI divice
-#define MIDI_HARDWARE           0 // [0:1] Set the eTextile-Synthesizer as MIDI I/O divice
+#define MIDI_HARDWARE           1 // [0:1] Set the eTextile-Synthesizer as MIDI I/O divice
 #define SLIP_OSC                0 // [0:1] Set the eTextile-Synthesizer as SLIP_OSC divice
 
 #define MAX_BLOBS               8 // [1:8] Set how many blobs can be tracked at the same time
@@ -30,7 +30,7 @@
 #define DEBUG_INTERP            0 // [0:1] Print 64x64 interpolated values
 #define DEBUG_BITMAP            0 // [0:1] Print 64x64 binary image based on threshold
 #define DEBUG_BLOBS             0 // [0:1] Print blobs values
-#define DEBUG_MAPPING           0 // [0:1] Print blobs values
+#define DEBUG_MAPPING           1 // [0:1] Print blobs values
 
 #define DEBUG_BLOBS_ID          0 // [0:1] Print lowlevel blobs values
 #define DEBUG_SORT              0 // [0:1] Print lowlevel blobs sort (NOT_USED)

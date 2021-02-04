@@ -184,8 +184,6 @@ uint8_t midiLayout[20] = {127, 63, 44};                                     // 1
 grid_t gridLayout_A = {&keyPosArray[0], {0}, {0}, {0}, &midiLayout[0]};     // ARGS[blobKeyPress, lastBlobKeyPress, debounceTime, midiNotes]
 //grid_t gridLayout_B = {&keyPosArray[0], {0}, {0}, {0}, &midiLayout[0]};   // ARGS[blobKeyPress, lastBlobKeyPress, debounceTime, midiNotes]
 
-grid_t gridLayout_C = {&keyPosArray[0], {0}, {0}, {0}, &midiLayout[0]};     // ARGS[blobKeyPress, lastBlobKeyPress, debounceTime, midiNotes]
-
 polar_t polarCoord[MAX_BLOBS];
 
 cSlider_t cSliders[C_SLIDERS] = {
@@ -373,14 +371,12 @@ void loop() {
 
   gridLayoutMapping_A(&outputBlobs, &gridLayout_A);             // ARGS[llist_ptr, gridLayout_ptr]
   //gridLayoutMapping_B(&outputBlobs, &gridLayout_B);           // ARGS[llist_ptr, gridLayout_ptr]
-  controlChangeMapping(&outputBlobs, &ccPesets);                // ARGS[llist_ptr, CCPesets_ptr]
+  //controlChangeMapping(&outputBlobs, &ccPesets);              // ARGS[llist_ptr, ccPesets_ptr]
   //getVelocity(&outputBlobs, &velocityStorage[0]);             // ARGS[llist_ptr, velocityStorage_ptr]
   //hSlider(&outputBlobs, &hSlider);                            // ARGS[llist_ptr, vSlider_ptr]
   //vSlider(&outputBlobs, &vSlider);                            // ARGS[llist_ptr, vSlider_ptr]
-
   //getPolarCoordinates(&outputBlobs, &polarCoord[0]);          // ARGS[llist_ptr, polar_ptr]
   //cSlider(&outputBlobs, &polarCoord[0], &cSliders[0]);        // ARGS[llist_ptr, polar_ptr, cSliders_ptr]
-
   //boolean togSwitchVal = toggle(&outputBlobs, &modeSwitch);   // ARGS[llist_ptr, switch_ptr]
   //boolean tapSwitchVal = trigger(&outputBlobs, &tapSwitch);   // ARGS[llist_ptr, switch_ptr]
 

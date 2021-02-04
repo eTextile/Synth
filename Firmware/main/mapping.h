@@ -76,22 +76,22 @@ typedef struct gridPoint {
   float Y;
 } gridPoint_t;
 
-typedef struct cChange {
-  llist* blobs;
-  uint8_t blobID;  
-  char blobVal;
-  uint8_t lastVal;
-  uint8_t cchnage;
-  uint8_t midiChannel;
-} ccPesets_t;
-
 typedef struct grid {
-  gridPoint_t* keyPosArray;
+  gridPoint_t* keyPosArray_ptr;
   uint16_t lastWinPos[MAX_BLOBS];
-  int16_t lastKeyIndex[MAX_BLOBS];
+  int8_t lastKeyIndex[MAX_BLOBS];
   unsigned long timer[MAX_BLOBS];
   int8_t* midiLayout;
 } grid_t;
+
+typedef struct cChange {
+  llist* blobs_ptr;
+  uint8_t blobID;
+  char blobVal;
+  uint8_t lastVal;
+  uint8_t cChange;
+  uint8_t midiChannel;
+} ccPesets_t;
 
 typedef struct seq {
   uint16_t timeInterval[];
