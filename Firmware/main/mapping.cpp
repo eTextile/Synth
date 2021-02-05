@@ -289,18 +289,20 @@ uint16_t dist(blob_t* blob_ptr, grid_t* grid_ptr, uint16_t* keyIndexArray_ptr) {
 }
 
 void vSlider(llist_t* blobs_ptr, vSlider_t* slider_ptr) {
+  int8_t val = 0;
 
   for (blob_t* blob_ptr = ITERATOR_START_FROM_HEAD(blobs_ptr); blob_ptr != NULL; blob_ptr = ITERATOR_NEXT(blob_ptr)) {
     if (blob_ptr->centroid.X > slider_ptr->posX - slider_ptr->width &&
         blob_ptr->centroid.X < slider_ptr->posX + slider_ptr->width) {
       if (blob_ptr->centroid.Y > slider_ptr->Ymin &&
           blob_ptr->centroid.Y < slider_ptr->Ymax) {
-
-        slider_ptr->val = (uint8_t)round((blob_ptr->centroid.Y - (float)slider_ptr->Ymin) * ((slider_ptr->Ymax - slider_ptr->Ymin) / 127)); // [0:127]
-
+        val = round(map(blob_ptr->centroid.Y, slider_ptr->Ymin, slider_ptr->Ymax, 0, 127)); // [0:127]
+        if (val != slider_ptr->val) {
+          slider_ptr->val = val;
 #if DEBUG_MAPPING
-        Serial.printf("\nDEBUG_V_SLIDER : %d", slider_ptr->val);
+          Serial.printf("\nDEBUG_V_SLIDER : %d", val);
 #endif
+        }
       }
     }
   }
@@ -308,18 +310,20 @@ void vSlider(llist_t* blobs_ptr, vSlider_t* slider_ptr) {
 
 // FIXME
 void hSlider(llist_t* blobs_ptr, hSlider_t* slider_ptr) {
+  int8_t val = 0;
 
   for (blob_t* blob_ptr = ITERATOR_START_FROM_HEAD(blobs_ptr); blob_ptr != NULL; blob_ptr = ITERATOR_NEXT(blob_ptr)) {
     if (blob_ptr->centroid.Y > slider_ptr->posY - slider_ptr->height &&
         blob_ptr->centroid.Y < slider_ptr->posY + slider_ptr->height) {
       if (blob_ptr->centroid.X > slider_ptr->Xmin &&
           blob_ptr->centroid.X < slider_ptr->Xmax) {
-
-        slider_ptr->val = (uint8_t)round((blob_ptr->centroid.Y - (float)slider_ptr->Xmin) * ((slider_ptr->Xmax - slider_ptr->Xmin) / 127)); // [0:127]
-
+        val = round(map(blob_ptr->centroid.X, slider_ptr->Xmin, slider_ptr->Xmax, 0, 127)); // [0:127]
+        if (val != slider_ptr->val) {
+          slider_ptr->val = val;
 #if DEBUG_MAPPING
-        Serial.printf("\nDEBUG_V_SLIDER : %d", slider_ptr->val);
+          Serial.printf("\nDEBUG_H_SLIDER : %d", val);
 #endif
+        }
       }
     }
   }

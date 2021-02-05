@@ -55,17 +55,18 @@ void update_buttons(
 
 //
 void update_preset(
+  AudioControlSGTL5000* dac_ptr,
   preset_t* preset_ptr,
   Encoder* encoder_ptr,
   boolean* calibrate_ptr,
   boolean* save_ptr,
-  AudioControlSGTL5000* dac_ptr,
-  AudioPlaySerialflashRaw* player_ptr,
   elapsedMillis* timer_ptr,
   uint8_t* interpThreshold_ptr
 );
 
 void update_leds(
+  AudioControlSGTL5000* dac_ptr,
+  AudioPlaySerialflashRaw* player_ptr,
   preset_t* preset_ptr,
   uint8_t* curentMode_ptr,
   uint8_t* lastMode_ptr,

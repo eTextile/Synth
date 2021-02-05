@@ -31,10 +31,10 @@ void SETUP_DAC(
   allSynth_ptr[0].mix_ptr->gain(2, 0.25);
   allSynth_ptr[0].mix_ptr->gain(3, 0.25);
 
-  allSynth_ptr[5].mix_ptr->gain(0, 0.25);
-  allSynth_ptr[5].mix_ptr->gain(1, 0.25);
-  allSynth_ptr[5].mix_ptr->gain(2, 0.25);
-  allSynth_ptr[5].mix_ptr->gain(3, 0.25);
+  allSynth_ptr[4].mix_ptr->gain(0, 0.25);
+  allSynth_ptr[4].mix_ptr->gain(1, 0.25);
+  allSynth_ptr[4].mix_ptr->gain(2, 0.25);
+  allSynth_ptr[4].mix_ptr->gain(3, 0.25);
 
   while (!SerialFlash.begin(6));
 }
@@ -46,7 +46,8 @@ void set_volumes(
 ) {
 
   if (presets_ptr[LINE_OUT].val != presets_ptr[LINE_OUT].lastVal) {
-    dac_ptr->dacVolume(presets_ptr[LINE_OUT].val);
+    //dac_ptr->dacVolume(presets_ptr[LINE_OUT].val); // FIXME!
+    dac_ptr->volume(presets_ptr[LINE_OUT].val);
   }
   if (presets_ptr[SIG_OUT].val != presets_ptr[SIG_OUT].lastVal) {
     dac_ptr->lineOutLevel(presets_ptr[SIG_OUT].val);
@@ -57,7 +58,6 @@ void set_volumes(
 }
 
 /////////////////////////// MAKE NOISE FONCTION !
-// [UID, alive, CX, CY, W, H, D]
 void make_noise(
   AudioControlSGTL5000* dac_ptr,
   llist_t* blobs_ptr,

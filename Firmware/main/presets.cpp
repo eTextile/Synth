@@ -92,12 +92,11 @@ void update_buttons(
 
 //
 void update_preset(
+  AudioControlSGTL5000* dac_ptr,
   preset_t* preset_ptr,
   Encoder* encoder_ptr,
   boolean* calibrate_ptr,
   boolean* save_ptr,
-  AudioControlSGTL5000* dac_ptr,
-  AudioPlaySerialflashRaw* player_ptr,
   elapsedMillis* timer_ptr,
   uint8_t* interpThreshold_ptr
 ) {
@@ -154,9 +153,9 @@ void update_preset(
     // FONCTION : zThreshold value adjustment using rotary encoder
     case THRESHOLD:
       if (setLevel(preset_ptr, encoder_ptr)) {
-        interpThreshold_ptr = constrain(preset_ptr->val - 10, preset_ptr->minVal, preset_ptr->maxVal);
+        interpThreshold_ptr = constrain(preset_ptr->val - 5, preset_ptr->minVal, preset_ptr->maxVal);
 #if DEBUG_ENCODER
-        Serial.printf("\nTHRESHOLD : %d", preset_ptr->val);
+        Serial.printf("\nTHRESHOLD : %d\t interpThreshold : %d", preset_ptr->val, interpThreshold_ptr);
 #endif
       }
       break;
@@ -174,9 +173,8 @@ void update_preset(
     case CALIBRATE:
       if (calibrate_ptr == false) {
         *calibrate_ptr = true;
-        player_ptr->play("A.RAW"); // TESTING
 #if DEBUG_BUTTONS
-        Serial.println("DO_CALIBRATE");
+        Serial.printf("\nDO_CALIBRATE");
 #endif
         *timer_ptr = 0;
       }
@@ -188,7 +186,7 @@ void update_preset(
       if (save_ptr == false) {
         *save_ptr = true;
 #ifdef DEBUG_BUTTONS
-        Serial.println("DO_SAVE");
+        Serial.printf("\nDO_SAVE");
 #endif
         *timer_ptr = 0;
       }
@@ -201,6 +199,8 @@ void update_preset(
 
 // Setup LEDs according to the mode and rotary encoder values
 void update_leds(
+  AudioControlSGTL5000* dac_ptr,
+  AudioPlaySerialflashRaw* player_ptr,
   preset_t* preset_ptr,
   uint8_t* curentMode_ptr,
   uint8_t* lastMode_ptr,
@@ -268,6 +268,7 @@ void update_leds(
         iter = 0;
         *curentMode_ptr = *lastMode_ptr;
         *lastMode_ptr = LINE_OUT;
+        player_ptr->play("A.RAW"); // TESTING
       }
       break;
 

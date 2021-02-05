@@ -44,7 +44,6 @@ typedef struct vSlider {
   uint8_t Ymax;
   uint8_t width;
   uint8_t val;
-  uint8_t lastVal;
 } vSlider_t;
 
 typedef struct hSlider {
@@ -53,7 +52,6 @@ typedef struct hSlider {
   uint8_t Xmax;
   uint8_t height;
   uint8_t val;
-  uint8_t lastVal;
 } hSlider_t;
 
 typedef struct cSlider {

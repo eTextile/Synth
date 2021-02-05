@@ -53,7 +53,6 @@ Button BUTTON_R = Button();
 ADC* adc = new ADC();           // ADC object
 ADC::Sync_result result;        // Store ADC_0 & ADC_1
 
-
 AudioControlSGTL5000              sgtl5000;
 
 AudioPlaySerialflashRaw           playFlashRaw;
@@ -116,9 +115,8 @@ AudioConnection                   patchCord24(fade_8, 0, mix_2, 3);
 AudioConnection                   patchCord25(mix_1, 0, mix_3, 0);
 AudioConnection                   patchCord26(mix_2, 0, mix_3, 1);
 AudioConnection                   patchCord27(playFlashRaw, 0, mix_3, 2);
-AudioConnection                   patchCord28(playFlashRaw, 0, mix_3, 3);
-AudioConnection                   patchCord29(mix_3, 0, i2s, 0);
-AudioConnection                   patchCord30(mix_3, 0, i2s, 1);
+AudioConnection                   patchCord28(mix_3, 0, i2s, 0);
+AudioConnection                   patchCord29(mix_3, 0, i2s, 1);
 
 synth_t allSynth[8] = {
   {&wf_1, &fm_1, &fade_1, &mix_1, 0},
@@ -152,13 +150,13 @@ elapsedMillis ledTimer;
 uint8_t ledIterations = 0;
 
 preset_t presets[7] = {
-  {0, 13, 31, 29, 29, true, LOW, LOW },    // LINE_OUT
-  {1, 0, 15, 0, 0, true, HIGH, LOW },      // SIG_IN
-  {2, 0, 31, 17, 17, true, LOW, HIGH },    // SIG_OUT
-  {3, 1, 60, 20, 20, true, HIGH, HIGH },   // THRESHOLD
-  {4, 1, 6, 1, 1, true, NULL, NULL },      // MIDI_LEARN [ID, alive, X, Y, W, H, D]
-  {5, 0, 0, 0, 0, true, NULL, NULL },      // CALIBRATE
-  {6, 0, 0, 0, 0, true, NULL, NULL }       // SAVE
+  {LINE_OUT,  13, 31, 29, 29, true, LOW,  LOW  },
+  {SIG_IN,     0, 15, 0,  0,  true, HIGH, LOW  },
+  {SIG_OUT,    0, 31, 17, 17, true, LOW,  HIGH },
+  {THRESHOLD,  1, 60, 20, 20, true, HIGH, HIGH },
+  {MIDI_LEARN, 1, 6,  1,  1,  true, NULL, NULL },
+  {CALIBRATE,  0, 0,  0,  0,  true, NULL, NULL },
+  {SAVE,       0, 0,  0,  0,  true, NULL, NULL }
 };
 
 uint8_t interpThreshold = 10; // (THRESHOLD - 10)
@@ -185,6 +183,9 @@ grid_t gridLayout_A = {&keyPosArray[0], {0}, {0}, {0}, &midiLayout[0]};     // A
 //grid_t gridLayout_B = {&keyPosArray[0], {0}, {0}, {0}, &midiLayout[0]};   // ARGS[blobKeyPress, lastBlobKeyPress, debounceTime, midiNotes]
 
 polar_t polarCoord[MAX_BLOBS];
+
+vSlider_t vSlider_A = {10, 15, 40, 5, 0}; // ARGS[posX, Ymin, Ymax, width, val]
+hSlider_t hSlider_A = {10, 15, 40, 5, 0}; // ARGS[posY, Xmin, Xmax, width, val]
 
 cSlider_t cSliders[C_SLIDERS] = {
   {   6, 4,  3.8,  5, 0},    // ARGS[r, width, phiOffset, phiMax, val]
@@ -270,17 +271,18 @@ void loop() {
   );
 
   update_preset(
+    &sgtl5000,
     &presets[currentMode],
     &encoder,
     &calibrateMatrix,
     &savePreset,
-    &sgtl5000,
-    &playFlashRaw,
     &ledTimer,
     &interpThreshold
   );
 
   update_leds(
+    &sgtl5000,
+    &playFlashRaw,
     &presets[currentMode],
     &currentMode,
     &lastMode,
@@ -369,12 +371,15 @@ void loop() {
   //    SET_ORIGIN_X == 1
   //    SET_ORIGIN_Y == 1
 
+#if MIDI_HARDWARE
   gridLayoutMapping_A(&outputBlobs, &gridLayout_A);             // ARGS[llist_ptr, gridLayout_ptr]
   //gridLayoutMapping_B(&outputBlobs, &gridLayout_B);           // ARGS[llist_ptr, gridLayout_ptr]
   controlChangeMapping(&outputBlobs, &ccPesets);                // ARGS[llist_ptr, ccPesets_ptr]
+#endif
+
   //getVelocity(&outputBlobs, &velocityStorage[0]);             // ARGS[llist_ptr, velocityStorage_ptr]
-  //hSlider(&outputBlobs, &hSlider);                            // ARGS[llist_ptr, vSlider_ptr]
-  //vSlider(&outputBlobs, &vSlider);                            // ARGS[llist_ptr, vSlider_ptr]
+  hSlider(&outputBlobs, &hSlider_A);                          // ARGS[llist_ptr, vSlider_ptr]
+  vSlider(&outputBlobs, &vSlider_A);                          // ARGS[llist_ptr, vSlider_ptr]
   //getPolarCoordinates(&outputBlobs, &polarCoord[0]);          // ARGS[llist_ptr, polar_ptr]
   //cSlider(&outputBlobs, &polarCoord[0], &cSliders[0]);        // ARGS[llist_ptr, polar_ptr, cSliders_ptr]
   //boolean togSwitchVal = toggle(&outputBlobs, &modeSwitch);   // ARGS[llist_ptr, switch_ptr]
