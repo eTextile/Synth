@@ -26,36 +26,36 @@ OutputName: ETEXTILE_SYNTH
 #  the pad uses the global channel)
 Pad1Note: 1
 Pad2Note: 2
-Pad3Note: -1
-Pad4Note: -1
-Pad5Note: -1
-Pad6Note: -1
-Pad7Note: -1
-Pad8Note: -1
-Pad9Note: -1
-Pad10Note: -1
-Pad11Note: -1
-Pad12Note: -1
-Pad13Note: -1
-Pad14Note: -1
-Pad15Note: -1
-Pad16Note: -1
-Pad1Channel: -1
-Pad2Channel: -1
-Pad3Channel: -1
-Pad4Channel: -1
-Pad5Channel: -1
-Pad6Channel: -1
-Pad7Channel: -1
-Pad8Channel: -1
-Pad9Channel: -1
-Pad10Channel: -1
-Pad11Channel: -1
-Pad12Channel: -1
-Pad13Channel: -1
-Pad14Channel: -1
-Pad15Channel: -1
-Pad16Channel: -1
+Pad3Note: 3
+Pad4Note: 4
+Pad5Note: 5
+Pad6Note: 6
+Pad7Note: 7
+Pad8Note: 8
+Pad9Note: 9
+Pad10Note: 10
+Pad11Note: 11
+Pad12Note: 12
+Pad13Note: 13
+Pad14Note: 14
+Pad15Note: 15
+Pad16Note: 16
+Pad1Channel: 1
+Pad2Channel: 1
+Pad3Channel: 1
+Pad4Channel: 1
+Pad5Channel: 1
+Pad6Channel: 1
+Pad7Channel: 1
+Pad8Channel: 1
+Pad9Channel: 1
+Pad10Channel: 1
+Pad11Channel: 1
+Pad12Channel: 1
+Pad13Channel: 1
+Pad14Channel: 1
+Pad15Channel: 1
+Pad16Channel: 1
 
 [DeviceControls]
 # The Encoders will control the device parameters (you can also
@@ -64,20 +64,26 @@ Pad16Channel: -1
 # the channel for each controller if it differs from the global
 # channel (if you leave the channel of an encoder at -1, Live
 # will assume that the encoder uses the global channel).
-Encoder1: -1
-Encoder2: -1
-Encoder3: -1
-Encoder4: -1
-Encoder5: -1
-Encoder6: -1
+# BLOB_X:0
+Encoder1: 1
+# BLOB_Y:0
+Encoder2: 2
+# BLOB_DEPTH:0
+Encoder3: 3
+# BLOB_X:1
+Encoder4: 4
+# BLOB_Y:1
+Encoder5: 5
+# BLOB_DEPTH:1
+Encoder6: 6
 Encoder7: -1
 Encoder8: -1
-EncoderChannel1: -1
-EncoderChannel2: -1
-EncoderChannel3: -1
-EncoderChannel4: -1
-EncoderChannel5: -1
-EncoderChannel6: -1
+EncoderChannel1: 1
+EncoderChannel2: 1
+EncoderChannel3: 1
+EncoderChannel4: 1
+EncoderChannel5: 1
+EncoderChannel6: 1
 EncoderChannel7: -1
 EncoderChannel8: -1
 # Enter the respective map mode for the encoders here. The following
