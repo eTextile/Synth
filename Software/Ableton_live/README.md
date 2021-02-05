@@ -7,7 +7,8 @@ With the file [UserConfiguration.txt](./UserConfiguration.txt) provided in this 
 
 Note: Since this mechanism relies on the scripts added for Live 6, you can solely map all the values provided by the eTextile-Synthetizer Surface. You can neither add functions nor can you change the banks of device parameters.
 
-1. Create a directory in 'User Remote Scripts'. The name of the directory will show up in the list of Control Surfaces in Live. Naming: The name of the directory should not start with '_' or '.'.
+1. Create a directory in 'User Remote Scripts'. The name of the directory will show up in the list of Control Surfaces in Live.
+    **Naming**: The name of the directory should not start with '_' or '.'.
 
 2. Copy the the file [UserConfiguration.txt](./UserConfiguration.txt) into your directory. The name of the file needs to remain unchanged.
 
