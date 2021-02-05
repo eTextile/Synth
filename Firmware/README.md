@@ -38,13 +38,11 @@
   - ADC_INPUT / BILINEAR_INTERPOLATION / BLOB_TRACKING / AUDIO : 420 FPS
 
 ## eTextile-Synthetizer / Program Synopsis
-- The Arduio sketch implemant rows and columns scaning algorithm with synchronous **dual ADC sampling**.
-  - COLS : Two analog multiplexers connected to the matrix columns
-  - ROWS : Two 8_Bits shift register connected to the matrix rows
-- The 16x16 Analog sensors values are interpolated into 64x64 with a bilinear algorithm
-- The blob tracking algorithm (connected component labeling) is applyed onto the interpolated matrix
-- Blobs are tracked with persistent ID (this is done with linked list implementation)
-- Blobs coordinates, size and pressure are used to play music.
+The embedded Software is implementing **image analysis algorithms** on the E256 eTextile-matrix-sensor to design a new tactile interaction vocabulary.
+- **Bilinear interpolation** The 16x16 Analog pressure sensor values are interpolated with a bilinear algorithm
+- **Blob tracking** The interpolated pressure matrix sensor values are analyzed with a Connected Component Labelling algorithm
+- **Blob ID management** each blob is tracked in space and time using single chained linked list
+- **Blob shape and movement characterisation** Blobs coordinates, size and pressure are used to play music with the eTextile matrix sensor
 
 ## eTextile-Synthetizer / Modes
   - **STANDALONE** : Blobs values are used to control embeded custom polyphonic synthesizers
