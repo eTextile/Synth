@@ -36,7 +36,7 @@ The embedded Software is implementing **image analysis algorithms** on the E256 
 - **Bilinear interpolation** The 16x16 Analog pressure sensor values are interpolated with a bilinear algorithm
 - **Blob tracking** The interpolated pressure matrix sensor values are analyzed with a Connected Component Labelling algorithm
 - **Blob ID management** each blob is tracked in space and time using single chained linked list
-- **Blob shape and movement characterisation** Blobs coordinates, size and pressure are used to play music with the eTextile matrix sensor
+- **Blob shape and movement characterisation** Blobs coordinates, size and pressure are used to play music...
 
 ### eTextile-Synthetizer / Benchmark
   - ADC_INPUT : ... FPS
