@@ -195,7 +195,7 @@ cSlider_t cSliders[C_SLIDERS] = {
 
 velocity_t velocityStorage[MAX_BLOBS];
 
-ccPesets_t ccPesets = {NULL, 0, BD, 0, 44, 1}; //ARGS[BlobsLList, blobID, [BX,BY,BW,BH,BD], lastVal, cChange, midiChannel]
+ccPesets_t ccPesets = {NULL, BD, 0, 44, 1}; //ARGS[blobID, [BX,BY,BW,BH,BD], lastVal, cChange, midiChannel]
 
 void setup() {
 
@@ -378,8 +378,8 @@ void loop() {
 #endif
 
   //getVelocity(&outputBlobs, &velocityStorage[0]);             // ARGS[llist_ptr, velocityStorage_ptr]
-  hSlider(&outputBlobs, &hSlider_A);                          // ARGS[llist_ptr, vSlider_ptr]
-  vSlider(&outputBlobs, &vSlider_A);                          // ARGS[llist_ptr, vSlider_ptr]
+  hSlider(&outputBlobs, &hSlider_A);                            // ARGS[llist_ptr, hSlider_ptr]
+  vSlider(&outputBlobs, &vSlider_A);                            // ARGS[llist_ptr, vSlider_ptr]
   //getPolarCoordinates(&outputBlobs, &polarCoord[0]);          // ARGS[llist_ptr, polar_ptr]
   //cSlider(&outputBlobs, &polarCoord[0], &cSliders[0]);        // ARGS[llist_ptr, polar_ptr, cSliders_ptr]
   //boolean togSwitchVal = toggle(&outputBlobs, &modeSwitch);   // ARGS[llist_ptr, switch_ptr]

@@ -61,7 +61,6 @@ typedef struct cSlider {
   float phiMin;
   float phiMax;
   uint8_t val;
-  uint8_t lastVal;
 } cSlider_t;
 
 typedef struct polar {
@@ -83,7 +82,6 @@ typedef struct grid {
 } grid_t;
 
 typedef struct cChange {
-  llist* blobs_ptr;
   uint8_t blobID;
   uint8_t mappVal;  
   uint8_t lastVal;
@@ -96,14 +94,14 @@ typedef struct seq {
   uint8_t* seqframe;
 } seq_t;
 
-void SETUP_KEYBOARD_LAYOUT(gridPoint_t* keyPosArray_ptr); // TODO
+void gridLayoutMapping_A(llist_t* blobs_ptr, grid_t* grid_ptr); // TODO: adding gap between keys 
+
+void SETUP_KEYBOARD_LAYOUT(gridPoint_t* keyPosArray_ptr);
+uint16_t dist(blob_t* blob_ptr, grid_t* grid_ptr, uint16_t* keyIndexArray_ptr);
+void gridLayoutMapping_B(llist_t* blobs_ptr, grid_t* grid_ptr);
 
 void controlChangeMapping(llist_t* blobs_ptr, ccPesets_t* pesets_ptr);
 
-void gridSetLayout(grid_t* grid_ptr);
-void gridLayoutMapping_A(llist_t* blobs_ptr, grid_t* grid_ptr);
-uint16_t dist(blob_t* blob_ptr, grid_t* grid_ptr, uint16_t* keyIndexArray_ptr);
-void gridLayoutMapping_B(llist_t* blobs_ptr, grid_t* grid_ptr);
 void hSlider(llist_t* blobs_ptr, hSlider_t* slider_ptr);
 void vSlider(llist_t* blobs_ptr, vSlider_t* slider_ptr);
 void cSlider(llist_t* blobs_ptr, polar_t* polar_ptr, cSlider_t* slider_ptr);

@@ -172,7 +172,7 @@ void gridLayoutMapping_A(llist_t* blobs_ptr, grid_t* grid_ptr) {
         if (keyIndex != grid_ptr->lastKeyIndex[blob_ptr->UID]) {
           if (grid_ptr->lastKeyIndex[blob_ptr->UID] != -1 ) {
 #if MIDI_HARDWARE
-            MIDI.sendNoteOff(grid_ptr->lastKeyIndex[blob_ptr->UID], 0, 1);                                         // Send NoteOFF (SEND ALL KEYS ON CHANNEL_1)
+            MIDI.sendNoteOff(grid_ptr->lastKeyIndex[blob_ptr->UID], 0, 1);              // Send NoteOFF (SEND ALL KEYS ON CHANNEL_1)
 #endif
             //Serial.printf("\nGRID_A\tBLOB:%d\tKEY_OFF:%d", blob_ptr->UID, grid_ptr->lastKeyIndex[blob_ptr->UID]);
           }
