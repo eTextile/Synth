@@ -1,7 +1,10 @@
 # eTextile-Synthetizer
-### Exploring music through textile
+## Exploring music through textile
 
-## Requirements
+## Arduino Firmware
+    /Synth-master/Firmware/main/main.ino
+ 
+### Requirements
 - **eTextile-Synthetizer PCB** & **Teensy 4.0**
 - **Arduino IDE** : Arduino 1.8.13 or higher [DOWNLOAD](https://www.arduino.cc/en/Main/Software)
 - **Arduino IDE additional board** : Teensyduino 1.53 or higher [DOWNLOAD](https://www.pjrc.com/teensy/teensyduino.html)
@@ -24,12 +27,16 @@
 - **CPUSpeed** :  600MHz
 - **Optimize** :  Faster
 
-### eTextile-Synthetizer / Firmware
-- **Arduino** : /Synth-master/Firmware/main/main.ino
- 
-### eTextile-Synthetizer / Powering !
-- The Teensy **Micro USB Type B** will not power the eTextile-Synthetizer
-- You must connect the included power cable with a power adapter or your laptop USB plug
+### Powering the eTextile-Synthetizer
+- The Teensy Micro USB Type B **will not power** the eTextile-Synthetizer
+- You must use the included power cable with an **5Volts AC/DC power Plug** or your laptop USB plug
+
+### Program Synopsis
+The embedded Software is implementing **image analysis algorithms** on the E256 eTextile-matrix-sensor to design a new tactile interaction vocabulary.
+- **Bilinear interpolation** The 16x16 Analog pressure sensor values are interpolated with a bilinear algorithm
+- **Blob tracking** The interpolated pressure matrix sensor values are analyzed with a Connected Component Labelling algorithm
+- **Blob ID management** each blob is tracked in space and time using single chained linked list
+- **Blob shape and movement characterisation** Blobs coordinates, size and pressure are used to play music with the eTextile matrix sensor
 
 ### eTextile-Synthetizer / Benchmark
   - ADC_INPUT : ... FPS
@@ -37,17 +44,10 @@
   - ADC_INPUT / BILINEAR_INTERPOLATION / BLOB_TRACKING : ... FPS
   - ADC_INPUT / BILINEAR_INTERPOLATION / BLOB_TRACKING / AUDIO : 420 FPS
 
-## eTextile-Synthetizer / Program Synopsis
-The embedded Software is implementing **image analysis algorithms** on the E256 eTextile-matrix-sensor to design a new tactile interaction vocabulary.
-- **Bilinear interpolation** The 16x16 Analog pressure sensor values are interpolated with a bilinear algorithm
-- **Blob tracking** The interpolated pressure matrix sensor values are analyzed with a Connected Component Labelling algorithm
-- **Blob ID management** each blob is tracked in space and time using single chained linked list
-- **Blob shape and movement characterisation** Blobs coordinates, size and pressure are used to play music with the eTextile matrix sensor
-
-## eTextile-Synthetizer / Modes
-  - **STANDALONE** : Blobs values are used to control embeded custom polyphonic synthesizers
-  - **MIDI_USB** : Blobs values are translated into NOTES & CC transmitted via MIDI_USB to control Audio Applications software like Pd, Max...
-  - **MIDI_HARDWARE** : Blobs values are translated into NOTES & CC transmitted via **miniJack TRS-A** to control external synthesizers
+## Configuring the system
+  - **STANDALONE** : the eTextile-Synthetizer will act as standalone polyphonic synthesizer
+  - **MIDI_USB** : the touch coordinates are transmitted via MIDI to a host Application like Ableton live, Pure Data, MaxMsp...
+  - **MIDI_HARDWARE** : the touch coordinates are transmitted via MIDI using **miniJack TRS-A** to control external hardware synthesizers
 
 ## eTextile-Synthetizer / Play Audio Files
 
