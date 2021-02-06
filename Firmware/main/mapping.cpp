@@ -216,42 +216,39 @@ void gridGapLayout(llist_t* blobs_ptr, grid_t* gridLayout_ptr) {
       uint8_t keyPosX = (uint8_t)round((blob_ptr->centroid.X / X_MAX) * X_GRID_STEP);   // Compute X window position
       uint8_t keyPosY = (uint8_t)round((blob_ptr->centroid.Y / Y_MAX) * X_GRID_STEP);   // Compute Y window position
       uint8_t keyIndex = keyPosY * Y_GRID_STEP + keyPosX;                               // Compute 1D key index position
-
       if (blob_ptr->centroid.X > gridLayout_ptr->keyArray_ptr[keyPosX].Xmin &&
           blob_ptr->centroid.X < gridLayout_ptr->keyArray_ptr[keyPosX].Xmax ||
           blob_ptr->centroid.Y > gridLayout_ptr->keyArray_ptr[keyPosY].Ymin &&
           blob_ptr->centroid.Y < gridLayout_ptr->keyArray_ptr[keyPosY].Ymax
          ) {
-
         if (blob_ptr->alive) {
-
           if (keyIndex != gridLayout_ptr->keyIndex[blob_ptr->UID]) {                      // Test if new key is pressed
             if (gridLayout_ptr->keyIndex[blob_ptr->UID] != -1 ) {
 #if MIDI_HARDWARE
-              //MIDI.sendNoteOff(gridLayout_ptr->keyIndex[blob_ptr->UID], 0, 1);          // Send NoteOFF (SEND ALL KEYS ON CHANNEL_1)
-              Serial.printf("\nGRID_GAP\tBLOB:%d\tNOTE_OFF: %d", blob_ptr->UID, gridLayout_ptr->keyIndex[blob_ptr->UID]);
+              MIDI.sendNoteOff(gridLayout_ptr->keyIndex[blob_ptr->UID], 0, 1);          // Send NoteOFF (SEND ALL KEYS ON CHANNEL_1)
+              //Serial.printf("\nGRID_GAP\tBLOB_IN:%d\tNOTE_OFF: %d", blob_ptr->UID, gridLayout_ptr->keyIndex[blob_ptr->UID]);
 #endif
             }
 #if MIDI_HARDWARE
-            //MIDI.sendNoteOn(keyIndex, 127, 1);                                          // Send NoteON (SEND ALL KEYS ON CHANNEL_1)
-            Serial.printf("\nGRID_GAP\tBLOB:%d\t\tNOTE_ON: %d", blob_ptr->UID, keyIndex);
+            MIDI.sendNoteOn(keyIndex, 127, 1);                                          // Send NoteON (SEND ALL KEYS ON CHANNEL_1)
+            //Serial.printf("\nGRID_GAP\tBLOB_IN:%d\t\tNOTE_ON: %d", blob_ptr->UID, keyIndex);
 #endif
             gridLayout_ptr->keyIndex[blob_ptr->UID] = keyIndex;                           // Save the current key position
           }
         }
         else {                                                                            // blob_ptr->alive == 0 (onRelease)
 #if MIDI_HARDWARE
-          //MIDI.sendNoteOff(keyIndex, 0, 1);                                             // Send NoteOFF (SAND ALL KEYS ON CHANNEL_1)
-          Serial.printf("\nGRID_GAP\tBLOB:%d\tNOTE_OFF: %d", blob_ptr->UID, keyIndex);
+          MIDI.sendNoteOff(keyIndex, 0, 1);                                             // Send NoteOFF (SAND ALL KEYS ON CHANNEL_1)
+          //Serial.printf("\nGRID_GAP\tBLOB_IN:%d\tNOTE_OFF: %d", blob_ptr->UID, keyIndex);
 #endif
           gridLayout_ptr->keyIndex[blob_ptr->UID] = -1;                                   // Set it -1 to avoid NoteOff duplication
         }
       }
-      else {
-        if (gridLayout_ptr->keyIndex[blob_ptr->UID] != -1 ) {
+      else { // Blob is OUT
+        if (!blob_ptr->alive) {
 #if MIDI_HARDWARE
-          //MIDI.sendNoteOff(gridLayout_ptr->keyIndex[blob_ptr->UID], 0, 1);            // Send NoteOFF (SEND ALL KEYS ON CHANNEL_1)
-          Serial.printf("\nGRID_GAP\tBLOB:%d\tNOTE_OFF: %d", blob_ptr->UID, gridLayout_ptr->keyIndex[blob_ptr->UID]);
+          MIDI.sendNoteOff(gridLayout_ptr->keyIndex[blob_ptr->UID], 0, 1);            // Send NoteOFF (SEND ALL KEYS ON CHANNEL_1)
+          //Serial.printf("\nGRID_GAP\tBLOB_OUT:%d\tNOTE_OFF: %d", blob_ptr->UID, gridLayout_ptr->keyIndex[blob_ptr->UID]);
 #endif
           gridLayout_ptr->keyIndex[blob_ptr->UID] = -1;
         }
@@ -259,6 +256,7 @@ void gridGapLayout(llist_t* blobs_ptr, grid_t* gridLayout_ptr) {
     }
   }
 }
+
 
 /*
   // keyIndexArray_ptr is pre computed to hold 2D index in 1D array
@@ -285,6 +283,7 @@ void gridGapLayout(llist_t* blobs_ptr, grid_t* gridLayout_ptr) {
   }
   }
 */
+
 void vSlider(llist_t* blobs_ptr, vSlider_t* slider_ptr) {
   int8_t val = 0;
 
@@ -305,7 +304,6 @@ void vSlider(llist_t* blobs_ptr, vSlider_t* slider_ptr) {
   }
 }
 
-// FIXME
 void hSlider(llist_t* blobs_ptr, hSlider_t* slider_ptr) {
   int8_t val = 0;
 
@@ -346,7 +344,6 @@ void cSlider(llist_t* blobs_ptr, polar_t* polar_ptr, cSlider_t* slider_ptr) {
     }
   }
 }
-
 
 void getPolarCoordinates(llist_t* blobs_ptr, polar_t* polar_ptr) {
 

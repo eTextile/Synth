@@ -370,8 +370,8 @@ void loop() {
   //    SET_ORIGIN_Y == 1
 
 #if MIDI_HARDWARE
-  //gridLayout(&outputBlobs, &grid);                              // ARGS[llist_ptr, gridLayout_ptr]
-  gridGapLayout(&outputBlobs, &grid);                         // ARGS[llist_ptr, gridLayout_ptr]
+  //gridLayout(&outputBlobs, &grid);                            // ARGS[llist_ptr, gridLayout_ptr]
+  gridGapLayout(&outputBlobs, &grid);                           // ARGS[llist_ptr, gridLayout_ptr]
   controlChangeMapping(&outputBlobs, &ccPesets);                // ARGS[llist_ptr, ccPesets_ptr]
 #endif
 

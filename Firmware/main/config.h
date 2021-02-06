@@ -93,7 +93,7 @@
 #define X_GRID_STEP             8
 #define Y_GRID_STEP             8
 #define GRID_KEYS               (X_GRID_STEP * Y_GRID_STEP)
-#define GRID_GAP                2
+#define GRID_GAP                1
 #define KEY_SIZE                ((X_MAX - ((X_GRID_STEP + 1) * GRID_GAP)) / X_GRID_STEP)
 
 #define LINE_OUT                0

@@ -77,7 +77,6 @@ typedef struct squareKey {
 typedef struct grid {
   squareKey_t* keyArray_ptr;
   int8_t keyIndex[MAX_BLOBS];
-  //unsigned long timer[MAX_BLOBS];
   //int8_t* midiLayout;
 } grid_t;
 
