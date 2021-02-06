@@ -1,16 +1,12 @@
 # eTextile-Synthetizer
 ## Exploring music through textile
-- Author: Maurin Donneaud <maurin@etextile.org>
-- Repository: https://github.com/eTextile/Synth/tree/master/
-- Project web page: https://synth.eTextile.org
-- License: CC-BY-SA (see the License file)
 
 ![eTextile-Synthetizer](https://live.staticflickr.com/65535/50866131211_85efdc979a_c_d.jpg)
 
 ### HARDWARE_ELECTRONIC
 #### FEATURES
 - Teensy 4.0 (600MHz MCU)
-- eTextile-Synthetizer PCB made with **KiCad** (V5.0.2)
+- eTextile-Synthetizer PCB made with **KiCad** (V5.0.*)
 - Daisy chainable design using **3.5 stereo mini Jack**
     - **LINE-OUT** : High quality 16 bit DAC OUTPUT (Headphones)
     - **SIG-IN** : Audio stereo input sampling rate 44.1 kHz
@@ -25,7 +21,6 @@
 - **Button D2 (STAR)** Long press : MIDI LEARN MODE
 
 #### SELECT MODE
-
     |      MODE     |       LEDs      |                     FONCTION                    |
     | :------------ | :-------------  | :---------------------------------------------- |
     | **LINE_OUT**  | D1-OFF / D2-OFF | line_out level adjustment using rotary encoder  |
