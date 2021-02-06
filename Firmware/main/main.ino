@@ -150,16 +150,16 @@ elapsedMillis ledTimer;
 uint8_t ledIterations = 0;
 
 preset_t presets[7] = {
-  {LINE_OUT,  13, 31, 29, 29, true, LOW,  LOW  },
-  {SIG_IN,     0, 15, 0,  0,  true, HIGH, LOW  },
-  {SIG_OUT,    0, 31, 17, 17, true, LOW,  HIGH },
-  {THRESHOLD,  1, 60, 20, 20, true, HIGH, HIGH },
-  {MIDI_LEARN, 1, 6,  1,  1,  true, NULL, NULL },
-  {CALIBRATE,  0, 0,  0,  0,  true, NULL, NULL },
-  {SAVE,       0, 0,  0,  0,  true, NULL, NULL }
+  {LINE_OUT,  13, 31, 29, 29, true, LOW,  LOW },
+  {SIG_IN,     0, 15, 0,  0,  true, HIGH, LOW },
+  {SIG_OUT,    0, 31, 17, 17, true, LOW,  HIGH},
+  {THRESHOLD,  1, 60, 10, 10, true, HIGH, HIGH},
+  {MIDI_LEARN, 1, 6,  1,  1,  true, NULL, NULL},
+  {CALIBRATE,  0, 0,  0,  0,  true, NULL, NULL},
+  {SAVE,       0, 0,  0,  0,  true, NULL, NULL}
 };
 
-uint8_t interpThreshold = 10; // (THRESHOLD - 10)
+uint8_t interpThreshold = 10;
 
 median_t medianStorage[MAX_BLOBS] {
   {true, {0}, {0}, 0},
@@ -176,11 +176,10 @@ median_t medianStorage[MAX_BLOBS] {
 //tSwitch_t tapSwitch = {10, 10, 5, 1000, false};                           // ARGS[posX, posY, rSize, debounceTimer, state]
 //tSwitch_t modeSwitch = {40, 30, 5, 1000, false};                          // ARGS[posX, posY, rSize, debounceTimer, state]
 
-gridPoint_t keyPosArray[KEYS] = {0, 0};                                     // Array of [X-Y] gridPoint to store precompute positions
 uint8_t midiLayout[20] = {127, 63, 44};                                     // 1D Array to store incoming midi notes
 
-grid_t gridLayout_A = {&keyPosArray[0], {0}, {0}, {0}, &midiLayout[0]};     // ARGS[blobKeyPress, lastBlobKeyPress, debounceTime, midiNotes]
-//grid_t gridLayout_B = {&keyPosArray[0], {0}, {0}, {0}, &midiLayout[0]};   // ARGS[blobKeyPress, lastBlobKeyPress, debounceTime, midiNotes]
+squareKey_t keyArray[GRID_KEYS] = {0, 0, 0, 0};                             // Array to store precompute key positions
+grid_t grid = {&keyArray[0], {0}};                                    // ARGS[blobKeyPress, lastBlobKeyPress, debounceTime, midiNotes]
 
 polar_t polarCoord[MAX_BLOBS];
 
@@ -195,7 +194,7 @@ cSlider_t cSliders[C_SLIDERS] = {
 
 velocity_t velocityStorage[MAX_BLOBS];
 
-ccPesets_t ccPesets = {NULL, BD, 0, 44, 1}; //ARGS[blobID, [BX,BY,BW,BH,BD], lastVal, cChange, midiChannel]
+ccPesets_t ccPesets = {NULL, BD, 44, 1, 0}; //ARGS[blobID, [BX,BY,BW,BH,BD], cChange, midiChannel, Val]
 
 void setup() {
 
@@ -235,8 +234,6 @@ void setup() {
     &outputBlobs          // list_t*
   );
 
-  SETUP_KEYBOARD_LAYOUT(&keyPosArray[0]);
-
 #if MIDI_USB
   SETUP_MIDI_USB();
 #endif
@@ -249,6 +246,7 @@ void setup() {
   SETUP_MIDI_HARDWARE();
 #endif
 
+  SETUP_GRID_LAYOUT(&keyArray[0]);
 
 }
 
@@ -372,14 +370,14 @@ void loop() {
   //    SET_ORIGIN_Y == 1
 
 #if MIDI_HARDWARE
-  gridLayoutMapping_A(&outputBlobs, &gridLayout_A);             // ARGS[llist_ptr, gridLayout_ptr]
-  //gridLayoutMapping_B(&outputBlobs, &gridLayout_B);           // ARGS[llist_ptr, gridLayout_ptr]
+  //gridLayout(&outputBlobs, &grid);                              // ARGS[llist_ptr, gridLayout_ptr]
+  gridGapLayout(&outputBlobs, &grid);                         // ARGS[llist_ptr, gridLayout_ptr]
   controlChangeMapping(&outputBlobs, &ccPesets);                // ARGS[llist_ptr, ccPesets_ptr]
 #endif
 
   //getVelocity(&outputBlobs, &velocityStorage[0]);             // ARGS[llist_ptr, velocityStorage_ptr]
-  hSlider(&outputBlobs, &hSlider_A);                            // ARGS[llist_ptr, hSlider_ptr]
-  vSlider(&outputBlobs, &vSlider_A);                            // ARGS[llist_ptr, vSlider_ptr]
+  //hSlider(&outputBlobs, &hSlider_A);                          // ARGS[llist_ptr, hSlider_ptr]
+  //vSlider(&outputBlobs, &vSlider_A);                          // ARGS[llist_ptr, vSlider_ptr]
   //getPolarCoordinates(&outputBlobs, &polarCoord[0]);          // ARGS[llist_ptr, polar_ptr]
   //cSlider(&outputBlobs, &polarCoord[0], &cSliders[0]);        // ARGS[llist_ptr, polar_ptr, cSliders_ptr]
   //boolean togSwitchVal = toggle(&outputBlobs, &modeSwitch);   // ARGS[llist_ptr, switch_ptr]

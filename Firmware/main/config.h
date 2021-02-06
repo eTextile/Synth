@@ -12,11 +12,11 @@
 //#if defined(USB_SERIAL)
 //#if defined(USB_MIDI)
 
-#define ETEXTILE_SYNTHETIZER   "1.0.0" 
+#define ETEXTILE_SYNTHETIZER   "1.0.0"
 
-#define STANDALONE_SYNTH        1 // [0:1] Set the eTextile-Synthesizer as STANDALONE divice
+#define STANDALONE_SYNTH        0 // [0:1] Set the eTextile-Synthesizer as STANDALONE divice
 #define MIDI_USB                0 // [0:1] Set the eTextile-Synthesizer as USB MIDI divice
-#define MIDI_HARDWARE           0 // [0:1] Set the eTextile-Synthesizer as MIDI I/O divice
+#define MIDI_HARDWARE           1 // [0:1] Set the eTextile-Synthesizer as MIDI I/O divice
 #define SLIP_OSC                0 // [0:1] Set the eTextile-Synthesizer as SLIP_OSC divice
 
 #define MAX_BLOBS               8 // [1:8] Set how many blobs can be tracked at the same time
@@ -30,7 +30,7 @@
 #define DEBUG_INTERP            0 // [0:1] Print 64x64 interpolated values
 #define DEBUG_BITMAP            0 // [0:1] Print 64x64 binary image based on threshold
 #define DEBUG_BLOBS             0 // [0:1] Print blobs values
-#define DEBUG_MAPPING           1 // [0:1] Print blobs values
+#define DEBUG_MAPPING           0 // [0:1] Print blobs values
 
 #define DEBUG_BLOBS_ID          0 // [0:1] Print lowlevel blobs values
 #define DEBUG_SORT              0 // [0:1] Print lowlevel blobs sort (NOT_USED)
@@ -85,21 +85,16 @@
 
 #define PI                      3.1415926535897932384626433832795
 
-#define C_SLIDERS               3     // Flavien Berger Synth
+#define C_SLIDERS               3
 
-#define X_MAX                   58    // Blob X_MAX centroid position
-#define Y_MAX                   58    // Blob Y_MAX centroid position
+#define X_MAX                   58       // Blob X_MAX centroid position
+#define Y_MAX                   58       // Blob Y_MAX centroid position
 
 #define X_GRID_STEP             8
 #define Y_GRID_STEP             8
-#define KEYS                    (X_GRID_STEP * Y_GRID_STEP)
-#define X_GRID_STRIDE           (X_MAX / (X_GRID_STEP + 1))
-#define Y_GRID_STRIDE           (Y_MAX / (Y_GRID_STEP + 1))
-#define X_GRID_WINDOW           (Y_GRID_STEP/2)
-#define Y_GRID_WINDOW           (Y_GRID_STEP/2)
-
-#define GRID_GAP                4
-#define GRID_CELL               (X_GRID_STRIDE - GRID_GAP)
+#define GRID_KEYS               (X_GRID_STEP * Y_GRID_STEP)
+#define GRID_GAP                2
+#define KEY_SIZE                ((X_MAX - ((X_GRID_STEP + 1) * GRID_GAP)) / X_GRID_STEP)
 
 #define LINE_OUT                0
 #define SIG_IN                  1

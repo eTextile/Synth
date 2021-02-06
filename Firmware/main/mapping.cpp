@@ -36,7 +36,7 @@ void gridLayoutSet() {
   //TODO
 }
 
-//ARGS[BlobsLList, blobID, [X:0, Y:1, W:2, H:3, D:4], lastVal, cChange, midiChannel]
+// pesets_ptr -> ARGS[blobID, [BX,BY,BW,BH,BD], cChange, midiChannel, Val]
 void controlChangeMapping(llist_t* blobs_ptr, ccPesets_t* pesets_ptr) {
 
   for (blob_t* blob_ptr = ITERATOR_START_FROM_HEAD(blobs_ptr); blob_ptr != NULL; blob_ptr = ITERATOR_NEXT(blob_ptr)) {
@@ -47,32 +47,32 @@ void controlChangeMapping(llist_t* blobs_ptr, ccPesets_t* pesets_ptr) {
 #if MIDI_HARDWARE
         switch (pesets_ptr->mappVal) {
           case BX:
-            if (blob_ptr->centroid.X != pesets_ptr->lastVal) {
-              pesets_ptr->lastVal = blob_ptr->centroid.X;
+            if (blob_ptr->centroid.X != pesets_ptr->val) {
+              pesets_ptr->val = blob_ptr->centroid.X;
               MIDI.sendControlChange(pesets_ptr->cChange, constrain(blob_ptr->centroid.X, 0, 127), pesets_ptr->midiChannel);
             }
             break;
           case BY:
-            if (blob_ptr->centroid.Y != pesets_ptr->lastVal) {
-              pesets_ptr->lastVal = blob_ptr->centroid.Y;
+            if (blob_ptr->centroid.Y != pesets_ptr->val) {
+              pesets_ptr->val = blob_ptr->centroid.Y;
               MIDI.sendControlChange(pesets_ptr->cChange, constrain(blob_ptr->centroid.Y, 0, 127), pesets_ptr->midiChannel);
             }
             break;
           case BW:
-            if (blob_ptr->box.W != pesets_ptr->lastVal) {
-              pesets_ptr->lastVal = blob_ptr->box.W;
+            if (blob_ptr->box.W != pesets_ptr->val) {
+              pesets_ptr->val = blob_ptr->box.W;
               MIDI.sendControlChange(pesets_ptr->cChange, constrain(blob_ptr->box.W, 0, 127), pesets_ptr->midiChannel);
             }
             break;
           case BH:
-            if (blob_ptr->box.H != pesets_ptr->lastVal) {
-              pesets_ptr->lastVal = blob_ptr->box.H;
+            if (blob_ptr->box.H != pesets_ptr->val) {
+              pesets_ptr->val = blob_ptr->box.H;
               MIDI.sendControlChange(pesets_ptr->cChange, constrain(blob_ptr->box.H, 0, 127), pesets_ptr->midiChannel);
             }
             break;
           case BD:
-            if (blob_ptr->box.D != pesets_ptr->lastVal) {
-              pesets_ptr->lastVal = blob_ptr->box.D;
+            if (blob_ptr->box.D != pesets_ptr->val) {
+              pesets_ptr->val = blob_ptr->box.D;
               MIDI.sendControlChange(pesets_ptr->cChange, constrain(blob_ptr->box.D, 0, 127), pesets_ptr->midiChannel);
             }
             break;
@@ -81,32 +81,32 @@ void controlChangeMapping(llist_t* blobs_ptr, ccPesets_t* pesets_ptr) {
 #if MIDI_USB
         switch (pesets_ptr->mappVal) {
           case BX:
-            if (blob_ptr->centroid.X != pesets_ptr->lastVal) {
-              pesets_ptr->lastVal = blob_ptr->centroid.X;
+            if (blob_ptr->centroid.X != pesets_ptr->val) {
+              pesets_ptr->val = blob_ptr->centroid.X;
               usbMIDI.sendControlChange(pesets_ptr->cChange, constrain(blob_ptr->centroid.X, 0, 127), pesets_ptr->midiChannel);
             }
             break;
           case BY:
-            if (blob_ptr->centroid.Y != pesets_ptr->lastVal) {
-              pesets_ptr->lastVal = blob_ptr->centroid.Y;
+            if (blob_ptr->centroid.Y != pesets_ptr->val) {
+              pesets_ptr->val = blob_ptr->centroid.Y;
               usbMIDI.sendControlChange(pesets_ptr->cChange, constrain(blob_ptr->centroid.Y, 0, 127), pesets_ptr->midiChannel);
             }
             break;
           case BW:
-            if (blob_ptr->box.W != pesets_ptr->lastVal) {
-              pesets_ptr->lastVal = blob_ptr->box.W;
+            if (blob_ptr->box.W != pesets_ptr->val) {
+              pesets_ptr->val = blob_ptr->box.W;
               usbMIDI.sendControlChange(pesets_ptr->cChange, constrain(blob_ptr->box.W, 0, 127), pesets_ptr->midiChannel);
             }
             break;
           case BH:
-            if (blob_ptr->box.H != pesets_ptr->lastVal) {
-              pesets_ptr->lastVal = blob_ptr->box.H;
+            if (blob_ptr->box.H != pesets_ptr->val) {
+              pesets_ptr->val = blob_ptr->box.H;
               usbMIDI.sendControlChange(pesets_ptr->cChange, constrain(blob_ptr->box.H, 0, 127), pesets_ptr->midiChannel);
             }
             break;
           case BD:
-            if (blob_ptr->box.D != pesets_ptr->lastVal) {
-              pesets_ptr->lastVal = blob_ptr->box.D;
+            if (blob_ptr->box.D != pesets_ptr->val) {
+              pesets_ptr->val = blob_ptr->box.D;
               usbMIDI.sendControlChange(pesets_ptr->cChange, constrain(blob_ptr->box.D, 0, 127), pesets_ptr->midiChannel);
             }
             break;
@@ -115,39 +115,37 @@ void controlChangeMapping(llist_t* blobs_ptr, ccPesets_t* pesets_ptr) {
 #if DEBUG_MAPPING
         switch (pesets_ptr->mappVal) {
           case BX:
-            if (blob_ptr->centroid.X != pesets_ptr->lastVal) {
-              pesets_ptr->lastVal = blob_ptr->centroid.X;
+            if (blob_ptr->centroid.X != pesets_ptr->val) {
+              pesets_ptr->val = blob_ptr->centroid.X;
               Serial.printf("\nMIDI\tCC:%d\tVAL:%d\tCHAN:%d", blob_ptr->UID, constrain(blob_ptr->centroid.X, 0, 127), pesets_ptr->midiChannel);
             }
             break;
           case BY:
-            if (blob_ptr->centroid.Y != pesets_ptr->lastVal) {
-              pesets_ptr->lastVal = blob_ptr->centroid.Y;
+            if (blob_ptr->centroid.Y != pesets_ptr->val) {
+              pesets_ptr->val = blob_ptr->centroid.Y;
               Serial.printf("\nMIDI\tCC:%d\tVAL:%d\tCHAN:%d", blob_ptr->UID, constrain(blob_ptr->centroid.Y, 0, 127), pesets_ptr->midiChannel);
             }
             break;
           case BW:
-            if (blob_ptr->box.W != pesets_ptr->lastVal) {
-              pesets_ptr->lastVal = blob_ptr->box.W;
+            if (blob_ptr->box.W != pesets_ptr->val) {
+              pesets_ptr->val = blob_ptr->box.W;
               Serial.printf("\nMIDI\tCC:%d\tVAL:%d\tCHAN:%d", blob_ptr->UID, constrain(blob_ptr->box.W, 0, 127), pesets_ptr->midiChannel);
             }
             break;
           case BH:
-            if (blob_ptr->box.H != pesets_ptr->lastVal) {
-              pesets_ptr->lastVal = blob_ptr->box.H;
+            if (blob_ptr->box.H != pesets_ptr->val) {
+              pesets_ptr->val = blob_ptr->box.H;
               Serial.printf("\nMIDI\tCC:%d\tVAL:%d\tCHAN:%d", blob_ptr->UID, constrain(blob_ptr->box.H, 0, 127), pesets_ptr->midiChannel);
             }
             break;
           case BD:
-            if (blob_ptr->box.D != pesets_ptr->lastVal) {
-              pesets_ptr->lastVal = blob_ptr->box.D;
+            if (blob_ptr->box.D != pesets_ptr->val) {
+              pesets_ptr->val = blob_ptr->box.D;
               Serial.printf("\nBLOB:%d\tCC:%d\tVAL:%d\tCHAN:%d", blob_ptr->UID, pesets_ptr->cChange, constrain(blob_ptr->box.D, 0, 127), pesets_ptr->midiChannel);
             }
             break;
         }
 #endif
-      }
-      else {
       }
     }
   }
@@ -155,7 +153,7 @@ void controlChangeMapping(llist_t* blobs_ptr, ccPesets_t* pesets_ptr) {
 
 // Compute the grid Index location acording to blob X-Y positions
 // TODO : Adding dead zone (gap between each keys)
-void gridLayoutMapping_A(llist_t* blobs_ptr, grid_t* grid_ptr) {
+void gridLayout(llist_t* blobs_ptr, grid_t* grid_ptr) {
 
   int8_t keyIndex;
 
@@ -169,125 +167,124 @@ void gridLayoutMapping_A(llist_t* blobs_ptr, grid_t* grid_ptr) {
       // Test if it is alive
       if (blob_ptr->alive) {
         // Test if new key is pressed
-        if (keyIndex != grid_ptr->lastKeyIndex[blob_ptr->UID]) {
-          if (grid_ptr->lastKeyIndex[blob_ptr->UID] != -1 ) {
+        if (keyIndex != grid_ptr->keyIndex[blob_ptr->UID]) {
+          if (grid_ptr->keyIndex[blob_ptr->UID] != -1 ) {
 #if MIDI_HARDWARE
-            MIDI.sendNoteOff(grid_ptr->lastKeyIndex[blob_ptr->UID], 0, 1);              // Send NoteOFF (SEND ALL KEYS ON CHANNEL_1)
+            //MIDI.sendNoteOff(grid_ptr->keyIndex[blob_ptr->UID], 0, 1);              // Send NoteOFF (SEND ALL KEYS ON CHANNEL_1)
+            Serial.printf("\nGRID\tBLOB:%d\tKEY_OFF:%d", blob_ptr->UID, grid_ptr->keyIndex[blob_ptr->UID]);
 #endif
-            //Serial.printf("\nGRID_A\tBLOB:%d\tKEY_OFF:%d", blob_ptr->UID, grid_ptr->lastKeyIndex[blob_ptr->UID]);
           }
 #if MIDI_HARDWARE
-          MIDI.sendNoteOn(keyIndex, 127, 1);                                            // Send NoteON (SEND ALL KEYS ON CHANNEL_1)
+          //MIDI.sendNoteOn(keyIndex, 127, 1);                                            // Send NoteON (SEND ALL KEYS ON CHANNEL_1)
+          Serial.printf("\nGRID\tBLOB:%d\t\tKEY_ON:%d", blob_ptr->UID, keyIndex);
 #endif
-          //Serial.printf("\nGRID_A\tBLOB:%d\t\tKEY_ON:%d", blob_ptr->UID, keyIndex);
-          grid_ptr->lastKeyIndex[blob_ptr->UID] = keyIndex;                             // Save the current key position
+          grid_ptr->keyIndex[blob_ptr->UID] = keyIndex;                                   // Save the current key position
         }
       }
-      else {                                                                            // blob_ptr->alive == 0 (onRelease)
+      else {                                                                              // blob_ptr->alive == 0 (onRelease)
 #if MIDI_HARDWARE
-        MIDI.sendNoteOff(keyIndex, 0, 1);                                               // Send NoteOFF (SAND ALL KEYS ON CHANNEL_1)
+        //MIDI.sendNoteOff(keyIndex, 0, 1);                                               // Send NoteOFF (SAND ALL KEYS ON CHANNEL_1)
+        Serial.printf("\nGRIB\tBLOB:%d\tKEY_OFF:%d", blob_ptr->UID, keyIndex);
 #endif
-        //Serial.printf("\nGRID_A\tBLOB:%d\tKEY_OFF:%d", blob_ptr->UID, keyIndex);
-        grid_ptr->lastKeyIndex[blob_ptr->UID] = -1;
+        grid_ptr->keyIndex[blob_ptr->UID] = -1;
       }
     }
   }
 }
 
+// Pre-compute key min & max coordinates
+void SETUP_GRID_LAYOUT(squareKey_t* keyArray_ptr) {
 
-// Pre compute key X-Y centroid positions
-void SETUP_KEYBOARD_LAYOUT(gridPoint_t* keyPosArray_ptr) {
-
+  //Serial.printf("\nDEBUG_KEY_SIZE: %d", KEY_SIZE);
   for (int row = 0; row < X_GRID_STEP; row++) {
     for (int col = 0; col < Y_GRID_STEP; col++) {
       int index = row * X_GRID_STEP + col;
-      keyPosArray_ptr[index].X = row + 1 * X_GRID_STRIDE;
-      keyPosArray_ptr[index].Y = col + 1 * Y_GRID_STRIDE;
+      keyArray_ptr[index].Xmin = (uint8_t)(col * KEY_SIZE + (col + 1) * GRID_GAP);
+      keyArray_ptr[index].Xmax = (uint8_t)((col + 1) * KEY_SIZE + (col + 1) * GRID_GAP);
+      keyArray_ptr[index].Ymin = (uint8_t)(row * KEY_SIZE + (row + 1) * GRID_GAP);
+      keyArray_ptr[index].Ymax = (uint8_t)((row + 1) * KEY_SIZE + (row + 1) * GRID_GAP);
+      //Serial.printf("\nGRID_GAP\tXmin%d\tXmax%d\tYmin%d\tYmax%d", keyArray_ptr[index].Xmin, keyArray_ptr[index].Xmax, keyArray_ptr[index].Ymin, keyArray_ptr[index].Ymax);
     }
   }
 }
 
-// This Grid Layaout fonction is disigned to be more robust than previous one
-// By providing a better insolation (gap) betwin each keys
-// points_t based on the MAX_X and MAX_Y surface
-// Divide the grid ind sub window
-// Localise the blob in sub windows and compute the nearest point of the grid
-// Play it if it is not in the dead zone (gap between each keys)
-void gridLayoutMapping_B(llist_t* blobs_ptr, grid_t* grid_ptr) {
-
-  int8_t keyIndex;
+// Compute the grid X-Y index location acording to blob X-Y coordinates
+void gridGapLayout(llist_t* blobs_ptr, grid_t* gridLayout_ptr) {
 
   for (blob_t* blob_ptr = ITERATOR_START_FROM_HEAD(blobs_ptr); blob_ptr != NULL; blob_ptr = ITERATOR_NEXT(blob_ptr)) {
-    // Test if the blob is within the limits
-    if (blob_ptr->UID < MAX_BLOBS) {
+    if (blob_ptr->UID < MAX_BLOBS) {                                                    // Test if the blob is within the limits
+      uint8_t keyPosX = (uint8_t)round((blob_ptr->centroid.X / X_MAX) * X_GRID_STEP);   // Compute X window position
+      uint8_t keyPosY = (uint8_t)round((blob_ptr->centroid.Y / Y_MAX) * X_GRID_STEP);   // Compute Y window position
+      uint8_t keyIndex = keyPosY * Y_GRID_STEP + keyPosX;                               // Compute 1D key index position
 
-      // Compute X and Y window position
-      uint8_t winPosX = (uint8_t)round((blob_ptr->centroid.X / X_MAX) * X_GRID_WINDOW);   // Compute X window position
-      uint8_t winPosY = (uint8_t)round((blob_ptr->centroid.Y / Y_MAX) * Y_GRID_WINDOW);   // Compute Y window position
-      uint16_t winPos = winPosY * Y_GRID_WINDOW + winPosX;                                // Compute 1D window position
+      if (blob_ptr->centroid.X > gridLayout_ptr->keyArray_ptr[keyPosX].Xmin &&
+          blob_ptr->centroid.X < gridLayout_ptr->keyArray_ptr[keyPosX].Xmax ||
+          blob_ptr->centroid.Y > gridLayout_ptr->keyArray_ptr[keyPosY].Ymin &&
+          blob_ptr->centroid.Y < gridLayout_ptr->keyArray_ptr[keyPosY].Ymax
+         ) {
 
-      uint16_t indexArray[4] = {0};
-      if (winPos != grid_ptr->lastWinPos[blob_ptr->UID]) {
-        // Compute 1D key index contained in the window
-        indexArray[0] = winPosX * 2 + winPosY * Y_GRID_STEP;
-        indexArray[1] = index[0] + 1;
-        indexArray[2] = index[0] + X_GRID_STEP;
-        indexArray[3] = index[2] + 1;
-      }
-      keyIndex = dist(blob_ptr, grid_ptr, &indexArray[0]);
+        if (blob_ptr->alive) {
 
-      // Test if it is alive
-      if (blob_ptr->alive) {
-        // Test if new key is pressed
-        if (keyIndex != grid_ptr->lastKeyIndex[blob_ptr->UID]) {
-          if (grid_ptr->lastKeyIndex[blob_ptr->UID] != -1 ) {
+          if (keyIndex != gridLayout_ptr->keyIndex[blob_ptr->UID]) {                      // Test if new key is pressed
+            if (gridLayout_ptr->keyIndex[blob_ptr->UID] != -1 ) {
 #if MIDI_HARDWARE
-            MIDI.sendNoteOff(grid_ptr->lastKeyIndex[blob_ptr->UID], 0, 1);              // Send NoteOFF (SEND ALL KEYS ON CHANNEL_1)
+              //MIDI.sendNoteOff(gridLayout_ptr->keyIndex[blob_ptr->UID], 0, 1);          // Send NoteOFF (SEND ALL KEYS ON CHANNEL_1)
+              Serial.printf("\nGRID_GAP\tBLOB:%d\tNOTE_OFF: %d", blob_ptr->UID, gridLayout_ptr->keyIndex[blob_ptr->UID]);
 #endif
-            //Serial.printf("\nGRID_A\tBLOB:%d\tKEY_OFF:%d", blob_ptr->UID, grid_ptr->lastKeyIndex[blob_ptr->UID]);
+            }
+#if MIDI_HARDWARE
+            //MIDI.sendNoteOn(keyIndex, 127, 1);                                          // Send NoteON (SEND ALL KEYS ON CHANNEL_1)
+            Serial.printf("\nGRID_GAP\tBLOB:%d\t\tNOTE_ON: %d", blob_ptr->UID, keyIndex);
+#endif
+            gridLayout_ptr->keyIndex[blob_ptr->UID] = keyIndex;                           // Save the current key position
           }
+        }
+        else {                                                                            // blob_ptr->alive == 0 (onRelease)
 #if MIDI_HARDWARE
-          MIDI.sendNoteOn(keyIndex, 127, 1);                                            // Send NoteON (SEND ALL KEYS ON CHANNEL_1)
+          //MIDI.sendNoteOff(keyIndex, 0, 1);                                             // Send NoteOFF (SAND ALL KEYS ON CHANNEL_1)
+          Serial.printf("\nGRID_GAP\tBLOB:%d\tNOTE_OFF: %d", blob_ptr->UID, keyIndex);
 #endif
-          //Serial.printf("\nGRID_A\tBLOB:%d\t\tKEY_ON:%d", blob_ptr->UID, keyIndex);
-          grid_ptr->lastKeyIndex[blob_ptr->UID] = keyIndex;                             // Save the current key position
+          gridLayout_ptr->keyIndex[blob_ptr->UID] = -1;                                   // Set it -1 to avoid NoteOff duplication
         }
       }
-      else {                                                                            // blob_ptr->alive == 0 (onRelease)
+      else {
+        if (gridLayout_ptr->keyIndex[blob_ptr->UID] != -1 ) {
 #if MIDI_HARDWARE
-        MIDI.sendNoteOff(keyIndex, 0, 1);                                               // Send NoteOFF (SAND ALL KEYS ON CHANNEL_1)
+          //MIDI.sendNoteOff(gridLayout_ptr->keyIndex[blob_ptr->UID], 0, 1);            // Send NoteOFF (SEND ALL KEYS ON CHANNEL_1)
+          Serial.printf("\nGRID_GAP\tBLOB:%d\tNOTE_OFF: %d", blob_ptr->UID, gridLayout_ptr->keyIndex[blob_ptr->UID]);
 #endif
-        //Serial.printf("\nGRID_A\tBLOB:%d\tKEY_OFF:%d", blob_ptr->UID, keyIndex);
-        grid_ptr->lastKeyIndex[blob_ptr->UID] = -1;
+          gridLayout_ptr->keyIndex[blob_ptr->UID] = -1;
+        }
       }
     }
   }
 }
 
-// keyIndexArray_ptr is pre computed to hold 2D index in 1D array
-uint16_t dist(blob_t* blob_ptr, grid_t* grid_ptr, uint16_t* keyIndexArray_ptr) {
+/*
+  // keyIndexArray_ptr is pre computed to hold 2D index in 1D array
+  uint16_t dist(blob_t* blob_ptr, grid_t* grid_ptr, uint16_t* keyIndexArray_ptr) {
 
   uint16_t id = 0;
   float dist = 0.0f;
   float lastDist = 255.0f;
 
   for (int i = 0; i < 4; i++) {
-    float sum = (blob_ptr->centroid.X - grid_ptr->keyPosArray_ptr[keyIndexArray_ptr[i]].X) * (blob_ptr->centroid.X - grid_ptr->keyPosArray_ptr[keyIndexArray_ptr[i]].X) +
-                (blob_ptr->centroid.Y - grid_ptr->keyPosArray_ptr[keyIndexArray_ptr[i]].Y) * (blob_ptr->centroid.Y - grid_ptr->keyPosArray_ptr[keyIndexArray_ptr[i]].Y);
-    float dist = sqrtf(sum);
-    if (dist < lastDist) {
-      lastDist = dist;
-      id = keyIndexArray_ptr[i];
-    }
+  float sum = (blob_ptr->centroid.X - grid_ptr->keyArray_ptr[keyIndexArray_ptr[i]].X) * (blob_ptr->centroid.X - grid_ptr->keyArray_ptr[keyIndexArray_ptr[i]].X) +
+  (blob_ptr->centroid.Y - grid_ptr->keyArray_ptr[keyIndexArray_ptr[i]].Y) * (blob_ptr->centroid.Y - grid_ptr->keyArray_ptr[keyIndexArray_ptr[i]].Y);
+  float dist = sqrtf(sum);
+  if (dist < lastDist) {
+  lastDist = dist;
+  id = keyIndexArray_ptr[i];
+  }
   }
   if (lastDist < GRID_GAP) {
-    return id;
+  return id;
   }
   else {
-    return -1;
+  return -1;
   }
-}
-
+  }
+*/
 void vSlider(llist_t* blobs_ptr, vSlider_t* slider_ptr) {
   int8_t val = 0;
 
@@ -300,7 +297,7 @@ void vSlider(llist_t* blobs_ptr, vSlider_t* slider_ptr) {
         if (val != slider_ptr->val) {
           slider_ptr->val = val;
 #if DEBUG_MAPPING
-          Serial.printf("\nDEBUG_V_SLIDER : %d", val);
+          Serial.printf("\nDEBUG_V_SLIDER : % d", val);
 #endif
         }
       }
@@ -321,7 +318,7 @@ void hSlider(llist_t* blobs_ptr, hSlider_t* slider_ptr) {
         if (val != slider_ptr->val) {
           slider_ptr->val = val;
 #if DEBUG_MAPPING
-          Serial.printf("\nDEBUG_H_SLIDER : %d", val);
+          Serial.printf("\nDEBUG_H_SLIDER : % d", val);
 #endif
         }
       }
@@ -343,12 +340,13 @@ void cSlider(llist_t* blobs_ptr, polar_t* polar_ptr, cSlider_t* slider_ptr) {
           phi = polar_ptr[blob_ptr->UID].phi + (6.2839 - slider_ptr[i].phiOffset);
         }
 #if DEBUG_MAPPING
-        Serial.printf("\nDEBUG_C_SLIDER_%d phi : %f", i, map(constrain(phi, 0.2, 5.9), 0.2, 5.9, 0, 127));
+        Serial.printf("\nDEBUG_C_SLIDER_ % d phi : % f", i, map(constrain(phi, 0.2, 5.9), 0.2, 5.9, 0, 127));
 #endif
       }
     }
   }
 }
+
 
 void getPolarCoordinates(llist_t* blobs_ptr, polar_t* polar_ptr) {
 
@@ -374,7 +372,7 @@ void getPolarCoordinates(llist_t* blobs_ptr, polar_t* polar_ptr) {
       }
     }
 #if DEBUG_MAPPING
-    Serial.printf("\nDEBUG_POLAR : R:%f\tPHY:%f", polar_ptr[blob_ptr->UID].r, polar_ptr[blob_ptr->UID].phi);
+    Serial.printf("\nDEBUG_POLAR : R: % f\tPHY: % f", polar_ptr[blob_ptr->UID].r, polar_ptr[blob_ptr->UID].phi);
 #endif
   }
 }
@@ -390,7 +388,7 @@ boolean toggle(llist_t* blobs_ptr, tSwitch_t* switch_ptr) {
           switch_ptr->timer = millis();
           switch_ptr->state = !switch_ptr->state;
 #if DEBUG_MAPPING
-          Serial.printf("\nDEBUG_TOGGLE : STATE:%d", switch_ptr->state);
+          Serial.printf("\nDEBUG_TOGGLE : STATE: % d", switch_ptr->state);
 #endif
           return switch_ptr->state;
         }
@@ -411,7 +409,7 @@ boolean trigger(llist_t* blobs_ptr, tSwitch_t* switch_ptr) {
           switch_ptr->timer = millis();
           switch_ptr->state = true;
 #if DEBUG_MAPPING
-          Serial.printf("\nDEBUG_TRIGGER : POSX:%f\tPOSY:%f", blob_ptr->centroid.X, blob_ptr->centroid.Y);
+          Serial.printf("\nDEBUG_TRIGGER : POSX: % f\tPOSY: % f", blob_ptr->centroid.X, blob_ptr->centroid.Y);
 #endif
           return true;
         }

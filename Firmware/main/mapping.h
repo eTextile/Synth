@@ -18,7 +18,6 @@ typedef struct llist llist_t;  // Forward declaration
 #include <MIDI.h>
 #endif
 
-
 void SETUP_MIDI_HARDWARE(void);
 
 typedef struct velocity {
@@ -68,25 +67,26 @@ typedef struct polar {
   float phi;
 } polar_t;
 
-typedef struct gridPoint {
-  float X;
-  float Y;
-} gridPoint_t;
+typedef struct squareKey {
+  uint8_t Xmin;
+  uint8_t Xmax;
+  uint8_t Ymin;
+  uint8_t Ymax;
+} squareKey_t;
 
 typedef struct grid {
-  gridPoint_t* keyPosArray_ptr;
-  uint16_t lastWinPos[MAX_BLOBS];
-  int8_t lastKeyIndex[MAX_BLOBS];
-  unsigned long timer[MAX_BLOBS];
-  int8_t* midiLayout;
+  squareKey_t* keyArray_ptr;
+  int8_t keyIndex[MAX_BLOBS];
+  //unsigned long timer[MAX_BLOBS];
+  //int8_t* midiLayout;
 } grid_t;
 
 typedef struct cChange {
   uint8_t blobID;
-  uint8_t mappVal;  
-  uint8_t lastVal;
-  uint8_t cChange;
-  uint8_t midiChannel;
+  uint8_t mappVal;
+  int8_t cChange;
+  int8_t midiChannel;
+  int8_t val;
 } ccPesets_t;
 
 typedef struct seq {
@@ -94,20 +94,20 @@ typedef struct seq {
   uint8_t* seqframe;
 } seq_t;
 
-void gridLayoutMapping_A(llist_t* blobs_ptr, grid_t* grid_ptr); // TODO: adding gap between keys 
+void SETUP_GRID_LAYOUT(squareKey_t* keyArray_ptr);
+void gridLayout(llist_t* blobs_ptr, grid_t* gridLayout_ptr);
+void gridGapLayout(llist_t* blobs_ptr, grid_t* gridLayout_ptr);
 
-void SETUP_KEYBOARD_LAYOUT(gridPoint_t* keyPosArray_ptr);
-uint16_t dist(blob_t* blob_ptr, grid_t* grid_ptr, uint16_t* keyIndexArray_ptr);
-void gridLayoutMapping_B(llist_t* blobs_ptr, grid_t* grid_ptr);
+//uint16_t dist(blob_t* blob_ptr, grid_t* grid_ptr, uint16_t* keyIndexArray_ptr);
 
 void controlChangeMapping(llist_t* blobs_ptr, ccPesets_t* pesets_ptr);
-
 void hSlider(llist_t* blobs_ptr, hSlider_t* slider_ptr);
 void vSlider(llist_t* blobs_ptr, vSlider_t* slider_ptr);
 void cSlider(llist_t* blobs_ptr, polar_t* polar_ptr, cSlider_t* slider_ptr);
-void getPolarCoordinates(llist_t* blobs_ptr, polar_t* polarPos_ptr);
 boolean toggle(llist_t* blobs_ptr, tSwitch_t* switch_ptr);
 boolean trigger(llist_t* blobs_ptr, tSwitch_t* switch_ptr);
+
+void getPolarCoordinates(llist_t* blobs_ptr, polar_t* polarPos_ptr);
 void getVelocity(llist_t* blobs_ptr, velocity_t* velocity_ptr);
 
 void tapTempo(tSwitch_t* tSwitch_ptr, cSlider_t* slider_ptr); // TODO

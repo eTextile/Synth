@@ -97,3 +97,7 @@ void make_noise(
   }
   AudioInterrupts();
 }
+
+void stepSequencer(){
+  
+}

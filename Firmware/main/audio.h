@@ -50,4 +50,6 @@ void make_noise(
   synth_t* allSynth_ptr
 );
 
+void stepSequencer();
+
 #endif /*__AUDIO_H__*/
