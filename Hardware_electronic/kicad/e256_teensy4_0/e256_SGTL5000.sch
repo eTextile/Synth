@@ -1,5 +1,4 @@
 EESchema Schematic File Version 4
-LIBS:e256_teensy4_0-cache
 EELAYER 26 0
 EELAYER END
 $Descr A4 11693 8268

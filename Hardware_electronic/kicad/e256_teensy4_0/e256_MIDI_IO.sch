@@ -1,14 +1,13 @@
 EESchema Schematic File Version 4
-LIBS:e256_teensy4_0-cache
 EELAYER 26 0
 EELAYER END
 $Descr A4 11693 8268
 encoding utf-8
 Sheet 4 4
-Title "E256 textile-synthesizer / MIDI-IO"
+Title "E256 eTextile-synthesizer / MIDI"
 Date "2020-09-30"
 Rev "1.0"
-Comp "www.etextile.org"
+Comp "https://synth.etextile.org"
 Comment1 "See : https://www.pjrc.com/teensy/td_libs_MIDI.html"
 Comment2 ""
 Comment3 ""

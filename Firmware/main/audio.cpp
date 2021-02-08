@@ -1,5 +1,5 @@
 /*
-  This file is part of the eTextile-Synthetizer project - http://synth.eTextile.org
+  This file is part of the eTextile-Synthesizer project - http://synth.eTextile.org
   Copyright (c) 2014- Maurin Donneaud <maurin@etextile.org>
   This work is licensed under Creative Commons Attribution-ShareAlike 4.0 International license, see the LICENSE file for details.
 */
@@ -98,6 +98,15 @@ void make_noise(
   AudioInterrupts();
 }
 
-void stepSequencer(){
-  
+void arpeggiator(int8_t* keyPressed) {
+
+static int8_t i = 0;
+
+    if (keyPressed[i] != -1) {
+      
+    }
+  }
+}
+void stepSequencer() {
+
 }

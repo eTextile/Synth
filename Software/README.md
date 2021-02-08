@@ -1,7 +1,7 @@
-# eTextile-Synthetizer / Software / Demo
+# eTextile-Synthesizer / Software / Demo
 ### Exploring music through textile
 
-The eTextile-Synthetizer is designed to be used as **Standalone Audio Synthetizer** 
+The eTextile-Synthesizer is designed to be used as **Standalone Audio Synthesizer** 
 and also as a **MIDI or OSC controleur** for Audio applications sucha as **Ableton Live**, **MaxMsp**, **Puredata**, etc.
 This folder is containing some demons that can be used as starting point for your own creations.
 

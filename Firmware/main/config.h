@@ -1,5 +1,5 @@
 /*
-  This file is part of the eTextile-Synthetizer project - http://synth.eTextile.org
+  This file is part of the eTextile-Synthesizer project - http://synth.eTextile.org
   Copyright (c) 2014- Maurin Donneaud <maurin@etextile.org>
   This work is licensed under Creative Commons Attribution-ShareAlike 4.0 International license, see the LICENSE file for details.
 */
@@ -12,7 +12,7 @@
 //#if defined(USB_SERIAL)
 //#if defined(USB_MIDI)
 
-#define ETEXTILE_SYNTHETIZER   "1.0.0"
+#define ETEXTILE_Synthesizer   "1.0.0"
 
 #define STANDALONE_SYNTH        0 // [0:1] Set the eTextile-Synthesizer as STANDALONE divice
 #define MIDI_USB                0 // [0:1] Set the eTextile-Synthesizer as USB MIDI divice

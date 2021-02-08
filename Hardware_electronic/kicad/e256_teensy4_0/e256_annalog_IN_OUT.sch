@@ -1,14 +1,13 @@
 EESchema Schematic File Version 4
-LIBS:e256_teensy4_0-cache
 EELAYER 26 0
 EELAYER END
 $Descr A4 11693 8268
 encoding utf-8
 Sheet 2 4
-Title "E256 textile-synthesizer"
+Title "E256 eTextile-synthesizer"
 Date "2020-10-17"
 Rev "1.1"
-Comp "www.etextile.org"
+Comp "https://synth.etextile.org"
 Comment1 ""
 Comment2 ""
 Comment3 ""

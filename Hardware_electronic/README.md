@@ -1,7 +1,7 @@
-# eTextile-Synthetizer
+# eTextile-Synthesizer
 ## Exploring music through textile
 
-![eTextile-Synthetizer](https://live.staticflickr.com/65535/50866131211_85efdc979a_c_d.jpg)
+![eTextile-Synthesizer](https://live.staticflickr.com/65535/50866131211_85efdc979a_c_d.jpg)
 
 ### HARDWARE_ELECTRONIC
 
@@ -10,7 +10,7 @@ Here is the last PCB schematics document : [eTextile_synth_schematics.pdf](./doc
 
 #### FEATURES
 - Teensy 4.0 (600MHz MCU)
-- eTextile-Synthetizer PCB made with **KiCad** (V5.0.*)
+- eTextile-Synthesizer PCB made with **KiCad** (V5.0.*)
 - Daisy chainable design using **3.5 stereo mini Jack**
     - **LINE-OUT** : High quality 16 bit DAC OUTPUT (Headphones)
     - **SIG-IN** : Audio stereo input sampling rate 44.1 kHz
@@ -86,5 +86,5 @@ As experienced with most audio software it is not possible to use auto-mapping f
 
 ## TODO
 - Make a casing
-- Make eTextile-Synthetizer/Dasy PCB
+- Make eTextile-Synthesizer/Dasy PCB
 - ...

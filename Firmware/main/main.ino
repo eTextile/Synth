@@ -1,6 +1,6 @@
 /*
-  ** eTextile-Synthetizer - Firmware v1.0.0 **
-  This file is part of the eTextile-Synthetizer project - http://synth.eTextile.org
+  **eTextile-Synthesizer**
+  This file is part of the eTextile-Synthesizer project - http://synth.eTextile.org
   Copyright (c) 2014- Maurin Donneaud <maurin@etextile.org>
   This work is licensed under Creative Commons Attribution-ShareAlike 4.0 International license, see the LICENSE file for details.
 */
@@ -173,23 +173,23 @@ median_t medianStorage[MAX_BLOBS] {
 };
 
 // Testing mapping fonctions
-//tSwitch_t tapSwitch = {10, 10, 5, 1000, false};                           // ARGS[posX, posY, rSize, debounceTimer, state]
-//tSwitch_t modeSwitch = {40, 30, 5, 1000, false};                          // ARGS[posX, posY, rSize, debounceTimer, state]
+//tSwitch_t tapSwitch = {10, 10, 5, 1000, false};   // ARGS[posX, posY, rSize, debounceTimer, state]
+//tSwitch_t modeSwitch = {40, 30, 5, 1000, false};  // ARGS[posX, posY, rSize, debounceTimer, state]
 
-uint8_t midiLayout[20] = {127, 63, 44};                                     // 1D Array to store incoming midi notes
-
-squareKey_t keyArray[GRID_KEYS] = {0, 0, 0, 0};                             // Array to store precompute key positions
-grid_t grid = {&keyArray[0], {0}};                                    // ARGS[blobKeyPress, lastBlobKeyPress, debounceTime, midiNotes]
+squareKey_t keyArray[GRID_KEYS] = {0, 0, 0, 0};                // Array to store precompute key positions
+int8_t keyPressed[MAX_BLOBS] = {0};                            // Array to store
+int8_t midiLayout[20] = {127, 63, 44};                         // 1D Array to store incoming midi notes
+grid_t grid = {&keyArray[0], &keyPressed[0], &midiLayout[0]};  // ARGS[blobKeyPress, lastBlobKeyPress, debounceTime, midiNotes]
 
 polar_t polarCoord[MAX_BLOBS];
 
-vSlider_t vSlider_A = {10, 15, 40, 5, 0}; // ARGS[posX, Ymin, Ymax, width, val]
-hSlider_t hSlider_A = {10, 15, 40, 5, 0}; // ARGS[posY, Xmin, Xmax, width, val]
+vSlider_t vSlider_A = {10, 15, 40, 5, 0};           // ARGS[posX, Ymin, Ymax, width, val]
+hSlider_t hSlider_A = {10, 15, 40, 5, 0};           // ARGS[posY, Xmin, Xmax, width, val]
 
 cSlider_t cSliders[C_SLIDERS] = {
-  {   6, 4,  3.8,  5, 0},    // ARGS[r, width, phiOffset, phiMax, val]
-  {13.5, 3,  3.8, 10, 0},    // ARGS[r, width, phiOffset, phiMax, val]
-  {  20, 4,  4.8,  5, 0}     // ARGS[r, width, phiOffset, phiMax, val]
+  {   6, 4,  3.8,  5, 0},                           // ARGS[r, width, phiOffset, phiMax, val]
+  {13.5, 3,  3.8, 10, 0},                           // ARGS[r, width, phiOffset, phiMax, val]
+  {  20, 4,  4.8,  5, 0}                            // ARGS[r, width, phiOffset, phiMax, val]
 };
 
 velocity_t velocityStorage[MAX_BLOBS];

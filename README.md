@@ -1,7 +1,7 @@
-# eTextile-Synthetizer 
+# eTextile-Synthesizer 
 ### Exploring music through textile
 
-![eTextile Synthetizer](https://live.staticflickr.com/65535/48916850368_dd34d00418_c_d.jpg)
+![eTextile Synthesizer](https://live.staticflickr.com/65535/48916850368_dd34d00418_c_d.jpg)
 
 ## About The project
 After setting up the **E256 eTextile matrix sensor** it is now time to use it for live electronic music performances. **eTextile-Synthesizers** are handcrafted multi-touch digital interfaces based on smart textile materials and custom electronic solutions. These eTextile-synthesizers open up new possibilities for electronic music playing. The project features a fully embedded **multitouch eTextile-Synthesizers** that combines the powerful **Teensy 4.0** MCU and its audio library with the E256 eTextile matrix sensor technology. One of the main purpose of this project is to promote an intuitive music playing as well as taking benefit of textile textures diversity to form tactile cues that guide the touch. Like the popular **Eurorack modules** all eTextile-Synthesizers can connect each other via mini-jack and share them tempo as well as notes and audio streams. Thus each eTextile-Synthesizer devices have dedicated audio functionalities to generate or filter audio signals.
@@ -14,9 +14,9 @@ After setting up the **E256 eTextile matrix sensor** it is now time to use it fo
 * **Pictures:** [flickr.com](https://www.flickr.com/photos/maurin/albums/72157673740361510/ "Share your pictures with us")
 
 ## Project content
-* **Hardware_textile:** eTextile-Synthetizer tutorial
+* **Hardware_textile:** eTextile-Synthesizer tutorial
 * **Hardware_electronic:** Open Hardware electronic parts (Made with KiCad) 
-* **Firmware:** eTextile-Synthetizer firmware (Compile with Arduino)
+* **Firmware:** eTextile-Synthesizer firmware (Compile with Arduino)
 * **Softwear:** demos applications (PureData, MaxMSP, Max4Live, etc.)
 
 ## Specifications
@@ -42,7 +42,7 @@ After setting up the **E256 eTextile matrix sensor** it is now time to use it fo
 - [MOCO17](http://moco17.movementcomputing.org/) - Music Skin: Fabric Interface for Expressive Music Control / [Paper](https://github.com/eTextile/Matrix/blob/teensy_matrix/docs/publications/MOCO17-MusicSkin.pdf)
 
 ## Copyright
-Except as otherwise noted, all files in the **eTextile-Synthetizer** project folder
+Except as otherwise noted, all files in the **eTextile-Synthesizer** project folder
 
     Copyright (c) 2014- Maurin Donneaud
 
