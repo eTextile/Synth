@@ -6,7 +6,7 @@
 ### HARDWARE_ELECTRONIC
 
 #### PCB_SCHEMATICS
-[./docs/eTextile_synth_schematics.pdf](eTextile_synth_schematics.pdf)
+Here is the last PCB schematics document : [eTextile_synth_schematics.pdf](./docs/eTextile_synth_schematics.pdf)
 
 #### FEATURES
 - Teensy 4.0 (600MHz MCU)
