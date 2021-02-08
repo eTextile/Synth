@@ -4,6 +4,10 @@
 ![eTextile-Synthetizer](https://live.staticflickr.com/65535/50866131211_85efdc979a_c_d.jpg)
 
 ### HARDWARE_ELECTRONIC
+
+#### PCB_SCHEMATICS
+[./docs/eTextile_synth_schematics.pdf](eTextile_synth_schematics.pdf)
+
 #### FEATURES
 - Teensy 4.0 (600MHz MCU)
 - eTextile-Synthetizer PCB made with **KiCad** (V5.0.*)
