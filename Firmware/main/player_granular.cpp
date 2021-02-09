@@ -15,11 +15,17 @@ void granular_player(llist_t* blobs_ptr, AudioEffectGranular* granular_ptr, uint
   AudioNoInterrupts();
   for (blob_t* blob_ptr = ITERATOR_START_FROM_HEAD(blobs_ptr); blob_ptr != NULL; blob_ptr = ITERATOR_NEXT(blob_ptr)) {
 
+    if (blob_ptr->alive != blob_ptr->lastState) {
+      float msec = blob_ptr->centroid.Y / Y_MAX; // Mapp X to buffer size
+      msec = 25.0 + (msec * 75.0);
+      granular_ptr->beginPitchShift(msec);
+    }
     if (blob_ptr->alive) {
-      float playSpeed = blob_ptr->centroid.X / X_MAX; // Mapp X to buffer size
-      float window = blob_ptr->centroid.Y / Y_MAX; // Mapp X to buffer size
-      granular_ptr->setSpeed(playSpeed);
-      granular_ptr->beginPitchShift(window);
+      float ratio = blob_ptr->centroid.X / X_MAX; // Mapp X to buffer size
+      ratio = powf(2.0, ratio * 2.0 - 1.0); // 0.5 to 2.0
+      //ratio = powf(2.0, ratio * 6.0 - 3.0); // 0.125 to 8.0 -- uncomment for far too much range!
+      granular_ptr->setSpeed(ratio);
+
     }
     else {
       granular_ptr->stop();

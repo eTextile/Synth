@@ -7,7 +7,6 @@
 #ifndef __PRESETS_H__
 #define __PRESETS_H__
 
-#include <Audio.h>                                      // https://github.com/PaulStoffregen/Audio
 #include "config.h"
 
 #include <Bounce2.h>                                    // https://github.com/thomasfredericks/Bounce2
@@ -25,12 +24,12 @@
 
 
 typedef struct preset {
-  uint8_t mode;
   int8_t minVal;
   int8_t maxVal;
   int8_t val;
   int8_t lastVal;
-  boolean toggle;
+  boolean setLed;
+  boolean update;
   boolean D1;
   boolean D2;
 } preset_t;
@@ -40,33 +39,25 @@ void SETUP_SWITCHES(Button* buttonA_ptr, Button* buttonB_ptr);
 void SETUP_LEDS(void);
 
 void update_buttons(
-  preset_t* preset_ptr,
   Button* buttonA_ptr,
   Button* buttonB_ptr,
   Encoder* encoder_ptr,
-  uint8_t* mode_ptr,
-  uint8_t* lastMode_ptr,
-  uint8_t* iter_ptr,
-  boolean* toggleSwitch_ptr,
-  elapsedMillis* ledTimer_ptr
+  preset_t* presets_ptr,
+  uint8_t* curentMode_ptr,
+  uint8_t* lastMode_ptr
 );
 
-//
-void update_preset(
-  AudioControlSGTL5000* soundCard_ptr,
-  preset_t* preset_ptr,
+void update_presets(
+  preset_t* presets_ptr,
   Encoder* encoder_ptr,
-  boolean* calibrate_ptr,
-  boolean* save_ptr,
-  elapsedMillis* timer_ptr,
+  uint8_t* curentMode_ptr,
   uint8_t* interpThreshold_ptr
 );
 
 void update_leds(
   preset_t* preset_ptr,
   uint8_t* curentMode_ptr,
-  uint8_t* lastMode_ptr,
-  elapsedMillis* timer_ptr
+  uint8_t* lastMode_ptr
 );
 
 void preset_load(preset_t* preset_ptr, boolean* state_ptr); // TODO

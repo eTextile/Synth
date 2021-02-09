@@ -37,40 +37,51 @@ void SETUP_ADC(ADC *adc) {
 
 // Columns are analog INPUT_PINS reded two by two
 // Rows are digital OUTPUT_PINS supplyed one by one sequentially with 3.3V
-void calibrate_matrix(ADC* adc_ptr, ADC::Sync_result* result_ptr, uint8_t* ofsetArray_ptr, uint8_t* shiftOutArray_ptr) {
+void calibrate_matrix(
+  uint8_t* currentMode,
+  uint8_t* lastMode,
+  ADC* adc_ptr,
+  ADC::Sync_result*
+  result_ptr, uint8_t*
+  offsetArray_ptr,
+  uint8_t* shiftOutArray_ptr
+) {
 
-  uint16_t setRows;
+  if (currentMode == CALIBRATE) {
+    uint16_t setRows;
 
-  for (uint8_t i = 0; i < CALIBRATION_CYCLES; i++) {
-
-    for (uint8_t col = 0; col < DUAL_COLS; col++) {         // ANNALOG_PINS [0-7] with [8-15]
+    for (uint8_t i = 0; i < CALIBRATION_CYCLES; i++) {
+      for (uint8_t col = 0; col < DUAL_COLS; col++) {         // ANNALOG_PINS [0-7] with [8-15]
 #if SET_ORIGIN_Y
-      setRows = 0x1;                                        // Reset to [0000 0000 0000 0001]
+        setRows = 0x1;                                        // Reset to [0000 0000 0000 0001]
 #else
-      setRows = 0x8000;                                     // Reset to [1000 0000 0000 0000]
+        setRows = 0x8000;                                     // Reset to [1000 0000 0000 0000]
 #endif
-      for (uint8_t row = 0; row < RAW_ROWS; row++) {        // DIGITAL_PINS [0-15]
-        digitalWrite(SS1_PIN, LOW);                         // Set the Slave Select Pin LOW
-        //SPI1.transfer16(setRows);                         // Set up the two OUTPUT shift registers (FIXME)
-        SPI1.transfer((uint8_t)(setRows & 0xFF));           // Shift out one byte to setup one OUTPUT shift register
-        SPI1.transfer((uint8_t)((setRows >> 8) & 0xFF));    // Shift out one byte to setup one OUTPUT shift register
-        SPI1.transfer(shiftOutArray_ptr[col]);              // Shift out one byte that setup the two INPUT 8:1 analog multiplexers
-        digitalWrite(SS1_PIN, HIGH);                        // Set the Slave Select Pin HIGH
-        uint8_t indexA = row * RAW_COLS + col;              // Compute 1D array indexA
-        uint8_t indexB = indexA + DUAL_COLS;                // Compute 1D array indexB
-        delayMicroseconds(15);
-        *result_ptr = adc_ptr->analogSynchronizedRead(ADC0_PIN, ADC1_PIN);
-        uint8_t ADC0_val = result_ptr->result_adc0;
-        if (ADC0_val > ofsetArray_ptr[indexA]) ofsetArray_ptr[indexA] = ADC0_val;
-        uint8_t ADC1_val = result_ptr->result_adc1;
-        if (ADC1_val > ofsetArray_ptr[indexB]) ofsetArray_ptr[indexB] = ADC1_val;
+        for (uint8_t row = 0; row < RAW_ROWS; row++) {        // DIGITAL_PINS [0-15]
+          digitalWrite(SS1_PIN, LOW);                         // Set the Slave Select Pin LOW
+          //SPI1.transfer16(setRows);                         // Set up the two OUTPUT shift registers (FIXME)
+          SPI1.transfer((uint8_t)(setRows & 0xFF));           // Shift out one byte to setup one OUTPUT shift register
+          SPI1.transfer((uint8_t)((setRows >> 8) & 0xFF));    // Shift out one byte to setup one OUTPUT shift register
+          SPI1.transfer(shiftOutArray_ptr[col]);              // Shift out one byte that setup the two INPUT 8:1 analog multiplexers
+          digitalWrite(SS1_PIN, HIGH);                        // Set the Slave Select Pin HIGH
+          uint8_t indexA = row * RAW_COLS + col;              // Compute 1D array indexA
+          uint8_t indexB = indexA + DUAL_COLS;                // Compute 1D array indexB
+          delayMicroseconds(15);
+          *result_ptr = adc_ptr->analogSynchronizedRead(ADC0_PIN, ADC1_PIN);
+          uint8_t ADC0_val = result_ptr->result_adc0;
+          if (ADC0_val > offsetArray_ptr[indexA]) offsetArray_ptr[indexA] = ADC0_val;
+          uint8_t ADC1_val = result_ptr->result_adc1;
+          if (ADC1_val > offsetArray_ptr[indexB]) offsetArray_ptr[indexB] = ADC1_val;
 #if SET_ORIGIN_Y
-        setRows = setRows << 1;
+          setRows = setRows << 1;
 #else
-        setRows = setRows >> 1;
+          setRows = setRows >> 1;
 #endif
+        }
       }
     }
+    currentMode = lastMode;
+    lastMode = CALIBRATE;
   }
 }
 

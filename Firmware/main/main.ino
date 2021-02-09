@@ -146,8 +146,8 @@ AudioConnection                   patchCord2(granular, 0, i2s_OUT, 0);
 AudioConnection                   patchCord3(granular, 0, i2s_OUT, 1);
 #endif
 
-uint8_t lastMode = CALIBRATE;
 uint8_t currentMode = LINE_OUT;  // Initialise currentMode with the DEFAULT_MODE
+uint8_t lastMode = CALIBRATE;
 
 #if DEBUG_FPS
 elapsedMillis curentMillisFps;
@@ -158,22 +158,17 @@ unsigned int fps = 0;
 elapsedMillis timerDebug;
 #endif
 
-boolean toggleSwitch = false;
 boolean loadPreset = true;
 boolean savePreset = false;
-boolean calibrateMatrix = true;
-
-elapsedMillis ledTimer;
-uint8_t ledIterations = 0;
 
 preset_t presets[7] = {
-  {LINE_OUT,  13, 31, 29, 29, true, LOW,  LOW },
-  {SIG_IN,     0, 15, 0,  0,  true, HIGH, LOW },
-  {SIG_OUT,    0, 31, 17, 17, true, LOW,  HIGH},
-  {THRESHOLD,  1, 60, 10, 10, true, HIGH, HIGH},
-  {MIDI_LEARN, 1, 6,  1,  1,  true, NULL, NULL},
-  {CALIBRATE,  0, 0,  0,  0,  true, NULL, NULL},
-  {SAVE,       0, 0,  0,  0,  true, NULL, NULL}
+  {13, 31, 29, 29, true, false, LOW,  LOW }, // LINE_OUT
+  { 0, 15, 0,  0,  true, false, HIGH, LOW }, // SIG_IN
+  { 0, 31, 17, 17, true, false, LOW,  HIGH}, // SIG_OUT
+  { 1, 60, 10, 10, true, false, HIGH, HIGH}, // THRESHOLD
+  { 1, 6,  1,  1,  true, false, NULL, NULL}, // MIDI_LEARN
+  { 0, 0,  0,  0,  true, false, NULL, NULL}, // CALIBRATE
+  { 0, 0,  0,  0,  true, false, NULL, NULL}  // SAVE
 };
 
 uint8_t interpThreshold = 10;
@@ -272,43 +267,35 @@ void loop() {
   if (savePreset) preset_save(&presets[0], &savePreset);
 
   update_buttons(
-    &presets[0],
     &BUTTON_L,
     &BUTTON_R,
     &encoder,
+    &presets[0],
     &currentMode,
-    &lastMode,
-    &ledIterations,
-    &toggleSwitch,
-    &ledTimer
+    &lastMode
   );
 
-  update_preset(
-    &sgtl5000,
-    &presets[currentMode],
+  update_presets(
+    &presets[0],
     &encoder,
-    &calibrateMatrix,
-    &savePreset,
-    &ledTimer,
+    &currentMode,
     &interpThreshold
   );
 
   update_leds(
-    &presets[currentMode],
+    &presets[0],
     &currentMode,
-    &lastMode,
-    &ledTimer
+    &lastMode
   );
 
-  if (calibrateMatrix) {
-    calibrateMatrix = false;
-    calibrate_matrix(
-      adc,
-      &result,
-      &offsetArray[0],
-      &setDualRows[0]
-    );
-  }
+  calibrate_matrix(
+    currentMode,
+    &lastMode,
+    adc,
+    &result,
+    &offsetArray[0],
+    &setDualRows[0]
+  );
 
   scan_matrix(
     adc,

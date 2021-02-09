@@ -8,9 +8,11 @@
 #define __SCAN_H__
 
 #include "config.h"
+#include "presets.h"
 #include "blob.h"
 
 typedef struct image image_t;       // Forward declaration
+typedef struct preset preset_t;     // Forward declaration
 
 #include <SPI.h>                    // https://github.com/PaulStoffregen/SPI
 //#include "../library/SPI/SPI.h"   // https://github.com/PaulStoffregen/SPI
@@ -23,9 +25,11 @@ void SETUP_SPI(void);
 void SETUP_ADC(ADC* adc_ptr);
 
 void calibrate_matrix(
+  uint8_t* currentMode,
+  uint8_t* lastMode,
   ADC* adc_ptr,
   ADC::Sync_result* result_ptr,
-  uint8_t* ofsetArray_ptr,
+  uint8_t* offsetArray_ptr,
   uint8_t* shiftOutArray_ptr
 );
 
