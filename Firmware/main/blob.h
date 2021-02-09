@@ -121,8 +121,9 @@ typedef enum {
 
 // What about the TUIO 1.1 Protocol Specification
 // http://www.tuio.org/?specification
+// Will use MIDI MPE next ;-)
 typedef struct blob {
-  unsigned long timeTag;
+  uint32_t timeTag;
   uint16_t pixels;
   uint8_t UID;
   uint8_t alive;

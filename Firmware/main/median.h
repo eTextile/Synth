@@ -22,9 +22,9 @@ typedef struct blob blob_t;    // Forward declaration
 
 typedef struct {
   boolean init;             // Init flag
-  float val[TIME_WINDOW];   // Array of values
-  float sort[TIME_WINDOW];  // Array of order numbers
-  int index;                // Current index of the ring storage
+  float val[TIME_WINDOW];   // Input values Array
+  float sort[TIME_WINDOW];  // Sorted values Array
+  int index;                // Ring storage current index
 } median_t;
 
 void median(llist_t* blobs_ptr, median_t* storage_ptr);

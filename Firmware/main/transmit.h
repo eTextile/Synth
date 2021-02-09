@@ -21,7 +21,7 @@
 #include <OSCMessage.h>             // https://github.com/CNMAT/OSC
 #include <OSCBundle.h>              // https://github.com/CNMAT/OSC
 #include <SLIPEncodedUSBSerial.h>   // https://github.com/CNMAT/OSC
-SLIPEncodedUSBSerial SLIPSerial(thisBoardsSerialUSB); // FIXME
+
 #endif
 
 typedef struct preset preset_t; // Forward declaration

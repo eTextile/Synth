@@ -4,16 +4,25 @@
   Copyright (c) 2014- Maurin Donneaud <maurin@etextile.org>
   This work is licensed under Creative Commons Attribution-ShareAlike 4.0 International license, see the LICENSE file for details.
 */
+#include <Audio.h>              // https://github.com/PaulStoffregen/Audio
+#include <Wire.h>               // https://github.com/PaulStoffregen/Wire
+#include <SPI.h>                // https://github.com/PaulStoffregen/SPI
+#include <SD.h>                 // https://github.com/PaulStoffregen/SD
+#include <SerialFlash.h>        // https://github.com/PaulStoffregen/SerialFlash
 
 #include "config.h"
 #include "presets.h"
 #include "scan.h"
 #include "interp.h"
 #include "blob.h"
-#include "mapping.h"
-#include "audio.h"
-#include "transmit.h"
 #include "median.h"
+#include "transmit.h"
+#include "mapping.h"
+
+#include "soundCard.h"
+#include "player_granular.h"
+#include "player_synth.h"
+#include "player_raw.h"
 
 // Array to store all parameters used to configure the two 8:1 analog multiplexeurs
 // Each byte |ENA|A|B|C|ENA|A|B|C|
@@ -25,19 +34,16 @@ uint8_t setDualRows[DUAL_COLS] = {
 #endif
 };
 
-uint8_t offsetArray[RAW_FRAME] = {0};             // 1D Array to store smallest values
-uint8_t frameArray[RAW_FRAME] = {0};              // 1D Array to store ofseted analog input values
+uint8_t offsetArray[RAW_FRAME] = {0};        // 1D Array to store E256 smallest values
+uint8_t frameArray[RAW_FRAME] = {0};         // 1D Array to store E256 ofseted analog input values
+uint8_t bitmapArray[NEW_FRAME] = {0};        // 1D Array to store E256 binary values (16*16) array containing (64*64) values
+uint8_t interpFrameArray[NEW_FRAME] = {0};   // 1D Array to store E256 bilinear interpolated values
+xylr_t lifoArray[LIFO_MAX_NODES] = {0};      // 1D Array to store E256 lifo nodes
+blob_t blobArray[MAX_NODES] = {0};           // 1D Array to store E256 blobs
 
-uint8_t bitmapArray[NEW_FRAME] = {0};             // 1D Array to store binary values (16*16) array containing (64*64) values
-uint8_t interpFrameArray[NEW_FRAME] = {0};        // 1D Array to store bilinear interpolated values
-
-xylr_t lifoArray[LIFO_MAX_NODES] = {0};           // 1D Array to store lifo nodes
-
-blob_t blobArray[MAX_NODES] = {0};                // 1D Array to store all blobs
-
-image_t  inputFrame;            // Input frame values
-interp_t interp;                //
-image_t  interpolatedFrame;     //
+image_t  inputFrame;            // Input frame values structure
+interp_t interp;                // Interpolation parameters structure
+image_t  interpolatedFrame;     // Interpolated frame structure
 image_t  bitmap;                // Used by Scanline Flood Fill algorithm / SFF
 lifo_t   lifo_stack;            // Lifo free nodes stack
 lifo_t   lifo;                  // Lifo stack
@@ -53,10 +59,15 @@ Button BUTTON_R = Button();
 ADC* adc = new ADC();           // ADC object
 ADC::Sync_result result;        // Store ADC_0 & ADC_1
 
+AudioInputI2S                     i2s_IN;
+AudioOutputI2S                    i2s_OUT;
 AudioControlSGTL5000              sgtl5000;
 
+#if RAW_PLAYER
 AudioPlaySerialflashRaw           playFlashRaw;
+#endif
 
+#if SYNYH_PLAYER
 AudioSynthWaveform                wf_1;
 AudioSynthWaveform                wf_2;
 AudioSynthWaveform                wf_3;
@@ -84,8 +95,6 @@ AudioEffectFade                   fade_8;
 AudioMixer4                       mix_1;
 AudioMixer4                       mix_2;
 AudioMixer4                       mix_3;
-
-AudioOutputI2S                    i2s;
 
 AudioConnection                   patchCord1(wf_1, fm_1);
 AudioConnection                   patchCord2(wf_2, fm_2);
@@ -115,8 +124,8 @@ AudioConnection                   patchCord24(fade_8, 0, mix_2, 3);
 AudioConnection                   patchCord25(mix_1, 0, mix_3, 0);
 AudioConnection                   patchCord26(mix_2, 0, mix_3, 1);
 AudioConnection                   patchCord27(playFlashRaw, 0, mix_3, 2);
-AudioConnection                   patchCord28(mix_3, 0, i2s, 0);
-AudioConnection                   patchCord29(mix_3, 0, i2s, 1);
+AudioConnection                   patchCord28(mix_3, 0, i2s_OUT, 0);
+AudioConnection                   patchCord29(mix_3, 0, i2s_OUT, 1);
 
 synth_t allSynth[8] = {
   {&wf_1, &fm_1, &fade_1, &mix_1, 0},
@@ -128,6 +137,14 @@ synth_t allSynth[8] = {
   {&wf_7, &fm_7, &fade_7, &mix_2, 0},
   {&wf_8, &fm_8, &fade_8, &mix_2, 0}
 };
+#endif
+
+#if GRANULAR_PLAYER
+AudioEffectGranular               granular;
+AudioConnection                   patchCord1(i2s_IN, 0, granular, 0);
+AudioConnection                   patchCord2(granular, 0, i2s_OUT, 0);
+AudioConnection                   patchCord3(granular, 0, i2s_OUT, 1);
+#endif
 
 uint8_t lastMode = CALIBRATE;
 uint8_t currentMode = LINE_OUT;  // Initialise currentMode with the DEFAULT_MODE
@@ -172,29 +189,31 @@ median_t medianStorage[MAX_BLOBS] {
   {true, {0}, {0}, 0}
 };
 
-// Testing mapping fonctions
+// MAPPING
 //tSwitch_t tapSwitch = {10, 10, 5, 1000, false};   // ARGS[posX, posY, rSize, debounceTimer, state]
 //tSwitch_t modeSwitch = {40, 30, 5, 1000, false};  // ARGS[posX, posY, rSize, debounceTimer, state]
 
-squareKey_t keyArray[GRID_KEYS] = {0, 0, 0, 0};                // Array to store precompute key positions
-int8_t keyPressed[MAX_BLOBS] = {0};                            // Array to store
-int8_t midiLayout[20] = {127, 63, 44};                         // 1D Array to store incoming midi notes
-grid_t grid = {&keyArray[0], &keyPressed[0], &midiLayout[0]};  // ARGS[blobKeyPress, lastBlobKeyPress, debounceTime, midiNotes]
+squareKey_t keyArray[GRID_KEYS] = {0, 0, 0, 0};               // Array to store pre-compute key positions
+int8_t keyPressed[MAX_BLOBS] = {0};                           // Array to store
+int8_t midiIN[20] = {127, 63, 44};                            // 1D Array to store incoming midi notes
+grid_t grid = {&keyArray[0], &keyPressed[0], &midiIN[0]};     // ARGS[blobKeyPress, lastBlobKeyPress, debounceTime, midiNotes]
 
 polar_t polarCoord[MAX_BLOBS];
 
-vSlider_t vSlider_A = {10, 15, 40, 5, 0};           // ARGS[posX, Ymin, Ymax, width, val]
-hSlider_t hSlider_A = {10, 15, 40, 5, 0};           // ARGS[posY, Xmin, Xmax, width, val]
+vSlider_t vSlider_A = {10, 15, 40, 5, 0};        // ARGS[posX, Ymin, Ymax, width, val]
+hSlider_t hSlider_A = {10, 15, 40, 5, 0};        // ARGS[posY, Xmin, Xmax, width, val]
 
 cSlider_t cSliders[C_SLIDERS] = {
-  {   6, 4,  3.8,  5, 0},                           // ARGS[r, width, phiOffset, phiMax, val]
-  {13.5, 3,  3.8, 10, 0},                           // ARGS[r, width, phiOffset, phiMax, val]
-  {  20, 4,  4.8,  5, 0}                            // ARGS[r, width, phiOffset, phiMax, val]
+  {   6, 4,  3.8,  5, 0},                        // ARGS[r, width, phiOffset, phiMax, val]
+  {13.5, 3,  3.8, 10, 0},                        // ARGS[r, width, phiOffset, phiMax, val]
+  {  20, 4,  4.8,  5, 0}                         // ARGS[r, width, phiOffset, phiMax, val]
 };
 
 velocity_t velocityStorage[MAX_BLOBS];
 
-ccPesets_t ccPesets = {NULL, BD, 44, 1, 0}; //ARGS[blobID, [BX,BY,BW,BH,BD], cChange, midiChannel, Val]
+ccPesets_t ccPesets = {NULL, BD, 44, 1, 0};      //ARGS[blobID, [BX,BY,BW,BH,BD], cChange, midiChannel, Val]
+
+int16_t granular_buffer[GRANULAR_BUFFER_SIZE] = {0};  //
 
 void setup() {
 
@@ -206,13 +225,6 @@ void setup() {
   SETUP_SWITCHES(&BUTTON_L, &BUTTON_R);
   SETUP_SPI();
   SETUP_ADC(adc);
-
-  SETUP_DAC(
-    &sgtl5000,
-    &presets[0],
-    &allSynth[0]
-  );
-
   SETUP_INTERP(
     &inputFrame,          // image_t*
     &frameArray[0],       // uint8_t*
@@ -220,7 +232,6 @@ void setup() {
     &interpFrameArray[0], // uint8_t*
     &interp               // interp_t*
   );
-
   SETUP_BLOB(
     &inputFrame,          // image_t*
     &bitmap,              // image_t*
@@ -246,6 +257,10 @@ void setup() {
   SETUP_MIDI_HARDWARE();
 #endif
 
+  SETUP_SOUND_CARD(&sgtl5000, &presets[0]);
+  //SETUP_SYNTH(&sgtl5000, &allSynth[0]);
+  SETUP_FLASH_PLAYER();
+  SETUP_GRANULAR(&granular, &granular_buffer[0]);
   SETUP_GRID_LAYOUT(&keyArray[0]);
 
 }
@@ -279,8 +294,6 @@ void loop() {
   );
 
   update_leds(
-    &sgtl5000,
-    &playFlashRaw,
     &presets[currentMode],
     &currentMode,
     &lastMode,
@@ -383,18 +396,24 @@ void loop() {
   //boolean togSwitchVal = toggle(&outputBlobs, &modeSwitch);   // ARGS[llist_ptr, switch_ptr]
   //boolean tapSwitchVal = trigger(&outputBlobs, &tapSwitch);   // ARGS[llist_ptr, switch_ptr]
 
-#if STANDALONE_SYNTH
-  make_noise(
-    &sgtl5000,
-    &outputBlobs,
-    &allSynth[0]
-  );
+#if SYNTH_PLAYER
+  synth_player(&outputBlobs, &allSynth[0]);
+#endif
+
+#if GRANULAR_PLAYER
+  granular_player(&outputBlobs, &granular, &granular_buffer[0]);
+#endif
+
+#if RAW_PLAYER
+  play_raw(&outputBlobs, &playFlashRaw);
 #endif
 
 #if DEBUG_FPS
   if (curentMillisFps >= 1000) {
     curentMillisFps = 0;
-    Serial.printf("\nFPS : %d CPU : %f", fps, AudioProcessorUsageMax());
+    Serial.printf("\nFPS:%d\tCPU:%f\tMEM:%f", fps, AudioProcessorUsageMax(), AudioMemoryUsageMax());
+    AudioProcessorUsageMaxReset();
+    AudioMemoryUsageMaxReset();
     fps = 0;
   }
   fps++;

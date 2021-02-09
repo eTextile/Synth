@@ -426,3 +426,13 @@ void tapTempo(tSwitch_t* tSwitch_ptr, uint8_t* tempo_ptr) {
 // TODO
 void seq(tSwitch_t* tSwitch_ptr, seq_t * seq_ptr) {
 }
+
+void arpeggiator(int8_t* keyPressed) {
+
+  static int8_t i = 0;
+  if (keyPressed[i] != -1) {
+  }
+}
+
+void stepSequencer() {
+}

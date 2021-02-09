@@ -7,8 +7,8 @@
 #ifndef __PRESETS_H__
 #define __PRESETS_H__
 
+#include <Audio.h>                                      // https://github.com/PaulStoffregen/Audio
 #include "config.h"
-#include "audio.h"
 
 #include <Bounce2.h>                                    // https://github.com/thomasfredericks/Bounce2
 //#include "../library/Bounce2/src/Bounce2.h"           // https://github.com/thomasfredericks/Bounce2 (FIXME)
@@ -23,8 +23,6 @@
 #include <elapsedMillis.h>                              // https://github.com/pfeerick/elapsedMillis
 //#include "../library/elapsedMillis/elapsedMillis.h"   // https://github.com/pfeerick/elapsedMillis (FIXME)
 
-typedef struct AudioControlSGTL5000 AudioControlSGTL5000_t;        // Forward declaration
-typedef struct AudioPlaySerialflashRaw AudioPlaySerialflashRaw_t;  // Forward declaration
 
 typedef struct preset {
   uint8_t mode;
@@ -55,7 +53,7 @@ void update_buttons(
 
 //
 void update_preset(
-  AudioControlSGTL5000* dac_ptr,
+  AudioControlSGTL5000* soundCard_ptr,
   preset_t* preset_ptr,
   Encoder* encoder_ptr,
   boolean* calibrate_ptr,
@@ -65,8 +63,6 @@ void update_preset(
 );
 
 void update_leds(
-  AudioControlSGTL5000* dac_ptr,
-  AudioPlaySerialflashRaw* player_ptr,
   preset_t* preset_ptr,
   uint8_t* curentMode_ptr,
   uint8_t* lastMode_ptr,

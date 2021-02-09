@@ -16,7 +16,7 @@ typedef struct llist {
   blob_t* head_ptr;
   blob_t* tail_ptr;
   uint8_t max_nodes;
-  int8_t index; // If no element in the linked list, index is -1
+  int8_t index; // If linked list umpty: index == -1
 } llist_t;
 
 ////////////// Linked list - Fonction prototypes //////////////

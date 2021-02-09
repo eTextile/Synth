@@ -33,7 +33,7 @@ typedef struct tSwitch {
   uint8_t posX;
   uint8_t posY;
   uint8_t rSize; // width/2 and height/2
-  unsigned long timer;
+  uint32_t timer;
   boolean state;
 } tSwitch_t;
 
@@ -111,5 +111,8 @@ void getVelocity(llist_t* blobs_ptr, velocity_t* velocity_ptr);
 
 void tapTempo(tSwitch_t* tSwitch_ptr, cSlider_t* slider_ptr); // TODO
 void seq(tSwitch_t* tSwitch_ptr, seq_t* seq_ptr); // TODO
+
+void arpeggiator(int8_t* keyPressed); // TODO
+void stepSequencer(); // TODO
 
 #endif /*__MAPPING_H__*/

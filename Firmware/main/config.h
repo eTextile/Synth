@@ -12,18 +12,21 @@
 //#if defined(USB_SERIAL)
 //#if defined(USB_MIDI)
 
-#define ETEXTILE_Synthesizer   "1.0.0"
+#define ETEXTILE_SYNTHESIZER   "1.0.0"
 
-#define STANDALONE_SYNTH        0 // [0:1] Set the eTextile-Synthesizer as STANDALONE divice
 #define MIDI_USB                0 // [0:1] Set the eTextile-Synthesizer as USB MIDI divice
-#define MIDI_HARDWARE           1 // [0:1] Set the eTextile-Synthesizer as MIDI I/O divice
+#define MIDI_HARDWARE           0 // [0:1] Set the eTextile-Synthesizer as MIDI I/O divice
 #define SLIP_OSC                0 // [0:1] Set the eTextile-Synthesizer as SLIP_OSC divice
+
+#define SYNTH_PLAYER            0 // [0:1] Set the eTextile-Synthesizer as STANDALONE divice
+#define GRANULAR_PLAYER         1 // [0:1] Set the eTextile-Synthesizer as STANDALONE divice
+#define RAW_PLAYER              0 // [0:1] Set the eTextile-Synthesizer as STANDALONE divice
 
 #define MAX_BLOBS               8 // [1:8] Set how many blobs can be tracked at the same time
 #define MAX_SYNTH               8 // [1:8] Set how many synthesizers can play at the same time
 
 // Arduino serial monitor
-#define DEBUG_FPS               0 // [0:1] Print Frames Per Second
+#define DEBUG_FPS               1 // [0:1] Print Frames Per Second
 #define DEBUG_ENCODER           0 // [0:1] Print encoder value 
 #define DEBUG_BUTTONS           0 // [0:1] Print buttons states
 #define DEBUG_ADC               0 // [0:1] Print 16x16 Analog raw values
@@ -120,5 +123,7 @@
 #define SAVE_LED_TIMEON         20
 #define SAVE_LED_TIMEOFF        50
 #define SAVE_LED_ITER           10
+
+#define GRANULAR_BUFFER_SIZE    6000
 
 #endif /*__CONFIG_H__*/

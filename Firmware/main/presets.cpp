@@ -92,7 +92,7 @@ void update_buttons(
 
 //
 void update_preset(
-  AudioControlSGTL5000* dac_ptr,
+  AudioControlSGTL5000* soundCard_ptr,
   preset_t* preset_ptr,
   Encoder* encoder_ptr,
   boolean* calibrate_ptr,
@@ -108,12 +108,10 @@ void update_preset(
     // HIGHEST level is 13 (3.16 Volts p-p)
     case LINE_OUT:
       if (setLevel(preset_ptr, encoder_ptr)) {
-#if DEBUG_ENCODER
         uint8_t val = abs((preset_ptr->val - preset_ptr->minVal) - (preset_ptr->maxVal - preset_ptr->minVal)) + preset_ptr->minVal;
-        dac_ptr->dacVolume(val);
+        soundCard_ptr->dacVolume(val);
+#if DEBUG_ENCODER
         Serial.printf("\nLINE_OUT : %d", val);
-#else
-        dac_ptr->dacVolume(abs((preset_ptr->val - preset_ptr->minVal) - (preset_ptr->maxVal - preset_ptr->minVal)) + preset_ptr->minVal);
 #endif
       }
       break;
@@ -124,12 +122,10 @@ void update_preset(
     // HIGHEST level is 0 (3.12 Volts p-p)
     case SIG_IN:
       if (setLevel(preset_ptr, encoder_ptr)) {
-#if DEBUG_ENCODER
         uint8_t val = abs((preset_ptr->val - preset_ptr->minVal) - (preset_ptr->maxVal - preset_ptr->minVal)) + preset_ptr->minVal;
-        dac_ptr->lineInLevel(val);
+        soundCard_ptr->lineInLevel(val);
+#if DEBUG_ENCODER
         Serial.printf("\nSIG_IN : %d", val);
-#else
-        dac_ptr->lineInLevel(abs((preset_ptr->val - preset_ptr->minVal) - (preset_ptr->maxVal - preset_ptr->minVal)) + preset_ptr->minVal);
 #endif
       }
       break;
@@ -140,12 +136,10 @@ void update_preset(
     // HIGHEST level is 13
     case SIG_OUT:
       if (setLevel(preset_ptr, encoder_ptr)) {
-#if DEBUG_ENCODER
         uint8_t val = abs((preset_ptr->val - preset_ptr->minVal) - (preset_ptr->maxVal - preset_ptr->minVal)) + preset_ptr->minVal;
-        dac_ptr->lineOutLevel(val);
+        soundCard_ptr->lineOutLevel(val);
+#if DEBUG_ENCODER
         Serial.printf("\nSIG_OUT : %d", val);
-#else
-        dac_ptr->lineOutLevel(abs((preset_ptr->val - preset_ptr->minVal) - (preset_ptr->maxVal - preset_ptr->minVal)) + preset_ptr->minVal);
 #endif
       }
       break;
@@ -199,8 +193,6 @@ void update_preset(
 
 // Setup LEDs according to the mode and rotary encoder values
 void update_leds(
-  AudioControlSGTL5000* dac_ptr,
-  AudioPlaySerialflashRaw* player_ptr,
   preset_t* preset_ptr,
   uint8_t* curentMode_ptr,
   uint8_t* lastMode_ptr,
@@ -268,7 +260,6 @@ void update_leds(
         iter = 0;
         *curentMode_ptr = *lastMode_ptr;
         *lastMode_ptr = LINE_OUT;
-        player_ptr->play("A.RAW"); // TESTING
       }
       break;
 

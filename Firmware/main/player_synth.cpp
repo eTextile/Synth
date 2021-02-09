@@ -4,22 +4,10 @@
   This work is licensed under Creative Commons Attribution-ShareAlike 4.0 International license, see the LICENSE file for details.
 */
 
-#include "audio.h"
+#include "player_synth.h"
 
-void SETUP_DAC(
-  AudioControlSGTL5000* dac_ptr,
-  preset_t* presets_ptr,
-  synth_t* allSynth_ptr
-) {
-
-  AudioMemory(20);
-  dac_ptr->enable();
-  dac_ptr->inputSelect(AUDIO_INPUT_LINEIN);
-
-  dac_ptr->dacVolume(presets_ptr[LINE_OUT].val);
-  dac_ptr->lineInLevel(presets_ptr[SIG_IN].val);
-  dac_ptr->lineOutLevel(presets_ptr[SIG_OUT].val);
-
+void SETUP_SYNTH(synth_t* allSynth_ptr) {
+  AudioNoInterrupts();
   for (int i = 0; i < 8; i++) {
     allSynth_ptr[i].fade_ptr->fadeOut(0);
     allSynth_ptr[i].wf_ptr->begin(WAVEFORM_SINE);
@@ -35,37 +23,13 @@ void SETUP_DAC(
   allSynth_ptr[4].mix_ptr->gain(1, 0.25);
   allSynth_ptr[4].mix_ptr->gain(2, 0.25);
   allSynth_ptr[4].mix_ptr->gain(3, 0.25);
-
-  while (!SerialFlash.begin(6));
-}
-
-
-void set_volumes(
-  AudioControlSGTL5000* dac_ptr,
-  preset_t* presets_ptr
-) {
-
-  if (presets_ptr[LINE_OUT].val != presets_ptr[LINE_OUT].lastVal) {
-    //dac_ptr->dacVolume(presets_ptr[LINE_OUT].val); // FIXME!
-    dac_ptr->volume(presets_ptr[LINE_OUT].val);
-  }
-  if (presets_ptr[SIG_OUT].val != presets_ptr[SIG_OUT].lastVal) {
-    dac_ptr->lineOutLevel(presets_ptr[SIG_OUT].val);
-  }
-  if (presets_ptr[SIG_IN].val != presets_ptr[SIG_IN].lastVal) {
-    dac_ptr->lineInLevel(presets_ptr[SIG_IN].val);
-  }
+  AudioInterrupts();
 }
 
 /////////////////////////// MAKE NOISE FONCTION !
-void make_noise(
-  AudioControlSGTL5000* dac_ptr,
-  llist_t* blobs_ptr,
-  synth_t* allSynth_ptr
-) {
+void synth_player(llist_t* blobs_ptr, synth_t* allSynth_ptr) {
 
   AudioNoInterrupts();
-
   for (blob_t* blob_ptr = ITERATOR_START_FROM_HEAD(blobs_ptr); blob_ptr != NULL; blob_ptr = ITERATOR_NEXT(blob_ptr)) {
 
     if (blob_ptr->UID < MAX_SYNTH) {
@@ -96,17 +60,4 @@ void make_noise(
     }
   }
   AudioInterrupts();
-}
-
-void arpeggiator(int8_t* keyPressed) {
-
-static int8_t i = 0;
-
-    if (keyPressed[i] != -1) {
-      
-    }
-  }
-}
-void stepSequencer() {
-
 }

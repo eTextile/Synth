@@ -8,6 +8,7 @@
 
 #if SLIP_OSC
 void SETUP_SLIP_OSC() {
+  SLIPEncodedUSBSerial SLIPSerial(thisBoardsSerialUSB); // FIXME
   SLIPSerial.begin(BAUD_RATE); // FIXME
 }
 
