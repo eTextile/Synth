@@ -39,10 +39,10 @@ The embedded Software is implementing **image analysis algorithms** on the E256 
 - **Blob shape and movement characterisation** Blobs coordinates, size and pressure are used to play music...
 
 ### eTextile-Synthesizer / Benchmark
-  - ADC_INPUT : ... FPS
-  - ADC_INPUT / BILINEAR_INTERPOLATION : ... FPS
-  - ADC_INPUT / BILINEAR_INTERPOLATION / BLOB_TRACKING : ... FPS
-  - ADC_INPUT / BILINEAR_INTERPOLATION / BLOB_TRACKING / AUDIO : 420 FPS
+  - ADC_INPUT : 442 FPS
+  - ADC_INPUT / BILINEAR_INTERPOLATION : 420 FPS
+  - ADC_INPUT / BILINEAR_INTERPOLATION / BLOB_TRACKING : 412 FPS
+  - ADC_INPUT / BILINEAR_INTERPOLATION / BLOB_TRACKING / AUDIO : ...
 
 ## Configuring the system
   - **STANDALONE** : the eTextile-Synthesizer will act as standalone polyphonic synthesizer

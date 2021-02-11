@@ -67,7 +67,7 @@ AudioControlSGTL5000              sgtl5000;
 AudioPlaySerialflashRaw           playFlashRaw;
 #endif
 
-#if SYNYH_PLAYER
+#if SYNTH_PLAYER
 AudioSynthWaveform                wf_1;
 AudioSynthWaveform                wf_2;
 AudioSynthWaveform                wf_3;
@@ -123,7 +123,9 @@ AudioConnection                   patchCord24(fade_8, 0, mix_2, 3);
 
 AudioConnection                   patchCord25(mix_1, 0, mix_3, 0);
 AudioConnection                   patchCord26(mix_2, 0, mix_3, 1);
+#if RAW_PLAYER
 AudioConnection                   patchCord27(playFlashRaw, 0, mix_3, 2);
+#endif
 AudioConnection                   patchCord28(mix_3, 0, i2s_OUT, 0);
 AudioConnection                   patchCord29(mix_3, 0, i2s_OUT, 1);
 
@@ -146,8 +148,8 @@ AudioConnection                   patchCord2(granular, 0, i2s_OUT, 0);
 AudioConnection                   patchCord3(granular, 0, i2s_OUT, 1);
 #endif
 
-uint8_t currentMode = LINE_OUT;  // Initialise currentMode with the DEFAULT_MODE
-uint8_t lastMode = CALIBRATE;
+uint8_t currentMode = CALIBRATE;  // Init currentMode with CALIBRATE (DEFAULT_MODE)
+uint8_t lastMode = LINE_OUT;      // Init lastMode with LINE_OUT (DEFAULT_MODE)
 
 #if DEBUG_FPS
 elapsedMillis curentMillisFps;
@@ -162,13 +164,13 @@ boolean loadPreset = true;
 boolean savePreset = false;
 
 preset_t presets[7] = {
-  {13, 31, 29, 29, true, false, LOW,  LOW }, // LINE_OUT
-  { 0, 15, 0,  0,  true, false, HIGH, LOW }, // SIG_IN
-  { 0, 31, 17, 17, true, false, LOW,  HIGH}, // SIG_OUT
-  { 1, 60, 10, 10, true, false, HIGH, HIGH}, // THRESHOLD
-  { 1, 6,  1,  1,  true, false, NULL, NULL}, // MIDI_LEARN
-  { 0, 0,  0,  0,  true, false, NULL, NULL}, // CALIBRATE
-  { 0, 0,  0,  0,  true, false, NULL, NULL}  // SAVE
+  {13, 31, 29, 0, false, false, false, LOW,  LOW }, // LINE_OUT   - ARGS[minVal, maxVal, val, ledVal, setLed, updateLed, update, D1, D2]
+  { 1, 15, 12, 0, false, false, false, HIGH, LOW }, // SIG_IN     - ARGS[minVal, maxVal, val, ledVal, setLed, updateLed, update, D1, D2]
+  { 1, 31, 17, 0, false, false, false, LOW,  HIGH}, // SIG_OUT    - ARGS[minVal, maxVal, val, ledVal, setLed, updateLed, update, D1, D2]
+  { 1, 60, 10, 0, false, false, false, HIGH, HIGH}, // THRESHOLD  - ARGS[minVal, maxVal, val, ledVal, setLed, updateLed, update, D1, D2]
+  { 1, 6,  1,  0, false, false, false, NULL, NULL}, // MIDI_LEARN - ARGS[minVal, maxVal, val, ledVal, setLed, updateLed, update, D1, D2]
+  { 0, 0,  0,  0, true,  true,  true,  NULL, NULL}, // CALIBRATE  - ARGS[minVal, maxVal, val, ledVal, setLed, updateLed, update, D1, D2]
+  { 0, 0,  0,  0, false, false, false, NULL, NULL}  // SAVE       - ARGS[minVal, maxVal, val, ledVal, setLed, updateLed, update, D1, D2]
 };
 
 uint8_t interpThreshold = 10;
@@ -185,30 +187,30 @@ median_t medianStorage[MAX_BLOBS] {
 };
 
 // MAPPING
-//tSwitch_t tapSwitch = {10, 10, 5, 1000, false};   // ARGS[posX, posY, rSize, debounceTimer, state]
-//tSwitch_t modeSwitch = {40, 30, 5, 1000, false};  // ARGS[posX, posY, rSize, debounceTimer, state]
+//tSwitch_t tapSwitch = {10, 10, 5, 1000, false};         // ARGS[posX, posY, rSize, debounceTimer, state]
+//tSwitch_t modeSwitch = {40, 30, 5, 1000, false};        // ARGS[posX, posY, rSize, debounceTimer, state]
 
-squareKey_t keyArray[GRID_KEYS] = {0, 0, 0, 0};               // Array to store pre-compute key positions
-int8_t keyPressed[MAX_BLOBS] = {0};                           // Array to store
-int8_t midiIN[20] = {127, 63, 44};                            // 1D Array to store incoming midi notes
-grid_t grid = {&keyArray[0], &keyPressed[0], &midiIN[0]};     // ARGS[blobKeyPress, lastBlobKeyPress, debounceTime, midiNotes]
+squareKey_t keyArray[GRID_KEYS] = {0, 0, 0, 0};           // 1D Array of struct squareKey_t to store pre-compute key positions
+int8_t keyPressed[MAX_BLOBS] = {0};                       // 1D Array to store pressed keys
+int8_t midiIN[20] = {127, 63, 44};                        // 1D Array to store incoming midi notes
+grid_t grid = {&keyArray[0], &keyPressed[0], &midiIN[0]}; // ARGS[blobKeyPress, lastBlobKeyPress, debounceTime, midiNotes]
 
-polar_t polarCoord[MAX_BLOBS];
+polar_t polarCoord[MAX_BLOBS];                            // 1D Array of struct polar_t to store blobs polar coordinates
 
-vSlider_t vSlider_A = {10, 15, 40, 5, 0};        // ARGS[posX, Ymin, Ymax, width, val]
-hSlider_t hSlider_A = {10, 15, 40, 5, 0};        // ARGS[posY, Xmin, Xmax, width, val]
+vSlider_t vSlider_A = {10, 15, 40, 5, 0};                 // ARGS[posX, Ymin, Ymax, width, val]
+hSlider_t hSlider_A = {10, 15, 40, 5, 0};                 // ARGS[posY, Xmin, Xmax, width, val]
 
 cSlider_t cSliders[C_SLIDERS] = {
-  {   6, 4,  3.8,  5, 0},                        // ARGS[r, width, phiOffset, phiMax, val]
-  {13.5, 3,  3.8, 10, 0},                        // ARGS[r, width, phiOffset, phiMax, val]
-  {  20, 4,  4.8,  5, 0}                         // ARGS[r, width, phiOffset, phiMax, val]
+  {   6, 4,  3.8,  5, 0},                                 // ARGS[r, width, phiOffset, phiMax, val]
+  {13.5, 3,  3.8, 10, 0},                                 // ARGS[r, width, phiOffset, phiMax, val]
+  {  20, 4,  4.8,  5, 0}                                  // ARGS[r, width, phiOffset, phiMax, val]
 };
 
-velocity_t velocityStorage[MAX_BLOBS];
+velocity_t blobVelocity[MAX_BLOBS];                       // 1D Array of struct velocity_t to store blobs velocity
 
-ccPesets_t ccPesets = {NULL, BD, 44, 1, 0};      //ARGS[blobID, [BX,BY,BW,BH,BD], cChange, midiChannel, Val]
+ccPesets_t ccPesets = {NULL, BD, 44, 1, 0};               // ARGS[blobID, [BX,BY,BW,BH,BD], cChange, midiChannel, Val]
 
-int16_t granular_buffer[GRANULAR_BUFFER_SIZE] = {0};  //
+int16_t granularMemory[GRANULAR_MEMORY_SIZE] = {0};      //
 
 void setup() {
 
@@ -217,6 +219,7 @@ void setup() {
 #endif
 
   SETUP_LEDS();
+
   SETUP_SWITCHES(&BUTTON_L, &BUTTON_R);
   SETUP_SPI();
   SETUP_ADC(adc);
@@ -239,32 +242,36 @@ void setup() {
     &blobArray[0],        // blob_t*
     &outputBlobs          // list_t*
   );
-
 #if MIDI_USB
   SETUP_MIDI_USB();
 #endif
-
 #if SLIP_OSC
   SETUP_SLIP_OSC();
 #endif
-
 #if MIDI_HARDWARE
   SETUP_MIDI_HARDWARE();
 #endif
-
-  SETUP_SOUND_CARD(&sgtl5000, &presets[0]);
-  //SETUP_SYNTH(&sgtl5000, &allSynth[0]);
+#if SYNTH_PLAYER || GRANULAR_PLAYER || RAW_PLAYER
+  SETUP_SOUND_CARD(&sgtl5000);
+#endif
+#if SYNTH_PLAYER
+  SETUP_SYNTH(&allSynth[0]);
+#endif
+#if RAW_PLAYER
   SETUP_FLASH_PLAYER();
-  SETUP_GRANULAR(&granular, &granular_buffer[0]);
-  SETUP_GRID_LAYOUT(&keyArray[0]);
+#endif
+#if GRANULAR_PLAYER
+  SETUP_GRANULAR(&granular, &granularMemory[0]);
+#endif
 
+  SETUP_GRID_LAYOUT(&keyArray[0]);
 }
 
 //////////////////// LOOP
 void loop() {
 
-  if (loadPreset) preset_load(&presets[0], &loadPreset);
-  if (savePreset) preset_save(&presets[0], &savePreset);
+  //if (loadPreset) preset_load(&presets[0], &loadPreset); // TODO
+  //if (savePreset) preset_save(&presets[0], &savePreset); // TODO
 
   update_buttons(
     &BUTTON_L,
@@ -282,6 +289,12 @@ void loop() {
     &interpThreshold
   );
 
+  update_volumes(
+    &sgtl5000,
+    &presets[0],
+    &currentMode
+  );
+
   update_leds(
     &presets[0],
     &currentMode,
@@ -289,12 +302,13 @@ void loop() {
   );
 
   calibrate_matrix(
-    currentMode,
-    &lastMode,
+    &presets[0],
     adc,
     &result,
     &offsetArray[0],
-    &setDualRows[0]
+    &setDualRows[0],
+    &currentMode,
+    &lastMode
   );
 
   scan_matrix(
@@ -372,10 +386,10 @@ void loop() {
 #if MIDI_HARDWARE
   //gridLayout(&outputBlobs, &grid);                            // ARGS[llist_ptr, gridLayout_ptr]
   gridGapLayout(&outputBlobs, &grid);                           // ARGS[llist_ptr, gridLayout_ptr]
-  controlChangeMapping(&outputBlobs, &ccPesets);                // ARGS[llist_ptr, ccPesets_ptr]
+  //controlChangeMapping(&outputBlobs, &ccPesets);              // ARGS[llist_ptr, ccPesets_ptr]
 #endif
 
-  //getVelocity(&outputBlobs, &velocityStorage[0]);             // ARGS[llist_ptr, velocityStorage_ptr]
+  //getVelocity(&outputBlobs, &blobVelocity[0]);                // ARGS[llist_ptr, blobVelocity_ptr]
   //hSlider(&outputBlobs, &hSlider_A);                          // ARGS[llist_ptr, hSlider_ptr]
   //vSlider(&outputBlobs, &vSlider_A);                          // ARGS[llist_ptr, vSlider_ptr]
   //getPolarCoordinates(&outputBlobs, &polarCoord[0]);          // ARGS[llist_ptr, polar_ptr]
@@ -388,7 +402,7 @@ void loop() {
 #endif
 
 #if GRANULAR_PLAYER
-  granular_player(&outputBlobs, &granular, &granular_buffer[0]);
+  granular_player(&outputBlobs, &granular, &granularMemory[0]);
 #endif
 
 #if RAW_PLAYER

@@ -22,13 +22,13 @@
 #include <elapsedMillis.h>                              // https://github.com/pfeerick/elapsedMillis
 //#include "../library/elapsedMillis/elapsedMillis.h"   // https://github.com/pfeerick/elapsedMillis (FIXME)
 
-
 typedef struct preset {
-  int8_t minVal;
-  int8_t maxVal;
-  int8_t val;
-  int8_t lastVal;
+  uint8_t minVal;
+  uint8_t maxVal;
+  uint8_t val;
+  uint8_t ledVal;
   boolean setLed;
+  boolean updateLed;
   boolean update;
   boolean D1;
   boolean D2;

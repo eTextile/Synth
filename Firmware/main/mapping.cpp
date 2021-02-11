@@ -226,12 +226,12 @@ void gridGapLayout(llist_t* blobs_ptr, grid_t* gridLayout_ptr) {
             if (gridLayout_ptr->keyPressed[blob_ptr->UID] != -1 ) {
 #if MIDI_HARDWARE
               MIDI.sendNoteOff(gridLayout_ptr->keyPressed[blob_ptr->UID], 0, 1);          // Send NoteOFF (SEND ALL KEYS ON CHANNEL_1)
-              //Serial.printf("\nGRID_GAP\tBLOB_IN:%d\tNOTE_OFF: %d", blob_ptr->UID, gridLayout_ptr->keyPressed[blob_ptr->UID]);
+              Serial.printf("\nGRID_GAP\tBLOB_IN:%d\tNOTE_OFF: %d", blob_ptr->UID, gridLayout_ptr->keyPressed[blob_ptr->UID]);
 #endif
             }
 #if MIDI_HARDWARE
             MIDI.sendNoteOn(keyPressed, 127, 1);                                          // Send NoteON (SEND ALL KEYS ON CHANNEL_1)
-            //Serial.printf("\nGRID_GAP\tBLOB_IN:%d\t\tNOTE_ON: %d", blob_ptr->UID, keyPressed);
+            Serial.printf("\nGRID_GAP\tBLOB_IN:%d\t\tNOTE_ON: %d", blob_ptr->UID, keyPressed);
 #endif
             gridLayout_ptr->keyPressed[blob_ptr->UID] = keyPressed;                       // Save the current key position
           }
@@ -239,7 +239,7 @@ void gridGapLayout(llist_t* blobs_ptr, grid_t* gridLayout_ptr) {
         else {                                                                            // blob_ptr->alive == 0 (onRelease)
 #if MIDI_HARDWARE
           MIDI.sendNoteOff(keyPressed, 0, 1);                                             // Send NoteOFF (SAND ALL KEYS ON CHANNEL_1)
-          //Serial.printf("\nGRID_GAP\tBLOB_IN:%d\tNOTE_OFF: %d", blob_ptr->UID, keyPressed);
+          Serial.printf("\nGRID_GAP\tBLOB_IN:%d\tNOTE_OFF: %d", blob_ptr->UID, keyPressed);
 #endif
           gridLayout_ptr->keyPressed[blob_ptr->UID] = -1;                                 // Set it -1 to avoid NoteOff duplication
         }
@@ -248,7 +248,7 @@ void gridGapLayout(llist_t* blobs_ptr, grid_t* gridLayout_ptr) {
         if (!blob_ptr->alive) {
 #if MIDI_HARDWARE
           MIDI.sendNoteOff(gridLayout_ptr->keyPressed[blob_ptr->UID], 0, 1);            // Send NoteOFF (SEND ALL KEYS ON CHANNEL_1)
-          //Serial.printf("\nGRID_GAP\tBLOB_OUT:%d\tNOTE_OFF: %d", blob_ptr->UID, gridLayout_ptr->keyPressed[blob_ptr->UID]);
+          Serial.printf("\nGRID_GAP\tBLOB_OUT:%d\tNOTE_OFF: %d", blob_ptr->UID, gridLayout_ptr->keyPressed[blob_ptr->UID]);
 #endif
           gridLayout_ptr->keyPressed[blob_ptr->UID] = -1;
         }

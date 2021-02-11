@@ -15,18 +15,18 @@
 #define ETEXTILE_SYNTHESIZER   "1.0.0"
 
 #define MIDI_USB                0 // [0:1] Set the eTextile-Synthesizer as USB MIDI divice
-#define MIDI_HARDWARE           0 // [0:1] Set the eTextile-Synthesizer as MIDI I/O divice
+#define MIDI_HARDWARE           1 // [0:1] Set the eTextile-Synthesizer as MIDI I/O divice
 #define SLIP_OSC                0 // [0:1] Set the eTextile-Synthesizer as SLIP_OSC divice
 
 #define SYNTH_PLAYER            0 // [0:1] Set the eTextile-Synthesizer as STANDALONE divice
-#define GRANULAR_PLAYER         1 // [0:1] Set the eTextile-Synthesizer as STANDALONE divice
+#define GRANULAR_PLAYER         0 // [0:1] Set the eTextile-Synthesizer as STANDALONE divice
 #define RAW_PLAYER              0 // [0:1] Set the eTextile-Synthesizer as STANDALONE divice
 
 #define MAX_BLOBS               8 // [1:8] Set how many blobs can be tracked at the same time
 #define MAX_SYNTH               8 // [1:8] Set how many synthesizers can play at the same time
 
 // Arduino serial monitor
-#define DEBUG_FPS               1 // [0:1] Print Frames Per Second
+#define DEBUG_FPS               0 // [0:1] Print Frames Per Second
 #define DEBUG_ENCODER           0 // [0:1] Print encoder value 
 #define DEBUG_BUTTONS           0 // [0:1] Print buttons states
 #define DEBUG_ADC               0 // [0:1] Print 16x16 Analog raw values
@@ -84,7 +84,7 @@
 
 #define DEBOUNCE_TIME_BLOB      15
 #define DEBOUNCE_TIME_SWITCH    15
-#define DEBOUNCE_TIME_MIDI      20
+//#define DEBOUNCE_TIME_MIDI      20
 
 #define PI                      3.1415926535897932384626433832795
 
@@ -96,7 +96,7 @@
 #define X_GRID_STEP             8
 #define Y_GRID_STEP             8
 #define GRID_KEYS               (X_GRID_STEP * Y_GRID_STEP)
-#define GRID_GAP                1
+#define GRID_GAP                2
 #define KEY_SIZE                ((X_MAX - ((X_GRID_STEP + 1) * GRID_GAP)) / X_GRID_STEP)
 
 #define LINE_OUT                0
@@ -125,6 +125,6 @@
 #define SAVE_LED_TIMEOFF        50
 #define SAVE_LED_ITER           10
 
-#define GRANULAR_BUFFER_SIZE    6000
+#define GRANULAR_MEMORY_SIZE    12800
 
 #endif /*__CONFIG_H__*/

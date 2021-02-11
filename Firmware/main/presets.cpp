@@ -7,8 +7,18 @@
 #include "presets.h"
 
 void SETUP_LEDS(void) {
-  pinMode(LED_PIN_D1, OUTPUT);
-  pinMode(LED_PIN_D2, OUTPUT);
+  //pinMode(LED_PIN_D1, OUTPUT);
+  //pinMode(LED_PIN_D2, OUTPUT);
+  /*
+  for (int i = 0; i < 10; i++) {
+    digitalWrite(LED_PIN_D1, HIGH);
+    digitalWrite(LED_PIN_D2, LOW);
+    delay(40);
+    digitalWrite(LED_PIN_D1, LOW);
+    digitalWrite(LED_PIN_D2, HIGH);
+    delay(40);
+  }
+  */
 }
 
 // Hear it should not compile if you didn't install the library (Manually!)
@@ -36,12 +46,9 @@ void update_buttons(
   // ACTION : BUTTON_L short press
   // FONCTION : CALIBRATE THE SENSOR MATRIX
   if (buttonA_ptr->rose() && buttonA_ptr->previousDuration() < LONG_HOLD) {
-    pinMode(LED_PIN_D1, OUTPUT);
-    pinMode(LED_PIN_D2, OUTPUT);
     *lastMode_ptr = *curentMode_ptr;
     *curentMode_ptr = CALIBRATE;
     presets_ptr[CALIBRATE].setLed = true;
-    presets_ptr[CALIBRATE].update = true;
 #if DEBUG_BUTTONS
     Serial.printf("\nBUTTON_L : CALIBRATE : %d", *curentMode_ptr);
 #endif
@@ -50,12 +57,9 @@ void update_buttons(
   // ACTION : BUTTON_L long press
   // FONCTION : SAVE ALL PARAMETERS TO THE EEPROM MEMORY
   if (buttonA_ptr->rose() && buttonA_ptr->previousDuration() > LONG_HOLD) {
-    pinMode(LED_PIN_D1, OUTPUT);
-    pinMode(LED_PIN_D2, OUTPUT);
     *lastMode_ptr = *curentMode_ptr;
     *curentMode_ptr = SAVE;
     presets_ptr[SAVE].setLed = true;
-    presets_ptr[SAVE].update = true;
 #if DEBUG_BUTTONS
     Serial.printf("\nBUTTON_L : SAVE : %d", *curentMode_ptr);
 #endif
@@ -64,9 +68,10 @@ void update_buttons(
   // ACTION : BUTTON_R short press
   // FONCTION : SELECT_MODE
   if (buttonB_ptr->rose() && buttonB_ptr->previousDuration() < LONG_HOLD) {
-    *lastMode_ptr = *curentMode_ptr;                             // Save last Mode
-    *curentMode_ptr = (*curentMode_ptr + 1) % 4;                 // Loop into the modes
+    *lastMode_ptr = *curentMode_ptr;                // Save last Mode
+    *curentMode_ptr = (*curentMode_ptr + 1) % 4;    // Loop into the modes
     encoder_ptr->write(presets_ptr[*curentMode_ptr].val << 2);
+    presets_ptr[*curentMode_ptr].setLed = true;
 #if DEBUG_BUTTONS
     Serial.printf("\nBUTTON_R : SELECT_MODE : %d", *curentMode_ptr);
 #endif
@@ -79,6 +84,7 @@ void update_buttons(
     *lastMode_ptr = *curentMode_ptr;
     *curentMode_ptr = MIDI_LEARN;
     encoder_ptr->write(0x1);
+    presets_ptr[MIDI_LEARN].setLed = true;
 #if DEBUG_BUTTONS
     Serial.printf("\nMIDI_LEARN : %d", *curentMode_ptr);
 #endif
@@ -94,32 +100,36 @@ void update_presets(
   switch (*curentMode_ptr) {
     case LINE_OUT:
       if (setLevel(&presets_ptr[LINE_OUT], encoder_ptr)) {
-        presets_ptr[LINE_OUT].setLed = true;
+        presets_ptr[LINE_OUT].ledVal = map(presets_ptr[LINE_OUT].val, presets_ptr[LINE_OUT].minVal, presets_ptr[LINE_OUT].maxVal, 0, 255);
+        presets_ptr[LINE_OUT].updateLed = true;
         presets_ptr[LINE_OUT].update = true;
       }
       break;
     case SIG_IN:
       if (setLevel(&presets_ptr[SIG_IN], encoder_ptr)) {
-        presets_ptr[SIG_IN].setLed = true;
+        presets_ptr[SIG_IN].ledVal = map(presets_ptr[SIG_IN].val, presets_ptr[SIG_IN].minVal, presets_ptr[SIG_IN].maxVal, 0, 255);
+        presets_ptr[SIG_IN].updateLed = true;
         presets_ptr[SIG_IN].update = true;
       }
       break;
     case SIG_OUT:
       if (setLevel(&presets_ptr[SIG_OUT], encoder_ptr)) {
-        presets_ptr[SIG_OUT].setLed = true;
+        presets_ptr[SIG_OUT].ledVal = map(presets_ptr[SIG_OUT].val, presets_ptr[SIG_OUT].minVal, presets_ptr[SIG_OUT].maxVal, 0, 255);
+        presets_ptr[SIG_OUT].updateLed = true;
         presets_ptr[SIG_OUT].update = true;
       }
       break;
     case THRESHOLD:
       if (setLevel(&presets_ptr[THRESHOLD], encoder_ptr)) {
-        interpThreshold_ptr = constrain(presets_ptr[THRESHOLD].val - 5, presets_ptr[THRESHOLD].minVal, presets_ptr[THRESHOLD].maxVal);
-        presets_ptr[THRESHOLD].setLed = true;
+        *interpThreshold_ptr = constrain(presets_ptr[THRESHOLD].val - 5, presets_ptr[THRESHOLD].minVal, presets_ptr[THRESHOLD].maxVal);
+        presets_ptr[THRESHOLD].ledVal = map(presets_ptr[THRESHOLD].val, presets_ptr[THRESHOLD].minVal, presets_ptr[THRESHOLD].maxVal, 0, 255);
+        presets_ptr[THRESHOLD].updateLed = true;
         presets_ptr[THRESHOLD].update = true;
       }
       break;
     case MIDI_LEARN:
       if (setLevel(&presets_ptr[MIDI_LEARN], encoder_ptr)) {
-        presets_ptr[MIDI_LEARN].setLed = true;
+        presets_ptr[MIDI_LEARN].updateLed = true;
         presets_ptr[MIDI_LEARN].update = true;
       }
       break;
@@ -144,13 +154,13 @@ void update_leds(
         presets_ptr[LINE_OUT].setLed = false;
         pinMode(LED_PIN_D1, OUTPUT);
         pinMode(LED_PIN_D2, OUTPUT);
-        digitalWriteFast(LED_PIN_D1, presets_ptr[LINE_OUT].D1);
-        digitalWriteFast(LED_PIN_D2, presets_ptr[LINE_OUT].D2);
+        digitalWrite(LED_PIN_D1, presets_ptr[LINE_OUT].D1);
+        digitalWrite(LED_PIN_D2, presets_ptr[LINE_OUT].D2);
       }
-      else if (presets_ptr[LINE_OUT].val != presets_ptr[LINE_OUT].lastVal) {
-        uint8_t ledVal = map(presets_ptr[LINE_OUT].val, presets_ptr[LINE_OUT].minVal, presets_ptr[LINE_OUT].maxVal, 0, 255);
-        analogWrite(LED_PIN_D1, abs(ledVal - 255));
-        analogWrite(LED_PIN_D2, ledVal);
+      else if (presets_ptr[LINE_OUT].update) {
+        presets_ptr[LINE_OUT].updateLed = false;
+        analogWrite(LED_PIN_D1, presets_ptr[LINE_OUT].ledVal);
+        analogWrite(LED_PIN_D2, abs(presets_ptr[LINE_OUT].ledVal - 255));
       }
       break;
 
@@ -159,13 +169,13 @@ void update_leds(
         presets_ptr[SIG_IN].setLed = false;
         pinMode(LED_PIN_D1, OUTPUT);
         pinMode(LED_PIN_D2, OUTPUT);
-        digitalWriteFast(LED_PIN_D1, presets_ptr[SIG_IN].D1);
-        digitalWriteFast(LED_PIN_D2, presets_ptr[SIG_IN].D2);
+        digitalWrite(LED_PIN_D1, presets_ptr[SIG_IN].D1);
+        digitalWrite(LED_PIN_D2, presets_ptr[SIG_IN].D2);
       }
-      else if (presets_ptr[SIG_IN].val != presets_ptr[SIG_IN].lastVal) {
-        uint8_t ledVal = map(presets_ptr[SIG_IN].val, presets_ptr[SIG_IN].minVal, presets_ptr[SIG_IN].maxVal, 0, 255);
-        analogWrite(LED_PIN_D1, abs(ledVal - 255));
-        analogWrite(LED_PIN_D2, ledVal);
+      else if (presets_ptr[SIG_IN].updateLed) {
+        presets_ptr[SIG_IN].updateLed = false;
+        analogWrite(LED_PIN_D1, presets_ptr[SIG_IN].ledVal);
+        analogWrite(LED_PIN_D2, abs(presets_ptr[SIG_IN].ledVal - 255));
       }
       break;
 
@@ -174,13 +184,13 @@ void update_leds(
         presets_ptr[SIG_OUT].setLed = false;
         pinMode(LED_PIN_D1, OUTPUT);
         pinMode(LED_PIN_D2, OUTPUT);
-        digitalWriteFast(LED_PIN_D1, presets_ptr[SIG_OUT].D1);
-        digitalWriteFast(LED_PIN_D2, presets_ptr[SIG_OUT].D2);
+        digitalWrite(LED_PIN_D1, presets_ptr[SIG_OUT].D1);
+        digitalWrite(LED_PIN_D2, presets_ptr[SIG_OUT].D2);
       }
-      else if (presets_ptr[SIG_OUT].val != presets_ptr[SIG_OUT].lastVal) {
-        uint8_t ledVal = map(presets_ptr[SIG_OUT].val, presets_ptr[SIG_OUT].minVal, presets_ptr[SIG_OUT].maxVal, 0, 255);
-        analogWrite(LED_PIN_D1, abs(ledVal - 255));
-        analogWrite(LED_PIN_D2, ledVal);
+      else if (presets_ptr[SIG_OUT].updateLed) {
+        presets_ptr[SIG_OUT].updateLed = false;
+        analogWrite(LED_PIN_D1, presets_ptr[SIG_OUT].ledVal);
+        analogWrite(LED_PIN_D2, abs(presets_ptr[SIG_OUT].ledVal - 255));
       }
       break;
 
@@ -189,84 +199,92 @@ void update_leds(
         presets_ptr[THRESHOLD].setLed = false;
         pinMode(LED_PIN_D1, OUTPUT);
         pinMode(LED_PIN_D2, OUTPUT);
-        digitalWriteFast(LED_PIN_D1, presets_ptr[THRESHOLD].D1);
-        digitalWriteFast(LED_PIN_D2, presets_ptr[THRESHOLD].D2);
+        digitalWrite(LED_PIN_D1, presets_ptr[THRESHOLD].D1);
+        digitalWrite(LED_PIN_D2, presets_ptr[THRESHOLD].D2);
       }
-      else if (presets_ptr[THRESHOLD].val != presets_ptr[THRESHOLD].lastVal) {
-        uint8_t ledVal = map(presets_ptr[THRESHOLD].val, presets_ptr[THRESHOLD].minVal, presets_ptr[THRESHOLD].maxVal, 0, 255);
-        analogWrite(LED_PIN_D1, abs(ledVal - 255));
-        analogWrite(LED_PIN_D2, ledVal);
+      else if (presets_ptr[THRESHOLD].updateLed) {
+        presets_ptr[THRESHOLD].updateLed = false;
+        analogWrite(LED_PIN_D1, presets_ptr[THRESHOLD].ledVal);
+        analogWrite(LED_PIN_D2, abs(presets_ptr[THRESHOLD].ledVal - 255));
       }
       break;
 
-    case MIDI_LEARN:
-      // LEDs : alternating blink
-      if (millis() - timer < MIDI_LEARN_LED_TIMEON && presets_ptr[MIDI_LEARN].setLed == true) {
+    case MIDI_LEARN: // LEDs : alternating blink
+      if (presets_ptr[MIDI_LEARN].setLed == true) {
         presets_ptr[MIDI_LEARN].setLed = false;
-        digitalWriteFast(LED_PIN_D1, HIGH);
-        digitalWriteFast(LED_PIN_D2, LOW);
+        pinMode(LED_PIN_D1, OUTPUT);
+        pinMode(LED_PIN_D2, OUTPUT);
+        timer = millis();
       }
-      else if (millis() - timer > MIDI_LEARN_LED_TIMEON && presets_ptr[MIDI_LEARN].setLed == false) {
-        presets_ptr[MIDI_LEARN].setLed = true;
-        digitalWriteFast(LED_PIN_D1, LOW);
-        digitalWriteFast(LED_PIN_D2, HIGH);
+      else if (millis() - timer < MIDI_LEARN_LED_TIMEON && presets_ptr[MIDI_LEARN].updateLed == true) {
+        presets_ptr[MIDI_LEARN].updateLed = false;
+        digitalWrite(LED_PIN_D1, HIGH);
+        digitalWrite(LED_PIN_D2, LOW);
+      }
+      else if (millis() - timer > MIDI_LEARN_LED_TIMEON && presets_ptr[MIDI_LEARN].updateLed == false) {
+        presets_ptr[MIDI_LEARN].updateLed = true;
+        digitalWrite(LED_PIN_D1, LOW);
+        digitalWrite(LED_PIN_D2, HIGH);
       }
       else if (millis() - timer > MIDI_LEARN_LED_TIMEON + MIDI_LEARN_LED_TIMEOFF) {
         timer = millis();
       }
       break;
 
-    case CALIBRATE:
-      // LEDs : both LED are blinking three time
-      if (iter < CALIBRATE_LED_ITER) {
-        if (millis() - timer < CALIBRATE_LED_TIMEON && presets_ptr[CALIBRATE].setLed == true) {
-          presets_ptr[CALIBRATE].setLed = false;
-          digitalWriteFast(LED_PIN_D1, HIGH);
-          digitalWriteFast(LED_PIN_D2, HIGH);
+    case CALIBRATE: // LEDs : both LED are blinking three time
+      if (presets_ptr[CALIBRATE].setLed == true) {
+        presets_ptr[CALIBRATE].setLed = false;
+        pinMode(LED_PIN_D1, OUTPUT);
+        pinMode(LED_PIN_D2, OUTPUT);
+        timer = millis();
+        iter = 0;
+      }
+      else if (iter < CALIBRATE_LED_ITER) {
+        if (millis() - timer < CALIBRATE_LED_TIMEON && presets_ptr[CALIBRATE].updateLed == true) {
+          presets_ptr[CALIBRATE].updateLed = false;
+          digitalWrite(LED_PIN_D1, HIGH);
+          digitalWrite(LED_PIN_D2, HIGH);
+
         }
-        else if (millis() - timer > CALIBRATE_LED_TIMEON && presets_ptr[CALIBRATE].setLed == false) {
-          presets_ptr[CALIBRATE].setLed = true;
-          digitalWriteFast(LED_PIN_D1, LOW);
-          digitalWriteFast(LED_PIN_D2, LOW);
+        else if (millis() - timer > CALIBRATE_LED_TIMEON && presets_ptr[CALIBRATE].updateLed == false) {
+          presets_ptr[CALIBRATE].updateLed = true;
+          digitalWrite(LED_PIN_D1, LOW);
+          digitalWrite(LED_PIN_D2, LOW);
         }
         else if (millis() - timer > CALIBRATE_LED_TIMEON + CALIBRATE_LED_TIMEOFF) {
-          timer = millis;
-          iter++;
-          if (iter == CALIBRATE_LED_ITER) {
-            *curentMode_ptr = *lastMode_ptr;
-            *lastMode_ptr = LINE_OUT;
+          if (iter < CALIBRATE_LED_ITER) {
+            timer = millis();
+            iter++;
           }
         }
-      }
-      else {
-        iter = 0;
       }
       break;
 
-    case SAVE:
-      // LEDs : Both LED are blinking weary fast
-      if (iter < SAVE_LED_ITER) {
-        if (millis() - timer  < SAVE_LED_TIMEON && presets_ptr[SAVE].setLed == true) {
-          presets_ptr[SAVE].setLed = false;
-          digitalWriteFast(LED_PIN_D1, HIGH);
-          digitalWriteFast(LED_PIN_D2, HIGH);
+    case SAVE: // LEDs : Both LED are blinking weary fast
+      if (presets_ptr[SAVE].setLed == true) {
+        presets_ptr[SAVE].setLed = false;
+        pinMode(LED_PIN_D1, OUTPUT);
+        pinMode(LED_PIN_D2, OUTPUT);
+        timer = millis();
+        iter = 0;
+      }
+      else if (iter < SAVE_LED_ITER) {
+        if (millis() - timer  < SAVE_LED_TIMEON && presets_ptr[SAVE].updateLed == true) {
+          presets_ptr[SAVE].updateLed = false;
+          digitalWrite(LED_PIN_D1, HIGH);
+          digitalWrite(LED_PIN_D2, HIGH);
         }
-        else if (millis() - timer > SAVE_LED_TIMEON && presets_ptr[SAVE].setLed == false) {
-          presets_ptr[SAVE].setLed = true;
-          digitalWriteFast(LED_PIN_D1, LOW);
-          digitalWriteFast(LED_PIN_D2, LOW);
+        else if (millis() - timer > SAVE_LED_TIMEON && presets_ptr[SAVE].updateLed == false) {
+          presets_ptr[SAVE].updateLed = true;
+          digitalWrite(LED_PIN_D1, LOW);
+          digitalWrite(LED_PIN_D2, LOW);
         }
         else if (millis() - timer > SAVE_LED_TIMEON + SAVE_LED_TIMEOFF) {
-          timer = millis();
-          iter++;
-          if (iter == SAVE_LED_ITER) {
-            *curentMode_ptr = *lastMode_ptr;
-            *lastMode_ptr = LINE_OUT;
+          if (iter < SAVE_LED_ITER) {
+            timer = millis();
+            iter++;
           }
         }
-      }
-      else {
-        iter = 0;
       }
       break;
 
@@ -278,23 +296,23 @@ void update_leds(
 // Values adjustment using rotary encoder
 boolean setLevel(preset_t* preset_ptr, Encoder* encoder_ptr) {
 
-  preset_ptr->lastVal = preset_ptr->val;
-  preset_ptr->val = encoder_ptr->read() >> 2;
+  uint8_t val = encoder_ptr->read() >> 2;
 
-  if (preset_ptr->val != preset_ptr->lastVal) {
+  if (val != preset_ptr->val) {
+    Serial.printf("\nDEBUG_ENCODER:\tVAL:%d", preset_ptr->val);
 
-    if (preset_ptr->val > preset_ptr->maxVal) {
-      preset_ptr->val--;
-      encoder_ptr->write(preset_ptr->val << 2);
+    if (val > preset_ptr->maxVal) {
+      encoder_ptr->write(preset_ptr->maxVal << 2);
       return false;
     }
-    else if (preset_ptr->val < preset_ptr->minVal) {
-      preset_ptr->val++;
-      encoder_ptr->write(preset_ptr->val << 2);
+    else if (val < preset_ptr->minVal) {
+      encoder_ptr->write(preset_ptr->minVal << 2);
       return false;
     }
-    //preset_ptr->lastVal = preset_ptr->val;
-    return true;
+    else {
+      preset_ptr->val = val;
+      return true;
+    }
   }
   else {
     return false;

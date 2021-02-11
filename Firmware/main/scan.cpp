@@ -38,16 +38,18 @@ void SETUP_ADC(ADC *adc) {
 // Columns are analog INPUT_PINS reded two by two
 // Rows are digital OUTPUT_PINS supplyed one by one sequentially with 3.3V
 void calibrate_matrix(
-  uint8_t* currentMode,
-  uint8_t* lastMode,
+  preset_t* presets_ptr,
   ADC* adc_ptr,
-  ADC::Sync_result*
-  result_ptr, uint8_t*
-  offsetArray_ptr,
-  uint8_t* shiftOutArray_ptr
+  ADC::Sync_result* result_ptr,
+  uint8_t* offsetArray_ptr,
+  uint8_t* shiftOutArray_ptr,
+  uint8_t* curentMode_ptr,
+  uint8_t* lastMode_ptr
 ) {
 
-  if (currentMode == CALIBRATE) {
+  if (presets_ptr[CALIBRATE].update == true) {
+    presets_ptr[CALIBRATE].update = false;
+
     uint16_t setRows;
 
     for (uint8_t i = 0; i < CALIBRATION_CYCLES; i++) {
@@ -80,8 +82,10 @@ void calibrate_matrix(
         }
       }
     }
-    currentMode = lastMode;
-    lastMode = CALIBRATE;
+    *curentMode_ptr = *lastMode_ptr;
+    *lastMode_ptr = CALIBRATE;
+    presets_ptr[*curentMode_ptr].setLed = true;
+    //presets_ptr[*curentMode_ptr].updateLed = true;
   }
 }
 

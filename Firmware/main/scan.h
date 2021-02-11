@@ -25,12 +25,13 @@ void SETUP_SPI(void);
 void SETUP_ADC(ADC* adc_ptr);
 
 void calibrate_matrix(
-  uint8_t* currentMode,
-  uint8_t* lastMode,
+  preset_t* presets_ptr,
   ADC* adc_ptr,
   ADC::Sync_result* result_ptr,
   uint8_t* offsetArray_ptr,
-  uint8_t* shiftOutArray_ptr
+  uint8_t* shiftOutArray_ptr,
+  uint8_t* curentMode_ptr,
+  uint8_t* lastMode_ptr
 );
 
 void scan_matrix(
