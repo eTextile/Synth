@@ -22,6 +22,17 @@
 #include <elapsedMillis.h>                              // https://github.com/pfeerick/elapsedMillis
 //#include "../library/elapsedMillis/elapsedMillis.h"   // https://github.com/pfeerick/elapsedMillis (FIXME)
 
+// MODES
+typedef enum {
+  LINE_OUT,
+  SIG_IN,
+  SIG_OUT,
+  THRESHOLD,
+  MIDI_LEARN,
+  CALIBRATE,
+  SAVE
+} presetMode_t;
+
 typedef struct preset {
   uint8_t minVal;
   uint8_t maxVal;
@@ -43,21 +54,20 @@ void update_buttons(
   Button* buttonB_ptr,
   Encoder* encoder_ptr,
   preset_t* presets_ptr,
-  uint8_t* curentMode_ptr,
-  uint8_t* lastMode_ptr
+  presetMode_t* curentMode_ptr,
+  presetMode_t* lastMode_ptr
 );
 
 void update_presets(
+  presetMode_t curentMode,
   preset_t* presets_ptr,
   Encoder* encoder_ptr,
-  uint8_t* curentMode_ptr,
   uint8_t* interpThreshold_ptr
 );
 
 void update_leds(
-  preset_t* preset_ptr,
-  uint8_t* curentMode_ptr,
-  uint8_t* lastMode_ptr
+  presetMode_t curentMode,
+  preset_t* preset_ptr
 );
 
 void preset_load(preset_t* preset_ptr, boolean* state_ptr); // TODO

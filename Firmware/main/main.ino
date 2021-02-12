@@ -148,8 +148,8 @@ AudioConnection                   patchCord2(granular, 0, i2s_OUT, 0);
 AudioConnection                   patchCord3(granular, 0, i2s_OUT, 1);
 #endif
 
-uint8_t currentMode = CALIBRATE;  // Init currentMode with CALIBRATE (DEFAULT_MODE)
-uint8_t lastMode = LINE_OUT;      // Init lastMode with LINE_OUT (DEFAULT_MODE)
+presetMode_t currentMode = CALIBRATE;   // Init currentMode with CALIBRATE (DEFAULT_MODE)
+presetMode_t lastMode = LINE_OUT;      // Init lastMode with LINE_OUT (DEFAULT_MODE)
 
 #if DEBUG_FPS
 elapsedMillis curentMillisFps;
@@ -165,7 +165,7 @@ boolean savePreset = false;
 
 preset_t presets[7] = {
   {13, 31, 29, 0, false, false, false, LOW,  LOW }, // LINE_OUT   - ARGS[minVal, maxVal, val, ledVal, setLed, updateLed, update, D1, D2]
-  { 1, 15, 12, 0, false, false, false, HIGH, LOW }, // SIG_IN     - ARGS[minVal, maxVal, val, ledVal, setLed, updateLed, update, D1, D2]
+  { 1, 50, 12, 0, false, false, false, HIGH, LOW }, // SIG_IN     - ARGS[minVal, maxVal, val, ledVal, setLed, updateLed, update, D1, D2]
   { 1, 31, 17, 0, false, false, false, LOW,  HIGH}, // SIG_OUT    - ARGS[minVal, maxVal, val, ledVal, setLed, updateLed, update, D1, D2]
   { 1, 60, 10, 0, false, false, false, HIGH, HIGH}, // THRESHOLD  - ARGS[minVal, maxVal, val, ledVal, setLed, updateLed, update, D1, D2]
   { 1, 6,  1,  0, false, false, false, NULL, NULL}, // MIDI_LEARN - ARGS[minVal, maxVal, val, ledVal, setLed, updateLed, update, D1, D2]
@@ -193,6 +193,7 @@ median_t medianStorage[MAX_BLOBS] {
 squareKey_t keyArray[GRID_KEYS] = {0, 0, 0, 0};           // 1D Array of struct squareKey_t to store pre-compute key positions
 int8_t keyPressed[MAX_BLOBS] = {0};                       // 1D Array to store pressed keys
 int8_t midiIN[20] = {127, 63, 44};                        // 1D Array to store incoming midi notes
+
 grid_t grid = {&keyArray[0], &keyPressed[0], &midiIN[0]}; // ARGS[blobKeyPress, lastBlobKeyPress, debounceTime, midiNotes]
 
 polar_t polarCoord[MAX_BLOBS];                            // 1D Array of struct polar_t to store blobs polar coordinates
@@ -283,32 +284,31 @@ void loop() {
   );
 
   update_presets(
+    currentMode,
     &presets[0],
     &encoder,
-    &currentMode,
     &interpThreshold
   );
 
   update_volumes(
-    &sgtl5000,
+    currentMode,
     &presets[0],
-    &currentMode
+    &sgtl5000
   );
 
   update_leds(
-    &presets[0],
-    &currentMode,
-    &lastMode
+    currentMode,
+    &presets[0]
   );
 
   calibrate_matrix(
+    &currentMode,
+    &lastMode,
     &presets[0],
     adc,
     &result,
     &offsetArray[0],
-    &setDualRows[0],
-    &currentMode,
-    &lastMode
+    &setDualRows[0]
   );
 
   scan_matrix(

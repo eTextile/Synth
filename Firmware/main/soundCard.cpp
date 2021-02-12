@@ -9,13 +9,17 @@
 void SETUP_SOUND_CARD(AudioControlSGTL5000* soundCard_ptr) {
   AudioMemory(100);
   soundCard_ptr->enable();
-  soundCard_ptr->inputSelect(AUDIO_INPUT_LINEIN);
-  //soundCard_ptr->inputSelect(AUDIO_INPUT_MIC);
+  //soundCard_ptr->inputSelect(AUDIO_INPUT_LINEIN);
+  soundCard_ptr->inputSelect(AUDIO_INPUT_MIC);
 }
 
-void update_volumes(AudioControlSGTL5000* soundCard_ptr, preset_t* presets_ptr, uint8_t* mode_ptr) {
+void update_volumes(
+  presetMode_t curentMode,
+  preset_t* presets_ptr,
+  AudioControlSGTL5000* soundCard_ptr
+) {
 
-  switch (*mode_ptr) {
+  switch (curentMode) {
 
     case LINE_OUT:
       // FONCTION : line_out level adjustment using rotary encoder // DEFAULT MODE
@@ -41,7 +45,8 @@ void update_volumes(AudioControlSGTL5000* soundCard_ptr, preset_t* presets_ptr, 
       if (presets_ptr[SIG_IN].update) {
         presets_ptr[SIG_IN].update = false;
         AudioNoInterrupts();
-        soundCard_ptr->lineInLevel(presets_ptr[SIG_IN].val);
+        //soundCard_ptr->lineInLevel(presets_ptr[SIG_IN].val);
+        soundCard_ptr->micGain(presets_ptr[SIG_IN].val);
         AudioInterrupts();
 #if DEBUG_ENCODER
         Serial.printf("\nSIG_IN : %d", presets_ptr[SIG_IN].val);

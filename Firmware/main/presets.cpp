@@ -7,18 +7,7 @@
 #include "presets.h"
 
 void SETUP_LEDS(void) {
-  //pinMode(LED_PIN_D1, OUTPUT);
-  //pinMode(LED_PIN_D2, OUTPUT);
-  /*
-  for (int i = 0; i < 10; i++) {
-    digitalWrite(LED_PIN_D1, HIGH);
-    digitalWrite(LED_PIN_D2, LOW);
-    delay(40);
-    digitalWrite(LED_PIN_D1, LOW);
-    digitalWrite(LED_PIN_D2, HIGH);
-    delay(40);
-  }
-  */
+  // Nothing to do!
 }
 
 // Hear it should not compile if you didn't install the library (Manually!)
@@ -27,8 +16,8 @@ void SETUP_LEDS(void) {
 void SETUP_SWITCHES(Button* buttonA_ptr, Button* buttonB_ptr) {
   buttonA_ptr->attach(BUTTON_PIN_L, INPUT_PULLUP);  // Attach the debouncer to a pin with INPUT_PULLUP mode
   buttonB_ptr->attach(BUTTON_PIN_R, INPUT_PULLUP);  // Attach the debouncer to a pin with INPUT_PULLUP mode
-  buttonA_ptr->interval(15);                        // Debounce interval of 15 millis
-  buttonB_ptr->interval(15);                        // Debounce interval of 15 millis
+  buttonA_ptr->interval(25);                        // Debounce interval of 15 millis
+  buttonB_ptr->interval(25);                        // Debounce interval of 15 millis
 }
 
 void update_buttons(
@@ -36,8 +25,8 @@ void update_buttons(
   Button* buttonB_ptr,
   Encoder* encoder_ptr,
   preset_t* presets_ptr,
-  uint8_t* curentMode_ptr,
-  uint8_t* lastMode_ptr
+  presetMode_t* curentMode_ptr,
+  presetMode_t* lastMode_ptr
 ) {
 
   buttonA_ptr->update();
@@ -92,12 +81,12 @@ void update_buttons(
 }
 
 void update_presets(
+  presetMode_t curentMode,
   preset_t* presets_ptr,
   Encoder* encoder_ptr,
-  uint8_t* curentMode_ptr,
   uint8_t* interpThreshold_ptr
 ) {
-  switch (*curentMode_ptr) {
+  switch (curentMode) {
     case LINE_OUT:
       if (setLevel(&presets_ptr[LINE_OUT], encoder_ptr)) {
         presets_ptr[LINE_OUT].ledVal = map(presets_ptr[LINE_OUT].val, presets_ptr[LINE_OUT].minVal, presets_ptr[LINE_OUT].maxVal, 0, 255);
@@ -140,24 +129,22 @@ void update_presets(
 
 // Setup LEDs according to the mode and rotary encoder values
 void update_leds(
-  preset_t* presets_ptr,
-  uint8_t* curentMode_ptr,
-  uint8_t* lastMode_ptr
+  presetMode_t curentMode,
+  preset_t* presets_ptr
 ) {
   static uint32_t timer = 0;
   static uint8_t iter = 0;
 
-  switch (*curentMode_ptr) {
-
+  switch (curentMode) {
     case LINE_OUT:
-      if (presets_ptr[LINE_OUT].setLed == true) {
+      if (presets_ptr[LINE_OUT].setLed) {
         presets_ptr[LINE_OUT].setLed = false;
         pinMode(LED_PIN_D1, OUTPUT);
         pinMode(LED_PIN_D2, OUTPUT);
         digitalWrite(LED_PIN_D1, presets_ptr[LINE_OUT].D1);
         digitalWrite(LED_PIN_D2, presets_ptr[LINE_OUT].D2);
       }
-      else if (presets_ptr[LINE_OUT].update) {
+      if (presets_ptr[LINE_OUT].updateLed) {
         presets_ptr[LINE_OUT].updateLed = false;
         analogWrite(LED_PIN_D1, presets_ptr[LINE_OUT].ledVal);
         analogWrite(LED_PIN_D2, abs(presets_ptr[LINE_OUT].ledVal - 255));
@@ -165,14 +152,14 @@ void update_leds(
       break;
 
     case SIG_IN:
-      if (presets_ptr[SIG_IN].setLed == true) {
+      if (presets_ptr[SIG_IN].setLed) {
         presets_ptr[SIG_IN].setLed = false;
         pinMode(LED_PIN_D1, OUTPUT);
         pinMode(LED_PIN_D2, OUTPUT);
         digitalWrite(LED_PIN_D1, presets_ptr[SIG_IN].D1);
         digitalWrite(LED_PIN_D2, presets_ptr[SIG_IN].D2);
       }
-      else if (presets_ptr[SIG_IN].updateLed) {
+      if (presets_ptr[SIG_IN].updateLed) {
         presets_ptr[SIG_IN].updateLed = false;
         analogWrite(LED_PIN_D1, presets_ptr[SIG_IN].ledVal);
         analogWrite(LED_PIN_D2, abs(presets_ptr[SIG_IN].ledVal - 255));
@@ -180,14 +167,14 @@ void update_leds(
       break;
 
     case SIG_OUT:
-      if (presets_ptr[SIG_OUT].setLed == true) {
+      if (presets_ptr[SIG_OUT].setLed) {
         presets_ptr[SIG_OUT].setLed = false;
         pinMode(LED_PIN_D1, OUTPUT);
         pinMode(LED_PIN_D2, OUTPUT);
         digitalWrite(LED_PIN_D1, presets_ptr[SIG_OUT].D1);
         digitalWrite(LED_PIN_D2, presets_ptr[SIG_OUT].D2);
       }
-      else if (presets_ptr[SIG_OUT].updateLed) {
+      if (presets_ptr[SIG_OUT].updateLed) {
         presets_ptr[SIG_OUT].updateLed = false;
         analogWrite(LED_PIN_D1, presets_ptr[SIG_OUT].ledVal);
         analogWrite(LED_PIN_D2, abs(presets_ptr[SIG_OUT].ledVal - 255));
@@ -195,14 +182,14 @@ void update_leds(
       break;
 
     case THRESHOLD:
-      if (presets_ptr[THRESHOLD].setLed == true) {
+      if (presets_ptr[THRESHOLD].setLed) {
         presets_ptr[THRESHOLD].setLed = false;
         pinMode(LED_PIN_D1, OUTPUT);
         pinMode(LED_PIN_D2, OUTPUT);
         digitalWrite(LED_PIN_D1, presets_ptr[THRESHOLD].D1);
         digitalWrite(LED_PIN_D2, presets_ptr[THRESHOLD].D2);
       }
-      else if (presets_ptr[THRESHOLD].updateLed) {
+      if (presets_ptr[THRESHOLD].updateLed) {
         presets_ptr[THRESHOLD].updateLed = false;
         analogWrite(LED_PIN_D1, presets_ptr[THRESHOLD].ledVal);
         analogWrite(LED_PIN_D2, abs(presets_ptr[THRESHOLD].ledVal - 255));
@@ -210,13 +197,13 @@ void update_leds(
       break;
 
     case MIDI_LEARN: // LEDs : alternating blink
-      if (presets_ptr[MIDI_LEARN].setLed == true) {
+      if (presets_ptr[MIDI_LEARN].setLed) {
         presets_ptr[MIDI_LEARN].setLed = false;
         pinMode(LED_PIN_D1, OUTPUT);
         pinMode(LED_PIN_D2, OUTPUT);
         timer = millis();
       }
-      else if (millis() - timer < MIDI_LEARN_LED_TIMEON && presets_ptr[MIDI_LEARN].updateLed == true) {
+      if (millis() - timer < MIDI_LEARN_LED_TIMEON && presets_ptr[MIDI_LEARN].updateLed == true) {
         presets_ptr[MIDI_LEARN].updateLed = false;
         digitalWrite(LED_PIN_D1, HIGH);
         digitalWrite(LED_PIN_D2, LOW);
@@ -232,19 +219,18 @@ void update_leds(
       break;
 
     case CALIBRATE: // LEDs : both LED are blinking three time
-      if (presets_ptr[CALIBRATE].setLed == true) {
+      if (presets_ptr[CALIBRATE].setLed) {
         presets_ptr[CALIBRATE].setLed = false;
         pinMode(LED_PIN_D1, OUTPUT);
         pinMode(LED_PIN_D2, OUTPUT);
         timer = millis();
         iter = 0;
       }
-      else if (iter < CALIBRATE_LED_ITER) {
+      if (iter < CALIBRATE_LED_ITER) {
         if (millis() - timer < CALIBRATE_LED_TIMEON && presets_ptr[CALIBRATE].updateLed == true) {
           presets_ptr[CALIBRATE].updateLed = false;
           digitalWrite(LED_PIN_D1, HIGH);
           digitalWrite(LED_PIN_D2, HIGH);
-
         }
         else if (millis() - timer > CALIBRATE_LED_TIMEON && presets_ptr[CALIBRATE].updateLed == false) {
           presets_ptr[CALIBRATE].updateLed = true;
@@ -261,15 +247,15 @@ void update_leds(
       break;
 
     case SAVE: // LEDs : Both LED are blinking weary fast
-      if (presets_ptr[SAVE].setLed == true) {
+      if (presets_ptr[SAVE].setLed) {
         presets_ptr[SAVE].setLed = false;
         pinMode(LED_PIN_D1, OUTPUT);
         pinMode(LED_PIN_D2, OUTPUT);
         timer = millis();
         iter = 0;
       }
-      else if (iter < SAVE_LED_ITER) {
-        if (millis() - timer  < SAVE_LED_TIMEON && presets_ptr[SAVE].updateLed == true) {
+      if (iter < SAVE_LED_ITER) {
+        if (millis() - timer < SAVE_LED_TIMEON && presets_ptr[SAVE].updateLed == true) {
           presets_ptr[SAVE].updateLed = false;
           digitalWrite(LED_PIN_D1, HIGH);
           digitalWrite(LED_PIN_D2, HIGH);

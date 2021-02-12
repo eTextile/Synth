@@ -15,11 +15,11 @@
 #define ETEXTILE_SYNTHESIZER   "1.0.0"
 
 #define MIDI_USB                0 // [0:1] Set the eTextile-Synthesizer as USB MIDI divice
-#define MIDI_HARDWARE           1 // [0:1] Set the eTextile-Synthesizer as MIDI I/O divice
+#define MIDI_HARDWARE           0 // [0:1] Set the eTextile-Synthesizer as MIDI I/O divice
 #define SLIP_OSC                0 // [0:1] Set the eTextile-Synthesizer as SLIP_OSC divice
 
 #define SYNTH_PLAYER            0 // [0:1] Set the eTextile-Synthesizer as STANDALONE divice
-#define GRANULAR_PLAYER         0 // [0:1] Set the eTextile-Synthesizer as STANDALONE divice
+#define GRANULAR_PLAYER         1 // [0:1] Set the eTextile-Synthesizer as STANDALONE divice
 #define RAW_PLAYER              0 // [0:1] Set the eTextile-Synthesizer as STANDALONE divice
 
 #define MAX_BLOBS               8 // [1:8] Set how many blobs can be tracked at the same time
@@ -38,8 +38,8 @@
 #define DEBUG_BLOBS_ID          0 // [0:1] Print lowlevel blobs values
 #define DEBUG_SORT              0 // [0:1] Print lowlevel blobs sort (NOT_USED)
 
-#define SET_ORIGIN_X            1 // [-1:1] X-axis origine position
-#define SET_ORIGIN_Y            1 // [-1:1] Y-axis origine position
+#define SET_ORIGIN_X            1 // [-1:1] X-axis origine positioning
+#define SET_ORIGIN_Y            1 // [-1:1] Y-axis origine positioning
 
 // DO NOT CHANGE
 #define LED_PIN_D1              5
@@ -80,8 +80,6 @@
 #define MAX_BLOB_PIX            4095     // Set the maximum blob pixels
 #define CALIBRATION_CYCLES      10
 
-#define MAX_BLOB_PARAM          7        // [ID, alive, X, Y, W, H, D]
-
 #define DEBOUNCE_TIME_BLOB      15
 #define DEBOUNCE_TIME_SWITCH    15
 //#define DEBOUNCE_TIME_MIDI      20
@@ -99,14 +97,17 @@
 #define GRID_GAP                2
 #define KEY_SIZE                ((X_MAX - ((X_GRID_STEP + 1) * GRID_GAP)) / X_GRID_STEP)
 
-#define LINE_OUT                0
-#define SIG_IN                  1
-#define SIG_OUT                 2
-#define THRESHOLD               3
-#define MIDI_LEARN              4
-#define CALIBRATE               5
-#define SAVE                    6
+/*
+#define LINE_OUT                (uint8_t) 0
+#define SIG_IN                  (uint8_t) 1
+#define SIG_OUT                 (uint8_t) 2
+#define THRESHOLD               (uint8_t) 3
+#define MIDI_LEARN              (uint8_t) 4
+#define CALIBRATE               (uint8_t) 5
+#define SAVE                    (uint8_t) 6
+*/
 
+#define MAX_BLOB_PARAM          7        // [BI, BS, BX, BY, BW, BH, BD]
 #define BI                      0
 #define BS                      1
 #define BX                      2
@@ -118,9 +119,9 @@
 #define LONG_HOLD               1500
 #define MIDI_LEARN_LED_TIMEON   600
 #define MIDI_LEARN_LED_TIMEOFF  600
-#define CALIBRATE_LED_TIMEON    30
+#define CALIBRATE_LED_TIMEON    35
 #define CALIBRATE_LED_TIMEOFF   100
-#define CALIBRATE_LED_ITER      3
+#define CALIBRATE_LED_ITER      4
 #define SAVE_LED_TIMEON         20
 #define SAVE_LED_TIMEOFF        50
 #define SAVE_LED_ITER           10
