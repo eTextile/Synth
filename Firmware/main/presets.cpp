@@ -38,6 +38,7 @@ void update_buttons(
     *lastMode_ptr = *curentMode_ptr;
     *curentMode_ptr = CALIBRATE;
     presets_ptr[CALIBRATE].setLed = true;
+    presets_ptr[CALIBRATE].updateLed = true;
 #if DEBUG_BUTTONS
     Serial.printf("\nBUTTON_L : CALIBRATE : %d", *curentMode_ptr);
 #endif
@@ -238,9 +239,10 @@ void update_leds(
           digitalWrite(LED_PIN_D2, LOW);
         }
         else if (millis() - timer > CALIBRATE_LED_TIMEON + CALIBRATE_LED_TIMEOFF) {
-          if (iter < CALIBRATE_LED_ITER) {
+          if (iter <= CALIBRATE_LED_ITER) {
             timer = millis();
             iter++;
+            if (iter == CALIBRATE_LED_ITER) presets_ptr[CALIBRATE].update = true;
           }
         }
       }

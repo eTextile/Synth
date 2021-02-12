@@ -84,8 +84,7 @@ void calibrate_matrix(
     }
     *curentMode_ptr = *lastMode_ptr;
     *lastMode_ptr = CALIBRATE;
-    presets_ptr[CALIBRATE].setLed = true;
-    //presets_ptr[*curentMode_ptr].updateLed = true;
+    presets_ptr[*curentMode_ptr].setLed = true;
   }
 }
 
