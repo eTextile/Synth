@@ -21,12 +21,12 @@ typedef struct llist llist_t;  // Forward declaration
 void SETUP_MIDI_HARDWARE(void);
 
 typedef struct velocity {
-  float lastValX;
-  float lastValY;
-  float lastValD;
-  float velocityX;
-  float velocityY;
-  float velocityD;
+  float lastX;
+  float lastY;
+  float lastZ;
+  float vx;
+  float vy;
+  float vz;
 } velocity_t;
 
 typedef struct tSwitch {
@@ -94,6 +94,7 @@ typedef struct seq {
 } seq_t;
 
 void SETUP_GRID_LAYOUT(squareKey_t* keyArray_ptr);
+
 void gridLayout(llist_t* blobs_ptr, grid_t* gridLayout_ptr);
 void gridGapLayout(llist_t* blobs_ptr, grid_t* gridLayout_ptr);
 
@@ -109,10 +110,9 @@ boolean trigger(llist_t* blobs_ptr, tSwitch_t* switch_ptr);
 void getPolarCoordinates(llist_t* blobs_ptr, polar_t* polarPos_ptr);
 void getVelocity(llist_t* blobs_ptr, velocity_t* velocity_ptr);
 
-void tapTempo(tSwitch_t* tSwitch_ptr, cSlider_t* slider_ptr); // TODO
-void seq(tSwitch_t* tSwitch_ptr, seq_t* seq_ptr); // TODO
-
-void arpeggiator(int8_t* keyPressed); // TODO
-void stepSequencer(); // TODO
+//void tapTempo(tSwitch_t* tSwitch_ptr, tapTempo_t* tapTempo_ptr); // TODO
+//void seq(tSwitch_t* tSwitch_ptr, seq_t* seq_ptr); // TODO
+//void arpeggiator(llist_t* notes_ptr); // TODO
+//void stepSequencer(void); // TODO?
 
 #endif /*__MAPPING_H__*/

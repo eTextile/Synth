@@ -25,10 +25,10 @@ void llist_raz(llist_t* src);
 void llist_init(llist_t* dst, blob_t* nodesArray, uint8_t max_nodes);
 
 blob_t* llist_pop_front(llist_t* src);
-void llist_push_back(llist_t* dst, blob_t* blob);
+void llist_push_back(llist_t* dst, blob_t* node);
 
 void llist_save_blobs(llist_t* dst, llist_t* src);
-void llist_remove_blob(llist_t* src, blob_t* blob);
+void llist_remove_node(llist_t* src, blob_t* node);
 //void llist_sort(llist_t* ptr); // NOT_USE
 
 ////////////// Iterators //////////////

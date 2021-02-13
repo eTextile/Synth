@@ -259,7 +259,7 @@ void find_blobs(
     for (blob_t* blob = ITERATOR_START_FROM_HEAD(outputBlobs_ptr); blob != NULL; blob = ITERATOR_NEXT(blob)) {
       if (blob->state == TO_REMOVE) {
         found = true;
-        llist_remove_blob(outputBlobs_ptr, blob);
+        llist_remove_node(outputBlobs_ptr, blob);
         llist_push_back(blobs_stack_ptr, blob);
 #if DEBUG_BLOBS_ID
         Serial.printf("\n DEBUG_BLOBS_ID / Blob: %p removed from **outputBlobs** linked list", blob);
@@ -336,7 +336,7 @@ void find_blobs(
     for (blob_t* blobB = ITERATOR_START_FROM_HEAD(inputBlobs_ptr); blobB != NULL; blobB = ITERATOR_NEXT(blobB)) {
       if (blobB->state == TO_UPDATE && blobB->UID == blobA->UID) {
         found = true;
-        blob_copy(blobA, blobB);
+        node_copy(blobA, blobB);
 #if DEBUG_BLOBS_ID
         Serial.printf("\n DEBUG_BLOBS_ID / Copy blob: %p (inputBlobs linked list) to the blob: %p (outputBlobs linked list)", blobB, blobA);
 #endif
@@ -353,7 +353,7 @@ void find_blobs(
   for (blob_t* blob = ITERATOR_START_FROM_HEAD(inputBlobs_ptr); blob != NULL; blob = ITERATOR_NEXT(blob)) {
     if (blob->state == TO_ADD) {
       blob_t* newBlob = llist_pop_front(blobs_stack_ptr);
-      blob_copy(newBlob, blob);
+      node_copy(newBlob, blob);
       llist_push_back(outputBlobs_ptr, newBlob);
 #if DEBUG_BLOBS_ID
       Serial.printf("\n DEBUG_BLOBS_ID / Blob: %p added to **outputBlobs** linked list", blob);
@@ -383,13 +383,13 @@ float distance(blob_t* blobA, blob_t* blobB) {
 }
 
 /* DO NOT WORK!
-  void blob_copy(blob_t* dst, blob_t* src) {
+  void node_copy(blob_t* dst, blob_t* src) {
   memcpy(dst, src, sizeof(blob_t));
   }
 */
 
 // FIXME: can be optimized
-void blob_copy(blob_t* dst, blob_t* src) {
+void node_copy(blob_t* dst, blob_t* src) {
   dst->timeTag = millis();
   dst->UID = src->UID;
   dst->alive = 1;

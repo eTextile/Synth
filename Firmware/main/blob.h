@@ -135,7 +135,7 @@ typedef struct blob {
 } blob_t;
 
 void blob_raz(blob_t* node);
-void blob_copy(blob_t* dst, blob_t* src);
+void node_copy(blob_t* dst, blob_t* src);
 
 void SETUP_BLOB(
   image_t* inputFrame_ptr,

@@ -41,6 +41,9 @@ uint8_t interpFrameArray[NEW_FRAME] = {0};   // 1D Array to store E256 bilinear 
 xylr_t lifoArray[LIFO_MAX_NODES] = {0};      // 1D Array to store E256 lifo nodes
 blob_t blobArray[MAX_NODES] = {0};           // 1D Array to store E256 blobs
 
+median_t medianStorage[MAX_BLOBS] = {{0}, {0}, 0};
+velocity_t blobVelocity[MAX_BLOBS] = {0};    // 1D Array to store E256 blobs to store blobs XYZ velocity
+
 image_t  inputFrame;            // Input frame values structure
 interp_t interp;                // Interpolation parameters structure
 image_t  interpolatedFrame;     // Interpolated frame structure
@@ -169,22 +172,11 @@ preset_t presets[7] = {
   { 1, 31, 17, 0, false, false, false, LOW,  HIGH}, // SIG_OUT    - ARGS[minVal, maxVal, val, ledVal, setLed, updateLed, update, D1, D2]
   { 1, 60, 10, 0, false, false, false, HIGH, HIGH}, // THRESHOLD  - ARGS[minVal, maxVal, val, ledVal, setLed, updateLed, update, D1, D2]
   { 1, 6,  1,  0, false, false, false, NULL, NULL}, // MIDI_LEARN - ARGS[minVal, maxVal, val, ledVal, setLed, updateLed, update, D1, D2]
-  { 0, 0,  0,  0, true,  true,  true,  NULL, NULL}, // CALIBRATE  - ARGS[minVal, maxVal, val, ledVal, setLed, updateLed, update, D1, D2]
+  { 0, 0,  0,  0, true,  true,  false, NULL, NULL}, // CALIBRATE  - ARGS[minVal, maxVal, val, ledVal, setLed, updateLed, update, D1, D2]
   { 0, 0,  0,  0, false, false, false, NULL, NULL}  // SAVE       - ARGS[minVal, maxVal, val, ledVal, setLed, updateLed, update, D1, D2]
 };
 
 uint8_t interpThreshold = 10;
-
-median_t medianStorage[MAX_BLOBS] {
-  {true, {0}, {0}, 0},
-  {true, {0}, {0}, 0},
-  {true, {0}, {0}, 0},
-  {true, {0}, {0}, 0},
-  {true, {0}, {0}, 0},
-  {true, {0}, {0}, 0},
-  {true, {0}, {0}, 0},
-  {true, {0}, {0}, 0}
-};
 
 // MAPPING
 //tSwitch_t tapSwitch = {10, 10, 5, 1000, false};         // ARGS[posX, posY, rSize, debounceTimer, state]
@@ -207,11 +199,9 @@ cSlider_t cSliders[C_SLIDERS] = {
   {  20, 4,  4.8,  5, 0}                                  // ARGS[r, width, phiOffset, phiMax, val]
 };
 
-velocity_t blobVelocity[MAX_BLOBS];                       // 1D Array of struct velocity_t to store blobs velocity
-
 ccPesets_t ccPesets = {NULL, BD, 44, 1, 0};               // ARGS[blobID, [BX,BY,BW,BH,BD], cChange, midiChannel, Val]
 
-int16_t granularMemory[GRANULAR_MEMORY_SIZE] = {0};      //
+int16_t granularMemory[GRANULAR_MEMORY_SIZE] = {0};       //
 
 void setup() {
 
@@ -389,7 +379,7 @@ void loop() {
   //controlChangeMapping(&outputBlobs, &ccPesets);              // ARGS[llist_ptr, ccPesets_ptr]
 #endif
 
-  //getVelocity(&outputBlobs, &blobVelocity[0]);                // ARGS[llist_ptr, blobVelocity_ptr]
+  getVelocity(&outputBlobs, &blobVelocity[0]);                  // ARGS[llist_ptr, blobVelocity_ptr]
   //hSlider(&outputBlobs, &hSlider_A);                          // ARGS[llist_ptr, hSlider_ptr]
   //vSlider(&outputBlobs, &vSlider_A);                          // ARGS[llist_ptr, vSlider_ptr]
   //getPolarCoordinates(&outputBlobs, &polarCoord[0]);          // ARGS[llist_ptr, polar_ptr]

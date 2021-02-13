@@ -15,11 +15,11 @@
 #define ETEXTILE_SYNTHESIZER   "1.0.0"
 
 #define MIDI_USB                0 // [0:1] Set the eTextile-Synthesizer as USB MIDI divice
-#define MIDI_HARDWARE           0 // [0:1] Set the eTextile-Synthesizer as MIDI I/O divice
+#define MIDI_HARDWARE           1 // [0:1] Set the eTextile-Synthesizer as MIDI I/O divice
 #define SLIP_OSC                0 // [0:1] Set the eTextile-Synthesizer as SLIP_OSC divice
 
 #define SYNTH_PLAYER            0 // [0:1] Set the eTextile-Synthesizer as STANDALONE divice
-#define GRANULAR_PLAYER         1 // [0:1] Set the eTextile-Synthesizer as STANDALONE divice
+#define GRANULAR_PLAYER         0 // [0:1] Set the eTextile-Synthesizer as STANDALONE divice
 #define RAW_PLAYER              0 // [0:1] Set the eTextile-Synthesizer as STANDALONE divice
 
 #define MAX_BLOBS               8 // [1:8] Set how many blobs can be tracked at the same time
@@ -33,7 +33,7 @@
 #define DEBUG_INTERP            0 // [0:1] Print 64x64 interpolated values
 #define DEBUG_BITMAP            0 // [0:1] Print 64x64 binary image based on threshold
 #define DEBUG_BLOBS             0 // [0:1] Print blobs values
-#define DEBUG_MAPPING           0 // [0:1] Print blobs values
+#define DEBUG_MAPPING           1 // [0:1] Print blobs values
 
 #define DEBUG_BLOBS_ID          0 // [0:1] Print lowlevel blobs values
 #define DEBUG_SORT              0 // [0:1] Print lowlevel blobs sort (NOT_USED)
@@ -96,16 +96,6 @@
 #define GRID_KEYS               (X_GRID_STEP * Y_GRID_STEP)
 #define GRID_GAP                2
 #define KEY_SIZE                ((X_MAX - ((X_GRID_STEP + 1) * GRID_GAP)) / X_GRID_STEP)
-
-/*
-#define LINE_OUT                (uint8_t) 0
-#define SIG_IN                  (uint8_t) 1
-#define SIG_OUT                 (uint8_t) 2
-#define THRESHOLD               (uint8_t) 3
-#define MIDI_LEARN              (uint8_t) 4
-#define CALIBRATE               (uint8_t) 5
-#define SAVE                    (uint8_t) 6
-*/
 
 #define MAX_BLOB_PARAM          7        // [BI, BS, BX, BY, BW, BH, BD]
 #define BI                      0

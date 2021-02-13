@@ -62,37 +62,37 @@ void llist_push_back(llist_t* dst, blob_t* node) {
 }
 
 // Remove a blob in a linked list
-void llist_remove_blob(llist_t* src, blob_t* blobSuppr) {
+void llist_remove_node(llist_t* src, blob_t* nodeSuppr) {
 
   blob_t* prevBlob = NULL;
-  //if (DEBUG_LIST) Serial.printf(F("\n DEBUG_LIST / list_remove_blob / Blob to remove: %p"), blobSuppr);
+  //if (DEBUG_LIST) Serial.printf(F("\n DEBUG_LIST / list_remove_blob / Blob to remove: %p"), nodeSuppr);
 
   for (blob_t* blob = ITERATOR_START_FROM_HEAD(src); blob != NULL; blob = ITERATOR_NEXT(blob)) {
 
-    if (blob == blobSuppr) {
+    if (blob == nodeSuppr) {
       //if (DEBUG_LIST) Serial.printf(F("\n DEBUG_LIST / list_remove_blob / Blob: %p is found"), blob);
 
       if (src->index == 0) {
-        //if (DEBUG_LIST) Serial.printf(F("\n DEBUG_LIST / list_remove_blob / The blob: %p is the first & last in the linked list"), blobSuppr);
+        //if (DEBUG_LIST) Serial.printf(F("\n DEBUG_LIST / list_remove_blob / The blob: %p is the first & last in the linked list"), nodeSuppr);
         src->head_ptr = src->tail_ptr = NULL;
         src->index--;
         return;
       }
       else if (blob->next_ptr == NULL) {
-        //if (DEBUG_LIST) Serial.printf(F("\n DEBUG_LIST / list_remove_blob / The blob: %p is the tail of the linked list"), blobSuppr);
+        //if (DEBUG_LIST) Serial.printf(F("\n DEBUG_LIST / list_remove_blob / The blob: %p is the tail of the linked list"), nodeSuppr);
         prevBlob->next_ptr = NULL;
         src->tail_ptr = prevBlob;
         src->index--;
         return;
       }
       else if (blob == src->head_ptr) {
-        //if (DEBUG_LIST) Serial.printf(F("\n DEBUG_LIST / list_remove_blob / The blob: %p is the hard of the linked list"), blobSuppr);
+        //if (DEBUG_LIST) Serial.printf(F("\n DEBUG_LIST / list_remove_blob / The blob: %p is the hard of the linked list"), nodeSuppr);
         src->head_ptr = src->head_ptr->next_ptr;
         src->index--;
         return;
       }
       else {
-        //if (DEBUG_LIST) Serial.printf(F("\n DEBUG_LIST / list_remove_blob / The blob: %p is somewear else in the linked list"), blobSuppr);
+        //if (DEBUG_LIST) Serial.printf(F("\n DEBUG_LIST / list_remove_blob / The blob: %p is somewear else in the linked list"), nodeSuppr);
         prevBlob->next_ptr = blob->next_ptr;
         src->index--;
         return;

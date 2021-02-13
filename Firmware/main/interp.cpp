@@ -58,7 +58,7 @@ void SETUP_INTERP(
 
 // Bilinear interpolation
 void interp_matrix(
-  uint8_t interpThreshold,
+  uint8_t threshold,
   image_t* outputFrame_ptr,
   image_t* inputFrame_ptr,
   interp_t* interp_ptr
@@ -74,7 +74,7 @@ void interp_matrix(
 
       inIndexA = rowPos * inputFrame_ptr->numCols + colPos;
 
-      if (inputFrame_ptr->pData[inIndexA] > interpThreshold) { // Windowing implementation
+      if (inputFrame_ptr->pData[inIndexA] > threshold) { // Windowing implementation
 
         inIndexB = inIndexA + 1;
         inIndexC = inIndexA + inputFrame_ptr->numCols;

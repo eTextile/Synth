@@ -14,26 +14,36 @@ void SETUP_MIDI_HARDWARE() {
 }
 #endif
 
-void getVelocity(llist_t* blobs_ptr, velocity_t* storage_ptr) {
+void getVelocity(llist_t* blobs_ptr, velocity_t* velocity_ptr) {
 
   for (blob_t* blob_ptr = ITERATOR_START_FROM_HEAD(blobs_ptr); blob_ptr != NULL; blob_ptr = ITERATOR_NEXT(blob_ptr)) {
-
-    storage_ptr[blob_ptr->UID].velocityX = blob_ptr->centroid.X - storage_ptr[blob_ptr->UID].lastValX;
-    storage_ptr[blob_ptr->UID].velocityY = blob_ptr->centroid.Y - storage_ptr[blob_ptr->UID].lastValY;
-    storage_ptr[blob_ptr->UID].velocityD = blob_ptr->box.D - storage_ptr[blob_ptr->UID].lastValD;
-
-    storage_ptr[blob_ptr->UID].lastValX = blob_ptr->centroid.X;
-    storage_ptr[blob_ptr->UID].lastValY = blob_ptr->centroid.Y;
-    storage_ptr[blob_ptr->UID].lastValD = blob_ptr->box.D;
-
+    velocity_ptr[blob_ptr->UID].vx = blob_ptr->centroid.X - velocity_ptr[blob_ptr->UID].lastX;
+    velocity_ptr[blob_ptr->UID].vy = blob_ptr->centroid.Y - velocity_ptr[blob_ptr->UID].lastY;
+    velocity_ptr[blob_ptr->UID].vz = blob_ptr->box.D - velocity_ptr[blob_ptr->UID].lastZ;
+    velocity_ptr[blob_ptr->UID].lastX = blob_ptr->centroid.X;
+    velocity_ptr[blob_ptr->UID].lastY = blob_ptr->centroid.Y;
+    velocity_ptr[blob_ptr->UID].lastZ = blob_ptr->box.D;
 #if DEBUG_MAPPING
-    Serial.printf("\nDEBUG_VELOCITY : X:%f\tY:%f\tZ:%f", storage_ptr[blob_ptr->UID].velocityX, storage_ptr[blob_ptr->UID].velocityY, storage_ptr[blob_ptr->UID].velocityD);
+    Serial.printf("\nDEBUG_VELOCITY : X:%f\tY:%f\tZ:%f",
+                  velocity_ptr[blob_ptr->UID].vx,
+                  velocity_ptr[blob_ptr->UID].vy,
+                  velocity_ptr[blob_ptr->UID].vz
+                 );
 #endif
   }
 }
 
-void gridLayoutSet() {
-  //TODO
+void handleMidiIN(int8_t* midiIN) {
+
+  if (MIDI.read()) {                 // Is there a MIDI message incoming
+    switch (MIDI.getType()) {        // Get the type of the message we caught
+      case midi::ProgramChange:      // If it is a Program Change,
+        //BlinkLed(MIDI.getData1());   // blink the LED a number of times
+        break;
+      default:
+        break;
+    }
+  }
 }
 
 // pesets_ptr -> ARGS[blobID, [BX,BY,BW,BH,BD], cChange, midiChannel, Val]
@@ -203,7 +213,14 @@ void SETUP_GRID_LAYOUT(squareKey_t* keyArray_ptr) {
       keyArray_ptr[index].Xmax = (uint8_t)((col + 1) * KEY_SIZE + (col + 1) * GRID_GAP);
       keyArray_ptr[index].Ymin = (uint8_t)(row * KEY_SIZE + (row + 1) * GRID_GAP);
       keyArray_ptr[index].Ymax = (uint8_t)((row + 1) * KEY_SIZE + (row + 1) * GRID_GAP);
-      //Serial.printf("\nGRID_GAP\tXmin%d\tXmax%d\tYmin%d\tYmax%d", keyArray_ptr[index].Xmin, keyArray_ptr[index].Xmax, keyArray_ptr[index].Ymin, keyArray_ptr[index].Ymax);
+      /*
+        Serial.printf("\nGRID_GAP\tXmin%d\tXmax%d\tYmin%d\tYmax%d",
+                    keyArray_ptr[index].Xmin,
+                    keyArray_ptr[index].Xmax,
+                    keyArray_ptr[index].Ymin,
+                    keyArray_ptr[index].Ymax
+                   );
+      */
     }
   }
 }
