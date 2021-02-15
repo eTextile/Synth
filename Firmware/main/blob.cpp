@@ -12,6 +12,13 @@
 
 #include "blob.h"
 
+void blob_llist_init(llist_t *list, blob_t* nodesArray, uint8_t max_nodes)
+{
+  for (int i = 0; i < max_nodes; i++) {
+    llist_push_back(list, &nodesArray[i]);
+  }
+}
+
 void SETUP_BLOB(
   image_t* inputFrame_ptr,
   image_t* bitmap_ptr,
@@ -37,7 +44,7 @@ void SETUP_BLOB(
 
   // Linked list init
   llist_raz(blobs_stack_ptr);
-  llist_init(blobs_stack_ptr, &blobArray_ptr[0], (uint8_t)MAX_NODES); // Add X nodes to the blobs_stack linked list
+  blob_llist_init(blobs_stack_ptr, &blobArray_ptr[0], (uint8_t)MAX_NODES); // Add X nodes to the blobs_stack linked list
   llist_raz(blobs_ptr);
   llist_raz(outputBlobs_ptr);
 }
@@ -256,7 +263,7 @@ void find_blobs(
   // TODO: Add blob->timeTag to debounce the blobs
   while (1) {
     boolean found = false;
-    for (blob_t* blob = ITERATOR_START_FROM_HEAD(outputBlobs_ptr); blob != NULL; blob = ITERATOR_NEXT(blob)) {
+    for (blob_t* blob = (blob_t*)ITERATOR_START_FROM_HEAD(outputBlobs_ptr); blob != NULL; blob = (blob_t*)ITERATOR_NEXT(blob)) {
       if (blob->state == TO_REMOVE) {
         found = true;
         llist_remove_node(outputBlobs_ptr, blob);
@@ -274,14 +281,14 @@ void find_blobs(
   }
 
   // Look for the nearest blob between curent blob position (inputBlobs linked list) and last blob position (outputBlobs linked list)
-  for (blob_t* blobA = ITERATOR_START_FROM_HEAD(inputBlobs_ptr); blobA != NULL; blobA = ITERATOR_NEXT(blobA)) {
+  for (blob_t* blobA = (blob_t*)ITERATOR_START_FROM_HEAD(inputBlobs_ptr); blobA != NULL; blobA = (blob_t*)ITERATOR_NEXT(blobA)) {
     float minDist = 255.0f;
     blob_t* nearestBlob = NULL;
 
 #if DEBUG_BLOBS_ID
     Serial.printf("\n DEBUG_BLOBS_ID / Is input blob: %p have a coresponding blob in **outputBlobs**", blobA);
 #endif
-    for (blob_t* blobB = ITERATOR_START_FROM_HEAD(outputBlobs_ptr); blobB != NULL; blobB = ITERATOR_NEXT(blobB)) {
+    for (blob_t* blobB = (blob_t*)ITERATOR_START_FROM_HEAD(outputBlobs_ptr); blobB != NULL; blobB = (blob_t*)ITERATOR_NEXT(blobB)) {
 
       float dist = distance(blobA, blobB);
 
@@ -312,7 +319,7 @@ void find_blobs(
       uint8_t minID = 0;
       while (1) {
         boolean isFree = true;
-        for (blob_t* blob = ITERATOR_START_FROM_HEAD(outputBlobs_ptr); blob != NULL; blob = ITERATOR_NEXT(blob)) {
+        for (blob_t* blob = (blob_t*)ITERATOR_START_FROM_HEAD(outputBlobs_ptr); blob != NULL; blob = (blob_t*)ITERATOR_NEXT(blob)) {
           if (blob->UID == minID) {
             isFree = false;
             minID++;
@@ -330,10 +337,10 @@ void find_blobs(
 
   // Update outputBlobs linked list with inputs blobs that have ben flaged TO_UPDATE.
   // If a blob in the outputBlobs linked do not have corresponding blob in the input blobs linked list (inputBlobs_ptr), flag it to TO_REMOVE.
-  for (blob_t* blobA = ITERATOR_START_FROM_HEAD(outputBlobs_ptr); blobA != NULL; blobA = ITERATOR_NEXT(blobA)) {
+  for (blob_t* blobA = (blob_t*)ITERATOR_START_FROM_HEAD(outputBlobs_ptr); blobA != NULL; blobA = (blob_t*)ITERATOR_NEXT(blobA)) {
     boolean found = false;
 
-    for (blob_t* blobB = ITERATOR_START_FROM_HEAD(inputBlobs_ptr); blobB != NULL; blobB = ITERATOR_NEXT(blobB)) {
+    for (blob_t* blobB = (blob_t*)ITERATOR_START_FROM_HEAD(inputBlobs_ptr); blobB != NULL; blobB = (blob_t*)ITERATOR_NEXT(blobB)) {
       if (blobB->state == TO_UPDATE && blobB->UID == blobA->UID) {
         found = true;
         node_copy(blobA, blobB);
@@ -350,7 +357,7 @@ void find_blobs(
   }
 
   // Add the new blobs to the outputBlobs linked list
-  for (blob_t* blob = ITERATOR_START_FROM_HEAD(inputBlobs_ptr); blob != NULL; blob = ITERATOR_NEXT(blob)) {
+  for (blob_t* blob = (blob_t*)ITERATOR_START_FROM_HEAD(inputBlobs_ptr); blob != NULL; blob = (blob_t*)ITERATOR_NEXT(blob)) {
     if (blob->state == TO_ADD) {
       blob_t* newBlob = llist_pop_front(blobs_stack_ptr);
       node_copy(newBlob, blob);
@@ -427,7 +434,7 @@ void print_bitmap(image_t* bitmap_ptr) {
 }
 
 void print_blobs(llist_t* inputBlobs_ptr) {
-  for (blob_t* blob = ITERATOR_START_FROM_HEAD(inputBlobs_ptr); blob != NULL; blob = ITERATOR_NEXT(blob)) {
+  for (blob_t* blob = (blob_t*)ITERATOR_START_FROM_HEAD(inputBlobs_ptr); blob != NULL; blob = (blob_t*)ITERATOR_NEXT(blob)) {
     Serial.printf("\nINDEX:%d\tID:%d\tS:%d\tX:%f\tY:%f\tW:%d\tH:%d\tD:%d\t", inputBlobs_ptr->index, blob->UID, blob->alive, blob->centroid.X, blob->centroid.Y, blob->box.W, blob->box.H, blob->box.D);
   }
 }

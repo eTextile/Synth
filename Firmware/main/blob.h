@@ -123,6 +123,7 @@ typedef enum {
 // http://www.tuio.org/?specification
 // Will use MIDI MPE next ;-)
 typedef struct blob {
+  lnode_t node;
   uint32_t timeTag;
   uint16_t pixels;
   uint8_t UID;
@@ -131,7 +132,6 @@ typedef struct blob {
   state_t state;
   point_t centroid;
   bbox_t box;
-  struct blob* next_ptr;
 } blob_t;
 
 void blob_raz(blob_t* node);

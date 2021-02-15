@@ -30,7 +30,7 @@ void SETUP_SYNTH(synth_t* allSynth_ptr) {
 void synth_player(llist_t* blobs_ptr, synth_t* allSynth_ptr) {
 
   AudioNoInterrupts();
-  for (blob_t* blob_ptr = ITERATOR_START_FROM_HEAD(blobs_ptr); blob_ptr != NULL; blob_ptr = ITERATOR_NEXT(blob_ptr)) {
+  for (blob_t* blob_ptr = (blob_t *)ITERATOR_START_FROM_HEAD(blobs_ptr); blob_ptr != NULL; blob_ptr = (blob_t *)ITERATOR_NEXT(blob_ptr)) {
 
     if (blob_ptr->UID < MAX_SYNTH) {
 
