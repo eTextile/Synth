@@ -14,27 +14,10 @@ void llist_raz(llist_t* src) {
   src->index = -1;
 }
 
-void llist_init(llist_t* dst, blob_t* nodesArray, uint8_t max_nodes) {
-
-  dst->head_ptr = dst->tail_ptr = &nodesArray[0];
-  //if (DEBUG_LIST || DEBUG_CCL) Serial.printf(F("\n DEBUG_LIST / llist_init: %d: %p"), 0, &nodesArray[0]);
-  dst->index++;
-  dst->max_nodes++;
-
-  for (int i = 1; i < max_nodes; i++) {
-    nodesArray[i - 1].next_ptr = &nodesArray[i];
-    nodesArray[i].next_ptr = NULL;
-    dst->tail_ptr = &nodesArray[i];
-    //if (DEBUG_LIST || DEBUG_CCL) Serial.printf(F("\n DEBUG_LIST / llist_init: %d: %p"), i, &nodesArray[i]);
-    dst->index++;
-    dst->max_nodes++;
-  }
-}
-
-blob_t* llist_pop_front(llist_t* src) {
+void* llist_pop_front(llist_t* src) {
 
   if (src->index > -1) {
-    blob_t* node = src->head_ptr;
+    lnode_t* node = src->head_ptr;
     if (src->index > 0) {
       src->head_ptr = src->head_ptr->next_ptr;
     } else {
@@ -49,8 +32,8 @@ blob_t* llist_pop_front(llist_t* src) {
   }
 }
 
-void llist_push_back(llist_t* dst, blob_t* node) {
-
+void llist_push_back(llist_t* dst, void* data) {
+  lnode_t* node = (lnode_t*)data;
   if (dst->index > -1) {
     dst->tail_ptr->next_ptr = node;
     dst->tail_ptr = node;
@@ -62,12 +45,12 @@ void llist_push_back(llist_t* dst, blob_t* node) {
 }
 
 // Remove a blob in a linked list
-void llist_remove_node(llist_t* src, blob_t* nodeSuppr) {
-
-  blob_t* prevBlob = NULL;
+void llist_remove_node(llist_t* src, void* data) {
+  lnode_t* nodeSuppr = (lnode_t*)data;
+  lnode_t* prevBlob = NULL;
   //if (DEBUG_LIST) Serial.printf(F("\n DEBUG_LIST / list_remove_blob / Blob to remove: %p"), nodeSuppr);
 
-  for (blob_t* blob = ITERATOR_START_FROM_HEAD(src); blob != NULL; blob = ITERATOR_NEXT(blob)) {
+  for (lnode_t* blob = ITERATOR_START_FROM_HEAD(src); blob != NULL; blob = ITERATOR_NEXT(blob)) {
 
     if (blob == nodeSuppr) {
       //if (DEBUG_LIST) Serial.printf(F("\n DEBUG_LIST / list_remove_blob / Blob: %p is found"), blob);
@@ -106,7 +89,7 @@ void llist_remove_node(llist_t* src, blob_t* nodeSuppr) {
 void llist_save_blobs(llist_t* dst, llist_t* src) {
 
   //if (DEBUG_LIST) Serial.printf(F("\n DEBUG_LIST / list_save_blobs / START"));
-  blob_t* blob = NULL;
+  lnode_t* blob = NULL;
 
   while (src->index > -1) {
     // SRC pop front
@@ -148,7 +131,7 @@ void llist_save_blobs(llist_t* dst, llist_t* src) {
 
     boolean isSorted = true;
 
-    for (blob_t* blob_A = ITERATOR_START_FROM_HEAD(src); blob_A != NULL; blob_A = ITERATOR_NEXT(blob_A)) {
+    for (blob_t* blob_A = (blob_t *)ITERATOR_START_FROM_HEAD(src); blob_A != NULL; blob_A = (blob_t *)ITERATOR_NEXT(blob_A)) {
       if (blob_A->UID > blob_A->next_ptr->UID) {
         isSorted = false;
 

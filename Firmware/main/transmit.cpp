@@ -15,7 +15,7 @@ void SETUP_SLIP_OSC() {
 void blobs_usb_slipOsc(llist_t* blobs_ptr) {
 
   OSCBundle OSCbundle;
-  for (blob_t* blob_ptr = ITERATOR_START_FROM_HEAD(blobs_ptr); blob_ptr != NULL; blob_ptr = ITERATOR_NEXT(blob_ptr)) {
+  for (blob_t* blob_ptr = (blob_t*)ITERATOR_START_FROM_HEAD(blobs_ptr); blob_ptr != NULL; blob_ptr = (blob_t*)ITERATOR_NEXT(blob_ptr)) {
     OSCMessage msg("/b");
     msg.add(blob_ptr->UID);
     msg.add(blob_ptr->alive);
@@ -42,7 +42,7 @@ void SETUP_MIDI_USB() {
 // Separate blob's values according to the encoder position to allow the mapping into Max4Live
 void blobs_usb_midi_learn(llist_t* blobs_ptr, preset_t* preset_ptr) {
 
-  for (blob_t* blob_ptr = ITERATOR_START_FROM_HEAD(blobs_ptr); blob_ptr != NULL; blob_ptr = ITERATOR_NEXT(blob_ptr)) {
+  for (blob_t* blob_ptr = (blob_t*)ITERATOR_START_FROM_HEAD(blobs_ptr); blob_ptr != NULL; blob_ptr = (blob_t*)ITERATOR_NEXT(blob_ptr)) {
     if (blob_ptr->UID == blobs_ptr->index) {
       switch (preset_ptr->val) {
         case 1:
@@ -72,7 +72,7 @@ void blobs_usb_midi_learn(llist_t* blobs_ptr, preset_t* preset_ptr) {
 // Send all blobs values using ControlChange MIDI format
 void blobs_usb_midi_play(llist_t* blobs_ptr) {
 
-  for (blob_t* blob_ptr = ITERATOR_START_FROM_HEAD(blobs_ptr); blob_ptr != NULL; blob_ptr = ITERATOR_NEXT(blob_ptr)) {
+  for (blob_t* blob_ptr = (blob_t*)ITERATOR_START_FROM_HEAD(blobs_ptr); blob_ptr != NULL; blob_ptr = (blob_t*)ITERATOR_NEXT(blob_ptr)) {
     usbMIDI.sendControlChange(1, blob_ptr->alive, blob_ptr->UID + 1);
     usbMIDI.sendControlChange(2, (uint8_t)round(map(blob_ptr->centroid.X, 0.0, 59.0, 0, 127)), blob_ptr->UID + 1);
     usbMIDI.sendControlChange(3, (uint8_t)round(map(blob_ptr->centroid.Y, 0.0, 59.0, 0, 127)), blob_ptr->UID + 1);

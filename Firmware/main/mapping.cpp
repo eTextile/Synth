@@ -16,7 +16,7 @@ void SETUP_MIDI_HARDWARE() {
 
 void getVelocity(llist_t* blobs_ptr, velocity_t* velocity_ptr) {
 
-  for (blob_t* blob_ptr = ITERATOR_START_FROM_HEAD(blobs_ptr); blob_ptr != NULL; blob_ptr = ITERATOR_NEXT(blob_ptr)) {
+  for (blob_t* blob_ptr = (blob_t*)ITERATOR_START_FROM_HEAD(blobs_ptr); blob_ptr != NULL; blob_ptr = (blob_t*)ITERATOR_NEXT(blob_ptr)) {
     velocity_ptr[blob_ptr->UID].vx = blob_ptr->centroid.X - velocity_ptr[blob_ptr->UID].lastX;
     velocity_ptr[blob_ptr->UID].vy = blob_ptr->centroid.Y - velocity_ptr[blob_ptr->UID].lastY;
     velocity_ptr[blob_ptr->UID].vz = blob_ptr->box.D - velocity_ptr[blob_ptr->UID].lastZ;
@@ -49,7 +49,7 @@ void handleMidiIN(int8_t* midiIN) {
 // pesets_ptr -> ARGS[blobID, [BX,BY,BW,BH,BD], cChange, midiChannel, Val]
 void controlChangeMapping(llist_t* blobs_ptr, ccPesets_t* pesets_ptr) {
 
-  for (blob_t* blob_ptr = ITERATOR_START_FROM_HEAD(blobs_ptr); blob_ptr != NULL; blob_ptr = ITERATOR_NEXT(blob_ptr)) {
+  for (blob_t* blob_ptr = (blob_t*)ITERATOR_START_FROM_HEAD(blobs_ptr); blob_ptr != NULL; blob_ptr = (blob_t*)ITERATOR_NEXT(blob_ptr)) {
     // Test if we are within the blob limit
     if (blob_ptr->UID == pesets_ptr->blobID) {
       // Test if the blob is alive
@@ -167,7 +167,7 @@ void gridLayout(llist_t* blobs_ptr, grid_t* grid_ptr) {
 
   int8_t keyPressed;
 
-  for (blob_t* blob_ptr = ITERATOR_START_FROM_HEAD(blobs_ptr); blob_ptr != NULL; blob_ptr = ITERATOR_NEXT(blob_ptr)) {
+  for (blob_t* blob_ptr = (blob_t*)ITERATOR_START_FROM_HEAD(blobs_ptr); blob_ptr != NULL; blob_ptr = (blob_t*)ITERATOR_NEXT(blob_ptr)) {
     // Test if the blob is within the limits
     if (blob_ptr->UID < MAX_BLOBS) {
       // Compute X and Y key position
@@ -228,7 +228,7 @@ void SETUP_GRID_LAYOUT(squareKey_t* keyArray_ptr) {
 // Compute the grid X-Y index location acording to blob X-Y coordinates
 void gridGapLayout(llist_t* blobs_ptr, grid_t* gridLayout_ptr) {
 
-  for (blob_t* blob_ptr = ITERATOR_START_FROM_HEAD(blobs_ptr); blob_ptr != NULL; blob_ptr = ITERATOR_NEXT(blob_ptr)) {
+  for (blob_t* blob_ptr = (blob_t*)ITERATOR_START_FROM_HEAD(blobs_ptr); blob_ptr != NULL; blob_ptr = (blob_t*)ITERATOR_NEXT(blob_ptr)) {
     if (blob_ptr->UID < MAX_BLOBS) {                                                    // Test if the blob is within the limits
       uint8_t keyPosX = (uint8_t)round((blob_ptr->centroid.X / X_MAX) * X_GRID_STEP);   // Compute X window position
       uint8_t keyPosY = (uint8_t)round((blob_ptr->centroid.Y / Y_MAX) * X_GRID_STEP);   // Compute Y window position
@@ -304,7 +304,7 @@ void gridGapLayout(llist_t* blobs_ptr, grid_t* gridLayout_ptr) {
 void vSlider(llist_t* blobs_ptr, vSlider_t* slider_ptr) {
   int8_t val = 0;
 
-  for (blob_t* blob_ptr = ITERATOR_START_FROM_HEAD(blobs_ptr); blob_ptr != NULL; blob_ptr = ITERATOR_NEXT(blob_ptr)) {
+  for (blob_t* blob_ptr = (blob_t*)ITERATOR_START_FROM_HEAD(blobs_ptr); blob_ptr != NULL; blob_ptr = (blob_t*)ITERATOR_NEXT(blob_ptr)) {
     if (blob_ptr->centroid.X > slider_ptr->posX - slider_ptr->width &&
         blob_ptr->centroid.X < slider_ptr->posX + slider_ptr->width) {
       if (blob_ptr->centroid.Y > slider_ptr->Ymin &&
@@ -324,7 +324,7 @@ void vSlider(llist_t* blobs_ptr, vSlider_t* slider_ptr) {
 void hSlider(llist_t* blobs_ptr, hSlider_t* slider_ptr) {
   int8_t val = 0;
 
-  for (blob_t* blob_ptr = ITERATOR_START_FROM_HEAD(blobs_ptr); blob_ptr != NULL; blob_ptr = ITERATOR_NEXT(blob_ptr)) {
+  for (blob_t* blob_ptr = (blob_t*)ITERATOR_START_FROM_HEAD(blobs_ptr); blob_ptr != NULL; blob_ptr = (blob_t*)ITERATOR_NEXT(blob_ptr)) {
     if (blob_ptr->centroid.Y > slider_ptr->posY - slider_ptr->height &&
         blob_ptr->centroid.Y < slider_ptr->posY + slider_ptr->height) {
       if (blob_ptr->centroid.X > slider_ptr->Xmin &&
@@ -344,7 +344,7 @@ void hSlider(llist_t* blobs_ptr, hSlider_t* slider_ptr) {
 void cSlider(llist_t* blobs_ptr, polar_t* polar_ptr, cSlider_t* slider_ptr) {
   float phi = 0;
 
-  for (blob_t* blob_ptr = ITERATOR_START_FROM_HEAD(blobs_ptr); blob_ptr != NULL; blob_ptr = ITERATOR_NEXT(blob_ptr)) {
+  for (blob_t* blob_ptr = (blob_t*)ITERATOR_START_FROM_HEAD(blobs_ptr); blob_ptr != NULL; blob_ptr = (blob_t*)ITERATOR_NEXT(blob_ptr)) {
     for (int i = 0; i < C_SLIDERS; i++) {
       if (polar_ptr[blob_ptr->UID].r > slider_ptr[i].r - slider_ptr[i].width &&
           polar_ptr[blob_ptr->UID].r < slider_ptr[i].r + slider_ptr[i].width) {
@@ -364,7 +364,7 @@ void cSlider(llist_t* blobs_ptr, polar_t* polar_ptr, cSlider_t* slider_ptr) {
 
 void getPolarCoordinates(llist_t* blobs_ptr, polar_t* polar_ptr) {
 
-  for (blob_t* blob_ptr = ITERATOR_START_FROM_HEAD(blobs_ptr); blob_ptr != NULL; blob_ptr = ITERATOR_NEXT(blob_ptr)) {
+  for (blob_t* blob_ptr = (blob_t*)ITERATOR_START_FROM_HEAD(blobs_ptr); blob_ptr != NULL; blob_ptr = (blob_t*)ITERATOR_NEXT(blob_ptr)) {
     float posX = blob_ptr->centroid.X - POLAR_CX;
     float posY = blob_ptr->centroid.Y - POLAR_CY;
     if (posX == 0 && posY == 0 ) {
@@ -393,7 +393,7 @@ void getPolarCoordinates(llist_t* blobs_ptr, polar_t* polar_ptr) {
 
 boolean toggle(llist_t* blobs_ptr, tSwitch_t* switch_ptr) {
 
-  for (blob_t* blob_ptr = ITERATOR_START_FROM_HEAD(blobs_ptr); blob_ptr != NULL; blob_ptr = ITERATOR_NEXT(blob_ptr)) {
+  for (blob_t* blob_ptr = (blob_t*)ITERATOR_START_FROM_HEAD(blobs_ptr); blob_ptr != NULL; blob_ptr = (blob_t*)ITERATOR_NEXT(blob_ptr)) {
     if (blob_ptr->centroid.X > switch_ptr->posX - switch_ptr->rSize &&
         blob_ptr->centroid.X < switch_ptr->posX + switch_ptr->rSize) {
       if (blob_ptr->centroid.Y > switch_ptr->posY - switch_ptr->rSize &&
@@ -414,7 +414,7 @@ boolean toggle(llist_t* blobs_ptr, tSwitch_t* switch_ptr) {
 
 boolean trigger(llist_t* blobs_ptr, tSwitch_t* switch_ptr) {
 
-  for (blob_t* blob_ptr = ITERATOR_START_FROM_HEAD(blobs_ptr); blob_ptr != NULL; blob_ptr = ITERATOR_NEXT(blob_ptr)) {
+  for (blob_t* blob_ptr = (blob_t*)ITERATOR_START_FROM_HEAD(blobs_ptr); blob_ptr != NULL; blob_ptr = (blob_t*)ITERATOR_NEXT(blob_ptr)) {
     if (blob_ptr->centroid.X > switch_ptr->posX - switch_ptr->rSize &&
         blob_ptr->centroid.X < switch_ptr->posX + switch_ptr->rSize) {
       if (blob_ptr->centroid.Y > switch_ptr->posY - switch_ptr->rSize &&

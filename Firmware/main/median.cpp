@@ -11,7 +11,7 @@
 
 void median(llist_t* blobs_ptr, median_t* median_ptr) {
 
-  for (blob_t* blob_ptr = ITERATOR_START_FROM_HEAD(blobs_ptr); blob_ptr != NULL; blob_ptr = ITERATOR_NEXT(blob_ptr)) {
+  for (blob_t* blob_ptr = (blob_t*)ITERATOR_START_FROM_HEAD(blobs_ptr); blob_ptr != NULL; blob_ptr = (blob_t*)ITERATOR_NEXT(blob_ptr)) {
 
     float inputVal = blob_ptr->box.D; // The new value
     float outputVal = inputVal;       // The new value could be the median
