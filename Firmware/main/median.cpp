@@ -17,7 +17,7 @@ void median(llist_t* blobs_ptr, median_t* median_ptr) {
     float outputVal = inputVal;       // The new value could be the median
 
     // Initialize all arrays
-    if (blob_ptr->alive && !blob_ptr->lastState) {
+    if (blob_ptr->state && !blob_ptr->lastState) {
       memset(median_ptr[blob_ptr->UID].zVal, blob_ptr->box.D, MEDIAN_TIME_WINDOW * sizeof(uint8_t));
       memset(median_ptr[blob_ptr->UID].zOrd, blob_ptr->box.D, MEDIAN_TIME_WINDOW * sizeof(uint8_t));
       median_ptr[blob_ptr->UID].index = 0;

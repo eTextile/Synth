@@ -14,11 +14,10 @@ void granular_player(llist_t* blobs_ptr, AudioEffectGranular* granular_ptr, uint
 
   for (blob_t* blob_ptr = (blob_t*)ITERATOR_START_FROM_HEAD(blobs_ptr); blob_ptr != NULL; blob_ptr = (blob_t*)ITERATOR_NEXT(blob_ptr)) {
 
-    if (blob_ptr->alive != blob_ptr->lastState) {
-
+    if (blob_ptr->state && !blob_ptr->lastState) {
     }
-    if (blob_ptr->alive) {
 
+    if (blob_ptr->state) {
       float msec = blob_ptr->centroid.Y / Y_MAX; // Mapp X to buffer size
       msec = 10.0 + (msec * 10.0);
       granular_ptr->beginPitchShift(msec); // The grainLength is specified in milliseconds, up to 1/3 of the memory from begin();

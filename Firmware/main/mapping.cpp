@@ -34,7 +34,7 @@ void getVelocity(llist_t* blobs_ptr, velocity_t* velocity_ptr) {
 }
 
 void handleMidiIN(int8_t* midiIN) {
-
+#if MIDI_HARDWARE
   if (MIDI.read()) {                 // Is there a MIDI message incoming
     switch (MIDI.getType()) {        // Get the type of the message we caught
       case midi::ProgramChange:      // If it is a Program Change,
@@ -44,6 +44,7 @@ void handleMidiIN(int8_t* midiIN) {
         break;
     }
   }
+#endif
 }
 
 // pesets_ptr -> ARGS[blobID, [BX,BY,BW,BH,BD], cChange, midiChannel, Val]
@@ -53,7 +54,7 @@ void controlChangeMapping(llist_t* blobs_ptr, ccPesets_t* pesets_ptr) {
     // Test if we are within the blob limit
     if (blob_ptr->UID == pesets_ptr->blobID) {
       // Test if the blob is alive
-      if (blob_ptr->alive) {
+      if (blob_ptr->state) {
 #if MIDI_HARDWARE
         switch (pesets_ptr->mappVal) {
           case BX:
@@ -175,7 +176,7 @@ void gridLayout(llist_t* blobs_ptr, grid_t* grid_ptr) {
       uint8_t keyPosY = (uint8_t)round((blob_ptr->centroid.Y / Y_MAX) * X_GRID_STEP);   // Compute Y window position
       keyPressed = keyPosY * Y_GRID_STEP + keyPosX;                                     // Compute 1D key index position
       // Test if it is alive
-      if (blob_ptr->alive) {
+      if (blob_ptr->state) {
         // Test if new key is pressed
         if (keyPressed != grid_ptr->keyPressed[blob_ptr->UID]) {
           if (grid_ptr->keyPressed[blob_ptr->UID] != -1 ) {
@@ -185,15 +186,15 @@ void gridLayout(llist_t* blobs_ptr, grid_t* grid_ptr) {
 #endif
           }
 #if MIDI_HARDWARE
-          //MIDI.sendNoteOn(key, 127, 1);                                            // Send NoteON (SEND ALL KEYS ON CHANNEL_1)
+          //MIDI.sendNoteOn(key, 127, 1);                                               // Send NoteON (SEND ALL KEYS ON CHANNEL_1)
           Serial.printf("\nGRID\tBLOB:%d\t\tKEY_ON:%d", blob_ptr->UID, keyPressed);
 #endif
-          grid_ptr->keyPressed[blob_ptr->UID] = keyPressed;                                   // Save the current key position
+          grid_ptr->keyPressed[blob_ptr->UID] = keyPressed;                             // Save the current key position
         }
       }
-      else {                                                                              // blob_ptr->alive == 0 (onRelease)
+      else {                                                                            // blob_ptr->alive == 0 (onRelease)
 #if MIDI_HARDWARE
-        //MIDI.sendNoteOff(key, 0, 1);                                               // Send NoteOFF (SAND ALL KEYS ON CHANNEL_1)
+        //MIDI.sendNoteOff(key, 0, 1);                                                  // Send NoteOFF (SAND ALL KEYS ON CHANNEL_1)
         Serial.printf("\nGRIB\tBLOB:%d\tKEY_OFF:%d", blob_ptr->UID, keyPressed);
 #endif
         grid_ptr->keyPressed[blob_ptr->UID] = -1;
@@ -238,7 +239,7 @@ void gridGapLayout(llist_t* blobs_ptr, grid_t* gridLayout_ptr) {
           blob_ptr->centroid.Y > gridLayout_ptr->keyArray_ptr[keyPosY].Ymin &&
           blob_ptr->centroid.Y < gridLayout_ptr->keyArray_ptr[keyPosY].Ymax
          ) {
-        if (blob_ptr->alive) {
+        if (blob_ptr->state) {
           if (keyPressed != gridLayout_ptr->keyPressed[blob_ptr->UID]) {                 // Test if new key is pressed
             if (gridLayout_ptr->keyPressed[blob_ptr->UID] != -1 ) {
 #if MIDI_HARDWARE
@@ -262,7 +263,7 @@ void gridGapLayout(llist_t* blobs_ptr, grid_t* gridLayout_ptr) {
         }
       }
       else { // Blob is OUT
-        if (!blob_ptr->alive) {
+        if (!blob_ptr->state) {
 #if MIDI_HARDWARE
           MIDI.sendNoteOff(gridLayout_ptr->keyPressed[blob_ptr->UID], 0, 1);            // Send NoteOFF (SEND ALL KEYS ON CHANNEL_1)
           Serial.printf("\nGRID_GAP\tBLOB_OUT:%d\tNOTE_OFF: %d", blob_ptr->UID, gridLayout_ptr->keyPressed[blob_ptr->UID]);

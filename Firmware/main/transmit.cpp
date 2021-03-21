@@ -6,6 +6,11 @@
 
 #include "transmit.h"
 
+// What about the TUIO 1.1 Protocol Specification
+// http://www.tuio.org/?specification
+// What about the MIDI_MPE Protocol Specification
+// https://www.midi.org/midi-articles/midi-polyphonic-expression-mpe
+
 #if SLIP_OSC
 void SETUP_SLIP_OSC() {
   SLIPEncodedUSBSerial SLIPSerial(thisBoardsSerialUSB); // FIXME

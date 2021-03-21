@@ -15,11 +15,9 @@
 
 #include "config.h"
 #include "llist.h"
-#include "lifo.h"
 
+typedef struct lnode lnode_t; // Forward declaration
 typedef struct llist llist_t; // Forward declaration
-typedef struct lifo lifo_t;   // Forward declaration
-typedef struct xylr xylr_t;   // Forward declaration
 
 #define IM_LOG2_2(x)    (((x) &                0x2ULL) ? ( 2                        ) :             1) // NO ({ ... }) !
 #define IM_LOG2_4(x)    (((x) &                0xCULL) ? ( 2 +  IM_LOG2_2((x) >>  2)) :  IM_LOG2_2(x)) // NO ({ ... }) !
@@ -88,61 +86,76 @@ typedef struct xylr xylr_t;   // Forward declaration
     _a < _b ? _a : _b; \
   })
 
-//static int sum_m_to_n(int m, int n);
+typedef struct image image_t;
 
-////////////// Image stuff //////////////
-
-typedef struct image {
+struct image {
   uint8_t numCols;
   uint8_t numRows;
   uint8_t* pData;
-} image_t;
+};
 
-void bitmap_clear(image_t* bitmap_ptr);
+typedef struct xylr xylr_t;
 
-typedef struct {
+struct xylr {
+  lnode_t node;
+  uint8_t x;
+  uint8_t y;
+  uint8_t l;
+  uint8_t r;
+  uint8_t t_l;
+  uint8_t b_l;
+};
+
+typedef struct point point_t;
+
+struct point {
   float X;
   float Y;
-} point_t;
+};
 
-typedef struct {
+typedef struct bbox bbox_t;
+
+struct bbox {
   uint8_t W; // TODO Make it as float
   uint8_t H; // TODO Make it as float
   uint8_t D; // TODO Make it as float
-} bbox_t;
+};
 
 // Blob states
-typedef enum {
+typedef enum status {
   FREE,
   TO_ADD,
   TO_UPDATE,
   TO_REMOVE
-} state_t;
+} status_t;
 
-// What about the TUIO 1.1 Protocol Specification
-// http://www.tuio.org/?specification
-// Will use MIDI MPE next ;-)
-typedef struct blob {
+typedef struct blob blob_t;
+
+struct blob {
   lnode_t node;
+  int8_t UID;
   uint32_t timeTag;
   uint16_t pixels;
-  uint8_t UID;
-  uint8_t alive;
-  uint8_t lastState;
-  state_t state;
+  boolean state;
+  boolean lastState;
+  status_t status;
   point_t centroid;
   bbox_t box;
-} blob_t;
+};
 
-void blob_raz(blob_t* node);
-void node_copy(blob_t* dst, blob_t* src);
+void bitmap_clear(image_t* bitmap_ptr);
+static int sum_m_to_n(int m, int n);
+
+void node_raz(blob_t* node);
+
+void blob_llist_init(llist_t *list, blob_t* nodesArray, uint8_t max_nodes);
+void lifo_llist_init(llist_t *list, xylr_t* nodesArray, uint8_t max_nodes);
 
 void SETUP_BLOB(
-  image_t* inputFrame_ptr,
-  image_t* bitmap_ptr,
   uint8_t* bitmapArray_ptr,
-  lifo_t*  lifo_ptr,
-  lifo_t*  lifo_stack_ptr,
+  image_t* bitmap_ptr,
+  llist_t* lifo_ptr,
+  llist_t* lifo_stack_ptr,
   xylr_t*  lifoArray_ptr,
   llist_t* blobs_ptr,
   llist_t* blobs_stack_ptr,
@@ -156,14 +169,14 @@ void find_blobs(
   uint8_t   zThreshold,
   image_t*  inputFrame_ptr,
   image_t*  bitmap_ptr,
-  lifo_t*   lifo_stack_ptr,
-  lifo_t*   lifo_ptr,
+  llist_t*  lifo_stack_ptr,
+  llist_t*  lifo_ptr,
   llist_t*  blobs_stack_ptr,
   llist_t*  inputBlobs_ptr,
   llist_t*  outputBlobs_ptr
 );
 
 void print_bitmap(image_t* bitmap);
-void print_blobs(llist_t* inputBlobs_ptr);
+void print_blobs(llist_t* src);
 
 #endif /*__BLOB_H__*/

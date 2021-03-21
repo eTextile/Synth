@@ -39,7 +39,7 @@ uint8_t frameArray[RAW_FRAME] = {0};         // 1D Array to store E256 ofseted a
 uint8_t bitmapArray[NEW_FRAME] = {0};        // 1D Array to store E256 binary values (16*16) array containing (64*64) values
 uint8_t interpFrameArray[NEW_FRAME] = {0};   // 1D Array to store E256 bilinear interpolated values
 xylr_t lifoArray[LIFO_MAX_NODES] = {0};      // 1D Array to store E256 lifo nodes
-blob_t blobArray[MAX_NODES] = {0};           // 1D Array to store E256 blobs
+blob_t blobArray[MAX_BLOBS] = {0};           // 1D Array to store E256 blobs
 
 median_t medianStorage[MAX_BLOBS] = {{0}, {0}, 0};
 velocity_t blobVelocity[MAX_BLOBS] = {0};    // 1D Array to store E256 blobs to store blobs XYZ velocity
@@ -48,8 +48,8 @@ image_t  inputFrame;            // Input frame values structure
 interp_t interp;                // Interpolation parameters structure
 image_t  interpolatedFrame;     // Interpolated frame structure
 image_t  bitmap;                // Used by Scanline Flood Fill algorithm / SFF
-lifo_t   lifo_stack;            // Lifo free nodes stack
-lifo_t   lifo;                  // Lifo stack
+llist_t  lifo_stack;            // Lifo free nodes stack
+llist_t  lifo;                  // Lifo stack
 llist_t  blobs_stack;           // Blobs free nodes linked list
 llist_t  blobs;                 // Intermediate blobs linked list
 llist_t  outputBlobs;           // Output blobs linked list
@@ -176,7 +176,7 @@ preset_t presets[7] = {
   { 0, 0,  0,  0, false, false, false, NULL, NULL}  // SAVE       - ARGS[minVal, maxVal, val, ledVal, setLed, updateLed, update, D1, D2]
 };
 
-uint8_t interpThreshold = 10;
+uint8_t interpThreshold = 5;
 
 // MAPPING
 //tSwitch_t tapSwitch = {10, 10, 5, 1000, false};         // ARGS[posX, posY, rSize, debounceTimer, state]
@@ -207,6 +207,8 @@ void setup() {
 
 #if DEBUG_ADC || DEBUG_INTERP || DEBUG_BLOBS || DEBUG_SFF_BITMAP || DEBUG_FPS
   Serial.begin(BAUD_RATE); // Start Serial communication using 230400 baud
+  while (!Serial);
+  Serial.printf("\n%s %s", NAME, VERSION);
 #endif
 
   SETUP_LEDS();
@@ -222,9 +224,8 @@ void setup() {
     &interp               // interp_t*
   );
   SETUP_BLOB(
-    &inputFrame,          // image_t*
-    &bitmap,              // image_t*
     &bitmapArray[0],      // uint8_t*
+    &bitmap,              // image_t*
     &lifo,                // lifo_t*
     &lifo_stack,          // lifo_t*
     &lifoArray[0],        // xylr_t*
@@ -329,7 +330,7 @@ void loop() {
     print_interp(&interpolatedFrame);
   }
 #endif
-
+  
   find_blobs(
     presets[THRESHOLD].val, // uint8_t (Z)Threshold
     &interpolatedFrame,     // image_t (uint8_t array[NEW_FRAME] - 64*64 1D array)

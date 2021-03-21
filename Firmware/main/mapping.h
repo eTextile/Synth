@@ -20,78 +20,99 @@ typedef struct llist llist_t;  // Forward declaration
 
 void SETUP_MIDI_HARDWARE(void);
 
-typedef struct velocity {
+typedef struct velocity velocity_t;
+
+struct velocity {
   float lastX;
   float lastY;
   float lastZ;
   float vx;
   float vy;
   float vz;
-} velocity_t;
+};
 
-typedef struct tSwitch {
+typedef struct tSwitch tSwitch_t;
+
+struct tSwitch {
   uint8_t posX;
   uint8_t posY;
   uint8_t rSize; // width/2 and height/2
   uint32_t timer;
   boolean state;
-} tSwitch_t;
+};
 
-typedef struct vSlider {
+
+typedef struct vSlider vSlider_t;
+
+struct vSlider {
   uint8_t posX;
   uint8_t Ymin;
   uint8_t Ymax;
   uint8_t width;
   uint8_t val;
-} vSlider_t;
+};
 
-typedef struct hSlider {
+typedef struct hSlider hSlider_t;
+
+struct hSlider {
   uint8_t posY;
   uint8_t Xmin;
   uint8_t Xmax;
   uint8_t height;
   uint8_t val;
-} hSlider_t;
+};
 
-typedef struct cSlider {
+typedef struct cSlider cSlider_t;
+
+struct cSlider {
   float r;
   uint8_t width;
   float phiOffset;
   float phiMin;
   float phiMax;
   uint8_t val;
-} cSlider_t;
+};
 
-typedef struct polar {
+typedef struct polar polar_t;
+
+struct polar {
   float r;
   float phi;
-} polar_t;
+};
 
-typedef struct squareKey {
+typedef struct squareKey squareKey_t;
+
+struct squareKey {
   uint8_t Xmin;
   uint8_t Xmax;
   uint8_t Ymin;
   uint8_t Ymax;
-} squareKey_t;
+};
 
-typedef struct grid {
+typedef struct grid grid_t;
+
+struct grid {
   squareKey_t* keyArray_ptr;
   int8_t* keyPressed;
   int8_t* midiLayout;
-} grid_t;
+};
 
-typedef struct cChange {
+typedef struct cChange ccPesets_t;
+
+struct cChange {
   uint8_t blobID;
   uint8_t mappVal;
   int8_t cChange;
   int8_t midiChannel;
   int8_t val;
-} ccPesets_t;
+};
 
-typedef struct seq {
+typedef struct seq seq_t;
+
+struct seq {
   uint16_t timeInterval[];
   uint8_t* seqframe;
-} seq_t;
+};
 
 void SETUP_GRID_LAYOUT(squareKey_t* keyArray_ptr);
 

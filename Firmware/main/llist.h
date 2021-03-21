@@ -20,25 +20,24 @@ typedef struct llist llist_t;
 struct llist {
   lnode_t* head_ptr;
   lnode_t* tail_ptr;
-  uint8_t max_nodes;
-  int8_t index; // If linked list umpty: index == -1
 };
 
 ////////////// Linked list - Fonction prototypes //////////////
 
-void llist_raz(llist_t* src);
+void llist_raz(llist_t* llist_ptr);
 
-void* llist_pop_front(llist_t* src);
-void llist_push_back(llist_t* dst, void* data);
+void* llist_pop_front(llist_t* llist_ptr);
+void* llist_extract_node(llist_t* llist_ptr, void* data);
 
-void llist_save_blobs(llist_t* dst, llist_t* src);
-void llist_remove_node(llist_t* src, void* data);
-//void llist_sort(llist_t* ptr); // NOT_USE
+void llist_push_front(llist_t* llist_ptr, void* data);
+void llist_push_back(llist_t* llist_ptr, void* data);
+void llist_swap_nodes(llist_t* llistA_ptr, void* dataA, llist_t* llistB_ptr, void* dataB);
+void llist_save_nodes(llist_t* dst_ptr, llist_t* src_ptr);
+//void llist_sort(llist_t* src_ptr);
 
 ////////////// Iterators //////////////
 
 #define ITERATOR_START_FROM_HEAD(list) (((llist_t *)(list))->head_ptr)
-
 #define ITERATOR_NEXT(node) (((lnode_t*)(node))->next_ptr)
 
 #endif /*__LLIST_H__*/

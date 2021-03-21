@@ -15,7 +15,9 @@ typedef struct image image_t; // forward declaration
 #undef round
 #define round(x) lround(x)
 
-typedef struct interp {
+typedef struct interp interp_t;
+
+struct interp {
   uint8_t   scale_X;
   uint8_t   scale_Y;
   uint16_t  outputStride_Y;
@@ -23,7 +25,7 @@ typedef struct interp {
   float*    pCoefB;
   float*    pCoefC;
   float*    pCoefD;
-} interp_t;
+};
 
 void SETUP_INTERP(
   image_t*  inputFrame_ptr,

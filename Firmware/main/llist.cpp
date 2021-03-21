@@ -6,162 +6,152 @@
 
 #include "llist.h"
 
-////////////////////////////// linked list  //////////////////////////////
-
-void llist_raz(llist_t* src) {
-  src->max_nodes = 0;
-  src->tail_ptr = src->head_ptr = NULL;
-  src->index = -1;
+void llist_raz(llist_t* llist_ptr) {
+  llist_ptr->head_ptr = llist_ptr->tail_ptr = NULL;
 }
 
-void* llist_pop_front(llist_t* src) {
-
-  if (src->index > -1) {
-    lnode_t* node = src->head_ptr;
-    if (src->index > 0) {
-      src->head_ptr = src->head_ptr->next_ptr;
-    } else {
-      src->head_ptr = src->tail_ptr = NULL;
-    }
-    node->next_ptr = NULL;
-    src->index--;
-    return node;
-  } else {
-    //if (DEBUG_LIST) Serial.printf(F("\n DEBUG_LIST / list_pop_front / ERROR : SRC list is umpty!"));
+void* llist_pop_front(llist_t* llist_ptr) {
+  if (llist_ptr->head_ptr == NULL) {
     return NULL;
   }
-}
+  else {
+    lnode_t* node = llist_ptr->head_ptr;
 
-void llist_push_back(llist_t* dst, void* data) {
-  lnode_t* node = (lnode_t*)data;
-  if (dst->index > -1) {
-    dst->tail_ptr->next_ptr = node;
-    dst->tail_ptr = node;
-  } else {
-    dst->head_ptr = dst->tail_ptr = node;
+    if (llist_ptr->head_ptr != llist_ptr->tail_ptr) {
+      llist_ptr->head_ptr = llist_ptr->head_ptr->next_ptr;
+      node->next_ptr = NULL;
+      return node;
+    }
+    else if (llist_ptr->head_ptr == llist_ptr->tail_ptr) {
+      llist_ptr->head_ptr = llist_ptr->tail_ptr = NULL;
+      return node;
+    }
   }
-  node->next_ptr = NULL;
-  dst->index++;
+
 }
 
-// Remove a blob in a linked list
-void llist_remove_node(llist_t* src, void* data) {
-  lnode_t* nodeSuppr = (lnode_t*)data;
-  lnode_t* prevBlob = NULL;
-  //if (DEBUG_LIST) Serial.printf(F("\n DEBUG_LIST / list_remove_blob / Blob to remove: %p"), nodeSuppr);
+void llist_push_front(llist_t* llist_ptr, void* pData) {
+  lnode_t* node = (lnode_t*)pData;
+  if (llist_ptr->head_ptr != NULL) {
+    node->next_ptr = llist_ptr->head_ptr;
+    llist_ptr->head_ptr = node;
+  }
+  else {
+    llist_ptr->head_ptr = llist_ptr->tail_ptr = node;
+  }
+}
 
-  for (lnode_t* blob = ITERATOR_START_FROM_HEAD(src); blob != NULL; blob = ITERATOR_NEXT(blob)) {
+void llist_push_back(llist_t* llist_ptr, void* pData) {
+  lnode_t* node = (lnode_t*)pData;
+  //node->next_ptr = NULL;
+  if (llist_ptr->tail_ptr != NULL) {
+    llist_ptr->tail_ptr->next_ptr = node;
+    llist_ptr->tail_ptr = node;
+  }
+  else {
+    llist_ptr->head_ptr = llist_ptr->tail_ptr = node;
+  }
+}
 
-    if (blob == nodeSuppr) {
-      //if (DEBUG_LIST) Serial.printf(F("\n DEBUG_LIST / list_remove_blob / Blob: %p is found"), blob);
-
-      if (src->index == 0) {
-        //if (DEBUG_LIST) Serial.printf(F("\n DEBUG_LIST / list_remove_blob / The blob: %p is the first & last in the linked list"), nodeSuppr);
-        src->head_ptr = src->tail_ptr = NULL;
-        src->index--;
-        return;
+// linked-list node extractor
+void* llist_extract_node(llist_t* llist_ptr, void* pData) {
+  lnode_t* nodeToExtract = (lnode_t*)pData;
+  lnode_t* prevNode_ptr = NULL;
+  for (lnode_t* node = ITERATOR_START_FROM_HEAD(llist_ptr); node != NULL; node = ITERATOR_NEXT(node)) {
+    if (node == nodeToExtract) {
+      if (llist_ptr->head_ptr == llist_ptr->tail_ptr) {
+        llist_ptr->head_ptr = llist_ptr->tail_ptr = NULL;
+        return node;
       }
-      else if (blob->next_ptr == NULL) {
-        //if (DEBUG_LIST) Serial.printf(F("\n DEBUG_LIST / list_remove_blob / The blob: %p is the tail of the linked list"), nodeSuppr);
-        prevBlob->next_ptr = NULL;
-        src->tail_ptr = prevBlob;
-        src->index--;
-        return;
+      else if (node == llist_ptr->head_ptr) {
+        llist_ptr->head_ptr = llist_ptr->head_ptr->next_ptr;
+        node->next_ptr = NULL;
+        return node;
       }
-      else if (blob == src->head_ptr) {
-        //if (DEBUG_LIST) Serial.printf(F("\n DEBUG_LIST / list_remove_blob / The blob: %p is the hard of the linked list"), nodeSuppr);
-        src->head_ptr = src->head_ptr->next_ptr;
-        src->index--;
-        return;
+      else if (node == llist_ptr->tail_ptr) {
+        llist_ptr->tail_ptr = prevNode_ptr;
+        prevNode_ptr->next_ptr = NULL;
+        return node;
       }
       else {
-        //if (DEBUG_LIST) Serial.printf(F("\n DEBUG_LIST / list_remove_blob / The blob: %p is somewear else in the linked list"), nodeSuppr);
-        prevBlob->next_ptr = blob->next_ptr;
-        src->index--;
-        return;
+        prevNode_ptr->next_ptr = node->next_ptr;
+        node->next_ptr = NULL;
+        return node;
       }
     }
-    prevBlob = blob;
+    prevNode_ptr = node;
   }
-  //if (DEBUG_LIST) Serial.printf(F("\n DEBUG_LIST / list_remove_blob / ERROR / Blob not found"));
 }
 
-void llist_save_blobs(llist_t* dst, llist_t* src) {
+// TODO
+void llist_swap_nodes(llist_t* llistA_ptr, void* pDataA, llist_t* llistB_ptr, void* pDataB) {
+  lnode_t* nodeA = (lnode_t*)pDataA;
+  lnode_t* nodeB = (lnode_t*)pDataB;
+  lnode_t* nodeA_next_ptr = NULL;
+  lnode_t* nodeA_prev_ptr = NULL;
+  lnode_t* nodeB_prev_ptr = NULL;
 
-  //if (DEBUG_LIST) Serial.printf(F("\n DEBUG_LIST / list_save_blobs / START"));
-  lnode_t* blob = NULL;
-
-  while (src->index > -1) {
-    // SRC pop front
-    blob = src->head_ptr;
-    if (src->index > 0) {
-      //if (DEBUG_LIST) Serial.printf(F("\n DEBUG_LIST / list_save_blobs / SRC pop a blob in the list: %p"), blob);
-      src->head_ptr = src->head_ptr->next_ptr;
-      //if (DEBUG_LIST) Serial.printf(F("\n DEBUG_LIST / list_save_blobs / SRC Move the list hed to next_ptr: %p"), src->head_ptr);
-    } else { // src->index == 0
-      src->tail_ptr = src->head_ptr = NULL;
-      //if (DEBUG_LIST) Serial.printf(F("\n DEBUG_LIST / list_save_blobs / SRC pop the last blob in the list: %p"), blob);
+  for (lnode_t* node = ITERATOR_START_FROM_HEAD(llistA_ptr); node != NULL; node = ITERATOR_NEXT(node)) {
+    if (node == nodeA) {
+      nodeA_next_ptr = nodeA->next_ptr;
+      if (nodeA->next_ptr == NULL) {
+        nodeA_prev_ptr->next_ptr = NULL;
+        llistA_ptr->tail_ptr = nodeA_prev_ptr;
+      }
+      else if (nodeA == llistA_ptr->head_ptr) {
+        llistA_ptr->head_ptr = llistA_ptr->head_ptr->next_ptr;
+      }
+      else {
+        nodeA_prev_ptr->next_ptr = node->next_ptr;
+      }
     }
-    src->index--;
-    //if (DEBUG_LIST) Serial.printf(F("\n DEBUG_LIST / list_save_blobs / SRC set index to: %d"), src->index);
-
-    // DST push back
-    if (dst->index > -1) {
-      dst->tail_ptr->next_ptr = blob;
-      //if (DEBUG_LIST) Serial.printf(F("\n DEBUG_LIST / list_save_blobs / DST add the blob to the list: %p"), blob);
-      dst->tail_ptr = blob;
-    } else { // dst->index == -1
-      dst->head_ptr = dst->tail_ptr = blob;
-      //if (DEBUG_LIST) Serial.printf(F("\n DEBUG_LIST / list_save_blobs / DST add the first blob to the list"));
-    }
-    dst->tail_ptr->next_ptr = NULL; // Same than blob->next_ptr = NULL;
-    dst->index++;
-    //if (DEBUG_LIST) Serial.printf(F("\n DEBUG_LIST / list_save_blobs / DST set index to: %d"), dst->index);
+    nodeA_prev_ptr = nodeA;
   }
-  //if (DEBUG_LIST) Serial.printf(F("\n DEBUG_LIST / list_save_blobs / SRC linked list is umpty!"));
+}
+
+void llist_save_nodes(llist_t* dst_ptr, llist_t* src_ptr) {
+  lnode_t* node = NULL;
+  while (src_ptr->head_ptr != NULL) {
+    node = llist_pop_front(src_ptr);
+    llist_push_back(dst_ptr, node);
+    Serial.println("SAVE");
+  }
 }
 
 /*
-  // Sort a given linked list
-  void llist_sort(llist_t* src) {
-
-  blob_t* prev_blob_A = NULL;
-
+  // Linked-list sort all nodes by UID
+  void llist_sort(llist_t* llist_ptr) {
+  lnode_t* nodeA_prev_ptr = NULL;
   while (1) {
-
     boolean isSorted = true;
-
-    for (blob_t* blob_A = (blob_t *)ITERATOR_START_FROM_HEAD(src); blob_A != NULL; blob_A = (blob_t *)ITERATOR_NEXT(blob_A)) {
-      if (blob_A->UID > blob_A->next_ptr->UID) {
+    for (lnode_t* nodeA = ITERATOR_START_FROM_HEAD(llist_ptr); nodeA != NULL; nodeA = ITERATOR_NEXT(nodeA)) {
+      if (nodeA->UID > nodeA->next_ptr->UID) {
         isSorted = false;
-
-        blob_t* blob_B = blob_A->next_ptr;
-
+        lnode_t* node_B = node_A->next_ptr;
         //if (DEBUG_SORT) Serial.printf("\n DEBUG_SORT / llist_sort / prev_blob_A: %p", prev_blob_A);
         //if (DEBUG_SORT) Serial.printf("\n DEBUG_SORT / llist_sort / blob_A: %p", blob_A);
         //if (DEBUG_SORT) Serial.printf("\n DEBUG_SORT / llist_sort / blob_B: %p", blob_B);
-
-        if (prev_blob_A != NULL) { // Test if prev_ptr_A is the head of linked list
-          prev_blob_A->next_ptr = blob_B;
+        if (nodeA_prev_ptr != NULL) { // Test if prev_ptr_A is the head of linked list
+          nodeA_prev_ptr->next_ptr = node_B;
           //if (DEBUG_SORT) Serial.printf("\n DEBUG_SORT / llist_sort / previous blob_A is not the HEAD : %p", prev_blob_A->next_ptr);
         }
         else { // Set curr_ptr_B as NEW HEAD
-          src->head_ptr = blob_B;
+          llist_ptr->head_ptr = node_B;
           //if (DEBUG_SORT) Serial.printf("\n DEBUG_SORT / llist_sort / SET previous blob_A as HEAD : %p", src->head_ptr);
         }
-        if (blob_B->next_ptr != NULL) { // Test if current blob_B is not the TAIL of linked list
-          blob_A->next_ptr = blob_B->next_ptr;
+        if (node_B->next_ptr != NULL) { // Test if current blob_B is not the TAIL of linked list
+          node_A->next_ptr = node_B->next_ptr;
           //if (DEBUG_SORT) Serial.printf("\n DEBUG_SORT / llist_sort / blob_B is not the TAIL : %p", blob_A->next_ptr);
         }
         else { // Set current blob_A as NEW TAIL
-          src->tail_ptr = blob_A;
-          blob_A->next_ptr = NULL;
+          llist_ptr->tail_ptr = node_A;
+          node_A->next_ptr = NULL;
           //if (DEBUG_SORT) Serial.printf("\n DEBUG_SORT / llist_sort / blob_B is the TAIL : %p", src->tail_ptr);
         }
-        blob_B->next_ptr = blob_A; // Swap pointers
+        node_B->next_ptr = node_A; // Swap pointers
         //if (DEBUG_SORT) Serial.printf("\n DEBUG_SORT / llist_sort / swaped blob_A: %p", blob_B->next_ptr);
       }
-      prev_blob_A = blob_A;
+      nodeA_prev_ptr = node_A;
       break;
     }
     if (isSorted) {

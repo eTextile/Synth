@@ -12,10 +12,11 @@
 //#if defined(USB_SERIAL)
 //#if defined(USB_MIDI)
 
-#define ETEXTILE_SYNTHESIZER   "1.0.0"
+#define NAME                    "ETEXTILE_SYNTHESIZER"
+#define VERSION                 "1.0.2"
 
 #define MIDI_USB                0 // [0:1] Set the eTextile-Synthesizer as USB MIDI divice
-#define MIDI_HARDWARE           1 // [0:1] Set the eTextile-Synthesizer as MIDI I/O divice
+#define MIDI_HARDWARE           0 // [0:1] Set the eTextile-Synthesizer as MIDI I/O divice
 #define SLIP_OSC                0 // [0:1] Set the eTextile-Synthesizer as SLIP_OSC divice
 
 #define SYNTH_PLAYER            0 // [0:1] Set the eTextile-Synthesizer as STANDALONE divice
@@ -26,16 +27,16 @@
 #define MAX_SYNTH               8 // [1:8] Set how many synthesizers can play at the same time
 
 // Arduino serial monitor
-#define DEBUG_FPS               0 // [0:1] Print Frames Per Second
+#define DEBUG_FPS               1 // [0:1] Print Frames Per Second
 #define DEBUG_ENCODER           0 // [0:1] Print encoder value 
 #define DEBUG_BUTTONS           0 // [0:1] Print buttons states
 #define DEBUG_ADC               0 // [0:1] Print 16x16 Analog raw values
 #define DEBUG_INTERP            0 // [0:1] Print 64x64 interpolated values
 #define DEBUG_BITMAP            0 // [0:1] Print 64x64 binary image based on threshold
 #define DEBUG_BLOBS             0 // [0:1] Print blobs values
-#define DEBUG_MAPPING           1 // [0:1] Print blobs values
+#define DEBUG_MAPPING           0 // [0:1] Print blobs values
 
-#define DEBUG_BLOBS_ID          0 // [0:1] Print lowlevel blobs values
+#define DEBUG_BLOBS_ID          1 // [0:1] Print lowlevel blobs values
 #define DEBUG_SORT              0 // [0:1] Print lowlevel blobs sort (NOT_USED)
 
 #define SET_ORIGIN_X            1 // [-1:1] X-axis origine positioning
@@ -72,7 +73,6 @@
 #define NEW_FRAME               (NEW_COLS * NEW_ROWS)
 #define POLAR_CX                (NEW_COLS / 2)
 #define POLAR_CY                (NEW_ROWS / 2)
-#define MAX_NODES               40       // Set the maximum nodes number
 #define LIFO_MAX_NODES          127      // Set the maximum nodes number
 #define X_STRIDE                3        // 
 #define Y_STRIDE                3        // 

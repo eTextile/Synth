@@ -34,12 +34,12 @@ void synth_player(llist_t* blobs_ptr, synth_t* allSynth_ptr) {
 
     if (blob_ptr->UID < MAX_SYNTH) {
 
-      if (blob_ptr->alive && allSynth_ptr[blob_ptr->UID].lastBlobState == 0) {
+      if (blob_ptr->state && !blob_ptr->lastState) {
         allSynth_ptr[blob_ptr->UID].wf_ptr->phase(0);
         allSynth_ptr[blob_ptr->UID].fade_ptr->fadeIn(3);
       }
 
-      if (blob_ptr->alive) {
+      if (blob_ptr->state) {
         allSynth_ptr[blob_ptr->UID].wf_ptr->frequency(blob_ptr->centroid.X * 3);
         allSynth_ptr[blob_ptr->UID].fm_ptr->frequency(blob_ptr->centroid.Y * 4 + 50);
         /*
@@ -56,7 +56,6 @@ void synth_player(llist_t* blobs_ptr, synth_t* allSynth_ptr) {
       else {
         allSynth_ptr[blob_ptr->UID].fade_ptr->fadeOut(500);
       }
-      allSynth_ptr[blob_ptr->UID].lastBlobState = blob_ptr->alive;
     }
   }
   AudioInterrupts();
