@@ -133,7 +133,7 @@ typedef struct blob blob_t;
 
 struct blob {
   lnode_t node;
-  int8_t UID;
+  uint8_t UID;
   uint32_t timeTag;
   uint16_t pixels;
   boolean state;
@@ -145,8 +145,6 @@ struct blob {
 
 void bitmap_clear(image_t* bitmap_ptr);
 static int sum_m_to_n(int m, int n);
-
-void node_raz(blob_t* node);
 
 void blob_llist_init(llist_t *list, blob_t* nodesArray, uint8_t max_nodes);
 void lifo_llist_init(llist_t *list, xylr_t* nodesArray, uint8_t max_nodes);

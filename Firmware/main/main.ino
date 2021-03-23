@@ -4,6 +4,7 @@
   Copyright (c) 2014- Maurin Donneaud <maurin@etextile.org>
   This work is licensed under Creative Commons Attribution-ShareAlike 4.0 International license, see the LICENSE file for details.
 */
+
 #include <Audio.h>              // https://github.com/PaulStoffregen/Audio
 #include <Wire.h>               // https://github.com/PaulStoffregen/Wire
 #include <SPI.h>                // https://github.com/PaulStoffregen/SPI
@@ -132,15 +133,15 @@ AudioConnection                   patchCord27(playFlashRaw, 0, mix_3, 2);
 AudioConnection                   patchCord28(mix_3, 0, i2s_OUT, 0);
 AudioConnection                   patchCord29(mix_3, 0, i2s_OUT, 1);
 
-synth_t allSynth[8] = {
-  {&wf_1, &fm_1, &fade_1, &mix_1, 0},
-  {&wf_2, &fm_2, &fade_2, &mix_1, 0},
-  {&wf_3, &fm_3, &fade_3, &mix_1, 0},
-  {&wf_4, &fm_4, &fade_4, &mix_1, 0},
-  {&wf_5, &fm_5, &fade_5, &mix_2, 0},
-  {&wf_6, &fm_6, &fade_6, &mix_2, 0},
-  {&wf_7, &fm_7, &fade_7, &mix_2, 0},
-  {&wf_8, &fm_8, &fade_8, &mix_2, 0}
+synth_t allSynth[MAX_SYNTH] = {
+  {&wf_1, &fm_1, &fade_1, &mix_1},
+  {&wf_2, &fm_2, &fade_2, &mix_1},
+  {&wf_3, &fm_3, &fade_3, &mix_1},
+  {&wf_4, &fm_4, &fade_4, &mix_1},
+  {&wf_5, &fm_5, &fade_5, &mix_2},
+  {&wf_6, &fm_6, &fade_6, &mix_2},
+  {&wf_7, &fm_7, &fade_7, &mix_2},
+  {&wf_8, &fm_8, &fade_8, &mix_2}
 };
 #endif
 
@@ -170,7 +171,7 @@ preset_t presets[7] = {
   {13, 31, 29, 0, false, false, false, LOW,  LOW }, // LINE_OUT   - ARGS[minVal, maxVal, val, ledVal, setLed, updateLed, update, D1, D2]
   { 1, 50, 12, 0, false, false, false, HIGH, LOW }, // SIG_IN     - ARGS[minVal, maxVal, val, ledVal, setLed, updateLed, update, D1, D2]
   { 1, 31, 17, 0, false, false, false, LOW,  HIGH}, // SIG_OUT    - ARGS[minVal, maxVal, val, ledVal, setLed, updateLed, update, D1, D2]
-  { 1, 60, 10, 0, false, false, false, HIGH, HIGH}, // THRESHOLD  - ARGS[minVal, maxVal, val, ledVal, setLed, updateLed, update, D1, D2]
+  { 1, 60, 15, 0, false, false, false, HIGH, HIGH}, // THRESHOLD  - ARGS[minVal, maxVal, val, ledVal, setLed, updateLed, update, D1, D2]
   { 1, 6,  1,  0, false, false, false, NULL, NULL}, // MIDI_LEARN - ARGS[minVal, maxVal, val, ledVal, setLed, updateLed, update, D1, D2]
   { 0, 0,  0,  0, true,  true,  false, NULL, NULL}, // CALIBRATE  - ARGS[minVal, maxVal, val, ledVal, setLed, updateLed, update, D1, D2]
   { 0, 0,  0,  0, false, false, false, NULL, NULL}  // SAVE       - ARGS[minVal, maxVal, val, ledVal, setLed, updateLed, update, D1, D2]
@@ -330,7 +331,7 @@ void loop() {
     print_interp(&interpolatedFrame);
   }
 #endif
-  
+
   find_blobs(
     presets[THRESHOLD].val, // uint8_t (Z)Threshold
     &interpolatedFrame,     // image_t (uint8_t array[NEW_FRAME] - 64*64 1D array)
@@ -380,7 +381,7 @@ void loop() {
   //controlChangeMapping(&outputBlobs, &ccPesets);              // ARGS[llist_ptr, ccPesets_ptr]
 #endif
 
-  getVelocity(&outputBlobs, &blobVelocity[0]);                  // ARGS[llist_ptr, blobVelocity_ptr]
+  //getVelocity(&outputBlobs, &blobVelocity[0]);                  // ARGS[llist_ptr, blobVelocity_ptr]
   //hSlider(&outputBlobs, &hSlider_A);                          // ARGS[llist_ptr, hSlider_ptr]
   //vSlider(&outputBlobs, &vSlider_A);                          // ARGS[llist_ptr, vSlider_ptr]
   //getPolarCoordinates(&outputBlobs, &polarCoord[0]);          // ARGS[llist_ptr, polar_ptr]

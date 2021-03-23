@@ -308,19 +308,19 @@ boolean setLevel(preset_t* preset_ptr, Encoder* encoder_ptr) {
 }
 
 // TODO
-void preset_load(preset_t* preset_ptr, boolean * state_ptr) {
+void preset_load(preset_t* preset_ptr, boolean* state_ptr) {
 
   for (int i = 0; i < 4; i++) {
     // EEPROM.read(i, preset_ptr[i].val); // uint8_t
   }
-  *state_ptr = false;
+  state_ptr = false;
 }
 
 // TODO
-void preset_save(preset_t* preset_ptr, boolean * state_ptr) {
+void preset_save(preset_t* preset_ptr, boolean* state_ptr) {
 
   for (int i = 0; i < 4; i++) {
     //EEPROM.write(i, preset_ptr[i].val); // uint8_t
   }
-  *state_ptr = false;
+  state_ptr = false;
 }
