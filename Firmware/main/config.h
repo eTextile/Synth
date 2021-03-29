@@ -82,7 +82,6 @@
 
 #define DEBOUNCE_TIME_BLOB      15
 #define DEBOUNCE_TIME_SWITCH    15
-//#define DEBOUNCE_TIME_MIDI      20
 
 #define PI                      3.1415926535897932384626433832795
 

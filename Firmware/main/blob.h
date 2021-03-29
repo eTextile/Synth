@@ -121,11 +121,10 @@ struct bbox {
   uint8_t D; // TODO Make it as float
 };
 
-// Blob states
 typedef enum status {
   FREE,
-  TO_ADD,
-  TO_UPDATE,
+  //TO_ADD,
+  //TO_UPDATE,
   TO_REMOVE
 } status_t;
 
@@ -134,7 +133,7 @@ typedef struct blob blob_t;
 struct blob {
   lnode_t node;
   uint8_t UID;
-  uint32_t timeTag;
+  //uint32_t timeTag;
   uint16_t pixels;
   boolean state;
   boolean lastState;
@@ -174,7 +173,7 @@ void find_blobs(
   llist_t*  outputBlobs_ptr
 );
 
-void print_bitmap(image_t* bitmap);
-void print_blobs(llist_t* src);
+void print_bitmap(image_t* bitmap_ptr);
+void print_blobs(llist_t* llist_ptr);
 
 #endif /*__BLOB_H__*/

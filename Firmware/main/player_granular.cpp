@@ -21,12 +21,10 @@ void granular_player(llist_t* blobs_ptr, AudioEffectGranular* granular_ptr, uint
       float msec = blob_ptr->centroid.Y / Y_MAX; // Mapp X to buffer size
       msec = 10.0 + (msec * 10.0);
       granular_ptr->beginPitchShift(msec); // The grainLength is specified in milliseconds, up to 1/3 of the memory from begin();
-
       float ratio = blob_ptr->centroid.X / X_MAX; // Mapp X to buffer size
       ratio = powf(2.0, ratio * 2.0 - 1.0); // 0.5 to 2.0
       //ratio = powf(2.0, ratio * 6.0 - 3.0); // 0.125 to 8.0 -- uncomment for far too much range!
       granular_ptr->setSpeed(ratio);
-
     }
     else {
       granular_ptr->stop();

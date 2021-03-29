@@ -209,7 +209,7 @@ void setup() {
 #if DEBUG_ADC || DEBUG_INTERP || DEBUG_BLOBS || DEBUG_SFF_BITMAP || DEBUG_FPS
   Serial.begin(BAUD_RATE); // Start Serial communication using 230400 baud
   while (!Serial);
-  Serial.printf("\n%s %s", NAME, VERSION);
+  Serial.printf("\n%s_%s", NAME, VERSION);
 #endif
 
   SETUP_LEDS();
@@ -376,8 +376,8 @@ void loop() {
   //    SET_ORIGIN_Y == 1
 
 #if MIDI_HARDWARE
-  //gridLayout(&outputBlobs, &grid);                            // ARGS[llist_ptr, gridLayout_ptr]
-  gridGapLayout(&outputBlobs, &grid);                           // ARGS[llist_ptr, gridLayout_ptr]
+  gridLayout(&outputBlobs, &grid);                            // ARGS[llist_ptr, gridLayout_ptr]
+  //gridGapLayout(&outputBlobs, &grid);                           // ARGS[llist_ptr, gridLayout_ptr]
   //controlChangeMapping(&outputBlobs, &ccPesets);              // ARGS[llist_ptr, ccPesets_ptr]
 #endif
 

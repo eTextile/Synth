@@ -230,7 +230,7 @@ void SETUP_GRID_LAYOUT(squareKey_t* keyArray_ptr) {
 void gridGapLayout(llist_t* blobs_ptr, grid_t* gridLayout_ptr) {
 
   for (blob_t* blob_ptr = (blob_t*)ITERATOR_START_FROM_HEAD(blobs_ptr); blob_ptr != NULL; blob_ptr = (blob_t*)ITERATOR_NEXT(blob_ptr)) {
-    if (blob_ptr->UID < MAX_BLOBS) {                                                    // Test if the blob is within the limits
+    if (blob_ptr->UID < MAX_SYNTH) {                                                    // Test if the blob is within the limits
       uint8_t keyPosX = (uint8_t)round((blob_ptr->centroid.X / X_MAX) * X_GRID_STEP);   // Compute X window position
       uint8_t keyPosY = (uint8_t)round((blob_ptr->centroid.Y / Y_MAX) * X_GRID_STEP);   // Compute Y window position
       uint8_t keyPressed = keyPosY * Y_GRID_STEP + keyPosX;                             // Compute 1D key index position

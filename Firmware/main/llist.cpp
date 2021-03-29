@@ -17,7 +17,7 @@ void* llist_pop_front(llist_t* llist_ptr) {
   if (node != NULL) {
     if (llist_ptr->head_ptr != llist_ptr->tail_ptr) {
       llist_ptr->head_ptr = llist_ptr->head_ptr->next_ptr;
-      node->next_ptr = NULL;
+      //node->next_ptr = NULL;
       return node;
     }
     else {
@@ -38,27 +38,14 @@ void llist_push_front(llist_t* llist_ptr, void* data_ptr) {
   }
   else {
     llist_ptr->head_ptr = llist_ptr->tail_ptr = node;
+    node->next_ptr = NULL;
   }
 }
 
-/*
-  void llist_push_back(llist_t* llist_ptr, void* data_ptr) {
-  lnode_t* node = (lnode_t*)data_ptr;
-  //node->next_ptr = NULL;
-  if (llist_ptr->tail_ptr != NULL) {
-    llist_ptr->tail_ptr->next_ptr = node;
-    llist_ptr->tail_ptr = node;
-  }
-  else {
-    llist_ptr->head_ptr = llist_ptr->tail_ptr = node;
-  }
-  }
-*/
-
 // linked-list node extractor
-void llist_extract_node(llist_t* llist_ptr, void* lastData_ptr, void* data_ptr) {
+void llist_extract_node(llist_t* llist_ptr, void* prevData_ptr, void* data_ptr) {
   lnode_t* nodeToExtract = (lnode_t*)data_ptr;
-  lnode_t* prevNode_ptr = (lnode_t*)lastData_ptr;
+  lnode_t* prevNode_ptr = (lnode_t*)prevData_ptr;
 
   if (llist_ptr->head_ptr == llist_ptr->tail_ptr) {
     llist_ptr->head_ptr = llist_ptr->tail_ptr = NULL;
@@ -66,15 +53,15 @@ void llist_extract_node(llist_t* llist_ptr, void* lastData_ptr, void* data_ptr) 
   else {
     if (nodeToExtract == llist_ptr->head_ptr) {
       llist_ptr->head_ptr = llist_ptr->head_ptr->next_ptr;
-      nodeToExtract->next_ptr = NULL;
+      //nodeToExtract->next_ptr = NULL;
     }
     else if (nodeToExtract == llist_ptr->tail_ptr) {
       llist_ptr->tail_ptr = prevNode_ptr;
-      prevNode_ptr->next_ptr = NULL;
+      //prevNode_ptr->next_ptr = NULL;
     }
     else {
       prevNode_ptr->next_ptr = nodeToExtract->next_ptr;
-      nodeToExtract->next_ptr = NULL;
+      //nodeToExtract->next_ptr = NULL;
     }
   }
 }
