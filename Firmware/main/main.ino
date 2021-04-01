@@ -183,11 +183,11 @@ uint8_t interpThreshold = 5;
 //tSwitch_t tapSwitch = {10, 10, 5, 1000, false};         // ARGS[posX, posY, rSize, debounceTimer, state]
 //tSwitch_t modeSwitch = {40, 30, 5, 1000, false};        // ARGS[posX, posY, rSize, debounceTimer, state]
 
-squareKey_t keyArray[GRID_KEYS] = {0, 0, 0, 0};           // 1D Array of struct squareKey_t to store pre-compute key positions
-int8_t keyPressed[MAX_BLOBS] = {0};                       // 1D Array to store pressed keys
-int8_t midiIN[20] = {127, 63, 44};                        // 1D Array to store incoming midi notes
+int8_t lastKey[MAX_SYNTH] = {0};                          // 1D Array to store last keys pressed
+squareKey_t keyArray[GRID_KEYS] = {0, 0, 0, 0};           // 1D Array of struct squareKey_t to store pre-compute key positions ARGS[Xmin, Xmax, Ymin, Ymax]
+midiNote_t midiIN[MAX_SYNTH] = {0, 0, 0};                 // 1D Array to store incoming midi notes
 
-grid_t grid = {&keyArray[0], &keyPressed[0], &midiIN[0]}; // ARGS[blobKeyPress, lastBlobKeyPress, debounceTime, midiNotes]
+grid_t grid = {&lastKey[0], &keyArray[0], &midiIN[0]};    // ARGS[blobKeyPress, KeyPress, midiNotes]
 
 polar_t polarCoord[MAX_BLOBS];                            // 1D Array of struct polar_t to store blobs polar coordinates
 
@@ -381,7 +381,7 @@ void loop() {
   //controlChangeMapping(&outputBlobs, &ccPesets);              // ARGS[llist_ptr, ccPesets_ptr]
 #endif
 
-  //getVelocity(&outputBlobs, &blobVelocity[0]);                  // ARGS[llist_ptr, blobVelocity_ptr]
+  //getVelocity(&outputBlobs, &blobVelocity[0]);                // ARGS[llist_ptr, blobVelocity_ptr]
   //hSlider(&outputBlobs, &hSlider_A);                          // ARGS[llist_ptr, hSlider_ptr]
   //vSlider(&outputBlobs, &vSlider_A);                          // ARGS[llist_ptr, vSlider_ptr]
   //getPolarCoordinates(&outputBlobs, &polarCoord[0]);          // ARGS[llist_ptr, polar_ptr]

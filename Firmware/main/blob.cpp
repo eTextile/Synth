@@ -419,7 +419,16 @@ void print_bitmap(image_t* bitmap_ptr) {
 void print_blobs(llist_t* llist_ptr) {
   uint8_t index = 0;
   for (blob_t* blob = (blob_t*)ITERATOR_START_FROM_HEAD(llist_ptr); blob != NULL; blob = (blob_t*)ITERATOR_NEXT(blob)) {
-    Serial.printf("\nINDEX:%d\tID:%d\tS:%d\tX:%f\tY:%f\tW:%d\tH:%d\tD:%d\t", index, blob->UID, blob->state, blob->centroid.X, blob->centroid.Y, blob->box.W, blob->box.H, blob->box.D);
+    Serial.printf("\nINDEX:%d\tID:%d\tS:%d\tLS:%d\tX:%f\tY:%f\tW:%d\tH:%d\tD:%d\t",
+                  index, blob->UID,
+                  blob->state,
+                  blob->lastState,
+                  blob->centroid.X,
+                  blob->centroid.Y,
+                  blob->box.W,
+                  blob->box.H,
+                  blob->box.D
+                 );
     index++;
   }
 }

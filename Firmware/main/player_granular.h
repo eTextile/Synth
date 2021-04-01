@@ -14,6 +14,7 @@
 #include "mapping.h"
 
 typedef struct llist llist_t;   // Forward declaration
+typedef struct lnode lnode_t;   // Forward declaration
 typedef struct blob blob_t;     // Forward declaration
 
 void SETUP_GRANULAR(AudioEffectGranular* granular_ptr, uint16_t* buffer_ptr);

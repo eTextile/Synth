@@ -90,20 +90,20 @@
 #define X_MAX                   58       // Blob X_MAX centroid position
 #define Y_MAX                   58       // Blob Y_MAX centroid position
 
-#define X_GRID_STEP             8
-#define Y_GRID_STEP             8
-#define GRID_KEYS               (X_GRID_STEP * Y_GRID_STEP)
+#define GRID_COLS               8
+#define GRID_ROWS               8
+#define GRID_KEYS               (GRID_COLS * GRID_ROWS)
 #define GRID_GAP                2
-#define KEY_SIZE                ((X_MAX - ((X_GRID_STEP + 1) * GRID_GAP)) / X_GRID_STEP)
+#define KEY_SIZE                ((X_MAX - ((GRID_COLS + 1) * GRID_GAP)) / GRID_COLS)
 
 #define MAX_BLOB_PARAM          7        // [BI, BS, BX, BY, BW, BH, BD]
-#define BI                      0
-#define BS                      1
-#define BX                      2
-#define BY                      3
-#define BW                      4
-#define BH                      5
-#define BD                      6
+#define BI                      0        // Blob UID
+#define BS                      1        // Blob State
+#define BX                      2        // Blob Centroid PosX
+#define BY                      3        // Blob Centroid PosY
+#define BW                      4        // Blob width
+#define BH                      5        // Blob Height
+#define BD                      6        // Blob Depth 
 
 #define LONG_HOLD               1500
 #define MIDI_LEARN_LED_TIMEON   600

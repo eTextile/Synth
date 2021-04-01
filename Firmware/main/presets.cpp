@@ -287,7 +287,8 @@ boolean setLevel(preset_t* preset_ptr, Encoder* encoder_ptr) {
   uint8_t val = encoder_ptr->read() >> 2;
 
   if (val != preset_ptr->val) {
-    Serial.printf("\nDEBUG_ENCODER:\tVAL:%d", preset_ptr->val);
+
+    //Serial.printf("\nDEBUG_ENCODER:\tVAL:%d", preset_ptr->val);
 
     if (val > preset_ptr->maxVal) {
       encoder_ptr->write(preset_ptr->maxVal << 2);

@@ -83,18 +83,26 @@ struct polar {
 typedef struct squareKey squareKey_t;
 
 struct squareKey {
-  uint8_t Xmin;
-  uint8_t Xmax;
-  uint8_t Ymin;
-  uint8_t Ymax;
+  float Xmin;
+  float Xmax;
+  float Ymin;
+  float Ymax;
+};
+
+typedef struct midiNote midiNote_t;
+
+struct midiNote {
+  uint8_t channel;
+  uint8_t pithch;
+  uint8_t velocity;
 };
 
 typedef struct grid grid_t;
 
 struct grid {
+  int8_t* lastKey;
   squareKey_t* keyArray_ptr;
-  int8_t* keyPressed;
-  int8_t* midiLayout;
+  midiNote_t* midiLayout;
 };
 
 typedef struct cChange ccPesets_t;
