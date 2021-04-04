@@ -17,8 +17,8 @@
 #include "interp.h"
 #include "blob.h"
 #include "median.h"
-#include "transmit.h"
 #include "mapping.h"
+#include "transmit.h"
 
 #include "soundCard.h"
 #include "player_granular.h"
@@ -54,6 +54,9 @@ llist_t  lifo;                  // Lifo stack
 llist_t  blobs_stack;           // Blobs free nodes linked list
 llist_t  blobs;                 // Intermediate blobs linked list
 llist_t  outputBlobs;           // Output blobs linked list
+
+llist_t  midiIn_stack;          // MidiIn free nodes linked list
+llist_t  midiInllist;           // MidiIn linked list
 
 Encoder encoder(ENCODER_PIN_A, ENCODER_PIN_B);
 
@@ -153,7 +156,7 @@ AudioConnection                   patchCord3(granular, 0, i2s_OUT, 1);
 #endif
 
 presetMode_t currentMode = CALIBRATE;   // Init currentMode with CALIBRATE (DEFAULT_MODE)
-presetMode_t lastMode = LINE_OUT;      // Init lastMode with LINE_OUT (DEFAULT_MODE)
+presetMode_t lastMode = LINE_OUT;       // Init lastMode with LINE_OUT (DEFAULT_MODE)
 
 #if DEBUG_FPS
 elapsedMillis curentMillisFps;
@@ -185,9 +188,9 @@ uint8_t interpThreshold = 5;
 
 int8_t lastKey[MAX_SYNTH] = {0};                          // 1D Array to store last keys pressed
 squareKey_t keyArray[GRID_KEYS] = {0, 0, 0, 0};           // 1D Array of struct squareKey_t to store pre-compute key positions ARGS[Xmin, Xmax, Ymin, Ymax]
-midiNote_t midiIN[MAX_SYNTH] = {0, 0, 0};                 // 1D Array to store incoming midi notes
+midiNode_t midiInArray[MAX_SYNTH] = {0, 0, 0};            // 1D Array to store incoming midi notes
 
-grid_t grid = {&lastKey[0], &keyArray[0], &midiIN[0]};    // ARGS[blobKeyPress, KeyPress, midiNotes]
+grid_t grid = {&lastKey[0], &keyArray[0], &midiInllist};  // ARGS[blobKeyPress, KeyPress, midiNotes]
 
 polar_t polarCoord[MAX_BLOBS];                            // 1D Array of struct polar_t to store blobs polar coordinates
 
@@ -200,7 +203,8 @@ cSlider_t cSliders[C_SLIDERS] = {
   {  20, 4,  4.8,  5, 0}                                  // ARGS[r, width, phiOffset, phiMax, val]
 };
 
-ccPesets_t ccPesets = {NULL, BD, 44, 1, 0};               // ARGS[blobID, [BX,BY,BW,BH,BD], cChange, midiChannel, Val]
+//typedef struct ccPesets ccPesets_t;
+ccPesets_t ccPeset = {NULL, BD, 44, 1, 0};                // ARGS[blobID, [BX,BY,BW,BH,BD], cChange, midiChannel, Val]
 
 int16_t granularMemory[GRANULAR_MEMORY_SIZE] = {0};       //
 
@@ -212,19 +216,18 @@ void setup() {
   Serial.printf("\n%s_%s", NAME, VERSION);
 #endif
 
-  SETUP_LEDS();
-
-  SETUP_SWITCHES(&BUTTON_L, &BUTTON_R);
-  SETUP_SPI();
-  SETUP_ADC(adc);
-  SETUP_INTERP(
+  LEDS_SETUP();
+  SWITCHES_SETUP(&BUTTON_L, &BUTTON_R);
+  SPI_SETUP();
+  ADC_SETUP(adc);
+  INTERP_SETUP(
     &inputFrame,          // image_t*
     &frameArray[0],       // uint8_t*
     &interpolatedFrame,   // image_t*
     &interpFrameArray[0], // uint8_t*
     &interp               // interp_t*
   );
-  SETUP_BLOB(
+  BLOB_SETUP(
     &bitmapArray[0],      // uint8_t*
     &bitmap,              // image_t*
     &lifo,                // lifo_t*
@@ -235,29 +238,31 @@ void setup() {
     &blobArray[0],        // blob_t*
     &outputBlobs          // list_t*
   );
-#if MIDI_USB
-  SETUP_MIDI_USB();
+#if USB_MIDI
+  USB_MIDI_SETUP();
 #endif
-#if SLIP_OSC
-  SETUP_SLIP_OSC();
+#if USB_SLIP_OSC
+  USB_SLIP_OSC_SETUP();
 #endif
-#if MIDI_HARDWARE
-  SETUP_MIDI_HARDWARE();
+#if HARDWARE_MIDI
+  HARDWARE_MIDI_SETUP();
+  llist_raz(&midiIn_stack);
+  midiIn_llist_init(&midiIn_stack, &midiInArray[0], MAX_SYNTH);
+  llist_raz(&midiInllist);
 #endif
 #if SYNTH_PLAYER || GRANULAR_PLAYER || RAW_PLAYER
-  SETUP_SOUND_CARD(&sgtl5000);
+  SOUND_CARD_SETUP(&sgtl5000);
 #endif
 #if SYNTH_PLAYER
-  SETUP_SYNTH(&allSynth[0]);
+  SYNTH_PLAYER_SETUP(&allSynth[0]);
 #endif
-#if RAW_PLAYER
-  SETUP_FLASH_PLAYER();
+#if FLASH_PLAYER
+  FLASH_PLAYER_SETUP();
 #endif
 #if GRANULAR_PLAYER
-  SETUP_GRANULAR(&granular, &granularMemory[0]);
+  GRANULAR_PLAYER_SETUP(&granular, &granularMemory[0]);
 #endif
-
-  SETUP_GRID_LAYOUT(&keyArray[0]);
+  GRID_LAYOUT_SETUP(&keyArray[0]);
 }
 
 //////////////////// LOOP
@@ -356,7 +361,7 @@ void loop() {
   print_blobs(&outputBlobs);
 #endif
 
-#if MIDI_USB
+#if USB_MIDI
   if (currentMode == MIDI_LEARN) {
     blobs_usb_midi_learn(&outputBlobs, &presets[MIDI_LEARN]);
   }
@@ -375,10 +380,10 @@ void loop() {
   //    SET_ORIGIN_X == 1
   //    SET_ORIGIN_Y == 1
 
-#if MIDI_HARDWARE
-  gridLayout(&outputBlobs, &grid);                            // ARGS[llist_ptr, gridLayout_ptr]
-  //gridGapLayout(&outputBlobs, &grid);                           // ARGS[llist_ptr, gridLayout_ptr]
-  //controlChangeMapping(&outputBlobs, &ccPesets);              // ARGS[llist_ptr, ccPesets_ptr]
+#if HARDWARE_MIDI
+  //gridLayout(&outputBlobs, &grid);                            // ARGS[llist_ptr, gridLayout_ptr]
+  gridGapLayout(&outputBlobs, &grid);                           // ARGS[llist_ptr, gridLayout_ptr]
+  //controlChangeMapping(&outputBlobs, &ccPesets);              // ARGS[llist_ptr, ccccPesets_ptr]
 #endif
 
   //getVelocity(&outputBlobs, &blobVelocity[0]);                // ARGS[llist_ptr, blobVelocity_ptr]
@@ -397,8 +402,8 @@ void loop() {
   granular_player(&outputBlobs, &granular, &granularMemory[0]);
 #endif
 
-#if RAW_PLAYER
-  play_raw(&outputBlobs, &playFlashRaw);
+#if FLASH_PLAYER
+  flash_player(&outputBlobs, &playFlashRaw);
 #endif
 
 #if DEBUG_FPS

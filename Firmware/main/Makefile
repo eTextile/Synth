@@ -95,7 +95,7 @@ SPECS = --specs=nano.specs
 # the NO_ARDUINO behaviour.
 ifndef NO_ARDUINO
 # Path to your arduino installation
-ARDUINOPATH = $(HOME)/Applications/arduino-1.8.13
+ARDUINOPATH = $(HOME)/Applications/arduino-1.8.13/
 endif
 
 ifdef ARDUINOPATH

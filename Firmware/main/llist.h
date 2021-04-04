@@ -10,13 +10,11 @@
 #include "config.h"
 
 typedef struct lnode lnode_t;
-
 struct lnode {
   lnode_t* next_ptr;
 };
 
 typedef struct llist llist_t;
-
 struct llist {
   lnode_t* head_ptr;
   lnode_t* tail_ptr;
@@ -26,9 +24,8 @@ struct llist {
 
 void llist_raz(llist_t* llist_ptr);
 void* llist_pop_front(llist_t* llist_ptr);
-
 void llist_extract_node(llist_t* llist_ptr, void* prevData_ptr, void* data_ptr);
-void llist_push_front(llist_t* llist_ptr, void* pData);
+void llist_push_front(llist_t* llist_ptr, void* data_ptr);
 void llist_swap_llist(llist_t* llistA_ptr, llist_t* llistB_ptr);
 void llist_save_nodes(llist_t* dst_ptr, llist_t* src_ptr);
 //void llist_sort(llist_t* src_ptr);

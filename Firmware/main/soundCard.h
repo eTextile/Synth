@@ -14,7 +14,7 @@
 
 typedef struct preset preset_t; // Forward declaration
 
-void SETUP_SOUND_CARD(AudioControlSGTL5000* soundCard_ptr);
+void SOUND_CARD_SETUP(AudioControlSGTL5000* soundCard_ptr);
 
 void update_volumes(
   presetMode_t curentMode,

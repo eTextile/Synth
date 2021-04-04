@@ -87,7 +87,6 @@ typedef struct llist llist_t; // Forward declaration
   })
 
 typedef struct image image_t;
-
 struct image {
   uint8_t numCols;
   uint8_t numRows;
@@ -95,7 +94,6 @@ struct image {
 };
 
 typedef struct xylr xylr_t;
-
 struct xylr {
   lnode_t node;
   uint8_t x;
@@ -107,14 +105,12 @@ struct xylr {
 };
 
 typedef struct point point_t;
-
 struct point {
   float X;
   float Y;
 };
 
 typedef struct bbox bbox_t;
-
 struct bbox {
   uint8_t W; // TODO Make it as float
   uint8_t H; // TODO Make it as float
@@ -123,13 +119,10 @@ struct bbox {
 
 typedef enum status {
   FREE,
-  //TO_ADD,
-  //TO_UPDATE,
   TO_REMOVE
 } status_t;
 
 typedef struct blob blob_t;
-
 struct blob {
   lnode_t node;
   uint8_t UID;
@@ -148,7 +141,7 @@ static int sum_m_to_n(int m, int n);
 void blob_llist_init(llist_t *list, blob_t* nodesArray, uint8_t max_nodes);
 void lifo_llist_init(llist_t *list, xylr_t* nodesArray, uint8_t max_nodes);
 
-void SETUP_BLOB(
+void BLOB_SETUP(
   uint8_t* bitmapArray_ptr,
   image_t* bitmap_ptr,
   llist_t* lifo_ptr,
@@ -172,6 +165,26 @@ void find_blobs(
   llist_t*  inputBlobs_ptr,
   llist_t*  outputBlobs_ptr
 );
+
+typedef struct velocity velocity_t;
+struct velocity {
+  float lastX;
+  float lastY;
+  float lastZ;
+  float vx;
+  float vy;
+  float vz;
+};
+
+void get_blobs_velocity(llist_t* blobs_ptr, velocity_t* velocity_ptr);
+
+typedef struct polar polar_t;
+struct polar {
+  float r;
+  float phi;
+};
+
+void getPolarCoordinates(llist_t* blobs_ptr, polar_t* polarPos_ptr);
 
 void print_bitmap(image_t* bitmap_ptr);
 void print_blobs(llist_t* llist_ptr);

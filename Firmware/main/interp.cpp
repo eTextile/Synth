@@ -16,7 +16,7 @@ float* coef_D[SCALE_X * SCALE_Y] = {0};
     Pre-compute the four coefficient values for all interpolated output matrix positions
 */
 
-void SETUP_INTERP(
+void INTERP_SETUP(
   image_t* inputFrame_ptr,
   uint8_t* inputArray_ptr,
   image_t* outputFrame,

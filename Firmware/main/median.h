@@ -21,7 +21,6 @@ typedef struct blob blob_t;    // Forward declaration
 #define MEDIAN_POS ((MEDIAN_TIME_WINDOW-1)/2) // position of median in ordered list
 
 typedef struct median median_t;
-
 struct median {
   float zVal[MEDIAN_TIME_WINDOW];  // Input values Array
   float zOrd[MEDIAN_TIME_WINDOW];  // Sorted values Array

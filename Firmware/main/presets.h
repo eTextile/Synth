@@ -33,7 +33,8 @@ typedef enum {
   SAVE
 } presetMode_t;
 
-typedef struct preset {
+typedef struct preset preset_t;
+struct preset {
   uint8_t minVal;
   uint8_t maxVal;
   uint8_t val;
@@ -43,11 +44,11 @@ typedef struct preset {
   boolean update;
   boolean D1;
   boolean D2;
-} preset_t;
+};
 
-void SETUP_SWITCHES(Button* buttonA_ptr, Button* buttonB_ptr);
+void SWITCHES_SETUP(Button* buttonA_ptr, Button* buttonB_ptr);
 
-void SETUP_LEDS(void);
+void LEDS_SETUP(void);
 
 void update_buttons(
   Button* buttonA_ptr,

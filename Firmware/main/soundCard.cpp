@@ -6,7 +6,7 @@
 
 #include "soundCard.h"
 
-void SETUP_SOUND_CARD(AudioControlSGTL5000* soundCard_ptr) {
+void SOUND_CARD_SETUP(AudioControlSGTL5000* soundCard_ptr) {
   AudioMemory(100);
   soundCard_ptr->enable();
   //soundCard_ptr->inputSelect(AUDIO_INPUT_LINEIN);

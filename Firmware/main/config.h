@@ -15,26 +15,26 @@
 #define NAME                    "ETEXTILE_SYNTHESIZER"
 #define VERSION                 "1.0.2"
 
-#define MIDI_USB                0 // [0:1] Set the eTextile-Synthesizer as USB MIDI divice
-#define MIDI_HARDWARE           1 // [0:1] Set the eTextile-Synthesizer as MIDI I/O divice
-#define SLIP_OSC                0 // [0:1] Set the eTextile-Synthesizer as SLIP_OSC divice
+#define USB_MIDI                1  // [0:1] Set the eTextile-Synthesizer as USB MIDI divice
+#define USB_SLIP_OSC            0  // [0:1] Set the eTextile-Synthesizer as SLIP_OSC divice
+#define HARDWARE_MIDI           0  // [0:1] Set the eTextile-Synthesizer as MIDI I/O divice
 
-#define SYNTH_PLAYER            0 // [0:1] Set the eTextile-Synthesizer as STANDALONE divice
-#define GRANULAR_PLAYER         0 // [0:1] Set the eTextile-Synthesizer as STANDALONE divice
-#define RAW_PLAYER              0 // [0:1] Set the eTextile-Synthesizer as STANDALONE divice
+#define SYNTH_PLAYER            0  // [0:1] Set the eTextile-Synthesizer as STANDALONE divice
+#define GRANULAR_PLAYER         0  // [0:1] Set the eTextile-Synthesizer as STANDALONE divice
+#define FLASH_PLAYER            0  // [0:1] Set the eTextile-Synthesizer as STANDALONE divice
 
 #define MAX_BLOBS               16 // [1:8] Set how many blobs can be tracked at the same time
-#define MAX_SYNTH               8 // [1:8] Set how many synthesizers can play at the same time
+#define MAX_SYNTH               8  // [1:8] Set how many synthesizers can play at the same time
 
 // Arduino serial monitor
-#define DEBUG_FPS               0 // [0:1] Print Frames Per Second
-#define DEBUG_ENCODER           0 // [0:1] Print encoder value 
-#define DEBUG_BUTTONS           0 // [0:1] Print buttons states
-#define DEBUG_ADC               0 // [0:1] Print 16x16 Analog raw values
-#define DEBUG_INTERP            0 // [0:1] Print 64x64 interpolated values
-#define DEBUG_BITMAP            0 // [0:1] Print 64x64 binary image based on threshold
-#define DEBUG_BLOBS             0 // [0:1] Print blobs values
-#define DEBUG_MAPPING           0 // [0:1] Print blobs values
+#define DEBUG_FPS               0  // [0:1] Print Frames Per Second
+#define DEBUG_ENCODER           0  // [0:1] Print encoder value 
+#define DEBUG_BUTTONS           0  // [0:1] Print buttons states
+#define DEBUG_ADC               0  // [0:1] Print 16x16 Analog raw values
+#define DEBUG_INTERP            0  // [0:1] Print 64x64 interpolated values
+#define DEBUG_BITMAP            0  // [0:1] Print 64x64 binary image based on threshold
+#define DEBUG_BLOBS             0  // [0:1] Print blobs values
+#define DEBUG_MAPPING           0  // [0:1] Print blobs values
 
 #define DEBUG_BLOBS_ID          0 // [0:1] Print lowlevel blobs values
 #define DEBUG_SORT              0 // [0:1] Print lowlevel blobs sort (NOT_USED)
@@ -94,7 +94,7 @@
 #define GRID_ROWS               8
 #define GRID_KEYS               (GRID_COLS * GRID_ROWS)
 #define GRID_GAP                2
-#define KEY_SIZE                ((X_MAX - ((GRID_COLS + 1) * GRID_GAP)) / GRID_COLS)
+#define KEY_SIZE                ((float)((X_MAX - ((GRID_COLS + 1) * GRID_GAP)) / GRID_COLS))
 
 #define MAX_BLOB_PARAM          7        // [BI, BS, BX, BY, BW, BH, BD]
 #define BI                      0        // Blob UID

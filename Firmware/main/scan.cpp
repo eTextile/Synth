@@ -6,7 +6,7 @@
 
 #include "scan.h"
 
-void SETUP_SPI(void) {
+void SPI_SETUP(void) {
 
   pinMode(SS1_PIN, OUTPUT);                                               // Set the Slave Select Pin as OUTPUT
   SPI1.begin();                                                           // Start the SPI module
@@ -15,7 +15,7 @@ void SETUP_SPI(void) {
   digitalWrite(SS1_PIN, HIGH);                                            // Set latchPin HIGH
 }
 
-void SETUP_ADC(ADC *adc) {
+void ADC_SETUP(ADC *adc) {
 
   pinMode(ADC0_PIN, INPUT);                                               // PIN A2 (Teensy 4.0 pin 16)
   pinMode(ADC1_PIN, INPUT);                                               // PIN A3 (Teensy 4.0 pin 17)

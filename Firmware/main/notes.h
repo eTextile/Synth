@@ -9,14 +9,10 @@
 
 #include "config.h"
 
-static const char harmonicKeyboard[7][14] = {
-  {'G', 'B', 'G#', 'C', 'A', 'C#', 'A#', 'D', 'B', 'D#', 'C', 'E', 'C#', 'F'},
-  {'C', 'E', 'C#', 'F', 'D', 'F#', 'D#', 'G', 'E', 'G#', 'F', 'A', 'F#', 'A#'},
-  {0},
-  {0},
-  {0},
-  {0},
-  {0}
+// TODO
+const char harmonicKeyboard[128] = {
+  'G', 'B', 'G#', 'C', 'A', 'C#', 'A#', 'D', 'B', 'D#', 'C', 'E', 'C#', 'F',
+  'C', 'E', 'C#', 'F', 'D', 'F#', 'D#', 'G', 'E', 'G#', 'F', 'A', 'F#', 'A#',
 };
 
 #define -5C   8.1760000      // note[0]

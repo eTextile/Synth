@@ -28,7 +28,7 @@ void bitmap_clear(image_t* bitmap_ptr) {
   memset(bitmap_ptr->pData, 0, NEW_FRAME * sizeof(uint8_t));
 }
 
-void SETUP_BLOB(
+void BLOB_SETUP(
   uint8_t* bitmapArray_ptr,
   image_t* bitmap_ptr,
   llist_t* lifo_ptr,
@@ -324,13 +324,11 @@ void find_blobs(
     }
     // If the distance between curent blob and last blob position is less than minDist:
     // Copy the ID of the nearestBlob found in outputBlobs linked list and give it to the curent input blob.
-    // Set the curent input blob state to TO_UPDATE.
     if (minDist < 2.0f) {
 #if DEBUG_BLOBS_ID
       Serial.printf("\nDEBUG_BLOBS_ID / Found corresponding blob: %p in the **outputBlobs** linked list", (lnode_t*)nearestBlob);
 #endif
       blobIn->UID = nearestBlob->UID;
-      //blobIn->status = TO_UPDATE;
       blobIn->lastState = true;
       blobIn->state = true;
     }
@@ -352,7 +350,6 @@ void find_blobs(
         }
         if (isFree) {
           blobIn->UID = minID;
-          //blobIn->status = TO_ADD;
           blobIn->lastState = false;
           blobIn->state = true;
           break;
@@ -400,6 +397,52 @@ void find_blobs(
 #if DEBUG_BLOBS_ID
   Serial.printf("\nDEBUG_BLOBS_ID / END OFF BLOB FONCTION");
 #endif
+}
+
+void get_blobs_velocity(llist_t* blobs_ptr, velocity_t* velocity_ptr) {
+  for (blob_t* blob_ptr = (blob_t*)ITERATOR_START_FROM_HEAD(blobs_ptr); blob_ptr != NULL; blob_ptr = (blob_t*)ITERATOR_NEXT(blob_ptr)) {
+    velocity_ptr[blob_ptr->UID].vx = blob_ptr->centroid.X - velocity_ptr[blob_ptr->UID].lastX;
+    velocity_ptr[blob_ptr->UID].vy = blob_ptr->centroid.Y - velocity_ptr[blob_ptr->UID].lastY;
+    velocity_ptr[blob_ptr->UID].vz = blob_ptr->box.D - velocity_ptr[blob_ptr->UID].lastZ;
+    velocity_ptr[blob_ptr->UID].lastX = blob_ptr->centroid.X;
+    velocity_ptr[blob_ptr->UID].lastY = blob_ptr->centroid.Y;
+    velocity_ptr[blob_ptr->UID].lastZ = blob_ptr->box.D;
+#if DEBUG_MAPPING
+    Serial.printf("\nDEBUG_VELOCITY : X:%f\tY:%f\tZ:%f",
+                  velocity_ptr[blob_ptr->UID].vx,
+                  velocity_ptr[blob_ptr->UID].vy,
+                  velocity_ptr[blob_ptr->UID].vz
+                 );
+#endif
+  }
+}
+
+void getPolarCoordinates(llist_t* blobs_ptr, polar_t* polar_ptr) {
+  for (blob_t* blob_ptr = (blob_t*)ITERATOR_START_FROM_HEAD(blobs_ptr); blob_ptr != NULL; blob_ptr = (blob_t*)ITERATOR_NEXT(blob_ptr)) {
+    float posX = blob_ptr->centroid.X - POLAR_CX;
+    float posY = blob_ptr->centroid.Y - POLAR_CY;
+    if (posX == 0 && posY == 0 ) {
+      polar_ptr[blob_ptr->UID].r = 0;
+      polar_ptr[blob_ptr->UID].phi = 0;
+    }
+    else {
+      polar_ptr[blob_ptr->UID].r = sqrt(posX * posX + posY * posY);
+      if (posX == 0 && 0 < posY) {
+        polar_ptr[blob_ptr->UID].phi = PI / 2;
+      } else if (posX == 0 && posY < 0) {
+        polar_ptr[blob_ptr->UID].phi = PI * 3 / 2;
+      } else if (posX < 0) {
+        polar_ptr[blob_ptr->UID].phi = atan(posY / posX) + PI;
+      } else if (posY < 0) {
+        polar_ptr[blob_ptr->UID].phi = atan(posY / posX) + 2 * PI;
+      } else {
+        polar_ptr[blob_ptr->UID].phi = atan(posY / posX);
+      }
+    }
+#if DEBUG_MAPPING
+    Serial.printf("\nDEBUG_POLAR : R: % f\tPHY: % f", polar_ptr[blob_ptr->UID].r, polar_ptr[blob_ptr->UID].phi);
+#endif
+  }
 }
 
 #if DEBUG_BITMAP

@@ -20,9 +20,9 @@ typedef struct preset preset_t;     // Forward declaration
 #include <ADC.h>                    // https://github.com/pedvide/ADC
 //#include "../library/ADC/ADC.h"   // https://github.com/pedvide/ADC
 
-void SETUP_SPI(void);
+void SPI_SETUP(void);
 
-void SETUP_ADC(ADC* adc_ptr);
+void ADC_SETUP(ADC* adc_ptr);
 
 void calibrate_matrix(
   presetMode_t* curentMode_ptr,

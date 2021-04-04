@@ -6,14 +6,14 @@
 
 #include "presets.h"
 
-void SETUP_LEDS(void) {
+void LEDS_SETUP(void) {
   // Nothing to do!
 }
 
 // Hear it should not compile if you didn't install the library (Manually!)
 // [Bounce2](https://github.com/thomasfredericks/Bounce2)
 // in your /Applications/Arduino/library
-void SETUP_SWITCHES(Button* buttonA_ptr, Button* buttonB_ptr) {
+void SWITCHES_SETUP(Button* buttonA_ptr, Button* buttonB_ptr) {
   buttonA_ptr->attach(BUTTON_PIN_L, INPUT_PULLUP);  // Attach the debouncer to a pin with INPUT_PULLUP mode
   buttonB_ptr->attach(BUTTON_PIN_R, INPUT_PULLUP);  // Attach the debouncer to a pin with INPUT_PULLUP mode
   buttonA_ptr->interval(25);                        // Debounce interval of 15 millis
@@ -128,7 +128,7 @@ void update_presets(
   }
 }
 
-// Setup LEDs according to the mode and rotary encoder values
+// Update LEDs according to the mode and rotary encoder values
 void update_leds(
   presetMode_t curentMode,
   preset_t* presets_ptr
