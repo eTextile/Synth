@@ -15,13 +15,9 @@ typedef struct image image_t;       // Forward declaration
 typedef struct preset preset_t;     // Forward declaration
 
 #include <SPI.h>                    // https://github.com/PaulStoffregen/SPI
-//#include "../library/SPI/SPI.h"   // https://github.com/PaulStoffregen/SPI
-
 #include <ADC.h>                    // https://github.com/pedvide/ADC
-//#include "../library/ADC/ADC.h"   // https://github.com/pedvide/ADC
 
 void SPI_SETUP(void);
-
 void ADC_SETUP(ADC* adc_ptr);
 
 void calibrate_matrix(

@@ -12,12 +12,8 @@
 #include "llist.h"
 #include "blob.h"
 
-#if USB_MIDI || HARDWARE_MIDI
+#if HARDWARE_MIDI || USB_MIDI
 #include <MIDI.h>                   // http://www.pjrc.com/teensy/td_midi.html
-#endif
-
-#if HARDWARE_MIDI
-//MIDI_CREATE_INSTANCE(HardwareSerial, Serial3, MIDI);
 #endif
 
 #if USB_SLIP_OSC
@@ -57,13 +53,13 @@ void sendControlChange_b(llist_t* llist_ptr, ccPesets_t* ccPesets_ptr);
 
 #if USB_SLIP_OSC
 void USB_SLIP_OSC_SETUP(void);
-void blobs_usb_slipOsc(llist_t* llist_ptr);
+void usb_slipOsc(llist_t* llist_ptr);
 #endif
 
 #if USB_MIDI
 void USB_MIDI_SETUP(void);
-void blobs_usb_midi_learn(llist_t* llist_ptr, preset_t* preset_ptr);
-void blobs_usb_midi_play(llist_t* llist_ptr);
+void usb_midi_learn(llist_t* llist_ptr, preset_t* preset_ptr);
+void usb_midi_play(llist_t* llist_ptr);
 #endif
 
 #endif /*__TRANSMIT_H__*/

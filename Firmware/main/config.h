@@ -84,6 +84,7 @@
 #define DEBOUNCE_TIME_SWITCH    15
 
 #define PI                      3.1415926535897932384626433832795
+#define PI2                     (PI+PI)
 
 #define C_SLIDERS               3
 

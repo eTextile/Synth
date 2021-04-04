@@ -70,7 +70,7 @@ AudioInputI2S                     i2s_IN;
 AudioOutputI2S                    i2s_OUT;
 AudioControlSGTL5000              sgtl5000;
 
-#if RAW_PLAYER
+#if FLASH_PLAYER
 AudioPlaySerialflashRaw           playFlashRaw;
 #endif
 
@@ -130,7 +130,7 @@ AudioConnection                   patchCord24(fade_8, 0, mix_2, 3);
 
 AudioConnection                   patchCord25(mix_1, 0, mix_3, 0);
 AudioConnection                   patchCord26(mix_2, 0, mix_3, 1);
-#if RAW_PLAYER
+#if FLASH_PLAYER
 AudioConnection                   patchCord27(playFlashRaw, 0, mix_3, 2);
 #endif
 AudioConnection                   patchCord28(mix_3, 0, i2s_OUT, 0);
@@ -250,7 +250,7 @@ void setup() {
   midiIn_llist_init(&midiIn_stack, &midiInArray[0], MAX_SYNTH);
   llist_raz(&midiInllist);
 #endif
-#if SYNTH_PLAYER || GRANULAR_PLAYER || RAW_PLAYER
+#if SYNTH_PLAYER || GRANULAR_PLAYER || FLASH_PLAYER
   SOUND_CARD_SETUP(&sgtl5000);
 #endif
 #if SYNTH_PLAYER
@@ -363,15 +363,15 @@ void loop() {
 
 #if USB_MIDI
   if (currentMode == MIDI_LEARN) {
-    blobs_usb_midi_learn(&outputBlobs, &presets[MIDI_LEARN]);
+    usb_midi_learn(&outputBlobs, &presets[MIDI_LEARN]);
   }
   else {
-    blobs_usb_midi_play(&outputBlobs);
+   usb_midi_play(&outputBlobs);
   }
 #endif
 
 #if USB_SLIP_OSC
-  blobs_usb_slipOsc(&outputBlobs, &presets[THRESHOLD]);
+  usb_slipOsc(&outputBlobs);
 #endif
 
   // Make some mapping
@@ -381,8 +381,8 @@ void loop() {
   //    SET_ORIGIN_Y == 1
 
 #if HARDWARE_MIDI
-  //gridLayout(&outputBlobs, &grid);                            // ARGS[llist_ptr, gridLayout_ptr]
-  gridGapLayout(&outputBlobs, &grid);                           // ARGS[llist_ptr, gridLayout_ptr]
+  gridLayout(&outputBlobs, &grid);                              // ARGS[llist_ptr, gridLayout_ptr]
+  //gridGapLayout(&outputBlobs, &grid);                         // ARGS[llist_ptr, gridLayout_ptr]
   //controlChangeMapping(&outputBlobs, &ccPesets);              // ARGS[llist_ptr, ccccPesets_ptr]
 #endif
 

@@ -77,18 +77,4 @@ void vSlider(llist_t* llist_ptr, vSlider_t* slider_ptr);
 void cSlider(llist_t* llist_ptr, polar_t* polar_ptr, cSlider_t* slider_ptr);
 boolean toggle(llist_t* llist_ptr, tSwitch_t* switch_ptr);
 boolean trigger(llist_t* llist_ptr, tSwitch_t* switch_ptr);
-
-/*
-  typedef struct seq seq_t;
-  struct seq {
-  uint16_t timeInterval[];
-  uint8_t* seqframe;
-  };
-
-  void tapTempo(tSwitch_t* tSwitch_ptr, tapTempo_t* tapTempo_ptr); // TODO
-  void seq(tSwitch_t* tSwitch_ptr, seq_t* seq_ptr); // TODO
-  void arpeggiator(llist_t* notes_ptr); // TODO
-  void stepSequencer(void); // TODO?
-*/
-
 #endif /*__MAPPING_H__*/

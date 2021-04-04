@@ -160,7 +160,7 @@ void cSlider(llist_t* llist_ptr, polar_t* polar_ptr, cSlider_t* slider_ptr) {
           phi = polar_ptr[blob_ptr->UID].phi - slider_ptr[i].phiOffset;
         }
         else {
-          phi = polar_ptr[blob_ptr->UID].phi + (6.2839 - slider_ptr[i].phiOffset);
+          phi = polar_ptr[blob_ptr->UID].phi + (PI2 - slider_ptr[i].phiOffset);
         }
 #if DEBUG_MAPPING
         Serial.printf("\nDEBUG_C_SLIDER_ % d phi : % f", i, map(constrain(phi, 0.2, 5.9), 0.2, 5.9, 0, 127));
@@ -212,22 +212,3 @@ boolean trigger(llist_t* llist_ptr, tSwitch_t* switch_ptr) {
     }
   }
 }
-
-/*
-  // TODO
-  void tapTempo(tSwitch_t* tSwitch_ptr, uint8_t* tempo_ptr) {
-  }
-
-  // TODO
-  void seq(tSwitch_t* tSwitch_ptr, seq_t * seq_ptr) {
-  }
-
-  void arpeggiator(int8_t* keyPressed) {
-  static int8_t i = 0;
-  if (keyPressed[i] != -1) {
-  }
-  }
-
-  void stepSequencer() {
-  }
-*/

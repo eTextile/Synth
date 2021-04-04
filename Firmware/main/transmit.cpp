@@ -12,14 +12,15 @@
 #include "transmit.h"
 
 #if USB_SLIP_OSC
+SLIPEncodedUSBSerial SLIPSerial(thisBoardsSerialUSB); // FIXME
+
 void USB_SLIP_OSC_SETUP(void) {
-  SLIPEncodedUSBSerial SLIPSerial(thisBoardsSerialUSB); // FIXME
   SLIPSerial.begin(BAUD_RATE); // FIXME
 }
 
-void blobs_usb_slipOsc(llist_t* blobs_ptr) {
+void usb_slipOsc(llist_t* llist_ptr) {
   OSCBundle OSCbundle;
-  for (blob_t* blob_ptr = (blob_t*)ITERATOR_START_FROM_HEAD(blobs_ptr); blob_ptr != NULL; blob_ptr = (blob_t*)ITERATOR_NEXT(blob_ptr)) {
+  for (blob_t* blob_ptr = (blob_t*)ITERATOR_START_FROM_HEAD(llist_ptr); blob_ptr != NULL; blob_ptr = (blob_t*)ITERATOR_NEXT(blob_ptr)) {
     OSCMessage msg("/b");
     msg.add(blob_ptr->UID);
     msg.add(blob_ptr->state);
@@ -37,14 +38,15 @@ void blobs_usb_slipOsc(llist_t* blobs_ptr) {
 #endif
 
 #if HARDWARE_MIDI
+MIDI_CREATE_INSTANCE(HardwareSerial, Serial3, MIDI);
+
 void HARDWARE_MIDI_SETUP(void) {
-  MIDI_CREATE_INSTANCE(HardwareSerial, Serial3, MIDI);
   MIDI.begin(MIDI_CHANNEL_OMNI);
 }
 
-void midiIn_llist_init(llist_t *list_ptr, midiNode_t* nodesArray, uint8_t max_nodes) {
+void midiIn_llist_init(llist_t *llist_ptr, midiNode_t* nodesArray, uint8_t max_nodes) {
   for (int i = 0; i < max_nodes; i++) {
-    llist_push_front(list_ptr, &nodesArray[i]);
+    llist_push_front(llist_ptr, &nodesArray[i]);
   }
 }
 
@@ -85,7 +87,7 @@ void USB_MIDI_SETUP(void) {
 // Send blobs values using ControlChange MIDI format
 // Send only the last blob that have been added to the sensor surface
 // Separate blob's values according to the encoder position to allow the mapping into Max4Live
-void blobs_usb_midi_learn(llist_t* llist_ptr, preset_t* preset_ptr) {
+void usb_midi_learn(llist_t* llist_ptr, preset_t* preset_ptr) {
   blob_t* lastBlob_ptr = (blob_t*)llist_ptr->tail_ptr;
   switch (preset_ptr->val) {
     case BS:
@@ -111,8 +113,8 @@ void blobs_usb_midi_learn(llist_t* llist_ptr, preset_t* preset_ptr) {
 }
 
 // Send all blobs values using ControlChange MIDI format
-void blobs_usb_midi_play(llist_t* blobs_ptr) {
-  for (blob_t* blob_ptr = (blob_t*)ITERATOR_START_FROM_HEAD(blobs_ptr); blob_ptr != NULL; blob_ptr = (blob_t*)ITERATOR_NEXT(blob_ptr)) {
+void usb_midi_play(llist_t* llist_ptr) {
+  for (blob_t* blob_ptr = (blob_t*)ITERATOR_START_FROM_HEAD(llist_ptr); blob_ptr != NULL; blob_ptr = (blob_t*)ITERATOR_NEXT(blob_ptr)) {
     usbMIDI.sendControlChange(BS, blob_ptr->state, blob_ptr->UID + 1);
     usbMIDI.sendControlChange(BX, (uint8_t)round(map(blob_ptr->centroid.X, 0.0, 59.0, 0, 127)), blob_ptr->UID + 1);
     usbMIDI.sendControlChange(BY, (uint8_t)round(map(blob_ptr->centroid.Y, 0.0, 59.0, 0, 127)), blob_ptr->UID + 1);
