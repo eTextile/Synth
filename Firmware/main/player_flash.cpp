@@ -4,12 +4,12 @@
   This work is licensed under Creative Commons Attribution-ShareAlike 4.0 International license, see the LICENSE file for details.
 */
 
-#include "player_raw.h"
+#include "player_flash.h"
 
-void FLASH_PLAYER_SETUP() {
+void FLASH_PLAYER_SETUP(void) {
   while (!SerialFlash.begin(6));
 }
 
-void flash_player(llist_t* blobs_ptr, AudioPlaySerialflashRaw* player_ptr) {
+void flash_player(llist_t* llist_ptr, AudioPlaySerialflashRaw* player_ptr) {
   player_ptr->play("A.RAW");
 }

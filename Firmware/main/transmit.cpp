@@ -37,8 +37,8 @@ void blobs_usb_slipOsc(llist_t* blobs_ptr) {
 #endif
 
 #if HARDWARE_MIDI
-MIDI_CREATE_INSTANCE(HardwareSerial, Serial3, MIDI);
 void HARDWARE_MIDI_SETUP(void) {
+  MIDI_CREATE_INSTANCE(HardwareSerial, Serial3, MIDI);
   MIDI.begin(MIDI_CHANNEL_OMNI);
 }
 
@@ -53,10 +53,9 @@ void handleMidiInput(llist_t* llist_ptr, llist_t* nodeStack_ptr) {
     byte type = MIDI.getType();        // Get the type of the message we caught
     switch (type) {
       case midi::NoteOn:
-        midiNode_t* midiNode = NULL;
+        midiNode_t* midiNode;
         midiNode->pithch = MIDI.getData1();
         midiNode->velocity = MIDI.getData2();
-        //midiNode->channel = MIDI.getChannel();
         llist_push_front(llist_ptr, midiNode);
         break;
       case midi::NoteOff:
@@ -82,14 +81,6 @@ void handleMidiInput(llist_t* llist_ptr, llist_t* nodeStack_ptr) {
 void USB_MIDI_SETUP(void) {
   usbMIDI.begin();
 }
-
-#define BI                      0        // Blob UID
-#define BS                      1        // Blob State
-#define BX                      2        // Blob Centroid PosX
-#define BY                      3        // Blob Centroid PosY
-#define BW                      4        // Blob width
-#define BH                      5        // Blob Height
-#define BD                      6        // Blob Depth 
 
 // Send blobs values using ControlChange MIDI format
 // Send only the last blob that have been added to the sensor surface

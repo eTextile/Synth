@@ -4,8 +4,8 @@
   This work is licensed under Creative Commons Attribution-ShareAlike 4.0 International license, see the LICENSE file for details.
 */
 
-#ifndef __PLAYER_RAW_H__
-#define __PLAYER_RAW_H__
+#ifndef __PLAYER_FLASH_H__
+#define __PLAYER_FLASH_H__
 
 #include <Audio.h>               // https://github.com/PaulStoffregen/Audio
 #include "config.h"
@@ -16,7 +16,7 @@
 typedef struct llist llist_t;   // Forward declaration
 typedef struct blob blob_t;     // Forward declaration
 
-void FLASH_PLAYER_SETUP();
-void flash_player(llist_t* blobs_ptr, AudioPlaySerialflashRaw* player_ptr);
+void FLASH_PLAYER_SETUP(void);
+void flash_player(llist_t* llist_ptr, AudioPlaySerialflashRaw* player_ptr);
 
-#endif /*__PLAYER_RAW__*/
+#endif /*__PLAYER_FLASH__*/

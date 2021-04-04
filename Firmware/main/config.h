@@ -15,7 +15,7 @@
 #define NAME                    "ETEXTILE_SYNTHESIZER"
 #define VERSION                 "1.0.2"
 
-#define USB_MIDI                1  // [0:1] Set the eTextile-Synthesizer as USB MIDI divice
+#define USB_MIDI                0  // [0:1] Set the eTextile-Synthesizer as USB MIDI divice
 #define USB_SLIP_OSC            0  // [0:1] Set the eTextile-Synthesizer as SLIP_OSC divice
 #define HARDWARE_MIDI           0  // [0:1] Set the eTextile-Synthesizer as MIDI I/O divice
 

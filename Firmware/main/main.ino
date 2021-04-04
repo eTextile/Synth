@@ -21,9 +21,9 @@
 #include "transmit.h"
 
 #include "soundCard.h"
-#include "player_granular.h"
 #include "player_synth.h"
-#include "player_raw.h"
+#include "player_flash.h"
+#include "player_granular.h"
 
 // Array to store all parameters used to configure the two 8:1 analog multiplexeurs
 // Each byte |ENA|A|B|C|ENA|A|B|C|

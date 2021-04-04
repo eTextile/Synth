@@ -12,10 +12,6 @@
 #include "llist.h"
 #include "transmit.h"
 
-#if USB_MIDI || HARDWARE_MIDI
-#include <MIDI.h>                   // http://www.pjrc.com/teensy/td_midi.html
-#endif
-
 typedef struct blob blob_t;         // Forward declaration
 typedef struct llist llist_t;       // Forward declaration
 typedef struct midiNode midiNode_t; // Forward declaration
@@ -74,13 +70,13 @@ struct grid {
 
 void GRID_LAYOUT_SETUP(squareKey_t* keyArray_ptr);
 
-void gridLayout(llist_t* blobs_ptr, grid_t* gridLayout_ptr);
-void gridGapLayout(llist_t* blobs_ptr, grid_t* gridLayout_ptr);
-void hSlider(llist_t* blobs_ptr, hSlider_t* slider_ptr);
-void vSlider(llist_t* blobs_ptr, vSlider_t* slider_ptr);
-void cSlider(llist_t* blobs_ptr, polar_t* polar_ptr, cSlider_t* slider_ptr);
-boolean toggle(llist_t* blobs_ptr, tSwitch_t* switch_ptr);
-boolean trigger(llist_t* blobs_ptr, tSwitch_t* switch_ptr);
+void gridLayout(llist_t* llist_ptr, grid_t* gridLayout_ptr);
+void gridGapLayout(llist_t* llist_ptr, grid_t* gridLayout_ptr);
+void hSlider(llist_t* llist_ptr, hSlider_t* slider_ptr);
+void vSlider(llist_t* llist_ptr, vSlider_t* slider_ptr);
+void cSlider(llist_t* llist_ptr, polar_t* polar_ptr, cSlider_t* slider_ptr);
+boolean toggle(llist_t* llist_ptr, tSwitch_t* switch_ptr);
+boolean trigger(llist_t* llist_ptr, tSwitch_t* switch_ptr);
 
 /*
   typedef struct seq seq_t;

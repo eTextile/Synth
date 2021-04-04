@@ -16,6 +16,10 @@
 #include <MIDI.h>                   // http://www.pjrc.com/teensy/td_midi.html
 #endif
 
+#if HARDWARE_MIDI
+//MIDI_CREATE_INSTANCE(HardwareSerial, Serial3, MIDI);
+#endif
+
 #if USB_SLIP_OSC
 #include <OSCBoards.h>              // https://github.com/CNMAT/OSC
 #include <OSCMessage.h>             // https://github.com/CNMAT/OSC
