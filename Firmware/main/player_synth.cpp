@@ -6,7 +6,7 @@
 
 #include "player_synth.h"
 
-void SETUP_SYNTH(synth_t* allSynth_ptr) {
+void SYNTH_PLAYER_SETUP(synth_t* allSynth_ptr) {
   AudioNoInterrupts();
   for (int i = 0; i < 8; i++) {
     allSynth_ptr[i].fade_ptr->fadeOut(0);

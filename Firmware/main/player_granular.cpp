@@ -6,7 +6,7 @@
 
 #include "player_granular.h"
 
-void SETUP_GRANULAR(AudioEffectGranular* granular_ptr, uint16_t* buffer_ptr) {
+void GRANULAR_PLAYER_SETUP(AudioEffectGranular* granular_ptr, uint16_t* buffer_ptr) {
   granular_ptr->begin(buffer_ptr, GRANULAR_MEMORY_SIZE);  // [ARGS](buffer_ptr, buffer_size)
 }
 
