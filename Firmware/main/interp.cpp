@@ -19,9 +19,9 @@ float* coef_D[SCALE_X * SCALE_Y] = {0};
 void INTERP_SETUP(
   image_t* inputFrame_ptr,
   uint8_t* inputArray_ptr,
-  image_t* outputFrame,
-  uint8_t* outputArray,
-  interp_t* interp
+  image_t* outputFrame_ptr,
+  uint8_t* outputArray_ptr,
+  interp_t* interp_ptr
 ) {
 
   // image_t* inputFrame init config
@@ -29,29 +29,29 @@ void INTERP_SETUP(
   inputFrame_ptr->numRows = RAW_ROWS;            // Setup -> RAW_ROWS
   inputFrame_ptr->pData = &inputArray_ptr[0];    // Setup -> uint8_t frameArray[RAW_FRAME] (16x16)
 
-  // image_t* outputFrame init config
-  outputFrame->numCols = NEW_COLS;               // Setup -> NEW_COLS
-  outputFrame->numRows = NEW_ROWS;               // Setup -> NEW_ROWS
-  outputFrame->pData = &outputArray[0];          // Setup -> uint8_t bilinInterpOutput[NEW_FRAME] (64x64)
+  // image_t* outputFrame_ptr init config
+  outputFrame_ptr->numCols = NEW_COLS;               // Setup -> NEW_COLS
+  outputFrame_ptr->numRows = NEW_ROWS;               // Setup -> NEW_ROWS
+  outputFrame_ptr->pData = &outputArray_ptr[0];          // Setup -> uint8_t bilinInterpOutput[NEW_FRAME] (64x64)
 
-  // interp_t* interp init config
-  interp->scale_X = SCALE_X;
-  interp->scale_Y = SCALE_Y;
-  interp->outputStride_Y = SCALE_X * SCALE_Y * RAW_COLS;
-  interp->pCoefA = (float*)coef_A;
-  interp->pCoefB = (float*)coef_B;
-  interp->pCoefC = (float*)coef_C;
-  interp->pCoefD = (float*)coef_D;
+  // interp_t* interp_ptr init config
+  interp_ptr->scaleX = SCALE_X;
+  interp_ptr->scaleY = SCALE_Y;
+  interp_ptr->outputStrideY = SCALE_X * SCALE_Y * RAW_COLS;
+  interp_ptr->pCoefA = (float*)coef_A;
+  interp_ptr->pCoefB = (float*)coef_B;
+  interp_ptr->pCoefC = (float*)coef_C;
+  interp_ptr->pCoefD = (float*)coef_D;
 
-  float sFactor = (interp->scale_X * interp->scale_Y);
+  float sFactor = (interp_ptr->scaleX * interp_ptr->scaleY);
 
-  for (uint8_t row = 0; row < interp->scale_Y; row++) {
-    for (uint8_t col = 0; col < interp->scale_X; col++) {
-      int index = row * interp->scale_X + col;
-      interp->pCoefA[index] = (interp->scale_X - col) * (interp->scale_Y - row) / sFactor;
-      interp->pCoefB[index] = col * (interp->scale_Y - row) / sFactor;
-      interp->pCoefC[index] = (interp->scale_X - col) * row / sFactor;
-      interp->pCoefD[index] = row * col / sFactor;
+  for (uint8_t row = 0; row < interp_ptr->scaleY; row++) {
+    for (uint8_t col = 0; col < interp_ptr->scaleX; col++) {
+      int index = row * interp_ptr->scaleX + col;
+      interp_ptr->pCoefA[index] = (interp_ptr->scaleX - col) * (interp_ptr->scaleY - row) / sFactor;
+      interp_ptr->pCoefB[index] = col * (interp_ptr->scaleY - row) / sFactor;
+      interp_ptr->pCoefC[index] = (interp_ptr->scaleX - col) * row / sFactor;
+      interp_ptr->pCoefD[index] = row * col / sFactor;
     }
   }
 }
@@ -80,14 +80,14 @@ void interp_matrix(
         inIndexC = inIndexA + inputFrame_ptr->numCols;
         inIndexD = inIndexC + 1;
 
-        for (uint8_t row = 0; row < interp_ptr->scale_Y; row++) {
-          for (uint8_t col = 0; col < interp_ptr->scale_X; col++) {
+        for (uint8_t row = 0; row < interp_ptr->scaleY; row++) {
+          for (uint8_t col = 0; col < interp_ptr->scaleX; col++) {
 
-            uint8_t coefIndex = row * interp_ptr->scale_X + col;
-            uint16_t outIndex = rowPos * interp_ptr->outputStride_Y + colPos * interp_ptr->scale_X + row * outputFrame_ptr->numCols + col;
+            uint8_t coefIndex = row * interp_ptr->scaleX + col;
+            uint16_t outIndex = rowPos * interp_ptr->outputStrideY + colPos * interp_ptr->scaleX + row * outputFrame_ptr->numCols + col;
 
             outputFrame_ptr->pData[outIndex] =
-              (uint8_t) round(
+              (uint8_t)round(
                 inputFrame_ptr->pData[inIndexA] * interp_ptr->pCoefA[coefIndex] +
                 inputFrame_ptr->pData[inIndexB] * interp_ptr->pCoefB[coefIndex] +
                 inputFrame_ptr->pData[inIndexC] * interp_ptr->pCoefC[coefIndex] +
@@ -97,9 +97,9 @@ void interp_matrix(
         }
       }
       else {
-        for (uint8_t row = 0; row < interp_ptr->scale_Y; row++) {
-          for (uint8_t col = 0; col < interp_ptr->scale_X; col++) {
-            uint16_t outIndex = rowPos * interp_ptr->outputStride_Y + colPos * interp_ptr->scale_X + row * outputFrame_ptr->numCols + col;
+        for (uint8_t row = 0; row < interp_ptr->scaleY; row++) {
+          for (uint8_t col = 0; col < interp_ptr->scaleX; col++) {
+            uint16_t outIndex = rowPos * interp_ptr->outputStrideY + colPos * interp_ptr->scaleX + row * outputFrame_ptr->numCols + col;
             outputFrame_ptr->pData[outIndex] = 0;
           }
         }

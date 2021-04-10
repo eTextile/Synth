@@ -42,8 +42,8 @@ uint8_t interpFrameArray[NEW_FRAME] = {0};   // 1D Array to store E256 bilinear 
 xylr_t lifoArray[LIFO_MAX_NODES] = {0};      // 1D Array to store E256 lifo nodes
 blob_t blobArray[MAX_BLOBS] = {0};           // 1D Array to store E256 blobs
 
-median_t medianStorage[MAX_BLOBS] = {{0}, {0}, 0};
-velocity_t blobVelocity[MAX_BLOBS] = {0};    // 1D Array to store E256 blobs to store blobs XYZ velocity
+median_t medianStorage[MAX_SYNTH] = {{0}, {0}, 0};
+velocity_t blobVelocity[MAX_SYNTH] = {0, 0, 0, 0, 0, 0}; // 1D Array to store XYZ blobs velocity
 
 image_t  inputFrame;            // Input frame values structure
 interp_t interp;                // Interpolation parameters structure
@@ -183,8 +183,8 @@ preset_t presets[7] = {
 uint8_t interpThreshold = 5;
 
 // MAPPING
-//tSwitch_t tapSwitch = {10, 10, 5, 1000, false};         // ARGS[posX, posY, rSize, debounceTimer, state]
-//tSwitch_t modeSwitch = {40, 30, 5, 1000, false};        // ARGS[posX, posY, rSize, debounceTimer, state]
+tSwitch_t tapSwitch = {10, 10, 5, 1000, false};           // ARGS[posX, posY, rSize, debounceTimer, state]
+tSwitch_t modeSwitch = {40, 30, 5, 1000, false};          // ARGS[posX, posY, rSize, debounceTimer, state]
 
 int8_t lastKey[MAX_SYNTH] = {0};                          // 1D Array to store last keys pressed
 squareKey_t keyArray[GRID_KEYS] = {0, 0, 0, 0};           // 1D Array of struct squareKey_t to store pre-compute key positions ARGS[Xmin, Xmax, Ymin, Ymax]
@@ -192,10 +192,10 @@ midiNode_t midiInArray[MAX_SYNTH] = {0, 0, 0};            // 1D Array to store i
 
 grid_t grid = {&lastKey[0], &keyArray[0], &midiInllist};  // ARGS[blobKeyPress, KeyPress, midiNotes]
 
-polar_t polarCoord[MAX_BLOBS];                            // 1D Array of struct polar_t to store blobs polar coordinates
+polar_t polarCoord[MAX_SYNTH];                            // 1D Array of struct polar_t to store blobs polar coordinates
 
 vSlider_t vSlider_A = {10, 15, 40, 5, 0};                 // ARGS[posX, Ymin, Ymax, width, val]
-hSlider_t hSlider_A = {10, 15, 40, 5, 0};                 // ARGS[posY, Xmin, Xmax, width, val]
+hSlider_t hSlider_A = {30, 15, 40, 5, 0};                 // ARGS[posY, Xmin, Xmax, width, val]
 
 cSlider_t cSliders[C_SLIDERS] = {
   {   6, 4,  3.8,  5, 0},                                 // ARGS[r, width, phiOffset, phiMax, val]
@@ -203,7 +203,6 @@ cSlider_t cSliders[C_SLIDERS] = {
   {  20, 4,  4.8,  5, 0}                                  // ARGS[r, width, phiOffset, phiMax, val]
 };
 
-//typedef struct ccPesets ccPesets_t;
 ccPesets_t ccPeset = {NULL, BD, 44, 1, 0};                // ARGS[blobID, [BX,BY,BW,BH,BD], cChange, midiChannel, Val]
 
 int16_t granularMemory[GRANULAR_MEMORY_SIZE] = {0};       //
@@ -366,7 +365,7 @@ void loop() {
     usb_midi_learn(&outputBlobs, &presets[MIDI_LEARN]);
   }
   else {
-   usb_midi_play(&outputBlobs);
+    usb_midi_play(&outputBlobs);
   }
 #endif
 
@@ -386,13 +385,15 @@ void loop() {
   //controlChangeMapping(&outputBlobs, &ccPesets);              // ARGS[llist_ptr, ccccPesets_ptr]
 #endif
 
-  //getVelocity(&outputBlobs, &blobVelocity[0]);                // ARGS[llist_ptr, blobVelocity_ptr]
-  //hSlider(&outputBlobs, &hSlider_A);                          // ARGS[llist_ptr, hSlider_ptr]
-  //vSlider(&outputBlobs, &vSlider_A);                          // ARGS[llist_ptr, vSlider_ptr]
+  //getBlobsVelocity(&outputBlobs, &blobVelocity[0]);           // ARGS[llist_ptr, blobVelocity_ptr]
   //getPolarCoordinates(&outputBlobs, &polarCoord[0]);          // ARGS[llist_ptr, polar_ptr]
-  //cSlider(&outputBlobs, &polarCoord[0], &cSliders[0]);        // ARGS[llist_ptr, polar_ptr, cSliders_ptr]
+
   //boolean togSwitchVal = toggle(&outputBlobs, &modeSwitch);   // ARGS[llist_ptr, switch_ptr]
   //boolean tapSwitchVal = trigger(&outputBlobs, &tapSwitch);   // ARGS[llist_ptr, switch_ptr]
+
+  //hSlider(&outputBlobs, &hSlider_A);                          // ARGS[llist_ptr, hSlider_ptr]
+  //vSlider(&outputBlobs, &vSlider_A);                          // ARGS[llist_ptr, vSlider_ptr]
+  //cSlider(&outputBlobs, &polarCoord[0], &cSliders[0]);        // ARGS[llist_ptr, polar_ptr, cSliders_ptr]
 
 #if SYNTH_PLAYER
   synth_player(&outputBlobs, &allSynth[0]);

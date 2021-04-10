@@ -110,8 +110,8 @@ struct point {
   float Y;
 };
 
-typedef struct bbox bbox_t;
-struct bbox {
+typedef struct box box_t;
+struct box {
   uint8_t W; // TODO Make it as float
   uint8_t H; // TODO Make it as float
   uint8_t D; // TODO Make it as float
@@ -132,7 +132,7 @@ struct blob {
   boolean lastState;
   status_t status;
   point_t centroid;
-  bbox_t box;
+  box_t box;
 };
 
 void bitmap_clear(image_t* bitmap_ptr);
@@ -176,7 +176,7 @@ struct velocity {
   float vz;
 };
 
-void get_blobs_velocity(llist_t* blobs_ptr, velocity_t* velocity_ptr);
+void getBlobsVelocity(llist_t* blobs_ptr, velocity_t* velocity_ptr);
 
 typedef struct polar polar_t;
 struct polar {

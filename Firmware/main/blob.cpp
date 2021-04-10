@@ -399,7 +399,7 @@ void find_blobs(
 #endif
 }
 
-void get_blobs_velocity(llist_t* blobs_ptr, velocity_t* velocity_ptr) {
+void getBlobsVelocity(llist_t* blobs_ptr, velocity_t* velocity_ptr) {
   for (blob_t* blob_ptr = (blob_t*)ITERATOR_START_FROM_HEAD(blobs_ptr); blob_ptr != NULL; blob_ptr = (blob_t*)ITERATOR_NEXT(blob_ptr)) {
     velocity_ptr[blob_ptr->UID].vx = blob_ptr->centroid.X - velocity_ptr[blob_ptr->UID].lastX;
     velocity_ptr[blob_ptr->UID].vy = blob_ptr->centroid.Y - velocity_ptr[blob_ptr->UID].lastY;

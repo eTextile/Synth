@@ -14,6 +14,7 @@
 
 #if HARDWARE_MIDI || USB_MIDI
 #include <MIDI.h>                   // http://www.pjrc.com/teensy/td_midi.html
+MIDI_CREATE_INSTANCE(HardwareSerial, Serial3, MIDI);
 #endif
 
 #if USB_SLIP_OSC
@@ -32,7 +33,7 @@ struct midiNode {
   lnode_t node;
   uint8_t pithch;
   uint8_t velocity;
-  //uint8_t channel;
+  uint8_t channel;
 };
 
 typedef struct ccPesets ccPesets_t;

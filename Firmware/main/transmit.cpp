@@ -38,7 +38,6 @@ void usb_slipOsc(llist_t* llist_ptr) {
 #endif
 
 #if HARDWARE_MIDI
-MIDI_CREATE_INSTANCE(HardwareSerial, Serial3, MIDI);
 
 void HARDWARE_MIDI_SETUP(void) {
   MIDI.begin(MIDI_CHANNEL_OMNI);
@@ -55,9 +54,10 @@ void handleMidiInput(llist_t* llist_ptr, llist_t* nodeStack_ptr) {
     byte type = MIDI.getType();        // Get the type of the message we caught
     switch (type) {
       case midi::NoteOn:
-        midiNode_t* midiNode;
+        midiNode_t* midiNode = (midiNode_t*)llist_pop_front(nodeStack_ptr);
         midiNode->pithch = MIDI.getData1();
         midiNode->velocity = MIDI.getData2();
+        midiNode->channel = MIDI.getChannel();
         llist_push_front(llist_ptr, midiNode);
         break;
       case midi::NoteOff:

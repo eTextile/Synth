@@ -29,30 +29,30 @@ void SYNTH_PLAYER_SETUP(synth_t* allSynth_ptr) {
 /////////////////////////// MAKE NOISE FONCTION !
 void synth_player(llist_t* blobs_ptr, synth_t* allSynth_ptr) {
   static boolean lastState[MAX_BLOBS] = {false};
-  
+
   AudioNoInterrupts();
   for (blob_t* blob_ptr = (blob_t *)ITERATOR_START_FROM_HEAD(blobs_ptr); blob_ptr != NULL; blob_ptr = (blob_t *)ITERATOR_NEXT(blob_ptr)) {
 
     if (blob_ptr->UID < MAX_SYNTH) {
-
-      if (blob_ptr->state && !blob_ptr->lastState) {
-        allSynth_ptr[blob_ptr->UID].wf_ptr->phase(0);
-        allSynth_ptr[blob_ptr->UID].fade_ptr->fadeIn(3);
-      }
-
       if (blob_ptr->state) {
-        allSynth_ptr[blob_ptr->UID].wf_ptr->frequency(blob_ptr->centroid.X * 3);
-        allSynth_ptr[blob_ptr->UID].fm_ptr->frequency(blob_ptr->centroid.Y * 4 + 50);
-        /*
-          if (blob_ptr->UID == 0) {
-          allSynth_ptr[blob_ptr->UID].wf_ptr->frequency((blob_ptr->centroid.X / 4.0) + 1);
-          allSynth_ptr[blob_ptr->UID].fm_ptr->frequency((blob_ptr->centroid.Y / 2.0) + 5);
-          }
-          else if (blob_ptr->UID == 1) {
+        if (!blob_ptr->lastState) {
+          allSynth_ptr[blob_ptr->UID].wf_ptr->phase(0);
+          allSynth_ptr[blob_ptr->UID].fade_ptr->fadeIn(3);
+        }
+        else {
           allSynth_ptr[blob_ptr->UID].wf_ptr->frequency(blob_ptr->centroid.X * 3);
           allSynth_ptr[blob_ptr->UID].fm_ptr->frequency(blob_ptr->centroid.Y * 4 + 50);
-          }
-        */
+          /*
+            if (blob_ptr->UID == 0) {
+            allSynth_ptr[blob_ptr->UID].wf_ptr->frequency((blob_ptr->centroid.X / 4.0) + 1);
+            allSynth_ptr[blob_ptr->UID].fm_ptr->frequency((blob_ptr->centroid.Y / 2.0) + 5);
+            }
+            else if (blob_ptr->UID == 1) {
+            allSynth_ptr[blob_ptr->UID].wf_ptr->frequency(blob_ptr->centroid.X * 3);
+            allSynth_ptr[blob_ptr->UID].fm_ptr->frequency(blob_ptr->centroid.Y * 4 + 50);
+            }
+          */
+        }
       }
       else {
         allSynth_ptr[blob_ptr->UID].fade_ptr->fadeOut(500);
