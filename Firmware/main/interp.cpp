@@ -17,22 +17,22 @@ float* coef_D[SCALE_X * SCALE_Y] = {0};
 */
 
 void INTERP_SETUP(
-  image_t* inputFrame_ptr,
   uint8_t* inputArray_ptr,
-  image_t* outputFrame_ptr,
+  image_t* inputFrame_ptr,
   uint8_t* outputArray_ptr,
+  image_t* outputFrame_ptr,
   interp_t* interp_ptr
 ) {
 
-  // image_t* inputFrame init config
-  inputFrame_ptr->numCols = RAW_COLS;            // Setup -> RAW_COLS
-  inputFrame_ptr->numRows = RAW_ROWS;            // Setup -> RAW_ROWS
+  // image_t* rawFrame init config
   inputFrame_ptr->pData = &inputArray_ptr[0];    // Setup -> uint8_t frameArray[RAW_FRAME] (16x16)
+  inputFrame_ptr->numCols = RAW_COLS;
+  inputFrame_ptr->numRows = RAW_ROWS;
 
   // image_t* outputFrame_ptr init config
-  outputFrame_ptr->numCols = NEW_COLS;               // Setup -> NEW_COLS
-  outputFrame_ptr->numRows = NEW_ROWS;               // Setup -> NEW_ROWS
-  outputFrame_ptr->pData = &outputArray_ptr[0];          // Setup -> uint8_t bilinInterpOutput[NEW_FRAME] (64x64)
+  outputFrame_ptr->pData = &outputArray_ptr[0];  // Setup -> uint8_t bilinInterpOutput[NEW_FRAME] (64x64)
+  outputFrame_ptr->numCols = NEW_COLS;
+  outputFrame_ptr->numRows = NEW_ROWS;
 
   // interp_t* interp_ptr init config
   interp_ptr->scaleX = SCALE_X;
@@ -54,14 +54,14 @@ void INTERP_SETUP(
       interp_ptr->pCoefD[index] = row * col / sFactor;
     }
   }
+  interp_ptr->interpThreshold = 5;
 }
 
 // Bilinear interpolation
 void interp_matrix(
-  uint8_t threshold,
-  image_t* outputFrame_ptr,
+  interp_t* interp_ptr,
   image_t* inputFrame_ptr,
-  interp_t* interp_ptr
+  image_t* outputFrame_ptr
 ) {
 
   uint8_t inIndexA = 0;
@@ -69,22 +69,22 @@ void interp_matrix(
   uint8_t inIndexC = 0;
   uint8_t inIndexD = 0;
 
-  for (uint8_t rowPos = 0; rowPos < inputFrame_ptr->numRows - 1; rowPos++) {
-    for (uint8_t colPos = 0; colPos < inputFrame_ptr->numCols - 1; colPos++) {
+  for (uint8_t rowPos = 0; rowPos < RAW_ROWS - 1; rowPos++) {
+    for (uint8_t colPos = 0; colPos < RAW_COLS - 1; colPos++) {
 
-      inIndexA = rowPos * inputFrame_ptr->numCols + colPos;
+      inIndexA = rowPos * RAW_COLS + colPos;
 
-      if (inputFrame_ptr->pData[inIndexA] > threshold) { // Windowing implementation
+      if (inputFrame_ptr->pData[inIndexA] > interp_ptr->interpThreshold) { // Windowing implementation
 
         inIndexB = inIndexA + 1;
-        inIndexC = inIndexA + inputFrame_ptr->numCols;
+        inIndexC = inIndexA + RAW_COLS;
         inIndexD = inIndexC + 1;
 
         for (uint8_t row = 0; row < interp_ptr->scaleY; row++) {
           for (uint8_t col = 0; col < interp_ptr->scaleX; col++) {
 
             uint8_t coefIndex = row * interp_ptr->scaleX + col;
-            uint16_t outIndex = rowPos * interp_ptr->outputStrideY + colPos * interp_ptr->scaleX + row * outputFrame_ptr->numCols + col;
+            uint16_t outIndex = rowPos * interp_ptr->outputStrideY + colPos * interp_ptr->scaleX + row * NEW_COLS + col;
 
             outputFrame_ptr->pData[outIndex] =
               (uint8_t)round(
@@ -98,8 +98,9 @@ void interp_matrix(
       }
       else {
         for (uint8_t row = 0; row < interp_ptr->scaleY; row++) {
+          int rowIndex = row * NEW_COLS;
           for (uint8_t col = 0; col < interp_ptr->scaleX; col++) {
-            uint16_t outIndex = rowPos * interp_ptr->outputStrideY + colPos * interp_ptr->scaleX + row * outputFrame_ptr->numCols + col;
+            uint16_t outIndex = rowPos * interp_ptr->outputStrideY + colPos * interp_ptr->scaleX + rowIndex + col;
             outputFrame_ptr->pData[outIndex] = 0;
           }
         }
@@ -109,9 +110,9 @@ void interp_matrix(
 }
 
 void print_interp(image_t* image_ptr) {
-  for (uint8_t posY = 0; posY < image_ptr->numRows; posY++) {
+  for (uint8_t posY = 0; posY < NEW_ROWS; posY++) {
     uint8_t* row_ptr = COMPUTE_IMAGE_ROW_PTR(image_ptr, posY);
-    for (int posX = 0; posX < image_ptr->numCols; posX++) {
+    for (int posX = 0; posX < NEW_COLS; posX++) {
       Serial.printf("%d-", IMAGE_GET_PIXEL_FAST(row_ptr, posX));
     }
     Serial.printf("\n");

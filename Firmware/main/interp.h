@@ -24,21 +24,21 @@ struct interp {
   float*    pCoefB;
   float*    pCoefC;
   float*    pCoefD;
+  uint8_t   interpThreshold;
 };
 
 void INTERP_SETUP(
-  image_t*  inputFrame_ptr,
   uint8_t*  inputArray_ptr,
-  image_t*  outputFrame,
+  image_t*  inputFrame_ptr,
   uint8_t*  outputArray,
+  image_t*  outputFrame,
   interp_t* interp
 );
 
 void interp_matrix(
-  uint8_t   threshold,
-  image_t*  outputFrame_ptr,
+  interp_t* interp_ptr,
   image_t*  inputFrame_ptr,
-  interp_t* interp_ptr
+  image_t*  outputFrame_ptr
 );
 
 void print_interp(image_t* image_ptr);

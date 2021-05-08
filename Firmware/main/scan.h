@@ -18,26 +18,15 @@ typedef struct preset preset_t;     // Forward declaration
 #include <ADC.h>                    // https://github.com/pedvide/ADC
 
 void SPI_SETUP(void);
-void ADC_SETUP(ADC* adc_ptr);
+void ADC_SETUP(void);
 
 void calibrate_matrix(
-  presetMode_t* curentMode_ptr,
   presetMode_t* lastMode_ptr,
-  preset_t* presets_ptr,
-  ADC* adc_ptr,
-  ADC::Sync_result* result_ptr,
-  uint8_t* offsetArray_ptr,
-  uint8_t* shiftOutArray_ptr
+  presetMode_t* curentMode_ptr,
+  preset_t* presets_ptr
 );
 
-void scan_matrix(
-  ADC* adc_ptr,
-  ADC::Sync_result* result_ptr,
-  uint8_t* array_ptr,
-  uint8_t* offsetArray_ptr,
-  uint8_t* shiftOutArray_ptr
-);
-
+void scan_matrix(uint8_t* array_ptr);
 void print_adc(image_t* frame_ptr);
 
 #endif /*__SCAN_H__*/

@@ -25,46 +25,18 @@
 #include "player_flash.h"
 #include "player_granular.h"
 
-// Array to store all parameters used to configure the two 8:1 analog multiplexeurs
-// Each byte |ENA|A|B|C|ENA|A|B|C|
-uint8_t setDualRows[DUAL_COLS] = {
-#if SET_ORIGIN_X
-  0x33, 0x00, 0x11, 0x22, 0x44, 0x66, 0x77, 0x55
-#else
-  0x55, 0x77, 0x66, 0x44, 0x22, 0x11, 0x00, 0x33
-#endif
-};
+uint8_t rawFrameArray[RAW_FRAME] = {0};               // 1D Array to store E256 ofseted analog input values
+uint8_t interpFrameArray[NEW_FRAME] = {0};            // 1D Array to store E256 bilinear interpolated values
 
-uint8_t offsetArray[RAW_FRAME] = {0};        // 1D Array to store E256 smallest values
-uint8_t frameArray[RAW_FRAME] = {0};         // 1D Array to store E256 ofseted analog input values
-uint8_t bitmapArray[NEW_FRAME] = {0};        // 1D Array to store E256 binary values (16*16) array containing (64*64) values
-uint8_t interpFrameArray[NEW_FRAME] = {0};   // 1D Array to store E256 bilinear interpolated values
-xylr_t lifoArray[LIFO_MAX_NODES] = {0};      // 1D Array to store E256 lifo nodes
-blob_t blobArray[MAX_BLOBS] = {0};           // 1D Array to store E256 blobs
+median_t blobMedian[MAX_SYNTH] = {{0}, {0}, 0};       // 1D ...
+velocity_t blobVelocity[MAX_SYNTH] = {0, 0, 0, 0, 0}; // 1D Array to store XY & Z blobs velocity
 
-median_t medianStorage[MAX_SYNTH] = {{0}, {0}, 0};
-velocity_t blobVelocity[MAX_SYNTH] = {0, 0, 0, 0, 0, 0}; // 1D Array to store XYZ blobs velocity
-
-image_t  inputFrame;            // Input frame values structure
-interp_t interp;                // Interpolation parameters structure
-image_t  interpolatedFrame;     // Interpolated frame structure
-image_t  bitmap;                // Used by Scanline Flood Fill algorithm / SFF
-llist_t  lifo_stack;            // Lifo free nodes stack
-llist_t  lifo;                  // Lifo stack
-llist_t  blobs_stack;           // Blobs free nodes linked list
-llist_t  blobs;                 // Intermediate blobs linked list
-llist_t  outputBlobs;           // Output blobs linked list
-
-llist_t  midiIn_stack;          // MidiIn free nodes linked list
-llist_t  midiInllist;           // MidiIn linked list
-
-Encoder encoder(ENCODER_PIN_A, ENCODER_PIN_B);
-
-Button BUTTON_L = Button();
-Button BUTTON_R = Button();
-
-ADC* adc = new ADC();           // ADC object
-ADC::Sync_result result;        // Store ADC_0 & ADC_1
+interp_t interp;           // Interpolation parameters structure
+image_t  rawFrame;         // Input frame values
+image_t  interpFrame;      // Interpolated frame values
+llist_t  blobs;            // Output blobs linked list
+llist_t  midiIn_stack;     // MidiIn free nodes linked list
+llist_t  midiInllist;      // MidiIn linked list
 
 AudioInputI2S                     i2s_IN;
 AudioOutputI2S                    i2s_OUT;
@@ -155,8 +127,8 @@ AudioConnection                   patchCord2(granular, 0, i2s_OUT, 0);
 AudioConnection                   patchCord3(granular, 0, i2s_OUT, 1);
 #endif
 
-presetMode_t currentMode = CALIBRATE;   // Init currentMode with CALIBRATE (DEFAULT_MODE)
 presetMode_t lastMode = LINE_OUT;       // Init lastMode with LINE_OUT (DEFAULT_MODE)
+presetMode_t currentMode = CALIBRATE;   // Init currentMode with CALIBRATE (DEFAULT_MODE)
 
 #if DEBUG_FPS
 elapsedMillis curentMillisFps;
@@ -164,7 +136,7 @@ unsigned int fps = 0;
 #endif
 
 #if DEBUG_ADC || DEBUG_BITMAP || DEBUG_INTERP
-elapsedMillis timerDebug;
+elapsedMillis debugTimer;
 #endif
 
 boolean loadPreset = true;
@@ -179,8 +151,6 @@ preset_t presets[7] = {
   { 0, 0,  0,  0, true,  true,  false, NULL, NULL}, // CALIBRATE  - ARGS[minVal, maxVal, val, ledVal, setLed, updateLed, update, D1, D2]
   { 0, 0,  0,  0, false, false, false, NULL, NULL}  // SAVE       - ARGS[minVal, maxVal, val, ledVal, setLed, updateLed, update, D1, D2]
 };
-
-uint8_t interpThreshold = 5;
 
 // MAPPING
 tSwitch_t tapSwitch = {10, 10, 5, 1000, false};           // ARGS[posX, posY, rSize, debounceTimer, state]
@@ -208,35 +178,24 @@ ccPesets_t ccPeset = {NULL, BD, 44, 1, 0};                // ARGS[blobID, [BX,BY
 int16_t granularMemory[GRANULAR_MEMORY_SIZE] = {0};       //
 
 void setup() {
-
-#if DEBUG_ADC || DEBUG_INTERP || DEBUG_BLOBS || DEBUG_SFF_BITMAP || DEBUG_FPS
+#if DEBUG_ADC || DEBUG_INTERP || DEBUG_BLOBS || DEBUG_SFF_BITMAP || DEBUG_FPS || DEBUG_ENCODER || DEBUG_BUTTONS
   Serial.begin(BAUD_RATE); // Start Serial communication using 230400 baud
   while (!Serial);
   Serial.printf("\n%s_%s", NAME, VERSION);
+  delay(1000);
 #endif
-
   LEDS_SETUP();
-  SWITCHES_SETUP(&BUTTON_L, &BUTTON_R);
+  SWITCHES_SETUP();
   SPI_SETUP();
-  ADC_SETUP(adc);
+  ADC_SETUP();
   INTERP_SETUP(
-    &inputFrame,          // image_t*
-    &frameArray[0],       // uint8_t*
-    &interpolatedFrame,   // image_t*
+    &rawFrameArray[0],    // uint8_t*
+    &rawFrame,            // image_t*
     &interpFrameArray[0], // uint8_t*
+    &interpFrame,         // image_t*
     &interp               // interp_t*
   );
-  BLOB_SETUP(
-    &bitmapArray[0],      // uint8_t*
-    &bitmap,              // image_t*
-    &lifo,                // lifo_t*
-    &lifo_stack,          // lifo_t*
-    &lifoArray[0],        // xylr_t*
-    &blobs,               // list_t*
-    &blobs_stack,         // list_t*
-    &blobArray[0],        // blob_t*
-    &outputBlobs          // list_t*
-  );
+  BLOB_SETUP(&blobs);
 #if USB_MIDI
   USB_MIDI_SETUP();
 #endif
@@ -271,19 +230,15 @@ void loop() {
   //if (savePreset) preset_save(&presets[0], &savePreset); // TODO
 
   update_buttons(
-    &BUTTON_L,
-    &BUTTON_R,
-    &encoder,
-    &presets[0],
+    &lastMode,
     &currentMode,
-    &lastMode
+    &presets[0]
   );
 
   update_presets(
     currentMode,
     &presets[0],
-    &encoder,
-    &interpThreshold
+    &interp
   );
 
   update_volumes(
@@ -298,113 +253,93 @@ void loop() {
   );
 
   calibrate_matrix(
-    &currentMode,
     &lastMode,
-    &presets[0],
-    adc,
-    &result,
-    &offsetArray[0],
-    &setDualRows[0]
+    &currentMode,
+    &presets[0]
   );
 
-  scan_matrix(
-    adc,
-    &result,
-    &frameArray[0],
-    &offsetArray[0],
-    &setDualRows[0]
-  );
+  scan_matrix(&rawFrameArray[0]);
 
 #if DEBUG_ADC
-  if (timerDebug >= 1000) {
-    timerDebug = 0;
-    print_adc(&inputFrame);
+  if (debugTimer >= 1000) {
+    debugTimer = 0;
+    print_adc(&rawFrame);
   }
 #endif
 
   interp_matrix(
-    interpThreshold,
-    &interpolatedFrame,
-    &inputFrame,
-    &interp
+    &interp,
+    &rawFrame,
+    &interpFrame
   );
 
 #if DEBUG_INTERP
-  if (timerDebug >= 1000) {
-    timerDebug = 0;
-    print_interp(&interpolatedFrame);
+  if (debugTimer >= 1000) {
+    debugTimer = 0;
+    print_interp(&interpFrame);
   }
 #endif
 
   find_blobs(
     presets[THRESHOLD].val, // uint8_t (Z)Threshold
-    &interpolatedFrame,     // image_t (uint8_t array[NEW_FRAME] - 64*64 1D array)
-    &bitmap,                // image_t (uint8_t array[NEW_FRAME] - 64*64 1D array)
-    &lifo_stack,            // lifo_t
-    &lifo,                  // lifo_t
-    &blobs_stack,           // list_t
-    &blobs,                 // list_t
-    &outputBlobs            // list_t
+    &interpFrame,           // image_ptr (uint8_t array[NEW_FRAME] - 64*64 1D array)
+    &blobs                  // llist_ptr
   );
 
-  //median(&outputBlobs, &medianStorage[0]);
+  median(&blobs, &blobMedian[0]);              // ARGS[llist_ptr, median_ptr]
+  getPolarCoordinates(&blobs, &polarCoord[0]); // ARGS[llist_ptr, polar_ptr]
+  getBlobsVelocity(&blobs, &blobVelocity[0]);  // ARGS[llist_ptr, velocity_ptr]
 
 #if DEBUG_BITMAP
-  if (timerDebug >= 100) {
-    timerDebug = 0;
-    print_bitmap(&bitmap);
+  if (debugTimer >= 100) {
+    debugTimer = 0;
+    print_bitmap();
   }
 #endif
 
 #if DEBUG_BLOBS
-  print_blobs(&outputBlobs);
+  print_blobs(&blobs);
 #endif
 
 #if USB_MIDI
   if (currentMode == MIDI_LEARN) {
-    usb_midi_learn(&outputBlobs, &presets[MIDI_LEARN]);
+    usb_midi_learn(&blobs, &presets[MIDI_LEARN]);
   }
   else {
-    usb_midi_play(&outputBlobs);
+    usb_midi_play(&blobs);
   }
 #endif
 
 #if USB_SLIP_OSC
-  usb_slipOsc(&outputBlobs);
+  usb_slipOsc(&blobs);
 #endif
 
   // Make some mapping
-  // The sensor surface origine is TOP_LEFT
-  // config.h
-  //    SET_ORIGIN_X == 1
-  //    SET_ORIGIN_Y == 1
+  // The sensor surface origine [0:0] is TOP_LEFT
 
 #if HARDWARE_MIDI
-  gridLayout(&outputBlobs, &grid);                              // ARGS[llist_ptr, gridLayout_ptr]
-  //gridGapLayout(&outputBlobs, &grid);                         // ARGS[llist_ptr, gridLayout_ptr]
-  //controlChangeMapping(&outputBlobs, &ccPesets);              // ARGS[llist_ptr, ccccPesets_ptr]
+  gridLayout(&blobs, &grid);                              // ARGS[llist_ptr, gridLayout_ptr]
+  //gridGapLayout(&blobs, &grid);                         // ARGS[llist_ptr, gridLayout_ptr]
+  //controlChangeMapping(&blobs, &ccPesets);              // ARGS[llist_ptr, ccccPesets_ptr]
 #endif
 
-  //getBlobsVelocity(&outputBlobs, &blobVelocity[0]);           // ARGS[llist_ptr, blobVelocity_ptr]
-  //getPolarCoordinates(&outputBlobs, &polarCoord[0]);          // ARGS[llist_ptr, polar_ptr]
+  //boolean togSwitchVal = toggle(&blobs, &modeSwitch);   // ARGS[llist_ptr, switch_ptr]
+  //boolean tapSwitchVal = trigger(&blobs, &tapSwitch);   // ARGS[llist_ptr, switch_ptr]
 
-  //boolean togSwitchVal = toggle(&outputBlobs, &modeSwitch);   // ARGS[llist_ptr, switch_ptr]
-  //boolean tapSwitchVal = trigger(&outputBlobs, &tapSwitch);   // ARGS[llist_ptr, switch_ptr]
-
-  //hSlider(&outputBlobs, &hSlider_A);                          // ARGS[llist_ptr, hSlider_ptr]
-  //vSlider(&outputBlobs, &vSlider_A);                          // ARGS[llist_ptr, vSlider_ptr]
-  //cSlider(&outputBlobs, &polarCoord[0], &cSliders[0]);        // ARGS[llist_ptr, polar_ptr, cSliders_ptr]
+  //hSlider(&blobs, &hSlider_A);                          // ARGS[llist_ptr, hSlider_ptr]
+  //vSlider(&blobs, &vSlider_A);                          // ARGS[llist_ptr, vSlider_ptr]
+  //cSlider(&blobs, &polarCoord[0], &cSliders[0]);        // ARGS[llist_ptr, polar_ptr, cSliders_ptr]
 
 #if SYNTH_PLAYER
-  synth_player(&outputBlobs, &allSynth[0]);
+  synth_player(&blobs, &allSynth[0]);
 #endif
 
 #if GRANULAR_PLAYER
-  granular_player(&outputBlobs, &granular, &granularMemory[0]);
+  granular_player(&blobs, &granular, &granularMemory[0]);
 #endif
 
 #if FLASH_PLAYER
-  flash_player(&outputBlobs, &playFlashRaw);
+  flash_player(&blobs, &playFlashRaw);
 #endif
 
 #if DEBUG_FPS

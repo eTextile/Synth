@@ -16,8 +16,8 @@
 #include "config.h"
 #include "llist.h"
 
-typedef struct lnode lnode_t; // Forward declaration
-typedef struct llist llist_t; // Forward declaration
+typedef struct lnode lnode_t;          // Forward declaration
+typedef struct llist llist_t;          // Forward declaration
 
 #define IM_LOG2_2(x)    (((x) &                0x2ULL) ? ( 2                        ) :             1) // NO ({ ... }) !
 #define IM_LOG2_4(x)    (((x) &                0xCULL) ? ( 2 +  IM_LOG2_2((x) >>  2)) :  IM_LOG2_2(x)) // NO ({ ... }) !
@@ -37,11 +37,11 @@ typedef struct llist llist_t; // Forward declaration
     ((uint8_t*)_pImage->pData) + (_pImage->numCols * _y); \
   })
 
-#define COMPUTE_BINARY_IMAGE_ROW_PTR(pBitmap, y) \
+#define COMPUTE_BINARY_IMAGE_ROW_PTR(bitmap, y) \
   ({ \
-    __typeof__ (pBitmap) _pBitmap = (pBitmap); \
+    __typeof__ (bitmap) _bitmap = (bitmap); \
     __typeof__ (y) _y = (y); \
-    ((uint8_t*)_pBitmap->pData) + (((_pBitmap->numCols + UINT8_T_MASK) >> UINT8_T_SHIFT) * _y); \
+    ((uint8_t*)_bitmap) + (((NEW_COLS + UINT8_T_MASK) >> UINT8_T_SHIFT) * _y); \
   })
 
 #define IMAGE_GET_PIXEL_FAST(row_ptr, x) \
@@ -88,9 +88,9 @@ typedef struct llist llist_t; // Forward declaration
 
 typedef struct image image_t;
 struct image {
+  uint8_t* pData;
   uint8_t numCols;
   uint8_t numRows;
-  uint8_t* pData;
 };
 
 typedef struct xylr xylr_t;
@@ -126,30 +126,22 @@ typedef struct blob blob_t;
 struct blob {
   lnode_t node;
   uint8_t UID;
-  //uint32_t timeTag;
+  status_t status;
+  uint32_t timeTag; // TODO
   uint16_t pixels;
   boolean state;
   boolean lastState;
-  status_t status;
-  point_t centroid;
   box_t box;
+  point_t centroid;
 };
 
-void bitmap_clear(image_t* bitmap_ptr);
+void bitmap_clear();
 static int sum_m_to_n(int m, int n);
 
-void blob_llist_init(llist_t *list, blob_t* nodesArray, uint8_t max_nodes);
-void lifo_llist_init(llist_t *list, xylr_t* nodesArray, uint8_t max_nodes);
+void blob_llist_init(llist_t *list, blob_t* nodesArray);
+void lifo_llist_init(llist_t *list, xylr_t* nodesArray);
 
 void BLOB_SETUP(
-  uint8_t* bitmapArray_ptr,
-  image_t* bitmap_ptr,
-  llist_t* lifo_ptr,
-  llist_t* lifo_stack_ptr,
-  xylr_t*  lifoArray_ptr,
-  llist_t* blobs_ptr,
-  llist_t* blobs_stack_ptr,
-  blob_t*  blobArray_ptr,
   llist_t* outputBlobs_ptr
 );
 
@@ -158,11 +150,6 @@ float distance(blob_t* blobA, blob_t* blobB);
 void find_blobs(
   uint8_t   zThreshold,
   image_t*  inputFrame_ptr,
-  image_t*  bitmap_ptr,
-  llist_t*  lifo_stack_ptr,
-  llist_t*  lifo_ptr,
-  llist_t*  blobs_stack_ptr,
-  llist_t*  inputBlobs_ptr,
   llist_t*  outputBlobs_ptr
 );
 
@@ -171,9 +158,8 @@ struct velocity {
   float lastX;
   float lastY;
   float lastZ;
-  float vx;
-  float vy;
-  float vz;
+  float XY;
+  float Z;
 };
 
 void getBlobsVelocity(llist_t* blobs_ptr, velocity_t* velocity_ptr);
@@ -186,7 +172,7 @@ struct polar {
 
 void getPolarCoordinates(llist_t* blobs_ptr, polar_t* polarPos_ptr);
 
-void print_bitmap(image_t* bitmap_ptr);
+void print_bitmap(void);
 void print_blobs(llist_t* llist_ptr);
 
 #endif /*__BLOB_H__*/

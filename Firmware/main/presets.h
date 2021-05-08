@@ -8,6 +8,7 @@
 #define __PRESETS_H__
 
 #include "config.h"
+#include "interp.h"
 
 #include <Bounce2.h>                                    // https://github.com/thomasfredericks/Bounce2
 //#include "../library/Bounce2/src/Bounce2.h"           // https://github.com/thomasfredericks/Bounce2 (FIXME)
@@ -21,6 +22,8 @@
 
 #include <elapsedMillis.h>                              // https://github.com/pfeerick/elapsedMillis
 //#include "../library/elapsedMillis/elapsedMillis.h"   // https://github.com/pfeerick/elapsedMillis (FIXME)
+
+typedef struct interp interp_t; // forward declaration
 
 // MODES
 typedef enum {
@@ -46,24 +49,19 @@ struct preset {
   boolean D2;
 };
 
-void SWITCHES_SETUP(Button* buttonA_ptr, Button* buttonB_ptr);
-
 void LEDS_SETUP(void);
+void SWITCHES_SETUP(void);
 
 void update_buttons(
-  Button* buttonA_ptr,
-  Button* buttonB_ptr,
-  Encoder* encoder_ptr,
-  preset_t* presets_ptr,
+  presetMode_t* lastMode_ptr,
   presetMode_t* curentMode_ptr,
-  presetMode_t* lastMode_ptr
+  preset_t* presets_ptr
 );
 
 void update_presets(
   presetMode_t curentMode,
   preset_t* presets_ptr,
-  Encoder* encoder_ptr,
-  uint8_t* interpThreshold_ptr
+  interp_t* interp_ptr
 );
 
 void update_leds(
@@ -74,6 +72,6 @@ void update_leds(
 void preset_load(preset_t* preset_ptr, boolean* state_ptr); // TODO
 void preset_save(preset_t* preset_ptr, boolean* state_ptr); // TODO
 
-boolean setLevel(preset_t* preset_ptr, Encoder* encoder_ptr);
+boolean setLevel(preset_t* preset_ptr);
 
 #endif /*__PRESETS_H__*/
