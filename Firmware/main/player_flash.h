@@ -17,6 +17,6 @@ typedef struct llist llist_t;   // Forward declaration
 typedef struct blob blob_t;     // Forward declaration
 
 void FLASH_PLAYER_SETUP(void);
-void flash_player(llist_t* llist_ptr, AudioPlaySerialflashRaw* player_ptr);
+void flash_player(AudioPlaySerialflashRaw* player_ptr, llist_t* llist_ptr);
 
 #endif /*__PLAYER_FLASH__*/

@@ -10,6 +10,6 @@ void FLASH_PLAYER_SETUP(void) {
   while (!SerialFlash.begin(6));
 }
 
-void flash_player(llist_t* llist_ptr, AudioPlaySerialflashRaw* player_ptr) {
+void flash_player(AudioPlaySerialflashRaw* player_ptr, llist_t* llist_ptr) {
   player_ptr->play("A.RAW");
 }

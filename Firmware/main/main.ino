@@ -175,8 +175,6 @@ cSlider_t cSliders[C_SLIDERS] = {
 
 ccPesets_t ccPeset = {NULL, BD, 44, 1, 0};                // ARGS[blobID, [BX,BY,BW,BH,BD], cChange, midiChannel, Val]
 
-int16_t granularMemory[GRANULAR_MEMORY_SIZE] = {0};       //
-
 void setup() {
 #if DEBUG_ADC || DEBUG_INTERP || DEBUG_BLOBS || DEBUG_SFF_BITMAP || DEBUG_FPS || DEBUG_ENCODER || DEBUG_BUTTONS
   Serial.begin(BAUD_RATE); // Start Serial communication using 230400 baud
@@ -218,7 +216,7 @@ void setup() {
   FLASH_PLAYER_SETUP();
 #endif
 #if GRANULAR_PLAYER
-  GRANULAR_PLAYER_SETUP(&granular, &granularMemory[0]);
+  GRANULAR_PLAYER_SETUP(&granular);
 #endif
   GRID_LAYOUT_SETUP(&keyArray[0]);
 }
@@ -331,15 +329,15 @@ void loop() {
   //cSlider(&blobs, &polarCoord[0], &cSliders[0]);        // ARGS[llist_ptr, polar_ptr, cSliders_ptr]
 
 #if SYNTH_PLAYER
-  synth_player(&blobs, &allSynth[0]);
+  synth_player(&allSynth[0], &blobs);
 #endif
 
 #if GRANULAR_PLAYER
-  granular_player(&blobs, &granular, &granularMemory[0]);
+  granular_player(&granular, &blobs);
 #endif
 
 #if FLASH_PLAYER
-  flash_player(&blobs, &playFlashRaw);
+  flash_player(&playFlashRaw, &blobs);
 #endif
 
 #if DEBUG_FPS

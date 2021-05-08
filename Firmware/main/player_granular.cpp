@@ -6,11 +6,13 @@
 
 #include "player_granular.h"
 
-void GRANULAR_PLAYER_SETUP(AudioEffectGranular* granular_ptr, uint16_t* buffer_ptr) {
-  granular_ptr->begin(buffer_ptr, GRANULAR_MEMORY_SIZE);  // [ARGS](buffer_ptr, buffer_size)
+int16_t granularMemory[GRANULAR_MEMORY_SIZE] = {0};
+
+void GRANULAR_PLAYER_SETUP(AudioEffectGranular* granular_ptr) {
+  granular_ptr->begin(granularMemory, GRANULAR_MEMORY_SIZE);  // [ARGS](buffer_ptr, buffer_size)
 }
 
-void granular_player(llist_t* llist_ptr, AudioEffectGranular* granular_ptr, uint16_t* buffer_ptr) {
+void granular_player(AudioEffectGranular* granular_ptr, llist_t* llist_ptr) {
 
   blob_t* lastBlob_ptr = (blob_t*)llist_ptr->tail_ptr;
 
