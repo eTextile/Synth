@@ -127,7 +127,7 @@ void usb_midi_play(llist_t* llist_ptr) {
 #endif
 
 // ccPesets_ptr -> ARGS[blobID, [BX,BY,BW,BH,BD], cChange, midiChannel, Val]
-void sendControlChange_b(llist_t* llist_ptr, ccPesets_t* ccPesets_ptr) {
+void controlChange(llist_t* llist_ptr, ccPesets_t* ccPesets_ptr) {
   for (blob_t* blob_ptr = (blob_t*)ITERATOR_START_FROM_HEAD(llist_ptr); blob_ptr != NULL; blob_ptr = (blob_t*)ITERATOR_NEXT(blob_ptr)) {
     // Test if we are within the blob limit
     if (blob_ptr->UID == ccPesets_ptr->blobID) {

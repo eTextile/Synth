@@ -6,6 +6,8 @@
 
 #include "interp.h"
 
+uint8_t interpFrameArray[NEW_FRAME] = {0};            // 1D Array to store E256 bilinear interpolated values
+
 float* coef_A[SCALE_X * SCALE_Y] = {0};
 float* coef_B[SCALE_X * SCALE_Y] = {0};
 float* coef_C[SCALE_X * SCALE_Y] = {0};
@@ -17,20 +19,12 @@ float* coef_D[SCALE_X * SCALE_Y] = {0};
 */
 
 void INTERP_SETUP(
-  uint8_t* inputArray_ptr,
-  image_t* inputFrame_ptr,
-  uint8_t* outputArray_ptr,
   image_t* outputFrame_ptr,
   interp_t* interp_ptr
 ) {
 
-  // image_t* rawFrame init config
-  inputFrame_ptr->pData = &inputArray_ptr[0];    // Setup -> uint8_t frameArray[RAW_FRAME] (16x16)
-  inputFrame_ptr->numCols = RAW_COLS;
-  inputFrame_ptr->numRows = RAW_ROWS;
-
   // image_t* outputFrame_ptr init config
-  outputFrame_ptr->pData = &outputArray_ptr[0];  // Setup -> uint8_t bilinInterpOutput[NEW_FRAME] (64x64)
+  outputFrame_ptr->pData = &interpFrameArray[0];  // Setup -> uint8_t bilinInterpOutput[NEW_FRAME] (64x64)
   outputFrame_ptr->numCols = NEW_COLS;
   outputFrame_ptr->numRows = NEW_ROWS;
 

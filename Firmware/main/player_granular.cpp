@@ -12,7 +12,7 @@ void GRANULAR_PLAYER_SETUP(AudioEffectGranular* granular_ptr) {
   granular_ptr->begin(granularMemory, GRANULAR_MEMORY_SIZE);  // [ARGS](buffer_ptr, buffer_size)
 }
 
-void granular_player(AudioEffectGranular* granular_ptr, llist_t* llist_ptr) {
+void granular_player(llist_t* llist_ptr, AudioEffectGranular* granular_ptr) {
 
   blob_t* lastBlob_ptr = (blob_t*)llist_ptr->tail_ptr;
 

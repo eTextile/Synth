@@ -6,17 +6,18 @@
 
 #include "soundCard.h"
 
-void SOUND_CARD_SETUP(AudioControlSGTL5000* soundCard_ptr) {
+AudioControlSGTL5000              sgtl5000;
+
+void SOUND_CARD_SETUP() {
   AudioMemory(100);
-  soundCard_ptr->enable();
-  //soundCard_ptr->inputSelect(AUDIO_INPUT_LINEIN);
-  soundCard_ptr->inputSelect(AUDIO_INPUT_MIC);
+  sgtl5000.enable();
+  //sgtl5000.inputSelect(AUDIO_INPUT_LINEIN);
+  sgtl5000.inputSelect(AUDIO_INPUT_MIC);
 }
 
 void update_volumes(
   presetMode_t curentMode,
-  preset_t* presets_ptr,
-  AudioControlSGTL5000* soundCard_ptr
+  preset_t* presets_ptr
 ) {
 
   switch (curentMode) {
@@ -29,7 +30,7 @@ void update_volumes(
       if (presets_ptr[LINE_OUT].update) {
         presets_ptr[LINE_OUT].update = false;
         AudioNoInterrupts();
-        soundCard_ptr->dacVolume(presets_ptr[LINE_OUT].val);
+        sgtl5000.dacVolume(presets_ptr[LINE_OUT].val);
         AudioInterrupts();
 #if DEBUG_ENCODER
         Serial.printf("\nLINE_OUT: %d", presets_ptr[LINE_OUT].val);
@@ -45,8 +46,8 @@ void update_volumes(
       if (presets_ptr[SIG_IN].update) {
         presets_ptr[SIG_IN].update = false;
         AudioNoInterrupts();
-        //soundCard_ptr->lineInLevel(presets_ptr[SIG_IN].val);
-        soundCard_ptr->micGain(presets_ptr[SIG_IN].val);
+        //sgtl5000.lineInLevel(presets_ptr[SIG_IN].val);
+        sgtl5000.micGain(presets_ptr[SIG_IN].val);
         AudioInterrupts();
 #if DEBUG_ENCODER
         Serial.printf("\nSIG_IN : %d", presets_ptr[SIG_IN].val);
@@ -62,7 +63,7 @@ void update_volumes(
       if (presets_ptr[SIG_OUT].update) {
         presets_ptr[SIG_OUT].update = false;
         AudioNoInterrupts();
-        soundCard_ptr->lineOutLevel(presets_ptr[SIG_OUT].val);
+        sgtl5000.lineOutLevel(presets_ptr[SIG_OUT].val);
         AudioInterrupts();
 #if DEBUG_ENCODER
         Serial.printf("\nSIG_OUT : %d", presets_ptr[SIG_OUT].val);

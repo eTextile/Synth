@@ -68,7 +68,7 @@ void GRID_LAYOUT_SETUP(squareKey_t* keyArray_ptr) {
 }
 
 // Compute the grid index location acording to blob X-Y coordinates
-void gridGapLayout(llist_t* llist_ptr, grid_t* gridLayout_ptr) { //gridLayout = {&lastKey[0], &keyArray[0], &midiIN[0]};
+void gridLayoutGap(llist_t* llist_ptr, grid_t* gridLayout_ptr) { //gridLayout = {&lastKey[0], &keyArray[0], &midiIN[0]};
   for (blob_t* blob_ptr = (blob_t*)ITERATOR_START_FROM_HEAD(llist_ptr); blob_ptr != NULL; blob_ptr = (blob_t*)ITERATOR_NEXT(blob_ptr)) {
     if (blob_ptr->UID < MAX_SYNTH) {                                                    // Test if the blob UID is less than MAX_SYNTH
       if (blob_ptr->state) {

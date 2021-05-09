@@ -49,7 +49,7 @@ struct ccPesets {
 void HARDWARE_MIDI_SETUP(void);
 void midiIn_llist_init(llist_t *list_ptr, midiNode_t* nodesArray, uint8_t max_nodes);
 void handleMidiInput(llist_t* llist_ptr, llist_t* nodeStack_ptr); // TODO
-void sendControlChange_b(llist_t* llist_ptr, ccPesets_t* ccPesets_ptr);
+void controlChange(llist_t* llist_ptr, ccPesets_t* ccPesets_ptr);
 #endif
 
 #if USB_SLIP_OSC

@@ -18,6 +18,6 @@ typedef struct lnode lnode_t;   // Forward declaration
 typedef struct blob blob_t;     // Forward declaration
 
 void GRANULAR_PLAYER_SETUP(AudioEffectGranular* granular_ptr);
-void granular_player(AudioEffectGranular* granular_ptr, llist_t* blobs_ptr);
+void granular_player(llist_t* llist_ptr, AudioEffectGranular* granular_ptr);
 
 #endif /*__PLAYER_GRANULAR_H__*/

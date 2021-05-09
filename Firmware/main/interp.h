@@ -28,9 +28,6 @@ struct interp {
 };
 
 void INTERP_SETUP(
-  uint8_t*  inputArray_ptr,
-  image_t*  inputFrame_ptr,
-  uint8_t*  outputArray,
   image_t*  outputFrame,
   interp_t* interp
 );

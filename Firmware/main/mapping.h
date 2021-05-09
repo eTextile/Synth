@@ -71,7 +71,7 @@ struct grid {
 void GRID_LAYOUT_SETUP(squareKey_t* keyArray_ptr);
 
 void gridLayout(llist_t* llist_ptr, grid_t* gridLayout_ptr);
-void gridGapLayout(llist_t* llist_ptr, grid_t* gridLayout_ptr);
+void gridLayoutGap(llist_t* llist_ptr, grid_t* gridLayout_ptr);
 void hSlider(llist_t* llist_ptr, hSlider_t* slider_ptr);
 void vSlider(llist_t* llist_ptr, vSlider_t* slider_ptr);
 void cSlider(llist_t* llist_ptr, polar_t* polar_ptr, cSlider_t* slider_ptr);

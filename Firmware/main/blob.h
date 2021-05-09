@@ -162,7 +162,7 @@ struct velocity {
   float Z;
 };
 
-void getBlobsVelocity(llist_t* blobs_ptr, velocity_t* velocity_ptr);
+void getBlobsVelocity(llist_t* blobs_ptr);
 
 typedef struct polar polar_t;
 struct polar {
@@ -170,7 +170,7 @@ struct polar {
   float phi;
 };
 
-void getPolarCoordinates(llist_t* blobs_ptr, polar_t* polarPos_ptr);
+void getPolarCoordinates(llist_t* blobs_ptr);
 
 void print_bitmap(void);
 void print_blobs(llist_t* llist_ptr);

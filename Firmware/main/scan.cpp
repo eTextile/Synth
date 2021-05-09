@@ -6,10 +6,11 @@
 
 #include "scan.h"
 
-ADC* adc = new ADC();           // ADC object
-ADC::Sync_result result;        // Store ADC_0 & ADC_1
+ADC* adc = new ADC();                    // ADC object
+ADC::Sync_result result;                 // Store ADC_0 & ADC_1
 
-uint8_t offsetArray[RAW_FRAME] = {0};                 // 1D Array to store E256 smallest values
+uint8_t offsetArray[RAW_FRAME] = {0};    // 1D Array to store E256 smallest values
+uint8_t rawFrameArray[RAW_FRAME] = {0};  // 1D Array to store E256 ofseted analog input values
 
 // Array to store all parameters used to configure the two 8:1 analog multiplexeurs
 // Each byte |ENA|A|B|C|ENA|A|B|C|
@@ -45,6 +46,13 @@ void ADC_SETUP(void) {
   //adc->adc1->setSamplingSpeed(ADC_SAMPLING_SPEED::VERY_HIGH_SPEED);     // Change the sampling speed
   adc->adc1->setConversionSpeed(ADC_CONVERSION_SPEED::HIGH_SPEED);        // Change the conversion speed/*
   adc->adc1->setSamplingSpeed(ADC_SAMPLING_SPEED::HIGH_SPEED);            // Change the sampling speed
+}
+
+void SCAN_SETUP(image_t* inputFrame_ptr) {
+  // image_t* rawFrame init config
+  inputFrame_ptr->pData = &rawFrameArray[0];
+  inputFrame_ptr->numCols = RAW_COLS;
+  inputFrame_ptr->numRows = RAW_ROWS;
 }
 
 // Columns are analog INPUT_PINS reded two by two
@@ -98,7 +106,7 @@ void calibrate_matrix(
 
 // Columns are analog INPUT_PINS reded two by two
 // Rows are digital OUTPUT_PINS supplyed one by one sequentially with 3.3V
-void scan_matrix(uint8_t* array_ptr) {
+void scan_matrix() {
   uint16_t setRows;
   for (uint8_t col = 0; col < DUAL_COLS; col++) {         // ANNALOG_PINS [0-7] with [8-15]
 #if SET_ORIGIN_Y
@@ -118,9 +126,9 @@ void scan_matrix(uint8_t* array_ptr) {
       delayMicroseconds(15);
       result = adc->analogSynchronizedRead(ADC0_PIN, ADC1_PIN);
       uint8_t valA = result.result_adc0;
-      valA > offsetArray[indexA] ? array_ptr[indexA] = valA - offsetArray[indexA] : array_ptr[indexA] = 0;
+      valA > offsetArray[indexA] ? rawFrameArray[indexA] = valA - offsetArray[indexA] : rawFrameArray[indexA] = 0;
       uint8_t valB = result.result_adc1;
-      valB > offsetArray[indexB] ? array_ptr[indexB] = valB - offsetArray[indexB] : array_ptr[indexB] = 0;
+      valB > offsetArray[indexB] ? rawFrameArray[indexB] = valB - offsetArray[indexB] : rawFrameArray[indexB] = 0;
 #if SET_ORIGIN_Y
       setRows = setRows << 1;
 #else

@@ -21,15 +21,9 @@
 #include "transmit.h"
 
 #include "soundCard.h"
-#include "player_synth.h"
 #include "player_flash.h"
+#include "player_synth.h"
 #include "player_granular.h"
-
-uint8_t rawFrameArray[RAW_FRAME] = {0};               // 1D Array to store E256 ofseted analog input values
-uint8_t interpFrameArray[NEW_FRAME] = {0};            // 1D Array to store E256 bilinear interpolated values
-
-median_t blobMedian[MAX_SYNTH] = {{0}, {0}, 0};       // 1D ...
-velocity_t blobVelocity[MAX_SYNTH] = {0, 0, 0, 0, 0}; // 1D Array to store XY & Z blobs velocity
 
 interp_t interp;           // Interpolation parameters structure
 image_t  rawFrame;         // Input frame values
@@ -40,7 +34,6 @@ llist_t  midiInllist;      // MidiIn linked list
 
 AudioInputI2S                     i2s_IN;
 AudioOutputI2S                    i2s_OUT;
-AudioControlSGTL5000              sgtl5000;
 
 #if FLASH_PLAYER
 AudioPlaySerialflashRaw           playFlashRaw;
@@ -162,8 +155,6 @@ midiNode_t midiInArray[MAX_SYNTH] = {0, 0, 0};            // 1D Array to store i
 
 grid_t grid = {&lastKey[0], &keyArray[0], &midiInllist};  // ARGS[blobKeyPress, KeyPress, midiNotes]
 
-polar_t polarCoord[MAX_SYNTH];                            // 1D Array of struct polar_t to store blobs polar coordinates
-
 vSlider_t vSlider_A = {10, 15, 40, 5, 0};                 // ARGS[posX, Ymin, Ymax, width, val]
 hSlider_t hSlider_A = {30, 15, 40, 5, 0};                 // ARGS[posY, Xmin, Xmax, width, val]
 
@@ -176,23 +167,17 @@ cSlider_t cSliders[C_SLIDERS] = {
 ccPesets_t ccPeset = {NULL, BD, 44, 1, 0};                // ARGS[blobID, [BX,BY,BW,BH,BD], cChange, midiChannel, Val]
 
 void setup() {
-#if DEBUG_ADC || DEBUG_INTERP || DEBUG_BLOBS || DEBUG_SFF_BITMAP || DEBUG_FPS || DEBUG_ENCODER || DEBUG_BUTTONS
+#if DEBUG_ADC || DEBUG_INTERP || DEBUG_SFF_BITMADEBUG_SFF_BITMAPP || DEBUG_BLOBS || DEBUG_FPS || DEBUG_ENCODER || DEBUG_BUTTONS
   Serial.begin(BAUD_RATE); // Start Serial communication using 230400 baud
   while (!Serial);
   Serial.printf("\n%s_%s", NAME, VERSION);
-  delay(1000);
 #endif
   LEDS_SETUP();
   SWITCHES_SETUP();
   SPI_SETUP();
   ADC_SETUP();
-  INTERP_SETUP(
-    &rawFrameArray[0],    // uint8_t*
-    &rawFrame,            // image_t*
-    &interpFrameArray[0], // uint8_t*
-    &interpFrame,         // image_t*
-    &interp               // interp_t*
-  );
+  SCAN_SETUP(&rawFrame);
+  INTERP_SETUP(&interpFrame, &interp);
   BLOB_SETUP(&blobs);
 #if USB_MIDI
   USB_MIDI_SETUP();
@@ -241,8 +226,7 @@ void loop() {
 
   update_volumes(
     currentMode,
-    &presets[0],
-    &sgtl5000
+    &presets[0]
   );
 
   update_leds(
@@ -256,7 +240,7 @@ void loop() {
     &presets[0]
   );
 
-  scan_matrix(&rawFrameArray[0]);
+  scan_matrix();
 
 #if DEBUG_ADC
   if (debugTimer >= 1000) {
@@ -284,9 +268,9 @@ void loop() {
     &blobs                  // llist_ptr
   );
 
-  median(&blobs, &blobMedian[0]);              // ARGS[llist_ptr, median_ptr]
-  getPolarCoordinates(&blobs, &polarCoord[0]); // ARGS[llist_ptr, polar_ptr]
-  getBlobsVelocity(&blobs, &blobVelocity[0]);  // ARGS[llist_ptr, velocity_ptr]
+  median(&blobs);               // ARGS[llist_ptr]
+  getPolarCoordinates(&blobs);  // ARGS[llist_ptr]
+  getBlobsVelocity(&blobs);     // ARGS[llist_ptr]
 
 #if DEBUG_BITMAP
   if (debugTimer >= 100) {
@@ -317,8 +301,8 @@ void loop() {
 
 #if HARDWARE_MIDI
   gridLayout(&blobs, &grid);                              // ARGS[llist_ptr, gridLayout_ptr]
-  //gridGapLayout(&blobs, &grid);                         // ARGS[llist_ptr, gridLayout_ptr]
-  //controlChangeMapping(&blobs, &ccPesets);              // ARGS[llist_ptr, ccccPesets_ptr]
+  //gridLayoutGap(&blobs, &grid);                         // ARGS[llist_ptr, gridLayout_ptr]
+  //controlChange(&blobs, &ccPesets);                     // ARGS[llist_ptr, ccccPesets_ptr]
 #endif
 
   //boolean togSwitchVal = toggle(&blobs, &modeSwitch);   // ARGS[llist_ptr, switch_ptr]
@@ -329,15 +313,13 @@ void loop() {
   //cSlider(&blobs, &polarCoord[0], &cSliders[0]);        // ARGS[llist_ptr, polar_ptr, cSliders_ptr]
 
 #if SYNTH_PLAYER
-  synth_player(&allSynth[0], &blobs);
+  synth_player(&blobs, &allSynth[0]);
 #endif
-
 #if GRANULAR_PLAYER
-  granular_player(&granular, &blobs);
+  granular_player(&blobs, &granular);
 #endif
-
 #if FLASH_PLAYER
-  flash_player(&playFlashRaw, &blobs);
+  flash_player(&blobs, &playFlashRaw);
 #endif
 
 #if DEBUG_FPS

@@ -25,6 +25,6 @@ struct synth {
 };
 
 void SYNTH_PLAYER_SETUP(synth_t* allSynth_ptr);
-void synth_player(synth_t* allSynth_ptr, llist_t* blobs_ptr);
+void synth_player(llist_t* blobs_ptr, synth_t* allSynth_ptr);
 
 #endif /*__PLAYER_SYNTH_H__*/

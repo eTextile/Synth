@@ -17,16 +17,16 @@
 typedef struct llist llist_t;  // Forward declaration
 typedef struct blob blob_t;    // Forward declaration
 
-#define MEDIAN_TIME_WINDOW 5                  // Allowed filter window size : 3, 5, 7...
-#define MEDIAN_POS ((MEDIAN_TIME_WINDOW-1)/2) // position of median in ordered list
+#define MEDIAN_WINDOW 5                  // Allowed filter window size : 3, 5, 7...
+#define MEDIAN_POS ((MEDIAN_WINDOW-1)/2) // position of median in ordered list
 
 typedef struct median median_t;
 struct median {
-  float zVal[MEDIAN_TIME_WINDOW];  // Input values Array
-  float zOrd[MEDIAN_TIME_WINDOW];  // Sorted values Array
+  float zVal[MEDIAN_WINDOW];  // Input values Array
+  float zOrd[MEDIAN_WINDOW];  // Sorted values Array
   uint8_t index;                   // Ring storage current index
 };
 
-void median(llist_t* blobs_ptr, median_t* median_ptr);
+void median(llist_t* blobs_ptr);
 
 #endif /*__MEDIAN_H__*/

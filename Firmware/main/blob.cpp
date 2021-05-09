@@ -12,9 +12,11 @@
 
 #include "blob.h"
 
-uint8_t bitmapFrame[NEW_FRAME] = {0};   // 1D Array to store E256 (64*64) binary values
-xylr_t lifoArray[LIFO_MAX_NODES] = {0}; // 1D Array to store E256 lifo nodes
-blob_t blobArray[MAX_BLOBS] = {0};                    // 1D Array to store E256 blobs
+uint8_t bitmapFrame[NEW_FRAME] = {0};     // 1D Array to store E256 (64*64) binary values
+xylr_t lifoArray[LIFO_MAX_NODES] = {0};   // 1D Array to store E256 lifo nodes
+blob_t blobArray[MAX_BLOBS] = {0};        // 1D Array to store E256 blobs
+velocity_t blobVelocity[MAX_SYNTH] = {0}; // 1D Array to store XY & Z blobs velocity
+polar_t polarCoord[MAX_SYNTH] = {0};      // 1D Array of struct polar_t to store blobs polar coordinates
 
 llist_t llist_context_stack;    // Free nodes stack
 llist_t llist_context;          // Used nodes
@@ -387,21 +389,21 @@ void find_blobs(
 #endif
 }
 
-void getBlobsVelocity(llist_t* blobs_ptr, velocity_t* velocity_ptr) {
+void getBlobsVelocity(llist_t* blobs_ptr) {
   float vx = 0;
   float vy = 0;
 
   for (blob_t* blob_ptr = (blob_t*)ITERATOR_START_FROM_HEAD(blobs_ptr); blob_ptr != NULL; blob_ptr = (blob_t*)ITERATOR_NEXT(blob_ptr)) {
     if (blob_ptr->UID < MAX_SYNTH) {
-      vx = blob_ptr->centroid.X - velocity_ptr[blob_ptr->UID].lastX;
-      vy = blob_ptr->centroid.Y - velocity_ptr[blob_ptr->UID].lastY;
+      vx = blob_ptr->centroid.X - blobVelocity[blob_ptr->UID].lastX;
+      vy = blob_ptr->centroid.Y - blobVelocity[blob_ptr->UID].lastY;
 
-      velocity_ptr[blob_ptr->UID].XY = sqrt(vx * vx + vy * vy);
-      velocity_ptr[blob_ptr->UID].Z = blob_ptr->box.D - velocity_ptr[blob_ptr->UID].lastZ;
+      blobVelocity[blob_ptr->UID].XY = sqrt(vx * vx + vy * vy);
+      blobVelocity[blob_ptr->UID].Z = blob_ptr->box.D - blobVelocity[blob_ptr->UID].lastZ;
 
-      velocity_ptr[blob_ptr->UID].lastX = blob_ptr->centroid.X;
-      velocity_ptr[blob_ptr->UID].lastY = blob_ptr->centroid.Y;
-      velocity_ptr[blob_ptr->UID].lastZ = blob_ptr->box.D;
+      blobVelocity[blob_ptr->UID].lastX = blob_ptr->centroid.X;
+      blobVelocity[blob_ptr->UID].lastY = blob_ptr->centroid.Y;
+      blobVelocity[blob_ptr->UID].lastZ = blob_ptr->box.D;
 
 #if DEBUG_MAPPING
       Serial.printf("\nDEBUG_VELOCITY : X:%f\tY:%f\tZ:%f",
@@ -414,30 +416,30 @@ void getBlobsVelocity(llist_t* blobs_ptr, velocity_t* velocity_ptr) {
   }
 }
 
-void getPolarCoordinates(llist_t* blobs_ptr, polar_t* polar_ptr) {
+void getPolarCoordinates(llist_t* blobs_ptr) {
   for (blob_t* blob_ptr = (blob_t*)ITERATOR_START_FROM_HEAD(blobs_ptr); blob_ptr != NULL; blob_ptr = (blob_t*)ITERATOR_NEXT(blob_ptr)) {
     float posX = blob_ptr->centroid.X - POLAR_CX;
     float posY = blob_ptr->centroid.Y - POLAR_CY;
     if (posX == 0 && posY == 0 ) {
-      polar_ptr[blob_ptr->UID].r = 0;
-      polar_ptr[blob_ptr->UID].phi = 0;
+      polarCoord[blob_ptr->UID].r = 0;
+      polarCoord[blob_ptr->UID].phi = 0;
     }
     else {
-      polar_ptr[blob_ptr->UID].r = sqrt(posX * posX + posY * posY);
+      polarCoord[blob_ptr->UID].r = sqrt(posX * posX + posY * posY);
       if (posX == 0 && 0 < posY) {
-        polar_ptr[blob_ptr->UID].phi = PI / 2;
+        polarCoord[blob_ptr->UID].phi = PI / 2;
       } else if (posX == 0 && posY < 0) {
-        polar_ptr[blob_ptr->UID].phi = PI * 3 / 2;
+        polarCoord[blob_ptr->UID].phi = PI * 3 / 2;
       } else if (posX < 0) {
-        polar_ptr[blob_ptr->UID].phi = atan(posY / posX) + PI;
+        polarCoord[blob_ptr->UID].phi = atan(posY / posX) + PI;
       } else if (posY < 0) {
-        polar_ptr[blob_ptr->UID].phi = atan(posY / posX) + 2 * PI;
+        polarCoord[blob_ptr->UID].phi = atan(posY / posX) + 2 * PI;
       } else {
-        polar_ptr[blob_ptr->UID].phi = atan(posY / posX);
+        polarCoord[blob_ptr->UID].phi = atan(posY / posX);
       }
     }
 #if DEBUG_MAPPING
-    Serial.printf("\nDEBUG_POLAR : R: % f\tPHY: % f", polar_ptr[blob_ptr->UID].r, polar_ptr[blob_ptr->UID].phi);
+    Serial.printf("\nDEBUG_POLAR : R: % f\tPHY: % f", polarCoord[blob_ptr->UID].r, polarCoord[blob_ptr->UID].phi);
 #endif
   }
 }
