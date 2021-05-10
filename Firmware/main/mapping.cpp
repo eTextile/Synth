@@ -6,9 +6,13 @@
 
 #include "mapping.h"
 
+
+int8_t lastKey[MAX_SYNTH] = {0};                          // 1D Array to store last keys pressed
+squareKey_t keyArray[GRID_KEYS] = {0, 0, 0, 0};           // 1D Array of struct squareKey_t to store pre-compute key positions ARGS[Xmin, Xmax, Ymin, Ymax]
+midiNode_t midiInArray[MAX_SYNTH] = {0, 0, 0};            // 1D Array to store incoming midi notes
+
 // Compute the grid index acording to the blob X-Y coordinates
-// gridLayout_ptr = {&lastKey[0], &keyArray[0], &midiIN[0]};
-void gridLayout(llist_t* llist_ptr, grid_t* gridLayout_ptr) {
+void gridLayout(llist_t* llist_ptr) {
   for (blob_t* blob_ptr = (blob_t*)ITERATOR_START_FROM_HEAD(llist_ptr); blob_ptr != NULL; blob_ptr = (blob_t*)ITERATOR_NEXT(blob_ptr)) {
     if (blob_ptr->UID < MAX_SYNTH) {                                                    // Test if the blob UID is less than MAX_SYNTH
       if (blob_ptr->state) {
@@ -21,54 +25,54 @@ void gridLayout(llist_t* llist_ptr, grid_t* gridLayout_ptr) {
           MIDI.sendNoteOn(keyPressed, 127, 1);                                          // Send NoteON (CHANNEL_1)
 #endif
           //Serial.printf("\nGRID_GAP\tBLOB:%d\t\tNOTE_ON: %d", blob_ptr->UID, keyPressed);
-          gridLayout_ptr->lastKey[blob_ptr->UID] = keyPressed;                          // Save current key
+          lastKey[blob_ptr->UID] = keyPressed;                          // Save current key
         }
         else {
-          if (keyPressed != gridLayout_ptr->lastKey[blob_ptr->UID]) {                   // Test if new key is pressed
+          if (keyPressed != lastKey[blob_ptr->UID]) {                   // Test if new key is pressed
 #if HARDWARE_MIDI
-            MIDI.sendNoteOff(gridLayout_ptr->lastKey[blob_ptr->UID], 0, 1);             // Send NoteOFF (CHANNEL_1)
+            MIDI.sendNoteOff(lastKey[blob_ptr->UID], 0, 1);             // Send NoteOFF (CHANNEL_1)
             MIDI.sendNoteOn(keyPressed, 127, 1);                                        // Send NoteON (CHANNEL_1)
 #endif
-            //Serial.printf("\nGRID_GAP\tBLOB:%d\tNOTE_OFF_SLIDE: %d", blob_ptr->UID, gridLayout_ptr->lastKey[blob_ptr->UID]);
+            //Serial.printf("\nGRID_GAP\tBLOB:%d\tNOTE_OFF_SLIDE: %d", blob_ptr->UID, lastKey[blob_ptr->UID]);
             //Serial.printf("\nGRID_GAP\tBLOB:%d\t\tNOTE_ON_SLIDE: %d", blob_ptr->UID, keyPressed);
-            gridLayout_ptr->lastKey[blob_ptr->UID] = keyPressed;
+            lastKey[blob_ptr->UID] = keyPressed;
           }
         }
       }
       else {
 #if HARDWARE_MIDI
-        MIDI.sendNoteOff(gridLayout_ptr->lastKey[blob_ptr->UID], 0, 1);                 // Send NoteOFF (CHANNEL_1)
+        MIDI.sendNoteOff(lastKey[blob_ptr->UID], 0, 1);                 // Send NoteOFF (CHANNEL_1)
 #endif
-        //Serial.printf("\nGRID_GAP\tBLOB:%d\tNOTE_OFF: %d", blob_ptr->UID, gridLayout_ptr->lastKey[blob_ptr->UID]);
-        gridLayout_ptr->lastKey[blob_ptr->UID] = -1;
+        //Serial.printf("\nGRID_GAP\tBLOB:%d\tNOTE_OFF: %d", blob_ptr->UID, lastKey[blob_ptr->UID]);
+        lastKey[blob_ptr->UID] = -1;
       }
     }
   }
 }
 
 // Pre-compute key min & max coordinates
-void GRID_LAYOUT_SETUP(squareKey_t* keyArray_ptr) {
+void GRID_LAYOUT_SETUP() {
   int index = 0;
   Serial.printf("\nDEBUG_KEY_SIZE: %f", KEY_SIZE);
   for (int row = 0; row < GRID_ROWS; row++) {
     for (int col = 0; col < GRID_COLS; col++) {
       index = row * GRID_ROWS + col;
-      keyArray_ptr[index].Xmin = col * KEY_SIZE + (col + 1) * GRID_GAP;
-      keyArray_ptr[index].Xmax = (col + 1) * KEY_SIZE + (col + 1) * GRID_GAP;
-      keyArray_ptr[index].Ymin = row * KEY_SIZE + (row + 1) * GRID_GAP;
-      keyArray_ptr[index].Ymax = (row + 1) * KEY_SIZE + (row + 1) * GRID_GAP;
+      keyArray[index].Xmin = col * KEY_SIZE + (col + 1) * GRID_GAP;
+      keyArray[index].Xmax = (col + 1) * KEY_SIZE + (col + 1) * GRID_GAP;
+      keyArray[index].Ymin = row * KEY_SIZE + (row + 1) * GRID_GAP;
+      keyArray[index].Ymax = (row + 1) * KEY_SIZE + (row + 1) * GRID_GAP;
       Serial.printf("\nGRID_GAP\tXmin%d\tXmax%d\tYmin%d\tYmax%d",
-                    keyArray_ptr[index].Xmin,
-                    keyArray_ptr[index].Xmax,
-                    keyArray_ptr[index].Ymin,
-                    keyArray_ptr[index].Ymax
+                    keyArray[index].Xmin,
+                    keyArray[index].Xmax,
+                    keyArray[index].Ymin,
+                    keyArray[index].Ymax
                    );
     }
   }
 }
 
 // Compute the grid index location acording to blob X-Y coordinates
-void gridLayoutGap(llist_t* llist_ptr, grid_t* gridLayout_ptr) { //gridLayout = {&lastKey[0], &keyArray[0], &midiIN[0]};
+void gridLayoutGap(llist_t* llist_ptr) { //gridLayout = {&lastKey[0], &keyArray[0], &midiIN[0]};
   for (blob_t* blob_ptr = (blob_t*)ITERATOR_START_FROM_HEAD(llist_ptr); blob_ptr != NULL; blob_ptr = (blob_t*)ITERATOR_NEXT(blob_ptr)) {
     if (blob_ptr->UID < MAX_SYNTH) {                                                    // Test if the blob UID is less than MAX_SYNTH
       if (blob_ptr->state) {
@@ -76,37 +80,37 @@ void gridLayoutGap(llist_t* llist_ptr, grid_t* gridLayout_ptr) { //gridLayout = 
         uint8_t keyPosY = (uint8_t)round((blob_ptr->centroid.Y / Y_MAX) * GRID_ROWS);   // Compute Y window position
         uint8_t keyPressed = keyPosY * GRID_ROWS + keyPosX;                             // Compute 1D key index position
         // Test if the blob is within the key limits
-        if (blob_ptr->centroid.X >= gridLayout_ptr->keyArray_ptr[keyPressed].Xmin &&
-            blob_ptr->centroid.X <= gridLayout_ptr->keyArray_ptr[keyPressed].Xmax &&
-            blob_ptr->centroid.Y >= gridLayout_ptr->keyArray_ptr[keyPressed].Ymin &&
-            blob_ptr->centroid.Y <= gridLayout_ptr->keyArray_ptr[keyPressed].Ymax
+        if (blob_ptr->centroid.X >= keyArray[keyPressed].Xmin &&
+            blob_ptr->centroid.X <= keyArray[keyPressed].Xmax &&
+            blob_ptr->centroid.Y >= keyArray[keyPressed].Ymin &&
+            blob_ptr->centroid.Y <= keyArray[keyPressed].Ymax
            ) {
           if (!blob_ptr->lastState) {
 #if HARDWARE_MIDI
             MIDI.sendNoteOn(keyPressed, 127, 1);                                        // Send NoteON (CHANNEL_1)
 #endif
             //Serial.printf("\nGRID_GAP\tBLOB:%d\t\tNOTE_ON: %d", blob_ptr->UID, keyPressed);
-            gridLayout_ptr->lastKey[blob_ptr->UID] = keyPressed;                        // Save current key
+            lastKey[blob_ptr->UID] = keyPressed;                        // Save current key
           }
           else {
-            if (keyPressed != gridLayout_ptr->lastKey[blob_ptr->UID]) {                 // Test if new key is pressed
+            if (keyPressed != lastKey[blob_ptr->UID]) {                 // Test if new key is pressed
 #if HARDWARE_MIDI
-              MIDI.sendNoteOff(gridLayout_ptr->lastKey[blob_ptr->UID], 0, 1);           // Send NoteOFF (CHANNEL_1)
+              MIDI.sendNoteOff(lastKey[blob_ptr->UID], 0, 1);           // Send NoteOFF (CHANNEL_1)
               MIDI.sendNoteOn(keyPressed, 127, 1);                                      // Send NoteON (CHANNEL_1)
 #endif
-              //Serial.printf("\nGRID_GAP\tBLOB:%d\tNOTE_OFF_SLIDE: %d", blob_ptr->UID, gridLayout_ptr->lastKey[blob_ptr->UID]);
+              //Serial.printf("\nGRID_GAP\tBLOB:%d\tNOTE_OFF_SLIDE: %d", blob_ptr->UID, lastKey[blob_ptr->UID]);
               //Serial.printf("\nGRID_GAP\tBLOB:%d\t\tNOTE_ON_SLIDE: %d", blob_ptr->UID, keyPressed);
-              gridLayout_ptr->lastKey[blob_ptr->UID] = keyPressed;
+              lastKey[blob_ptr->UID] = keyPressed;
             }
           }
         }
       }
       else {
 #if HARDWARE_MIDI
-        MIDI.sendNoteOff(gridLayout_ptr->lastKey[blob_ptr->UID], 0, 1);                 // Send NoteOFF (CHANNEL_1)
+        MIDI.sendNoteOff(lastKey[blob_ptr->UID], 0, 1);                 // Send NoteOFF (CHANNEL_1)
 #endif
-        //Serial.printf("\nGRID_GAP\tBLOB:%d\tNOTE_OFF: %d", blob_ptr->UID, gridLayout_ptr->lastKey[blob_ptr->UID]);
-        gridLayout_ptr->lastKey[blob_ptr->UID] = -1;
+        //Serial.printf("\nGRID_GAP\tBLOB:%d\tNOTE_OFF: %d", blob_ptr->UID, lastKey[blob_ptr->UID]);
+        lastKey[blob_ptr->UID] = -1;
       }
     }
   }

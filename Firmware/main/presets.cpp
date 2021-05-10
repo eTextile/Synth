@@ -112,7 +112,9 @@ void update_presets(
       break;
     case THRESHOLD:
       if (setLevel(&presets_ptr[THRESHOLD])) {
+
         interp_ptr->interpThreshold = constrain(presets_ptr[THRESHOLD].val - 5, presets_ptr[THRESHOLD].minVal, presets_ptr[THRESHOLD].maxVal);
+        
         presets_ptr[THRESHOLD].ledVal = map(presets_ptr[THRESHOLD].val, presets_ptr[THRESHOLD].minVal, presets_ptr[THRESHOLD].maxVal, 0, 255);
         presets_ptr[THRESHOLD].updateLed = true;
         presets_ptr[THRESHOLD].update = true;

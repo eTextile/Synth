@@ -6,7 +6,7 @@
 
 #include "soundCard.h"
 
-AudioControlSGTL5000              sgtl5000;
+AudioControlSGTL5000  sgtl5000;
 
 void SOUND_CARD_SETUP() {
   AudioMemory(100);

@@ -149,12 +149,6 @@ preset_t presets[7] = {
 tSwitch_t tapSwitch = {10, 10, 5, 1000, false};           // ARGS[posX, posY, rSize, debounceTimer, state]
 tSwitch_t modeSwitch = {40, 30, 5, 1000, false};          // ARGS[posX, posY, rSize, debounceTimer, state]
 
-int8_t lastKey[MAX_SYNTH] = {0};                          // 1D Array to store last keys pressed
-squareKey_t keyArray[GRID_KEYS] = {0, 0, 0, 0};           // 1D Array of struct squareKey_t to store pre-compute key positions ARGS[Xmin, Xmax, Ymin, Ymax]
-midiNode_t midiInArray[MAX_SYNTH] = {0, 0, 0};            // 1D Array to store incoming midi notes
-
-grid_t grid = {&lastKey[0], &keyArray[0], &midiInllist};  // ARGS[blobKeyPress, KeyPress, midiNotes]
-
 vSlider_t vSlider_A = {10, 15, 40, 5, 0};                 // ARGS[posX, Ymin, Ymax, width, val]
 hSlider_t hSlider_A = {30, 15, 40, 5, 0};                 // ARGS[posY, Xmin, Xmax, width, val]
 
@@ -192,7 +186,7 @@ void setup() {
   llist_raz(&midiInllist);
 #endif
 #if SYNTH_PLAYER || GRANULAR_PLAYER || FLASH_PLAYER
-  SOUND_CARD_SETUP(&sgtl5000);
+  SOUND_CARD_SETUP();
 #endif
 #if SYNTH_PLAYER
   SYNTH_PLAYER_SETUP(&allSynth[0]);
@@ -203,7 +197,7 @@ void setup() {
 #if GRANULAR_PLAYER
   GRANULAR_PLAYER_SETUP(&granular);
 #endif
-  GRID_LAYOUT_SETUP(&keyArray[0]);
+  GRID_LAYOUT_SETUP();
 }
 
 //////////////////// LOOP
@@ -268,9 +262,9 @@ void loop() {
     &blobs                  // llist_ptr
   );
 
-  median(&blobs);               // ARGS[llist_ptr]
-  getPolarCoordinates(&blobs);  // ARGS[llist_ptr]
-  getBlobsVelocity(&blobs);     // ARGS[llist_ptr]
+  //median(&blobs);               // ARGS[llist_ptr]
+  //getPolarCoordinates(&blobs);  // ARGS[llist_ptr]
+  //getBlobsVelocity(&blobs);     // ARGS[llist_ptr]
 
 #if DEBUG_BITMAP
   if (debugTimer >= 100) {
@@ -300,8 +294,8 @@ void loop() {
   // The sensor surface origine [0:0] is TOP_LEFT
 
 #if HARDWARE_MIDI
-  gridLayout(&blobs, &grid);                              // ARGS[llist_ptr, gridLayout_ptr]
-  //gridLayoutGap(&blobs, &grid);                         // ARGS[llist_ptr, gridLayout_ptr]
+  gridLayout(&blobs);                                     // ARGS[llist_ptr, gridLayout_ptr]
+  //gridLayoutGap(&blobs);                                // ARGS[llist_ptr, gridLayout_ptr]
   //controlChange(&blobs, &ccPesets);                     // ARGS[llist_ptr, ccccPesets_ptr]
 #endif
 
