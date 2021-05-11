@@ -60,8 +60,7 @@ void update_buttons(
 
 void update_presets(
   presetMode_t curentMode,
-  preset_t* presets_ptr,
-  interp_t* interp_ptr
+  preset_t* presets_ptr
 );
 
 void update_leds(

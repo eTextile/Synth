@@ -25,15 +25,9 @@ void SWITCHES_SETUP(void) {
   BUTTON_R.interval(25);                        // Debounce interval of 15 millis
 }
 
-void update_buttons(
-  presetMode_t* lastMode_ptr,
-  presetMode_t* curentMode_ptr,
-  preset_t* presets_ptr
-) {
-
+void update_buttons(presetMode_t* lastMode_ptr, presetMode_t* curentMode_ptr, preset_t* presets_ptr) {
   BUTTON_L.update();
   BUTTON_R.update();
-
   // ACTION : BUTTON_L short press
   // FONCTION : CALIBRATE THE SENSOR MATRIX
   if (BUTTON_L.rose() && BUTTON_L.previousDuration() < LONG_HOLD) {
@@ -45,7 +39,6 @@ void update_buttons(
     Serial.printf("\nBUTTON_L : CALIBRATE : %d", *curentMode_ptr);
 #endif
   }
-
   // ACTION : BUTTON_L long press
   // FONCTION : SAVE ALL PARAMETERS TO THE EEPROM MEMORY
   if (BUTTON_L.rose() && BUTTON_L.previousDuration() > LONG_HOLD) {
@@ -56,7 +49,6 @@ void update_buttons(
     Serial.printf("\nBUTTON_L : SAVE : %d", *curentMode_ptr);
 #endif
   }
-
   // ACTION : BUTTON_R short press
   // FONCTION : SELECT_MODE
   if (BUTTON_R.rose() && BUTTON_R.previousDuration() < LONG_HOLD) {
@@ -83,11 +75,7 @@ void update_buttons(
   }
 }
 
-void update_presets(
-  presetMode_t curentMode,
-  preset_t* presets_ptr,
-  interp_t* interp_ptr
-) {
+void update_presets(presetMode_t curentMode, preset_t* presets_ptr) {
   switch (curentMode) {
     case LINE_OUT:
       if (setLevel(&presets_ptr[LINE_OUT])) {
@@ -112,10 +100,8 @@ void update_presets(
       break;
     case THRESHOLD:
       if (setLevel(&presets_ptr[THRESHOLD])) {
-
-        interp_ptr->interpThreshold = constrain(presets_ptr[THRESHOLD].val - 5, presets_ptr[THRESHOLD].minVal, presets_ptr[THRESHOLD].maxVal);
-        
         presets_ptr[THRESHOLD].ledVal = map(presets_ptr[THRESHOLD].val, presets_ptr[THRESHOLD].minVal, presets_ptr[THRESHOLD].maxVal, 0, 255);
+        interpThreshold = constrain(presets_ptr[THRESHOLD].val - 5, presets_ptr[THRESHOLD].minVal, presets_ptr[THRESHOLD].maxVal);
         presets_ptr[THRESHOLD].updateLed = true;
         presets_ptr[THRESHOLD].update = true;
       }
@@ -132,10 +118,7 @@ void update_presets(
 }
 
 // Update LEDs according to the mode and rotary encoder values
-void update_leds(
-  presetMode_t curentMode,
-  preset_t* presets_ptr
-) {
+void update_leds(presetMode_t curentMode, preset_t* presets_ptr) {
   static uint32_t timer = 0;
   static uint8_t iter = 0;
 

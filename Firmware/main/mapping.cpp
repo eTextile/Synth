@@ -6,10 +6,8 @@
 
 #include "mapping.h"
 
-
-int8_t lastKey[MAX_SYNTH] = {0};                          // 1D Array to store last keys pressed
 squareKey_t keyArray[GRID_KEYS] = {0, 0, 0, 0};           // 1D Array of struct squareKey_t to store pre-compute key positions ARGS[Xmin, Xmax, Ymin, Ymax]
-midiNode_t midiInArray[MAX_SYNTH] = {0, 0, 0};            // 1D Array to store incoming midi notes
+int8_t lastKey[MAX_SYNTH] = {0};                          // 1D Array to store last keys pressed
 
 // Compute the grid index acording to the blob X-Y coordinates
 void gridLayout(llist_t* llist_ptr) {

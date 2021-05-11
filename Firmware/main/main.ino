@@ -10,6 +10,9 @@
 #include <SPI.h>                // https://github.com/PaulStoffregen/SPI
 #include <SD.h>                 // https://github.com/PaulStoffregen/SD
 #include <SerialFlash.h>        // https://github.com/PaulStoffregen/SerialFlash
+#include <MIDI.h>
+
+MIDI_CREATE_INSTANCE(HardwareSerial, Serial3, MIDI);
 
 #include "config.h"
 #include "presets.h"
@@ -25,12 +28,12 @@
 #include "player_synth.h"
 #include "player_granular.h"
 
-interp_t interp;           // Interpolation parameters structure
+uint8_t interpThreshold = 10;
+
 image_t  rawFrame;         // Input frame values
 image_t  interpFrame;      // Interpolated frame values
 llist_t  blobs;            // Output blobs linked list
-llist_t  midiIn_stack;     // MidiIn free nodes linked list
-llist_t  midiInllist;      // MidiIn linked list
+llist_t  midiIn;           // MidiIn linked list
 
 AudioInputI2S                     i2s_IN;
 AudioOutputI2S                    i2s_OUT;
@@ -136,29 +139,26 @@ boolean loadPreset = true;
 boolean savePreset = false;
 
 preset_t presets[7] = {
-  {13, 31, 29, 0, false, false, false, LOW,  LOW }, // LINE_OUT   - ARGS[minVal, maxVal, val, ledVal, setLed, updateLed, update, D1, D2]
-  { 1, 50, 12, 0, false, false, false, HIGH, LOW }, // SIG_IN     - ARGS[minVal, maxVal, val, ledVal, setLed, updateLed, update, D1, D2]
-  { 1, 31, 17, 0, false, false, false, LOW,  HIGH}, // SIG_OUT    - ARGS[minVal, maxVal, val, ledVal, setLed, updateLed, update, D1, D2]
-  { 1, 60, 15, 0, false, false, false, HIGH, HIGH}, // THRESHOLD  - ARGS[minVal, maxVal, val, ledVal, setLed, updateLed, update, D1, D2]
-  { 1, 6,  1,  0, false, false, false, NULL, NULL}, // MIDI_LEARN - ARGS[minVal, maxVal, val, ledVal, setLed, updateLed, update, D1, D2]
-  { 0, 0,  0,  0, true,  true,  false, NULL, NULL}, // CALIBRATE  - ARGS[minVal, maxVal, val, ledVal, setLed, updateLed, update, D1, D2]
-  { 0, 0,  0,  0, false, false, false, NULL, NULL}  // SAVE       - ARGS[minVal, maxVal, val, ledVal, setLed, updateLed, update, D1, D2]
+  {13, 31, 29, 0, false, false, false, LOW,  LOW },  // LINE_OUT   - ARGS[minVal, maxVal, val, ledVal, setLed, updateLed, update, D1, D2]
+  { 1, 50, 12, 0, false, false, false, HIGH, LOW },  // SIG_IN     - ARGS[minVal, maxVal, val, ledVal, setLed, updateLed, update, D1, D2]
+  { 1, 31, 17, 0, false, false, false, LOW,  HIGH},  // SIG_OUT    - ARGS[minVal, maxVal, val, ledVal, setLed, updateLed, update, D1, D2]
+  { 15, 60, 20, 0, false, false, false, HIGH, HIGH}, // THRESHOLD  - ARGS[minVal, maxVal, val, ledVal, setLed, updateLed, update, D1, D2]
+  { 1, 6,  1,  0, false, false, false, NULL, NULL},  // MIDI_LEARN - ARGS[minVal, maxVal, val, ledVal, setLed, updateLed, update, D1, D2]
+  { 0, 0,  0,  0, true,  true,  false, NULL, NULL},  // CALIBRATE  - ARGS[minVal, maxVal, val, ledVal, setLed, updateLed, update, D1, D2]
+  { 0, 0,  0,  0, false, false, false, NULL, NULL}   // SAVE       - ARGS[minVal, maxVal, val, ledVal, setLed, updateLed, update, D1, D2]
 };
 
 // MAPPING
-tSwitch_t tapSwitch = {10, 10, 5, 1000, false};           // ARGS[posX, posY, rSize, debounceTimer, state]
-tSwitch_t modeSwitch = {40, 30, 5, 1000, false};          // ARGS[posX, posY, rSize, debounceTimer, state]
-
-vSlider_t vSlider_A = {10, 15, 40, 5, 0};                 // ARGS[posX, Ymin, Ymax, width, val]
-hSlider_t hSlider_A = {30, 15, 40, 5, 0};                 // ARGS[posY, Xmin, Xmax, width, val]
-
+tSwitch_t tapSwitch = {10, 10, 5, 1000, false};     // ARGS[posX, posY, rSize, debounceTimer, state]
+tSwitch_t modeSwitch = {40, 30, 5, 1000, false};    // ARGS[posX, posY, rSize, debounceTimer, state]
+vSlider_t vSlider_A = {10, 15, 40, 5, 0};           // ARGS[posX, Ymin, Ymax, width, val]
+hSlider_t hSlider_A = {30, 15, 40, 5, 0};           // ARGS[posY, Xmin, Xmax, width, val]
 cSlider_t cSliders[C_SLIDERS] = {
-  {   6, 4,  3.8,  5, 0},                                 // ARGS[r, width, phiOffset, phiMax, val]
-  {13.5, 3,  3.8, 10, 0},                                 // ARGS[r, width, phiOffset, phiMax, val]
-  {  20, 4,  4.8,  5, 0}                                  // ARGS[r, width, phiOffset, phiMax, val]
+  {   6, 4,  3.8,  5, 0},                           // ARGS[r, width, phiOffset, phiMax, val]
+  {13.5, 3,  3.8, 10, 0},                           // ARGS[r, width, phiOffset, phiMax, val]
+  {  20, 4,  4.8,  5, 0}                            // ARGS[r, width, phiOffset, phiMax, val]
 };
-
-ccPesets_t ccPeset = {NULL, BD, 44, 1, 0};                // ARGS[blobID, [BX,BY,BW,BH,BD], cChange, midiChannel, Val]
+ccPesets_t ccPeset = {NULL, BD, 44, 1, 0};          // ARGS[blobID, [BX,BY,BW,BH,BD], cChange, midiChannel, Val]
 
 void setup() {
 #if DEBUG_ADC || DEBUG_INTERP || DEBUG_SFF_BITMADEBUG_SFF_BITMAPP || DEBUG_BLOBS || DEBUG_FPS || DEBUG_ENCODER || DEBUG_BUTTONS
@@ -171,7 +171,7 @@ void setup() {
   SPI_SETUP();
   ADC_SETUP();
   SCAN_SETUP(&rawFrame);
-  INTERP_SETUP(&interpFrame, &interp);
+  INTERP_SETUP(&interpFrame);
   BLOB_SETUP(&blobs);
 #if USB_MIDI
   USB_MIDI_SETUP();
@@ -180,10 +180,7 @@ void setup() {
   USB_SLIP_OSC_SETUP();
 #endif
 #if HARDWARE_MIDI
-  HARDWARE_MIDI_SETUP();
-  llist_raz(&midiIn_stack);
-  midiIn_llist_init(&midiIn_stack, &midiInArray[0], MAX_SYNTH);
-  llist_raz(&midiInllist);
+  HARDWARE_MIDI_SETUP(&midiIn);
 #endif
 #if SYNTH_PLAYER || GRANULAR_PLAYER || FLASH_PLAYER
   SOUND_CARD_SETUP();
@@ -205,35 +202,11 @@ void loop() {
 
   //if (loadPreset) preset_load(&presets[0], &loadPreset); // TODO
   //if (savePreset) preset_save(&presets[0], &savePreset); // TODO
-
-  update_buttons(
-    &lastMode,
-    &currentMode,
-    &presets[0]
-  );
-
-  update_presets(
-    currentMode,
-    &presets[0],
-    &interp
-  );
-
-  update_volumes(
-    currentMode,
-    &presets[0]
-  );
-
-  update_leds(
-    currentMode,
-    &presets[0]
-  );
-
-  calibrate_matrix(
-    &lastMode,
-    &currentMode,
-    &presets[0]
-  );
-
+  update_buttons(&lastMode, &currentMode, &presets[0]);
+  update_presets(currentMode, &presets[0]);
+  update_volumes(currentMode, &presets[0]);
+  update_leds(currentMode, &presets[0]);
+  calibrate_matrix(&lastMode, &currentMode, &presets[0]);
   scan_matrix();
 
 #if DEBUG_ADC
@@ -243,24 +216,16 @@ void loop() {
   }
 #endif
 
-  interp_matrix(
-    &interp,
-    &rawFrame,
-    &interpFrame
-  );
+  interp_matrix(&rawFrame, &interpFrame, interpThreshold);
 
 #if DEBUG_INTERP
-  if (debugTimer >= 1000) {
+  if (debugTimer >= 500) {
     debugTimer = 0;
     print_interp(&interpFrame);
   }
 #endif
 
-  find_blobs(
-    presets[THRESHOLD].val, // uint8_t (Z)Threshold
-    &interpFrame,           // image_ptr (uint8_t array[NEW_FRAME] - 64*64 1D array)
-    &blobs                  // llist_ptr
-  );
+  find_blobs(presets[THRESHOLD].val, &interpFrame, &blobs);
 
   //median(&blobs);               // ARGS[llist_ptr]
   //getPolarCoordinates(&blobs);  // ARGS[llist_ptr]

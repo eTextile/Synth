@@ -14,7 +14,8 @@
 
 #if HARDWARE_MIDI || USB_MIDI
 #include <MIDI.h>                   // http://www.pjrc.com/teensy/td_midi.html
-MIDI_CREATE_INSTANCE(HardwareSerial, Serial3, MIDI);
+extern MIDI_NAMESPACE::SerialMIDI<HardwareSerial>serialMIDI;
+extern MIDI_NAMESPACE::MidiInterface<MIDI_NAMESPACE::SerialMIDI<HardwareSerial>> MIDI;
 #endif
 
 #if USB_SLIP_OSC
@@ -46,8 +47,8 @@ struct ccPesets {
 };
 
 #if HARDWARE_MIDI
-void HARDWARE_MIDI_SETUP(void);
-void midiIn_llist_init(llist_t *list_ptr, midiNode_t* nodesArray, uint8_t max_nodes);
+void HARDWARE_MIDI_SETUP(llist_t* midiInStack_ptr);
+void midiIn_llist_init(llist_t* nodeStack_ptr, midiNode_t* nodeArray_ptr);
 void handleMidiInput(llist_t* llist_ptr, llist_t* nodeStack_ptr); // TODO
 void controlChange(llist_t* llist_ptr, ccPesets_t* ccPesets_ptr);
 #endif

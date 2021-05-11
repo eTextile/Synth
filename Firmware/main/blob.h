@@ -155,10 +155,9 @@ void find_blobs(
 
 typedef struct velocity velocity_t;
 struct velocity {
-  float lastX;
-  float lastY;
+  point_t lastPos;
+  float pos;
   float lastZ;
-  float XY;
   float Z;
 };
 

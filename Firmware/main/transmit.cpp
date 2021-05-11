@@ -11,6 +11,8 @@
 
 #include "transmit.h"
 
+midiNode_t midiInArray[MAX_SYNTH] = {0}; // 1D Array to alocate memory for incoming midi notes
+
 #if USB_SLIP_OSC
 SLIPEncodedUSBSerial SLIPSerial(thisBoardsSerialUSB); // FIXME
 
@@ -39,14 +41,16 @@ void usb_slipOsc(llist_t* llist_ptr) {
 
 #if HARDWARE_MIDI
 
-void HARDWARE_MIDI_SETUP(void) {
-  MIDI.begin(MIDI_CHANNEL_OMNI);
+void midiIn_llist_init(llist_t* nodeStack_ptr, midiNode_t* nodeArray_ptr) {
+  for (int i = 0; i < MAX_SYNTH; i++) {
+    llist_push_front(nodeStack_ptr, &nodeArray_ptr[i]);
+  }
 }
 
-void midiIn_llist_init(llist_t *llist_ptr, midiNode_t* nodesArray, uint8_t max_nodes) {
-  for (int i = 0; i < max_nodes; i++) {
-    llist_push_front(llist_ptr, &nodesArray[i]);
-  }
+void HARDWARE_MIDI_SETUP(llist_t* midiIN_ptr) {
+  MIDI.begin(MIDI_CHANNEL_OMNI);
+  llist_raz(midiIN_ptr);
+  midiIn_llist_init(midiIN_ptr, &midiInArray[0]);
 }
 
 void handleMidiInput(llist_t* llist_ptr, llist_t* nodeStack_ptr) {

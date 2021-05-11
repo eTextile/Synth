@@ -25,7 +25,7 @@ uint8_t setDualRows[DUAL_COLS] = {
 void SPI_SETUP(void) {
   pinMode(SS1_PIN, OUTPUT);                                               // Set the Slave Select Pin as OUTPUT
   SPI1.begin();                                                           // Start the SPI module
-  SPI1.beginTransaction(SPISettings(30000000, MSBFIRST, SPI_MODE0));      // 74HC595BQ Shift out register frequency is 100 MHz = 100000000 Hz
+  SPI1.beginTransaction(SPISettings(30000000, MSBFIRST, SPI_MODE2));      // 74HC595BQ Shift out register frequency is 100 MHz = 100000000 Hz
   digitalWrite(SS1_PIN, LOW);                                             // Set latchPin LOW
   digitalWrite(SS1_PIN, HIGH);                                            // Set latchPin HIGH
 }
@@ -35,17 +35,17 @@ void ADC_SETUP(void) {
   pinMode(ADC1_PIN, INPUT);                                               // PIN A3 (Teensy 4.0 pin 17)
   adc->adc0->setAveraging(1);                                             // Set number of averages
   adc->adc0->setResolution(8);                                            // Set bits of resolution
-  //adc->adc0->setConversionSpeed(ADC_CONVERSION_SPEED::VERY_HIGH_SPEED); // Change the conversion speed
-  //adc->adc0->setSamplingSpeed(ADC_SAMPLING_SPEED::VERY_HIGH_SPEED);     // Change the sampling speed
-  adc->adc0->setConversionSpeed(ADC_CONVERSION_SPEED::HIGH_SPEED);        // Change the conversion speed
-  adc->adc0->setSamplingSpeed(ADC_SAMPLING_SPEED::HIGH_SPEED);            // Change the sampling speed
+  adc->adc0->setConversionSpeed(ADC_CONVERSION_SPEED::VERY_HIGH_SPEED); // Change the conversion speed
+  adc->adc0->setSamplingSpeed(ADC_SAMPLING_SPEED::VERY_HIGH_SPEED);     // Change the sampling speed
+  //adc->adc0->setConversionSpeed(ADC_CONVERSION_SPEED::HIGH_SPEED);        // Change the conversion speed
+  //adc->adc0->setSamplingSpeed(ADC_SAMPLING_SPEED::HIGH_SPEED);            // Change the sampling speed
 
   adc->adc1->setAveraging(1);                                             // Set number of averages
   adc->adc1->setResolution(8);                                            // Set bits of resolution
-  //adc->adc1->setConversionSpeed(ADC_CONVERSION_SPEED::VERY_HIGH_SPEED); // Change the conversion speed
-  //adc->adc1->setSamplingSpeed(ADC_SAMPLING_SPEED::VERY_HIGH_SPEED);     // Change the sampling speed
-  adc->adc1->setConversionSpeed(ADC_CONVERSION_SPEED::HIGH_SPEED);        // Change the conversion speed/*
-  adc->adc1->setSamplingSpeed(ADC_SAMPLING_SPEED::HIGH_SPEED);            // Change the sampling speed
+  adc->adc1->setConversionSpeed(ADC_CONVERSION_SPEED::VERY_HIGH_SPEED); // Change the conversion speed
+  adc->adc1->setSamplingSpeed(ADC_SAMPLING_SPEED::VERY_HIGH_SPEED);     // Change the sampling speed
+  //adc->adc1->setConversionSpeed(ADC_CONVERSION_SPEED::HIGH_SPEED);        // Change the conversion speed/*
+  //adc->adc1->setSamplingSpeed(ADC_SAMPLING_SPEED::HIGH_SPEED);            // Change the sampling speed
 }
 
 void SCAN_SETUP(image_t* inputFrame_ptr) {
@@ -123,7 +123,7 @@ void scan_matrix() {
       digitalWrite(SS1_PIN, HIGH);                        // Set the Slave Select Pin HIGH
       uint8_t indexA = row * RAW_COLS + col;              // Compute 1D array indexA
       uint8_t indexB = indexA + DUAL_COLS;                // Compute 1D array indexB
-      delayMicroseconds(15);
+      delayMicroseconds(10);
       result = adc->analogSynchronizedRead(ADC0_PIN, ADC1_PIN);
       uint8_t valA = result.result_adc0;
       valA > offsetArray[indexA] ? rawFrameArray[indexA] = valA - offsetArray[indexA] : rawFrameArray[indexA] = 0;

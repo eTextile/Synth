@@ -23,15 +23,15 @@ llist_t llist_context;          // Used nodes
 llist_t llist_blobs_stack;      // Free nodes stack
 llist_t llist_blobs;            // Intermediate blobs linked list
 
-void blob_llist_init(llist_t* llist_ptr, blob_t* nodesArray) {
+void blob_llist_init(llist_t* llist_ptr, blob_t* nodesArray_ptr) {
   for (int i = 0; i < MAX_BLOBS; i++) {
-    llist_push_front(llist_ptr, &nodesArray[i]);
+    llist_push_front(llist_ptr, &nodesArray_ptr[i]);
   }
 }
 
-void lifo_llist_init(llist_t* llist_ptr, xylr_t* nodesArray) {
+void lifo_llist_init(llist_t* llist_ptr, xylr_t* nodesArray_ptr) {
   for (int i = 0; i < LIFO_MAX_NODES; i++) {
-    llist_push_front(llist_ptr, &nodesArray[i]);
+    llist_push_front(llist_ptr, &nodesArray_ptr[i]);
   }
 }
 
@@ -395,14 +395,14 @@ void getBlobsVelocity(llist_t* blobs_ptr) {
 
   for (blob_t* blob_ptr = (blob_t*)ITERATOR_START_FROM_HEAD(blobs_ptr); blob_ptr != NULL; blob_ptr = (blob_t*)ITERATOR_NEXT(blob_ptr)) {
     if (blob_ptr->UID < MAX_SYNTH) {
-      vx = blob_ptr->centroid.X - blobVelocity[blob_ptr->UID].lastX;
-      vy = blob_ptr->centroid.Y - blobVelocity[blob_ptr->UID].lastY;
+      vx = blob_ptr->centroid.X - blobVelocity[blob_ptr->UID].lastPos.X;
+      vy = blob_ptr->centroid.Y - blobVelocity[blob_ptr->UID].lastPos.Y;
 
-      blobVelocity[blob_ptr->UID].XY = sqrt(vx * vx + vy * vy);
+      blobVelocity[blob_ptr->UID].pos = sqrt(vx * vx + vy * vy);
       blobVelocity[blob_ptr->UID].Z = blob_ptr->box.D - blobVelocity[blob_ptr->UID].lastZ;
 
-      blobVelocity[blob_ptr->UID].lastX = blob_ptr->centroid.X;
-      blobVelocity[blob_ptr->UID].lastY = blob_ptr->centroid.Y;
+      blobVelocity[blob_ptr->UID].lastPos.X = blob_ptr->centroid.X;
+      blobVelocity[blob_ptr->UID].lastPos.Y = blob_ptr->centroid.Y;
       blobVelocity[blob_ptr->UID].lastZ = blob_ptr->box.D;
 
 #if DEBUG_MAPPING

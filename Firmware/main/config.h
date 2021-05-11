@@ -9,15 +9,12 @@
 
 #include <Arduino.h>
 
-//#if defined(USB_SERIAL)
-//#if defined(USB_MIDI)
-
 #define NAME                    "ETEXTILE_SYNTHESIZER"
 #define VERSION                 "1.0.3"
 
 #define USB_MIDI                0  // [0:1] Set the eTextile-Synthesizer as USB MIDI divice
 #define USB_SLIP_OSC            0  // [0:1] Set the eTextile-Synthesizer as SLIP_OSC divice
-#define HARDWARE_MIDI           0  // [0:1] Set the eTextile-Synthesizer as MIDI I/O divice
+#define HARDWARE_MIDI           1  // [0:1] Set the eTextile-Synthesizer as MIDI I/O divice
 
 #define SYNTH_PLAYER            0  // [0:1] Set the eTextile-Synthesizer as STANDALONE divice
 #define GRANULAR_PLAYER         0  // [0:1] Set the eTextile-Synthesizer as STANDALONE divice
@@ -27,7 +24,7 @@
 #define MAX_SYNTH               8  // [1:8] Set how many synthesizers can be played at the same time
 
 // Arduino serial monitor
-#define DEBUG_FPS               1  // [0:1] Print Frames Per Second
+#define DEBUG_FPS               0  // [0:1] Print Frames Per Second
 #define DEBUG_ENCODER           0  // [0:1] Print encoder value 
 #define DEBUG_BUTTONS           0  // [0:1] Print buttons states
 #define DEBUG_ADC               0  // [0:1] Print 16x16 Analog raw values
@@ -114,7 +111,5 @@
 #define SAVE_LED_TIMEON         20
 #define SAVE_LED_TIMEOFF        50
 #define SAVE_LED_ITER           10
-
-#define GRANULAR_MEMORY_SIZE    12800
 
 #endif /*__CONFIG_H__*/

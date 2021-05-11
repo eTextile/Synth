@@ -28,7 +28,7 @@ void SYNTH_PLAYER_SETUP(synth_t* allSynth_ptr) {
 
 /////////////////////////// MAKE NOISE FONCTION !
 void synth_player(llist_t* blobs_ptr, synth_t* allSynth_ptr) {
-  static boolean lastState[MAX_BLOBS] = {false};
+  //static boolean lastState[MAX_BLOBS] = {false};
 
   AudioNoInterrupts();
   for (blob_t* blob_ptr = (blob_t *)ITERATOR_START_FROM_HEAD(blobs_ptr); blob_ptr != NULL; blob_ptr = (blob_t *)ITERATOR_NEXT(blob_ptr)) {

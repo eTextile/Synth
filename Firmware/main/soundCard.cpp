@@ -15,10 +15,7 @@ void SOUND_CARD_SETUP() {
   sgtl5000.inputSelect(AUDIO_INPUT_MIC);
 }
 
-void update_volumes(
-  presetMode_t curentMode,
-  preset_t* presets_ptr
-) {
+void update_volumes(presetMode_t curentMode, preset_t* presets_ptr) {
 
   switch (curentMode) {
 

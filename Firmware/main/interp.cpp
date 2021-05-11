@@ -6,7 +6,8 @@
 
 #include "interp.h"
 
-uint8_t interpFrameArray[NEW_FRAME] = {0};            // 1D Array to store E256 bilinear interpolated values
+uint8_t interpFrameArray[NEW_FRAME] = {0};  // 1D Array to store E256 bilinear interpolated values
+interp_t interp;                            // Interpolation parameters structure
 
 float* coef_A[SCALE_X * SCALE_Y] = {0};
 float* coef_B[SCALE_X * SCALE_Y] = {0};
@@ -18,46 +19,37 @@ float* coef_D[SCALE_X * SCALE_Y] = {0};
     Pre-compute the four coefficient values for all interpolated output matrix positions
 */
 
-void INTERP_SETUP(
-  image_t* outputFrame_ptr,
-  interp_t* interp_ptr
-) {
+void INTERP_SETUP(image_t* outputFrame_ptr) {
 
   // image_t* outputFrame_ptr init config
   outputFrame_ptr->pData = &interpFrameArray[0];  // Setup -> uint8_t bilinInterpOutput[NEW_FRAME] (64x64)
   outputFrame_ptr->numCols = NEW_COLS;
   outputFrame_ptr->numRows = NEW_ROWS;
 
-  // interp_t* interp_ptr init config
-  interp_ptr->scaleX = SCALE_X;
-  interp_ptr->scaleY = SCALE_Y;
-  interp_ptr->outputStrideY = SCALE_X * SCALE_Y * RAW_COLS;
-  interp_ptr->pCoefA = (float*)coef_A;
-  interp_ptr->pCoefB = (float*)coef_B;
-  interp_ptr->pCoefC = (float*)coef_C;
-  interp_ptr->pCoefD = (float*)coef_D;
+  // interp_t* interp init config
+  interp.scaleX = SCALE_X;
+  interp.scaleY = SCALE_Y;
+  interp.outputStrideY = SCALE_X * SCALE_Y * RAW_COLS;
+  interp.pCoefA = (float*)coef_A;
+  interp.pCoefB = (float*)coef_B;
+  interp.pCoefC = (float*)coef_C;
+  interp.pCoefD = (float*)coef_D;
 
-  float sFactor = (interp_ptr->scaleX * interp_ptr->scaleY);
+  float sFactor = (interp.scaleX * interp.scaleY);
 
-  for (uint8_t row = 0; row < interp_ptr->scaleY; row++) {
-    for (uint8_t col = 0; col < interp_ptr->scaleX; col++) {
-      int index = row * interp_ptr->scaleX + col;
-      interp_ptr->pCoefA[index] = (interp_ptr->scaleX - col) * (interp_ptr->scaleY - row) / sFactor;
-      interp_ptr->pCoefB[index] = col * (interp_ptr->scaleY - row) / sFactor;
-      interp_ptr->pCoefC[index] = (interp_ptr->scaleX - col) * row / sFactor;
-      interp_ptr->pCoefD[index] = row * col / sFactor;
+  for (uint8_t row = 0; row < interp.scaleY; row++) {
+    for (uint8_t col = 0; col < interp.scaleX; col++) {
+      int index = row * interp.scaleX + col;
+      interp.pCoefA[index] = (interp.scaleX - col) * (interp.scaleY - row) / sFactor;
+      interp.pCoefB[index] = col * (interp.scaleY - row) / sFactor;
+      interp.pCoefC[index] = (interp.scaleX - col) * row / sFactor;
+      interp.pCoefD[index] = row * col / sFactor;
     }
   }
-  interp_ptr->interpThreshold = 5;
 }
 
 // Bilinear interpolation
-void interp_matrix(
-  interp_t* interp_ptr,
-  image_t* inputFrame_ptr,
-  image_t* outputFrame_ptr
-) {
-
+void interp_matrix(image_t* inputFrame_ptr, image_t* outputFrame_ptr, uint8_t interpThreshold) {
   uint8_t inIndexA = 0;
   uint8_t inIndexB = 0;
   uint8_t inIndexC = 0;
@@ -68,33 +60,33 @@ void interp_matrix(
 
       inIndexA = rowPos * RAW_COLS + colPos;
 
-      if (inputFrame_ptr->pData[inIndexA] > interp_ptr->interpThreshold) { // Windowing implementation
+      if (inputFrame_ptr->pData[inIndexA] > interpThreshold) { // 'Windowing' implementation
 
         inIndexB = inIndexA + 1;
         inIndexC = inIndexA + RAW_COLS;
         inIndexD = inIndexC + 1;
 
-        for (uint8_t row = 0; row < interp_ptr->scaleY; row++) {
-          for (uint8_t col = 0; col < interp_ptr->scaleX; col++) {
+        for (uint8_t row = 0; row < interp.scaleY; row++) {
+          for (uint8_t col = 0; col < interp.scaleX; col++) {
 
-            uint8_t coefIndex = row * interp_ptr->scaleX + col;
-            uint16_t outIndex = rowPos * interp_ptr->outputStrideY + colPos * interp_ptr->scaleX + row * NEW_COLS + col;
+            uint8_t coefIndex = row * interp.scaleX + col;
+            uint16_t outIndex = rowPos * interp.outputStrideY + colPos * interp.scaleX + row * NEW_COLS + col;
 
             outputFrame_ptr->pData[outIndex] =
               (uint8_t)round(
-                inputFrame_ptr->pData[inIndexA] * interp_ptr->pCoefA[coefIndex] +
-                inputFrame_ptr->pData[inIndexB] * interp_ptr->pCoefB[coefIndex] +
-                inputFrame_ptr->pData[inIndexC] * interp_ptr->pCoefC[coefIndex] +
-                inputFrame_ptr->pData[inIndexD] * interp_ptr->pCoefD[coefIndex]
+                inputFrame_ptr->pData[inIndexA] * interp.pCoefA[coefIndex] +
+                inputFrame_ptr->pData[inIndexB] * interp.pCoefB[coefIndex] +
+                inputFrame_ptr->pData[inIndexC] * interp.pCoefC[coefIndex] +
+                inputFrame_ptr->pData[inIndexD] * interp.pCoefD[coefIndex]
               );
           }
         }
       }
       else {
-        for (uint8_t row = 0; row < interp_ptr->scaleY; row++) {
+        for (uint8_t row = 0; row < interp.scaleY; row++) {
           int rowIndex = row * NEW_COLS;
-          for (uint8_t col = 0; col < interp_ptr->scaleX; col++) {
-            uint16_t outIndex = rowPos * interp_ptr->outputStrideY + colPos * interp_ptr->scaleX + rowIndex + col;
+          for (uint8_t col = 0; col < interp.scaleX; col++) {
+            uint16_t outIndex = rowPos * interp.outputStrideY + colPos * interp.scaleX + rowIndex + col;
             outputFrame_ptr->pData[outIndex] = 0;
           }
         }
@@ -103,9 +95,9 @@ void interp_matrix(
   }
 }
 
-void print_interp(image_t* image_ptr) {
+void print_interp(image_t* frame_ptr) {
   for (uint8_t posY = 0; posY < NEW_ROWS; posY++) {
-    uint8_t* row_ptr = COMPUTE_IMAGE_ROW_PTR(image_ptr, posY);
+    uint8_t* row_ptr = COMPUTE_IMAGE_ROW_PTR(frame_ptr, posY);
     for (int posX = 0; posX < NEW_COLS; posX++) {
       Serial.printf("%d-", IMAGE_GET_PIXEL_FAST(row_ptr, posX));
     }
