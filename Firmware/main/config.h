@@ -84,8 +84,8 @@
 
 #define C_SLIDERS               3
 
-#define X_MAX                   58       // Blob X_MAX centroid position
-#define Y_MAX                   58       // Blob Y_MAX centroid position
+#define X_MAX                   58       // Blobs centroid X max value
+#define Y_MAX                   58       // Blobs centroid Y max value
 
 #define MAX_BLOB_PARAM          7        // [BI, BS, BX, BY, BW, BH, BD]
 #define BI                      0        // Blob UID

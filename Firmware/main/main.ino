@@ -23,6 +23,8 @@ MIDI_CREATE_INSTANCE(HardwareSerial, Serial3, MIDI);
 #include "mapping.h"
 #include "transmit.h"
 
+//#include "notes.h"
+
 #include "soundCard.h"
 #include "player_flash.h"
 #include "player_synth.h"
@@ -195,6 +197,7 @@ void setup() {
   GRANULAR_PLAYER_SETUP(&granular);
 #endif
   GRID_LAYOUT_SETUP();
+  //gridPopulate();
 };
 
 //////////////////// LOOP
@@ -227,18 +230,17 @@ void loop() {
 #endif
 
 #if HARDWARE_MIDI
-
   if (handleMidiInput(&midiIn)) {
     gridPopulate(&midiIn);
   };
-  
+#endif
+
   gridPlay(&blobs);
   //gridGapPlay(&blobs);
   //controlChange(&blobs, &ccParam);
-#endif
 
-  boolean toggSwitch = toggle(&blobs, &toggParam);
-  boolean trigSwitch = trigger(&blobs, &trigParam);
+  //boolean toggSwitch = toggle(&blobs, &toggParam);
+  //boolean trigSwitch = trigger(&blobs, &trigParam);
   //hSlider(&blobs, &hSliderParam);
   //vSlider(&blobs, &vSliderParam);
   //cSlider(&blobs, &polarCoord[0], &cSlidersParam[0]);

@@ -395,18 +395,17 @@ void getBlobsVelocity(llist_t* blobs_ptr) {
       vx = blob_ptr->centroid.X - blobVelocity[blob_ptr->UID].lastPos.X;
       vy = blob_ptr->centroid.Y - blobVelocity[blob_ptr->UID].lastPos.Y;
 
-      blobVelocity[blob_ptr->UID].pos = sqrt(vx * vx + vy * vy);
-      blobVelocity[blob_ptr->UID].Z = blob_ptr->box.D - blobVelocity[blob_ptr->UID].lastZ;
+      blobVelocity[blob_ptr->UID].vxy = sqrt(vx * vx + vy * vy);
+      blobVelocity[blob_ptr->UID].vz = blob_ptr->box.D - blobVelocity[blob_ptr->UID].lastVz;
 
       blobVelocity[blob_ptr->UID].lastPos.X = blob_ptr->centroid.X;
       blobVelocity[blob_ptr->UID].lastPos.Y = blob_ptr->centroid.Y;
-      blobVelocity[blob_ptr->UID].lastZ = blob_ptr->box.D;
+      blobVelocity[blob_ptr->UID].lastVz = blob_ptr->box.D;
 
 #if DEBUG_MAPPING
-      Serial.printf("\nDEBUG_VELOCITY : X:%f\tY:%f\tZ:%f",
-                    vx,
-                    vy,
-                    vz
+      Serial.printf("\nDEBUG_VELOCITY : vxy:%f\tvz:%f",
+                    blobVelocity[blob_ptr->UID].vxy,
+                    blobVelocity[blob_ptr->UID].vz
                    );
 #endif
     }
