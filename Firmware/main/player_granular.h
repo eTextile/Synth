@@ -11,7 +11,6 @@
 #include "config.h"
 #include "llist.h"
 #include "blob.h"
-#include "mapping.h"
 
 typedef struct llist llist_t;   // Forward declaration
 typedef struct lnode lnode_t;   // Forward declaration

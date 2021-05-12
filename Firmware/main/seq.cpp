@@ -15,5 +15,5 @@ void stepSequencer(tSwitch_t* tSwitch_ptr, seq_t * seq_ptr) {
 }
 
 // TODO
-void arpeggiator(int8_t* keyPressed) {
+void arpeggiator(int8_t* keyPress) {
 }

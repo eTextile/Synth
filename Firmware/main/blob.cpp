@@ -12,9 +12,10 @@
 
 #include "blob.h"
 
-uint8_t bitmapFrame[NEW_FRAME] = {0};     // 1D Array to store E256 (64*64) binary values
-xylr_t lifoArray[LIFO_MAX_NODES] = {0};   // 1D Array to store E256 lifo nodes
-blob_t blobArray[MAX_BLOBS] = {0};        // 1D Array to store E256 blobs
+uint8_t bitmapFrame[NEW_FRAME] = {0};     // 1D Array to store (64*64) binary values
+xylr_t lifoArray[LIFO_MAX_NODES] = {0};   // 1D Array to store lifo nodes
+blob_t blobArray[MAX_BLOBS] = {0};        // 1D Array to store blobs
+
 velocity_t blobVelocity[MAX_SYNTH] = {0}; // 1D Array to store XY & Z blobs velocity
 polar_t polarCoord[MAX_SYNTH] = {0};      // 1D Array of struct polar_t to store blobs polar coordinates
 
@@ -24,12 +25,14 @@ llist_t llist_blobs_stack;      // Free nodes stack
 llist_t llist_blobs;            // Intermediate blobs linked list
 
 void blob_llist_init(llist_t* llist_ptr, blob_t* nodesArray_ptr) {
+  llist_raz(llist_ptr);
   for (int i = 0; i < MAX_BLOBS; i++) {
     llist_push_front(llist_ptr, &nodesArray_ptr[i]);
   }
 }
 
 void lifo_llist_init(llist_t* llist_ptr, xylr_t* nodesArray_ptr) {
+  llist_raz(llist_ptr);
   for (int i = 0; i < LIFO_MAX_NODES; i++) {
     llist_push_front(llist_ptr, &nodesArray_ptr[i]);
   }
@@ -40,16 +43,10 @@ void bitmap_clear() {
 }
 
 void BLOB_SETUP(llist_t* outputBlobs_ptr) {
-  // Init lifo linked list
-  llist_raz(&llist_context_stack);
   lifo_llist_init(&llist_context_stack, &lifoArray[0]); // Add X nodes to the llist_context_stack
-  llist_raz(&llist_context);
-
-  // Init blobs linked list
-  llist_raz(&llist_blobs_stack);
   blob_llist_init(&llist_blobs_stack, &blobArray[0]); // Add X nodes to the llist_blobs_stack linked list
+  llist_raz(&llist_context);
   llist_raz(&llist_blobs);
-
   llist_raz(outputBlobs_ptr);
 }
 

@@ -46,11 +46,10 @@ struct ccPesets {
   int8_t val;
 };
 
-#if HARDWARE_MIDI
-void HARDWARE_MIDI_SETUP(llist_t* midiInStack_ptr);
-void midiIn_llist_init(llist_t* nodeStack_ptr, midiNode_t* nodeArray_ptr);
-void handleMidiInput(llist_t* llist_ptr, llist_t* nodeStack_ptr); // TODO
-void controlChange(llist_t* llist_ptr, ccPesets_t* ccPesets_ptr);
+#if USB_MIDI
+void USB_MIDI_SETUP(void);
+void usb_midi_learn(llist_t* llist_ptr, preset_t* preset_ptr);
+void usb_midi_play(llist_t* llist_ptr);
 #endif
 
 #if USB_SLIP_OSC
@@ -58,10 +57,11 @@ void USB_SLIP_OSC_SETUP(void);
 void usb_slipOsc(llist_t* llist_ptr);
 #endif
 
-#if USB_MIDI
-void USB_MIDI_SETUP(void);
-void usb_midi_learn(llist_t* llist_ptr, preset_t* preset_ptr);
-void usb_midi_play(llist_t* llist_ptr);
+#if HARDWARE_MIDI
+void HARDWARE_MIDI_SETUP(void);
+void midi_llist_init(llist_t* midiNodes_ptr, midiNode_t* nodeArray_ptr);
+boolean handleMidiInput(llist_t* llist_ptr);
+void controlChange(llist_t* llist_ptr, ccPesets_t* ccPesets_ptr);
 #endif
 
 #endif /*__TRANSMIT_H__*/

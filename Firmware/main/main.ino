@@ -5,11 +5,11 @@
   This work is licensed under Creative Commons Attribution-ShareAlike 4.0 International license, see the LICENSE file for details.
 */
 
-#include <Audio.h>              // https://github.com/PaulStoffregen/Audio
-#include <Wire.h>               // https://github.com/PaulStoffregen/Wire
-#include <SPI.h>                // https://github.com/PaulStoffregen/SPI
-#include <SD.h>                 // https://github.com/PaulStoffregen/SD
-#include <SerialFlash.h>        // https://github.com/PaulStoffregen/SerialFlash
+#include <Audio.h>         // https://github.com/PaulStoffregen/Audio
+#include <Wire.h>          // https://github.com/PaulStoffregen/Wire
+#include <SPI.h>           // https://github.com/PaulStoffregen/SPI
+#include <SD.h>            // https://github.com/PaulStoffregen/SD
+#include <SerialFlash.h>   // https://github.com/PaulStoffregen/SerialFlash
 #include <MIDI.h>
 
 MIDI_CREATE_INSTANCE(HardwareSerial, Serial3, MIDI);
@@ -149,16 +149,16 @@ preset_t presets[7] = {
 };
 
 // MAPPING
-tSwitch_t tapSwitch = {10, 10, 5, 1000, false};     // ARGS[posX, posY, rSize, debounceTimer, state]
-tSwitch_t modeSwitch = {40, 30, 5, 1000, false};    // ARGS[posX, posY, rSize, debounceTimer, state]
-vSlider_t vSlider_A = {10, 15, 40, 5, 0};           // ARGS[posX, Ymin, Ymax, width, val]
-hSlider_t hSlider_A = {30, 15, 40, 5, 0};           // ARGS[posY, Xmin, Xmax, width, val]
-cSlider_t cSliders[C_SLIDERS] = {
+tSwitch_t trigParam = {10, 10, 5, 1000, false};     // ARGS[posX, posY, rSize, debounceTimer, state]
+tSwitch_t toggParam = {40, 30, 5, 1000, false};     // ARGS[posX, posY, rSize, debounceTimer, state]
+vSlider_t vSliderParam = {10, 15, 40, 5, 0};        // ARGS[posX, Ymin, Ymax, width, val]
+hSlider_t hSliderParam = {30, 15, 40, 5, 0};        // ARGS[posY, Xmin, Xmax, width, val]
+cSlider_t cSlidersParam[C_SLIDERS] = {
   {   6, 4,  3.8,  5, 0},                           // ARGS[r, width, phiOffset, phiMax, val]
   {13.5, 3,  3.8, 10, 0},                           // ARGS[r, width, phiOffset, phiMax, val]
   {  20, 4,  4.8,  5, 0}                            // ARGS[r, width, phiOffset, phiMax, val]
 };
-ccPesets_t ccPeset = {NULL, BD, 44, 1, 0};          // ARGS[blobID, [BX,BY,BW,BH,BD], cChange, midiChannel, Val]
+ccPesets_t ccParam = {NULL, BD, 44, 1, 0};          // ARGS[blobID, [BX,BY,BW,BH,BD], cChange, midiChannel, Val]
 
 void setup() {
 #if DEBUG_ADC || DEBUG_INTERP || DEBUG_SFF_BITMADEBUG_SFF_BITMAPP || DEBUG_BLOBS || DEBUG_FPS || DEBUG_ENCODER || DEBUG_BUTTONS
@@ -180,7 +180,7 @@ void setup() {
   USB_SLIP_OSC_SETUP();
 #endif
 #if HARDWARE_MIDI
-  HARDWARE_MIDI_SETUP(&midiIn);
+  HARDWARE_MIDI_SETUP();
 #endif
 #if SYNTH_PLAYER || GRANULAR_PLAYER || FLASH_PLAYER
   SOUND_CARD_SETUP();
@@ -195,11 +195,10 @@ void setup() {
   GRANULAR_PLAYER_SETUP(&granular);
 #endif
   GRID_LAYOUT_SETUP();
-}
+};
 
 //////////////////// LOOP
 void loop() {
-
   //if (loadPreset) preset_load(&presets[0], &loadPreset); // TODO
   //if (savePreset) preset_save(&presets[0], &savePreset); // TODO
   update_buttons(&lastMode, &currentMode, &presets[0]);
@@ -208,68 +207,41 @@ void loop() {
   update_leds(currentMode, &presets[0]);
   calibrate_matrix(&lastMode, &currentMode, &presets[0]);
   scan_matrix();
-
-#if DEBUG_ADC
-  if (debugTimer >= 1000) {
-    debugTimer = 0;
-    print_adc(&rawFrame);
-  }
-#endif
-
   interp_matrix(&rawFrame, &interpFrame, interpThreshold);
-
-#if DEBUG_INTERP
-  if (debugTimer >= 500) {
-    debugTimer = 0;
-    print_interp(&interpFrame);
-  }
-#endif
-
   find_blobs(presets[THRESHOLD].val, &interpFrame, &blobs);
-
-  //median(&blobs);               // ARGS[llist_ptr]
-  //getPolarCoordinates(&blobs);  // ARGS[llist_ptr]
-  //getBlobsVelocity(&blobs);     // ARGS[llist_ptr]
-
-#if DEBUG_BITMAP
-  if (debugTimer >= 100) {
-    debugTimer = 0;
-    print_bitmap();
-  }
-#endif
-
-#if DEBUG_BLOBS
-  print_blobs(&blobs);
-#endif
+  //median(&blobs);
+  //getPolarCoordinates(&blobs);
+  //getBlobsVelocity(&blobs);
 
 #if USB_MIDI
   if (currentMode == MIDI_LEARN) {
     usb_midi_learn(&blobs, &presets[MIDI_LEARN]);
-  }
+  };
   else {
     usb_midi_play(&blobs);
-  }
+  };
 #endif
 
 #if USB_SLIP_OSC
   usb_slipOsc(&blobs);
 #endif
 
-  // Make some mapping
-  // The sensor surface origine [0:0] is TOP_LEFT
-
 #if HARDWARE_MIDI
-  gridLayout(&blobs);                                     // ARGS[llist_ptr, gridLayout_ptr]
-  //gridLayoutGap(&blobs);                                // ARGS[llist_ptr, gridLayout_ptr]
-  //controlChange(&blobs, &ccPesets);                     // ARGS[llist_ptr, ccccPesets_ptr]
+
+  if (handleMidiInput(&midiIn)) {
+    gridPopulate(&midiIn);
+  };
+  
+  gridPlay(&blobs);
+  //gridGapPlay(&blobs);
+  //controlChange(&blobs, &ccParam);
 #endif
 
-  //boolean togSwitchVal = toggle(&blobs, &modeSwitch);   // ARGS[llist_ptr, switch_ptr]
-  //boolean tapSwitchVal = trigger(&blobs, &tapSwitch);   // ARGS[llist_ptr, switch_ptr]
-
-  //hSlider(&blobs, &hSlider_A);                          // ARGS[llist_ptr, hSlider_ptr]
-  //vSlider(&blobs, &vSlider_A);                          // ARGS[llist_ptr, vSlider_ptr]
-  //cSlider(&blobs, &polarCoord[0], &cSliders[0]);        // ARGS[llist_ptr, polar_ptr, cSliders_ptr]
+  boolean toggSwitch = toggle(&blobs, &toggParam);
+  boolean trigSwitch = trigger(&blobs, &trigParam);
+  //hSlider(&blobs, &hSliderParam);
+  //vSlider(&blobs, &vSliderParam);
+  //cSlider(&blobs, &polarCoord[0], &cSlidersParam[0]);
 
 #if SYNTH_PLAYER
   synth_player(&blobs, &allSynth[0]);
@@ -281,6 +253,7 @@ void loop() {
   flash_player(&blobs, &playFlashRaw);
 #endif
 
+
 #if DEBUG_FPS
   if (curentMillisFps >= 1000) {
     curentMillisFps = 0;
@@ -288,7 +261,28 @@ void loop() {
     AudioProcessorUsageMaxReset();
     AudioMemoryUsageMaxReset();
     fps = 0;
-  }
+  };
   fps++;
 #endif
-}
+#if DEBUG_ADC
+  if (debugTimer >= 1000) {
+    debugTimer = 0;
+    print_adc(&rawFrame);
+  };
+#endif
+#if DEBUG_INTERP
+  if (debugTimer >= 500) {
+    debugTimer = 0;
+    print_interp(&interpFrame);
+  };
+#endif
+#if DEBUG_BITMAP
+  if (debugTimer >= 100) {
+    debugTimer = 0;
+    print_bitmap();
+  };
+#endif
+#if DEBUG_BLOBS
+  print_blobs(&blobs);
+#endif
+};

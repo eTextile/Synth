@@ -12,6 +12,7 @@
 #include "transmit.h"
 
 midiNode_t midiInArray[MAX_SYNTH] = {0}; // 1D Array to alocate memory for incoming midi notes
+llist_t  midiNodes;                      // Midi nodes stack
 
 #if USB_SLIP_OSC
 SLIPEncodedUSBSerial SLIPSerial(thisBoardsSerialUSB); // FIXME
@@ -41,24 +42,24 @@ void usb_slipOsc(llist_t* llist_ptr) {
 
 #if HARDWARE_MIDI
 
-void midiIn_llist_init(llist_t* nodeStack_ptr, midiNode_t* nodeArray_ptr) {
+void midi_llist_init(llist_t* nodes_ptr, midiNode_t* nodeArray_ptr) {
+  llist_raz(nodes_ptr);
   for (int i = 0; i < MAX_SYNTH; i++) {
-    llist_push_front(nodeStack_ptr, &nodeArray_ptr[i]);
+    llist_push_front(nodes_ptr, &nodeArray_ptr[i]);
   }
 }
 
-void HARDWARE_MIDI_SETUP(llist_t* midiIN_ptr) {
+void HARDWARE_MIDI_SETUP(void) {
+  midi_llist_init(&midiNodes, &midiInArray[0]);
   MIDI.begin(MIDI_CHANNEL_OMNI);
-  llist_raz(midiIN_ptr);
-  midiIn_llist_init(midiIN_ptr, &midiInArray[0]);
 }
 
-void handleMidiInput(llist_t* llist_ptr, llist_t* nodeStack_ptr) {
+boolean handleMidiInput(llist_t* llist_ptr) {
   if (MIDI.read()) {                   // Is there a MIDI message incoming
     byte type = MIDI.getType();        // Get the type of the message we caught
     switch (type) {
       case midi::NoteOn:
-        midiNode_t* midiNode = (midiNode_t*)llist_pop_front(nodeStack_ptr);
+        midiNode_t* midiNode = (midiNode_t*)llist_pop_front(&midiNodes);
         midiNode->pithch = MIDI.getData1();
         midiNode->velocity = MIDI.getData2();
         midiNode->channel = MIDI.getChannel();
@@ -69,7 +70,7 @@ void handleMidiInput(llist_t* llist_ptr, llist_t* nodeStack_ptr) {
         for (midiNode_t* midiNode = (midiNode_t*)ITERATOR_START_FROM_HEAD(llist_ptr); midiNode != NULL; midiNode = (midiNode_t*)ITERATOR_NEXT(midiNode)) {
           if (midiNode->pithch == MIDI.getData1()) {
             llist_extract_node(llist_ptr, prevNode_ptr, midiNode);
-            llist_push_front(nodeStack_ptr, midiNode);
+            llist_push_front(&midiNodes, midiNode);
             break;
           }
           prevNode_ptr = midiNode;
@@ -78,6 +79,10 @@ void handleMidiInput(llist_t* llist_ptr, llist_t* nodeStack_ptr) {
       default:
         break;
     }
+    return true;
+  }
+  else {
+    return false;
   }
 }
 #endif

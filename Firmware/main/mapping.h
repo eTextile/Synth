@@ -29,7 +29,7 @@ struct tSwitch {
   uint8_t posX;
   uint8_t posY;
   uint8_t rSize; // width/2 and height/2
-  uint32_t timer;
+  uint32_t timeStamp;
   boolean state;
 };
 
@@ -63,19 +63,22 @@ struct cSlider {
 
 typedef struct grid grid_t;
 struct grid {
-  int8_t* lastKey;
   squareKey_t* keyArray_ptr;
+  int8_t* keyPress;
   llist_t* midiIn;
 };
 
 void GRID_LAYOUT_SETUP();
 
-void gridLayout(llist_t* llist_ptr);
-void gridLayoutGap(llist_t* llist_ptr);
+void gridPlay(llist_t* llist_ptr);
+void gridGapPlay(llist_t* llist_ptr);
+void gridPopulate(llist_t* llist_ptr);
 
+boolean trigger(llist_t* llist_ptr, tSwitch_t* switch_ptr);
+boolean toggle(llist_t* llist_ptr, tSwitch_t* switch_ptr);
 void hSlider(llist_t* llist_ptr, hSlider_t* slider_ptr);
 void vSlider(llist_t* llist_ptr, vSlider_t* slider_ptr);
 void cSlider(llist_t* llist_ptr, polar_t* polar_ptr, cSlider_t* slider_ptr);
-boolean toggle(llist_t* llist_ptr, tSwitch_t* switch_ptr);
-boolean trigger(llist_t* llist_ptr, tSwitch_t* switch_ptr);
+
+
 #endif /*__MAPPING_H__*/

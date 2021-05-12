@@ -87,12 +87,6 @@
 #define X_MAX                   58       // Blob X_MAX centroid position
 #define Y_MAX                   58       // Blob Y_MAX centroid position
 
-#define GRID_COLS               8
-#define GRID_ROWS               8
-#define GRID_KEYS               (GRID_COLS * GRID_ROWS)
-#define GRID_GAP                2
-#define KEY_SIZE                ((float)((X_MAX - ((GRID_COLS + 1) * GRID_GAP)) / GRID_COLS))
-
 #define MAX_BLOB_PARAM          7        // [BI, BS, BX, BY, BW, BH, BD]
 #define BI                      0        // Blob UID
 #define BS                      1        // Blob State

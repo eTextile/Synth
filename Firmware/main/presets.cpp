@@ -119,7 +119,7 @@ void update_presets(presetMode_t curentMode, preset_t* presets_ptr) {
 
 // Update LEDs according to the mode and rotary encoder values
 void update_leds(presetMode_t curentMode, preset_t* presets_ptr) {
-  static uint32_t timer = 0;
+  static uint32_t timeStamp = 0;
   static uint8_t iter = 0;
 
   switch (curentMode) {
@@ -188,20 +188,20 @@ void update_leds(presetMode_t curentMode, preset_t* presets_ptr) {
         presets_ptr[MIDI_LEARN].setLed = false;
         pinMode(LED_PIN_D1, OUTPUT);
         pinMode(LED_PIN_D2, OUTPUT);
-        timer = millis();
+        timeStamp = millis();
       }
-      if (millis() - timer < MIDI_LEARN_LED_TIMEON && presets_ptr[MIDI_LEARN].updateLed == true) {
+      if (millis() - timeStamp < MIDI_LEARN_LED_TIMEON && presets_ptr[MIDI_LEARN].updateLed == true) {
         presets_ptr[MIDI_LEARN].updateLed = false;
         digitalWrite(LED_PIN_D1, HIGH);
         digitalWrite(LED_PIN_D2, LOW);
       }
-      else if (millis() - timer > MIDI_LEARN_LED_TIMEON && presets_ptr[MIDI_LEARN].updateLed == false) {
+      else if (millis() - timeStamp > MIDI_LEARN_LED_TIMEON && presets_ptr[MIDI_LEARN].updateLed == false) {
         presets_ptr[MIDI_LEARN].updateLed = true;
         digitalWrite(LED_PIN_D1, LOW);
         digitalWrite(LED_PIN_D2, HIGH);
       }
-      else if (millis() - timer > MIDI_LEARN_LED_TIMEON + MIDI_LEARN_LED_TIMEOFF) {
-        timer = millis();
+      else if (millis() - timeStamp > MIDI_LEARN_LED_TIMEON + MIDI_LEARN_LED_TIMEOFF) {
+        timeStamp = millis();
       }
       break;
 
@@ -210,23 +210,23 @@ void update_leds(presetMode_t curentMode, preset_t* presets_ptr) {
         presets_ptr[CALIBRATE].setLed = false;
         pinMode(LED_PIN_D1, OUTPUT);
         pinMode(LED_PIN_D2, OUTPUT);
-        timer = millis();
+        timeStamp = millis();
         iter = 0;
       }
       if (iter < CALIBRATE_LED_ITER) {
-        if (millis() - timer < CALIBRATE_LED_TIMEON && presets_ptr[CALIBRATE].updateLed == true) {
+        if (millis() - timeStamp < CALIBRATE_LED_TIMEON && presets_ptr[CALIBRATE].updateLed == true) {
           presets_ptr[CALIBRATE].updateLed = false;
           digitalWrite(LED_PIN_D1, HIGH);
           digitalWrite(LED_PIN_D2, HIGH);
         }
-        else if (millis() - timer > CALIBRATE_LED_TIMEON && presets_ptr[CALIBRATE].updateLed == false) {
+        else if (millis() - timeStamp > CALIBRATE_LED_TIMEON && presets_ptr[CALIBRATE].updateLed == false) {
           presets_ptr[CALIBRATE].updateLed = true;
           digitalWrite(LED_PIN_D1, LOW);
           digitalWrite(LED_PIN_D2, LOW);
         }
-        else if (millis() - timer > CALIBRATE_LED_TIMEON + CALIBRATE_LED_TIMEOFF) {
+        else if (millis() - timeStamp > CALIBRATE_LED_TIMEON + CALIBRATE_LED_TIMEOFF) {
           if (iter <= CALIBRATE_LED_ITER) {
-            timer = millis();
+            timeStamp = millis();
             iter++;
             if (iter == CALIBRATE_LED_ITER) presets_ptr[CALIBRATE].update = true;
           }
@@ -239,23 +239,23 @@ void update_leds(presetMode_t curentMode, preset_t* presets_ptr) {
         presets_ptr[SAVE].setLed = false;
         pinMode(LED_PIN_D1, OUTPUT);
         pinMode(LED_PIN_D2, OUTPUT);
-        timer = millis();
+        timeStamp = millis();
         iter = 0;
       }
       if (iter < SAVE_LED_ITER) {
-        if (millis() - timer < SAVE_LED_TIMEON && presets_ptr[SAVE].updateLed == true) {
+        if (millis() - timeStamp < SAVE_LED_TIMEON && presets_ptr[SAVE].updateLed == true) {
           presets_ptr[SAVE].updateLed = false;
           digitalWrite(LED_PIN_D1, HIGH);
           digitalWrite(LED_PIN_D2, HIGH);
         }
-        else if (millis() - timer > SAVE_LED_TIMEON && presets_ptr[SAVE].updateLed == false) {
+        else if (millis() - timeStamp > SAVE_LED_TIMEON && presets_ptr[SAVE].updateLed == false) {
           presets_ptr[SAVE].updateLed = true;
           digitalWrite(LED_PIN_D1, LOW);
           digitalWrite(LED_PIN_D2, LOW);
         }
-        else if (millis() - timer > SAVE_LED_TIMEON + SAVE_LED_TIMEOFF) {
+        else if (millis() - timeStamp > SAVE_LED_TIMEON + SAVE_LED_TIMEOFF) {
           if (iter < SAVE_LED_ITER) {
-            timer = millis();
+            timeStamp = millis();
             iter++;
           }
         }
