@@ -12,10 +12,8 @@
 #include "llist.h"
 #include "blob.h"
 
-#if HARDWARE_MIDI || USB_MIDI
+#if USB_MIDI
 #include <MIDI.h>                   // http://www.pjrc.com/teensy/td_midi.html
-extern MIDI_NAMESPACE::SerialMIDI<HardwareSerial>serialMIDI;
-extern MIDI_NAMESPACE::MidiInterface<MIDI_NAMESPACE::SerialMIDI<HardwareSerial>> MIDI;
 #endif
 
 #if USB_SLIP_OSC
@@ -23,6 +21,12 @@ extern MIDI_NAMESPACE::MidiInterface<MIDI_NAMESPACE::SerialMIDI<HardwareSerial>>
 #include <OSCMessage.h>             // https://github.com/CNMAT/OSC
 #include <OSCBundle.h>              // https://github.com/CNMAT/OSC
 #include <SLIPEncodedUSBSerial.h>   // https://github.com/CNMAT/OSC
+#endif
+
+#if HARDWARE_MIDI
+#include <MIDI.h>                   // http://www.pjrc.com/teensy/td_midi.html
+extern MIDI_NAMESPACE::SerialMIDI<HardwareSerial>serialMIDI;
+extern MIDI_NAMESPACE::MidiInterface<MIDI_NAMESPACE::SerialMIDI<HardwareSerial>> MIDI;
 #endif
 
 typedef struct preset preset_t; // Forward declaration

@@ -16,8 +16,8 @@
 
 #define MAX_SYNTH           8  // [1:8] How many synthesizers can be played at the same time
 
-#define USB_MIDI            0  // [0:1] Set the eTextile-Synthesizer as USB MIDI divice **DO NOT FORGET: Arduino/Touls/USB_Type/MIDI**
-#define USB_SLIP_OSC        1  // [0:1] Set the eTextile-Synthesizer as USB SLIP_OSC divice **DO NOT FORGET: Arduino/Touls/USB_Type/Serial**
+#define USB_MIDI            1  // [0:1] Set the eTextile-Synthesizer as USB MIDI divice **DO NOT FORGET: Arduino/Touls/USB_Type/MIDI**
+#define USB_SLIP_OSC        0  // [0:1] Set the eTextile-Synthesizer as USB SLIP_OSC divice **DO NOT FORGET: Arduino/Touls/USB_Type/Serial**
 #define HARDWARE_MIDI       0  // [0:1] Set the eTextile-Synthesizer as MIDI divice
 #define SYNTH_PLAYER        0  // [0:1] Set the eTextile-Synthesizer as STANDALONE divice
 #define GRANULAR_PLAYER     0  // [0:1] Set the eTextile-Synthesizer as STANDALONE divice

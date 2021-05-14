@@ -12,7 +12,9 @@
 #include <SerialFlash.h>   // https://github.com/PaulStoffregen/SerialFlash
 #include <MIDI.h>          // http://www.pjrc.com/teensy/td_midi.html
 
+#if HARDWARE_MIDI
 MIDI_CREATE_INSTANCE(HardwareSerial, Serial3, MIDI);
+#endif
 
 #include "config.h"
 #include "presets.h"
