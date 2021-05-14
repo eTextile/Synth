@@ -26,17 +26,16 @@ After setting up the **E256 eTextile matrix sensor** it is now time to use it fo
 | Hardware resolution     | 16x16 FSRs with hardware interpolation    |
 | Multi-Touch (Max points)| User defined                              |
 | Points characteristics  | [ID, STATE, CX, CY, WIDTH, HEIGHT, DEPTH] |
-| X-Y resolution          | [0:127] integer                           |
+| XY resolution           | [0:127] integer                           |
 | Z resolution            | [0:127] integer                           |
-| FPS                     | 420                                       |
+| FPS                     | 420 - 500                                 |
 | Audio IN                | ADC 16bits (mini-jack)                    |
-| Audio OUT               | DAC 16bits (mini-jack)                    |
-| Audio OUT               | Headphone (mini-jack)                     |
-| Connectivity            | MIDI I/O (mini-jack)                      |
-| Connectivity            | USB_SLIP-OSC (FIXME)                      |
+| Audio OUT_1             | DAC 16bits (mini-jack)                    |
+| Audio OUT_2             | Headphone (mini-jack)                     |
 | Connectivity            | USB_MIDI                                  |
+| Connectivity            | USB_SLIP-OSC                              |
 | Connectivity            | USB_MPE (TODO)                            |
-
+| Connectivity            | MIDI I/O (mini-jack)                      |
 ## Publications
 - [NIME17](http://www.nime2017.org/) - Designing a Multi-Touch eTextile for Music Performances / [Paper](https://github.com/eTextile/Matrix/blob/teensy_matrix/docs/publications/NIME17-eTextile.pdf) - [Video](https://vimeo.com/217690743)
 - [MOCO17](http://moco17.movementcomputing.org/) - Music Skin: Fabric Interface for Expressive Music Control / [Paper](https://github.com/eTextile/Matrix/blob/teensy_matrix/docs/publications/MOCO17-MusicSkin.pdf)
@@ -46,8 +45,7 @@ Except as otherwise noted, all files in the **eTextile-Synthesizer** project fol
 
     Copyright (c) 2014- Maurin Donneaud
 
-For information on usage and redistribution, and for a DISCLAIMER OF ALL
-WARRANTIES, see LICENSE.txt included in this folder.
+For information on usage and redistribution, and for a DISCLAIMER OF ALL WARRANTIES, see LICENSE.txt included in this folder.
 
 ## Docs
 - [Video made at Schmiede 2014](http://www.kobakant.at/DIY/?p=4305/)
