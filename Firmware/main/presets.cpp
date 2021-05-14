@@ -6,10 +6,28 @@
 
 #include "presets.h"
 
+// DO NOT CHANGE
+#define LED_PIN_D1              5
+#define LED_PIN_D2              4
+#define BUTTON_PIN_L            2
+#define BUTTON_PIN_R            3
+#define ENCODER_PIN_A           22
+#define ENCODER_PIN_B           9
+
 Encoder encoder(ENCODER_PIN_A, ENCODER_PIN_B);
 
 Button BUTTON_L = Button();
 Button BUTTON_R = Button();
+
+#define LONG_HOLD               1500
+#define MIDI_LEARN_LED_TIMEON   600
+#define MIDI_LEARN_LED_TIMEOFF  600
+#define CALIBRATE_LED_TIMEON    35
+#define CALIBRATE_LED_TIMEOFF   100
+#define CALIBRATE_LED_ITER      4
+#define SAVE_LED_TIMEON         20
+#define SAVE_LED_TIMEOFF        50
+#define SAVE_LED_ITER           10
 
 void LEDS_SETUP(void) {
   // Nothing to do!

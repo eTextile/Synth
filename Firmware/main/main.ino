@@ -197,7 +197,6 @@ void setup() {
   GRANULAR_PLAYER_SETUP(&granular);
 #endif
   GRID_LAYOUT_SETUP();
-  //gridPopulate();
 };
 
 //////////////////// LOOP

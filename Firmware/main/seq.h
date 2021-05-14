@@ -19,7 +19,7 @@ typedef struct tSwitch tSwitch_t;   // Forward declaration
 typedef struct vSlider vSlider_t;   // Forward declaration
 typedef struct hSlider hSlider_t;   // Forward declaration
 typedef struct cSlider cSlider_t;   // Forward declaration
-typedef struct grid grid_t;         // Forward declaration
+//typedef struct grid grid_t;         // Forward declaration
 
 typedef struct seq seq_t;
 struct seq {

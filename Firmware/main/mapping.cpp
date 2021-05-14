@@ -9,12 +9,16 @@
 #define GRID_COLS   8
 #define GRID_ROWS   8
 #define GRID_KEYS   (GRID_COLS * GRID_ROWS)
-#define GRID_GAP    (float)1
+#define GRID_GAP    (float)0.5
 #define KEY_SIZE    (float)(((X_MAX - ((GRID_COLS + 1) * GRID_GAP))) / GRID_COLS)
 
-squareKey_t keyArray[GRID_KEYS] = {0};    // 1D Array of struct squareKey_t to store pre-compute key positions ARGS[Xmin, Xmax, Ymin, Ymax]
-uint8_t lastKeyPress[MAX_SYNTH] = {0};     // 1D Array to store last keys pressed
-midiNode_t gridLayout[GRID_KEYS] = {0};   // 1D Array to mapp incoming midi notes in the grid layout
+#define SWITCH_DEBOUNCE_TIMETCH    15
+
+squareKey_t keyPos[GRID_KEYS] = {0};       // 1D array of struct squareKey_t to store pre-compute key positions ARGS[Xmin, Xmax, Ymin, Ymax]
+uint8_t lastKeyPress[MAX_SYNTH] = {0};     // 1D array to store last keys pressed
+
+uint8_t freqKeyLayout[GRID_KEYS] = {0};    // 1D array to mapp freq
+midiNode_t midiKeyLayout[GRID_KEYS] = {0}; // 1D array to mapp incoming midi notes in the grid layout
 
 boolean trigger(llist_t* llist_ptr, tSwitch_t* switch_ptr) {
   for (blob_t* blob_ptr = (blob_t*)ITERATOR_START_FROM_HEAD(llist_ptr); blob_ptr != NULL; blob_ptr = (blob_t*)ITERATOR_NEXT(blob_ptr)) {
@@ -22,7 +26,7 @@ boolean trigger(llist_t* llist_ptr, tSwitch_t* switch_ptr) {
         blob_ptr->centroid.X < switch_ptr->posX + switch_ptr->rSize) {
       if (blob_ptr->centroid.Y > switch_ptr->posY - switch_ptr->rSize &&
           blob_ptr->centroid.Y < switch_ptr->posY + switch_ptr->rSize) {
-        if (millis() - switch_ptr->timeStamp > DEBOUNCE_TIME_SWITCH) {
+        if (millis() - switch_ptr->timeStamp > SWITCH_DEBOUNCE_TIMETCH) {
           switch_ptr->timeStamp = millis();
           switch_ptr->state = true;
 #if DEBUG_MAPPING
@@ -45,7 +49,7 @@ boolean toggle(llist_t* llist_ptr, tSwitch_t* switch_ptr) {
         blob_ptr->centroid.X < switch_ptr->posX + switch_ptr->rSize) {
       if (blob_ptr->centroid.Y > switch_ptr->posY - switch_ptr->rSize &&
           blob_ptr->centroid.Y < switch_ptr->posY + switch_ptr->rSize) {
-        if (millis() - switch_ptr->timeStamp > DEBOUNCE_TIME_SWITCH) {
+        if (millis() - switch_ptr->timeStamp > SWITCH_DEBOUNCE_TIMETCH) {
           switch_ptr->timeStamp = millis();
           switch_ptr->state = !switch_ptr->state;
 #if DEBUG_MAPPING
@@ -59,7 +63,8 @@ boolean toggle(llist_t* llist_ptr, tSwitch_t* switch_ptr) {
   };
 };
 
-// Compute the grid index acording to the blob X-Y coordinates
+// Compute the grid index acording to the blob XY (centroid) coordinates
+// Play corresponding midi **note** or **freq**
 void gridPlay(llist_t* llist_ptr) {
   for (blob_t* blob_ptr = (blob_t*)ITERATOR_START_FROM_HEAD(llist_ptr); blob_ptr != NULL; blob_ptr = (blob_t*)ITERATOR_NEXT(blob_ptr)) {
     if (blob_ptr->UID < MAX_SYNTH) {                                                          // Test if the blob UID is less than MAX_SYNTH
@@ -70,21 +75,23 @@ void gridPlay(llist_t* llist_ptr) {
         // Test if the blob is within the key limits
         if (!blob_ptr->lastState) {
 #if HARDWARE_MIDI
-          MIDI.sendNoteOn(keyPress, 127, 1);                             // Send NoteON (CHANNEL_1)
+          MIDI.sendNoteOn(midiKeyLayout[keyPress], 127, 1);                       // Send NoteON (CHANNEL_1)
 #endif
 #if DEBUG_MAPPING
-          Serial.printf("\nGRID_GAP\tBLOB:%d\t\tKEYDOWN_NOTE_ON: %d", blob_ptr->UID, keyPress);
+          Serial.printf("\nGRID_GAP\tBLOB:%d\t\tKEYDOWN_NOTE_ON: %d",
+                        blob_ptr->UID, midiKeyLayout[keyPress]);
 #endif
-          lastKeyPress[blob_ptr->UID] = keyPress;                        // Save current key
+          lastKeyPress[blob_ptr->UID] = keyPress;                                 // Save current key
         }
         else {
-          if (keyPress != lastKeyPress[blob_ptr->UID]) {                 // Test if new key is pressed
+          if (keyPress != lastKeyPress[blob_ptr->UID]) {                          // Test if new key is pressed
 #if HARDWARE_MIDI
-            MIDI.sendNoteOff(lastKeyPress[blob_ptr->UID], 0, 1);         // Send NoteOFF (CHANNEL_1)
-            MIDI.sendNoteOn(keyPress, 127, 1);                           // Send NoteON (CHANNEL_1)
+            MIDI.sendNoteOff(midiKeyLayout[lastKeyPress[blob_ptr->UID]], 0, 1);   // Send NoteOFF (CHANNEL_1)
+            MIDI.sendNoteOn(midiKeyLayout[keyPress], 127, 1);                     // Send NoteON (CHANNEL_1)
 #endif
 #if DEBUG_MAPPING
-            Serial.printf("\nGRID_GAP\tBLOB: %d\tSLIDING_NOTE_OFF: %d\tSLIDING_NOTE_ON: %d", blob_ptr->UID, lastKeyPress[blob_ptr->UID], keyPress);
+            Serial.printf("\nGRID_GAP\tBLOB: %d\tSLIDING_NOTE_OFF: %d\tSLIDING_NOTE_ON: %d",
+                          blob_ptr->UID, midiKeyLayout[lastKeyPress[blob_ptr->UID]], midiKeyLayout[keyPress]);
 #endif
             lastKeyPress[blob_ptr->UID] = keyPress;
           };
@@ -93,10 +100,11 @@ void gridPlay(llist_t* llist_ptr) {
     }
     else {
 #if HARDWARE_MIDI
-      MIDI.sendNoteOff(lastKeyPress[blob_ptr->UID], 0, 1);                 // Send NoteOFF (CHANNEL_1)
+      MIDI.sendNoteOff(midiKeyLayout[lastKeyPress[blob_ptr->UID]], 0, 1);         // Send NoteOFF (CHANNEL_1)
 #endif
 #if DEBUG_MAPPING
-      Serial.printf("\nGRID_GAP\tBLOB:%d\tKEYUP_NOTE_OFF: %d", blob_ptr->UID, lastKeyPress[blob_ptr->UID]);
+      Serial.printf("\nGRID_GAP\tBLOB:%d\tKEYUP_NOTE_OFF: %d",
+                    blob_ptr->UID, midiKeyLayout[lastKeyPress[blob_ptr->UID]]);
 #endif
     };
   };
@@ -105,52 +113,55 @@ void gridPlay(llist_t* llist_ptr) {
 // Pre-compute key min & max coordinates
 void GRID_LAYOUT_SETUP() {
   int index = 0;
-  Serial.printf("\nDEBUG_KEY_SIZE: %f", KEY_SIZE);
+  //Serial.printf("\nDEBUG_KEY_SIZE: %f", KEY_SIZE);
   for (int row = 0; row < GRID_ROWS; row++) {
     for (int col = 0; col < GRID_COLS; col++) {
       index = row * GRID_ROWS + col;
-      keyArray[index].Xmin = col * KEY_SIZE + (col + 1) * GRID_GAP;
-      keyArray[index].Xmax = (col + 1) * KEY_SIZE + (col + 1) * GRID_GAP;
-      keyArray[index].Ymin = row * KEY_SIZE + (row + 1) * GRID_GAP;
-      keyArray[index].Ymax = (row + 1) * KEY_SIZE + (row + 1) * GRID_GAP;
+      keyPos[index].Xmin = col * KEY_SIZE + (col + 1) * GRID_GAP;
+      keyPos[index].Xmax = (col + 1) * KEY_SIZE + (col + 1) * GRID_GAP;
+      keyPos[index].Ymin = row * KEY_SIZE + (row + 1) * GRID_GAP;
+      keyPos[index].Ymax = (row + 1) * KEY_SIZE + (row + 1) * GRID_GAP;
+#if DEBUG_MAPPING
       Serial.printf("\nGRID_GAP\tXmin%d\tXmax%d\tYmin%d\tYmax%d",
-                    keyArray[index].Xmin,
-                    keyArray[index].Xmax,
-                    keyArray[index].Ymin,
-                    keyArray[index].Ymax
+                    keyPos[index].Xmin,
+                    keyPos[index].Xmax,
+                    keyPos[index].Ymin,
+                    keyPos[index].Ymax
                    );
+#endif
     };
   };
 };
 
-// Compute the grid index location acording to blob X-Y coordinates
+// Compute the grid index location acording to the blobs XY (centroid) coordinates
+// Play corresponding midi **note** or **freq**
 void gridGapPlay(llist_t* llist_ptr) {
   for (blob_t* blob_ptr = (blob_t*)ITERATOR_START_FROM_HEAD(llist_ptr); blob_ptr != NULL; blob_ptr = (blob_t*)ITERATOR_NEXT(blob_ptr)) {
     if (blob_ptr->UID < MAX_SYNTH) {                                                           // Test if the blob UID is less than MAX_SYNTH
       if (blob_ptr->state) {
         uint8_t keyPosX = (uint8_t)round((blob_ptr->centroid.X / (float)X_MAX) * GRID_COLS);   // Compute X window position
         uint8_t keyPosY = (uint8_t)round((blob_ptr->centroid.Y / (float)Y_MAX) * GRID_ROWS);   // Compute Y window position
-        uint8_t keyPress = (keyPosY * GRID_ROWS) + keyPosX;                                    // Compute 1D key index position
+        uint8_t keyPress = (keyPosY * GRID_COLS) + keyPosX;                                    // Compute 1D key index position
         // Test if the blob is within the key limits
-        if (blob_ptr->centroid.X >= keyArray[keyPress].Xmin &&
-            blob_ptr->centroid.X <= keyArray[keyPress].Xmax &&
-            blob_ptr->centroid.Y >= keyArray[keyPress].Ymin &&
-            blob_ptr->centroid.Y <= keyArray[keyPress].Ymax
+        if (blob_ptr->centroid.X >= keyPos[keyPress].Xmin &&
+            blob_ptr->centroid.X <= keyPos[keyPress].Xmax &&
+            blob_ptr->centroid.Y >= keyPos[keyPress].Ymin &&
+            blob_ptr->centroid.Y <= keyPos[keyPress].Ymax
            ) {
           if (!blob_ptr->lastState) {
 #if HARDWARE_MIDI
-            MIDI.sendNoteOn(keyPress, 127, 1);                             // Send NoteON (CHANNEL_1)
+            MIDI.sendNoteOn(keyMapp[keyPress], 127, 1);                             // Send NoteON (CHANNEL_1)
 #endif
 #if DEBUG_MAPPING
             Serial.printf("\nGRID_GAP\tBLOB:%d\t\tKEYDOWN_NOTE_ON: %d", blob_ptr->UID, keyPress);
 #endif
-            lastKeyPress[blob_ptr->UID] = keyPress;                        // Save current key
+            lastKeyPress[blob_ptr->UID] = keyPress;                                 // Save current key
           }
           else {
-            if (keyPress != lastKeyPress[blob_ptr->UID]) {                 // Test if new key is pressed
+            if (keyPress != lastKeyPress[blob_ptr->UID]) {                          // Test if new key is pressed
 #if HARDWARE_MIDI
-              MIDI.sendNoteOff(lastKeyPress[blob_ptr->UID], 0, 1);         // Send NoteOFF (CHANNEL_1)
-              MIDI.sendNoteOn(keyPress, 127, 1);                           // Send NoteON (CHANNEL_1)
+              MIDI.sendNoteOff(keyMapp[lastKeyPress[blob_ptr->UID]], 0, 1);         // Send NoteOFF (CHANNEL_1)
+              MIDI.sendNoteOn(keyMapp[keyPress], 127, 1);                           // Send NoteON (CHANNEL_1)
 #endif
 #if DEBUG_MAPPING
               Serial.printf("\nGRID_GAP\tBLOB: %d\tSLIDING_NOTE_OFF: %d\tSLIDING_NOTE_ON: %d", blob_ptr->UID, lastKeyPress[blob_ptr->UID], keyPress);
@@ -162,7 +173,7 @@ void gridGapPlay(llist_t* llist_ptr) {
       }
       else {
 #if HARDWARE_MIDI
-        MIDI.sendNoteOff(lastKeyPress[blob_ptr->UID], 0, 1);                 // Send NoteOFF (CHANNEL_1)
+        MIDI.sendNoteOff(keyMapp[lastKeyPress[blob_ptr->UID]], 0, 1);               // Send NoteOFF (CHANNEL_1)
 #endif
 #if DEBUG_MAPPING
         Serial.printf("\nGRID_GAP\tBLOB:%d\tKEYUP_NOTE_OFF: %d", blob_ptr->UID, lastKeyPress[blob_ptr->UID]);

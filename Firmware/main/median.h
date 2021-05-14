@@ -23,8 +23,8 @@ typedef struct blob blob_t;    // Forward declaration
 typedef struct median median_t;
 struct median {
   float zVal[MEDIAN_WINDOW];  // Input values Array
-  float zOrd[MEDIAN_WINDOW];  // Sorted values Array
-  uint8_t index;                   // Ring storage current index
+  float zSort[MEDIAN_WINDOW]; // Sorted values Array
+  uint8_t index;              // Ring storage current index
 };
 
 void median(llist_t* blobs_ptr);

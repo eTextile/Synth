@@ -11,6 +11,7 @@
 #include "blob.h"
 #include "llist.h"
 #include "transmit.h"
+#include "notes.h"
 
 typedef struct blob blob_t;         // Forward declaration
 typedef struct llist llist_t;       // Forward declaration
@@ -61,12 +62,14 @@ struct cSlider {
   uint8_t val;
 };
 
+/*
 typedef struct grid grid_t;
 struct grid {
-  squareKey_t* keyArray_ptr;
+  squareKey_t* keyPos_ptr;
   int8_t* keyPress;
   llist_t* midiIn;
 };
+*/
 
 void GRID_LAYOUT_SETUP();
 

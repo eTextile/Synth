@@ -6,6 +6,11 @@
 
 #include "player_flash.h"
 
+#define MEM_MOSI   11      // Teensy4.0 hardware SPI
+#define MEM_MISO   12      // Teensy4.0 hardware SPI
+#define MEM_SCK    13      // Teensy4.0 hardware SPI
+#define MEM_SC     6       // Teensy4.0 hardware SPI
+
 void FLASH_PLAYER_SETUP(void) {
   while (!SerialFlash.begin(6));
 }

@@ -12,6 +12,14 @@
 
 #include "blob.h"
 
+#define MAX_BLOBS               16        // [1:64] Set how many blobs can be tracked at the same time
+#define LIFO_MAX_NODES          255       // Set the maximum nodes number
+#define X_STRIDE                3         // 
+#define Y_STRIDE                3         // 
+#define MIN_BLOB_PIX            8         // Set the minimum blob pixels
+#define MAX_BLOB_PIX            4095      // Set the maximum blob pixels
+#define DEBOUNCE_TIME_BLOB      15        // TODO
+
 uint8_t bitmapFrame[NEW_FRAME] = {0};     // 1D Array to store (64*64) binary values
 xylr_t lifoArray[LIFO_MAX_NODES] = {0};   // 1D Array to store lifo nodes
 blob_t blobArray[MAX_BLOBS] = {0};        // 1D Array to store blobs
@@ -414,8 +422,8 @@ void getBlobsVelocity(llist_t* blobs_ptr) {
 
 void getPolarCoordinates(llist_t* blobs_ptr) {
   for (blob_t* blob_ptr = (blob_t*)ITERATOR_START_FROM_HEAD(blobs_ptr); blob_ptr != NULL; blob_ptr = (blob_t*)ITERATOR_NEXT(blob_ptr)) {
-    float posX = blob_ptr->centroid.X - POLAR_CX;
-    float posY = blob_ptr->centroid.Y - POLAR_CY;
+    float posX = blob_ptr->centroid.X - CENTER_X;
+    float posY = blob_ptr->centroid.Y - CENTER_Y;
     if (posX == 0 && posY == 0 ) {
       polarCoord[blob_ptr->UID].r = 0;
       polarCoord[blob_ptr->UID].phi = 0;

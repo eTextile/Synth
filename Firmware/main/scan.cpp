@@ -9,6 +9,18 @@
 ADC* adc = new ADC();                    // ADC object
 ADC::Sync_result result;                 // Store ADC_0 & ADC_1
 
+#define SS1_PIN           0              // Teensy4.0 hardware SPI1 (SELECT : STCP)
+#define SCK1_PIN          27             // Teensy4.0 hardware SPI1 (CLOCK - SHCP)
+#define MOSI1_PIN         26             // Teensy4.0 hardware SPI1 (DATA - DS)
+#define DUAL_COLS         (RAW_COLS / 2)
+#define ADC0_PIN          A3             // Teensy4.0 pin 16 is connected to the output of multiplexerA (SIG pin) 
+#define ADC1_PIN          A2             // Teensy4.0 pin 17 is connected to the output of multiplexerB (SIG pin)
+
+#define SET_ORIGIN_X      1              // [-1:1] X-axis origine positioning
+#define SET_ORIGIN_Y      1              // [-1:1] Y-axis origine positioning
+
+#define CALIBRATION_CYCLES  10           // 
+
 uint8_t offsetArray[RAW_FRAME] = {0};    // 1D Array to store E256 smallest values
 uint8_t rawFrameArray[RAW_FRAME] = {0};  // 1D Array to store E256 ofseted analog input values
 
