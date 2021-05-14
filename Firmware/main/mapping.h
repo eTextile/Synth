@@ -17,6 +17,8 @@ typedef struct blob blob_t;         // Forward declaration
 typedef struct llist llist_t;       // Forward declaration
 typedef struct midiNode midiNode_t; // Forward declaration
 
+#define C_SLIDERS  3
+
 typedef struct squareKey squareKey_t;
 struct squareKey {
   float Xmin;
@@ -61,15 +63,6 @@ struct cSlider {
   float phiMax;
   uint8_t val;
 };
-
-/*
-typedef struct grid grid_t;
-struct grid {
-  squareKey_t* keyPos_ptr;
-  int8_t* keyPress;
-  llist_t* midiIn;
-};
-*/
 
 void GRID_LAYOUT_SETUP();
 

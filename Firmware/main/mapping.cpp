@@ -187,9 +187,9 @@ void gridPopulate(llist_t* llist_ptr) {
   uint8_t keyIndex = 0;
   while (keyIndex < GRID_KEYS) {
     for (midiNode_t* node_ptr = (midiNode_t*)ITERATOR_START_FROM_HEAD(llist_ptr); node_ptr != NULL; node_ptr = (midiNode_t*)ITERATOR_NEXT(node_ptr)) {
-      gridLayout[keyIndex].pithch = node_ptr->pithch;
-      gridLayout[keyIndex].velocity = node_ptr->velocity;
-      gridLayout[keyIndex].channel = node_ptr->channel;
+      midiKeyLayout[keyIndex].pithch = node_ptr->pithch;
+      midiKeyLayout[keyIndex].velocity = node_ptr->velocity;
+      midiKeyLayout[keyIndex].channel = node_ptr->channel;
       keyIndex++;
     }
   }

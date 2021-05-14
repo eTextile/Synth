@@ -29,6 +29,15 @@ typedef struct preset preset_t; // Forward declaration
 typedef struct llist llist_t;   // Forward declaration
 typedef struct blob blob_t;     // Forward declaration
 
+#define MAX_BLOB_PARAM    7     // [BI, BS, BX, BY, BW, BH, BD]
+#define BI                0     // Blob UID
+#define BS                1     // Blob State
+#define BX                2     // Blob Centroid PosX
+#define BY                3     // Blob Centroid PosY
+#define BW                4     // Blob width
+#define BH                5     // Blob Height
+#define BD                6     // Blob Depth 
+
 typedef struct midiNode midiNode_t;
 struct midiNode {
   lnode_t node;

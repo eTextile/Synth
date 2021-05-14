@@ -10,7 +10,7 @@
 #include <SPI.h>           // https://github.com/PaulStoffregen/SPI
 #include <SD.h>            // https://github.com/PaulStoffregen/SD
 #include <SerialFlash.h>   // https://github.com/PaulStoffregen/SerialFlash
-#include <MIDI.h>
+#include <MIDI.h>          // http://www.pjrc.com/teensy/td_midi.html
 
 MIDI_CREATE_INSTANCE(HardwareSerial, Serial3, MIDI);
 
@@ -23,9 +23,8 @@ MIDI_CREATE_INSTANCE(HardwareSerial, Serial3, MIDI);
 #include "mapping.h"
 #include "transmit.h"
 
-//#include "notes.h"
-
 #include "soundCard.h"
+#include "notes.h"
 #include "player_flash.h"
 #include "player_synth.h"
 #include "player_granular.h"
@@ -218,7 +217,7 @@ void loop() {
 #if USB_MIDI
   if (currentMode == MIDI_LEARN) {
     usb_midi_learn(&blobs, &presets[MIDI_LEARN]);
-  };
+  }
   else {
     usb_midi_play(&blobs);
   };
@@ -234,8 +233,8 @@ void loop() {
   };
 #endif
 
-  gridPlay(&blobs);
-  //gridGapPlay(&blobs);
+  //gridPlay(&blobs);
+  gridGapPlay(&blobs);
   //controlChange(&blobs, &ccParam);
 
   //boolean toggSwitch = toggle(&blobs, &toggParam);
@@ -253,7 +252,6 @@ void loop() {
 #if FLASH_PLAYER
   flash_player(&blobs, &playFlashRaw);
 #endif
-
 
 #if DEBUG_FPS
   if (curentMillisFps >= 1000) {

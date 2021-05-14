@@ -10,13 +10,15 @@
 #include <Arduino.h>
 
 #define NAME                "ETEXTILE_SYNTHESIZER"
-#define VERSION             "1.0.3"
+#define VERSION             "1.0.4"
+#define TEENY_32            0  // [0:1] if using Teensy 3.2
+#define TEENY_40            1  // [0:1] if using Teensy 4.0
+
 #define MAX_SYNTH           8  // [1:8] How many synthesizers can be played at the same time
 
-#define USB_MIDI            0  // [0:1] Set the eTextile-Synthesizer as USB MIDI divice
-#define USB_SLIP_OSC        0  // [0:1] Set the eTextile-Synthesizer as SLIP_OSC divice
-#define HARDWARE_MIDI       1  // [0:1] Set the eTextile-Synthesizer as MIDI I/O divice
-
+#define USB_MIDI            0  // [0:1] Set the eTextile-Synthesizer as USB MIDI divice **DO NOT FORGET: Arduino/Touls/USB_Type/MIDI**
+#define USB_SLIP_OSC        1  // [0:1] Set the eTextile-Synthesizer as USB SLIP_OSC divice **DO NOT FORGET: Arduino/Touls/USB_Type/Serial**
+#define HARDWARE_MIDI       0  // [0:1] Set the eTextile-Synthesizer as MIDI divice
 #define SYNTH_PLAYER        0  // [0:1] Set the eTextile-Synthesizer as STANDALONE divice
 #define GRANULAR_PLAYER     0  // [0:1] Set the eTextile-Synthesizer as STANDALONE divice
 #define FLASH_PLAYER        0  // [0:1] Set the eTextile-Synthesizer as STANDALONE divice
@@ -30,9 +32,8 @@
 #define DEBUG_BITMAP        0  // [0:1] Print 64x64 binary image based on threshold
 #define DEBUG_BLOBS         0  // [0:1] Print blobs values
 #define DEBUG_MAPPING       0  // [0:1] Print blobs values
-
-#define DEBUG_BLOBS_ID      0 // [0:1] Print lowlevel blobs values
-#define DEBUG_SORT          0 // [0:1] Print lowlevel blobs sort (NOT_USED)
+#define DEBUG_BLOBS_ID      0  // [0:1] Print lowlevel blobs values
+#define DEBUG_SORT          0  // [0:1] Print lowlevel blobs sort (NOT_USED)
 
 #define BAUD_RATE           230400
 #define RAW_COLS            16
@@ -48,19 +49,7 @@
 #define X_MAX               58 // Blobs centroid X max value
 #define Y_MAX               58 // Blobs centroid Y max value
 
-#define PI                      3.1415926535897932384626433832795
-#define PI2                     (PI+PI)
-
-#define C_SLIDERS   3
-
-#define MAX_BLOB_PARAM          7        // [BI, BS, BX, BY, BW, BH, BD]
-#define BI                      0        // Blob UID
-#define BS                      1        // Blob State
-#define BX                      2        // Blob Centroid PosX
-#define BY                      3        // Blob Centroid PosY
-#define BW                      4        // Blob width
-#define BH                      5        // Blob Height
-#define BD                      6        // Blob Depth 
-
+#define PI                  3.1415926535897932384626433832795
+#define PI2                 (PI+PI)
 
 #endif /*__CONFIG_H__*/

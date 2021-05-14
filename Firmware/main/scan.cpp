@@ -9,13 +9,23 @@
 ADC* adc = new ADC();                    // ADC object
 ADC::Sync_result result;                 // Store ADC_0 & ADC_1
 
+#if TEENY_32
+#define SS_PIN            10             // Teensy3.2 hardware SPI1 (SELECT : STCP)
+#define SCK_PIN           13             // Teensy3.2 hardware SPI1 (CLOCK - SHCP)
+#define MOSI_PIN          11             // Teensy3.2 hardware SPI1 (DATA - DS)
+#define ADC0_PIN          A9             // Teensy3.2 pin 23 is connected to the output of multiplexerA (SIG pin)
+#define ADC1_PIN          A3             // Teensy3.2 pin 17 is connected to the output of multiplexerB (SIG pin)
+#endif
+
+#if TEENY_40
 #define SS1_PIN           0              // Teensy4.0 hardware SPI1 (SELECT : STCP)
 #define SCK1_PIN          27             // Teensy4.0 hardware SPI1 (CLOCK - SHCP)
 #define MOSI1_PIN         26             // Teensy4.0 hardware SPI1 (DATA - DS)
-#define DUAL_COLS         (RAW_COLS / 2)
-#define ADC0_PIN          A3             // Teensy4.0 pin 16 is connected to the output of multiplexerA (SIG pin) 
-#define ADC1_PIN          A2             // Teensy4.0 pin 17 is connected to the output of multiplexerB (SIG pin)
+#define ADC0_PIN          A3             // Teensy4.0 pin 17 is connected to the output of multiplexerA (SIG pin) 
+#define ADC1_PIN          A2             // Teensy4.0 pin 16 is connected to the output of multiplexerB (SIG pin)
+#endif
 
+#define DUAL_COLS         (RAW_COLS / 2)
 #define SET_ORIGIN_X      1              // [-1:1] X-axis origine positioning
 #define SET_ORIGIN_Y      1              // [-1:1] Y-axis origine positioning
 
@@ -36,8 +46,14 @@ uint8_t setDualRows[DUAL_COLS] = {
 
 void SPI_SETUP(void) {
   pinMode(SS1_PIN, OUTPUT);                                               // Set the Slave Select Pin as OUTPUT
+#if TEENY_32
+  SPI.begin();                                                            // Start the SPI module
+  SPI.beginTransaction(SPISettings(30000000, MSBFIRST, SPI_MODE0));       // 74HC595BQ Shift out register frequency is 100 MHz = 100000000 Hz
+#endif
+#if TEENY_40
   SPI1.begin();                                                           // Start the SPI module
-  SPI1.beginTransaction(SPISettings(30000000, MSBFIRST, SPI_MODE2));      // 74HC595BQ Shift out register frequency is 100 MHz = 100000000 Hz
+  SPI1.beginTransaction(SPISettings(30000000, MSBFIRST, SPI_MODE0));      // 74HC595BQ Shift out register frequency is 100 MHz = 100000000 Hz
+#endif
   digitalWrite(SS1_PIN, LOW);                                             // Set latchPin LOW
   digitalWrite(SS1_PIN, HIGH);                                            // Set latchPin HIGH
 }
@@ -47,17 +63,17 @@ void ADC_SETUP(void) {
   pinMode(ADC1_PIN, INPUT);                                               // PIN A3 (Teensy 4.0 pin 17)
   adc->adc0->setAveraging(1);                                             // Set number of averages
   adc->adc0->setResolution(8);                                            // Set bits of resolution
-  adc->adc0->setConversionSpeed(ADC_CONVERSION_SPEED::VERY_HIGH_SPEED); // Change the conversion speed
-  adc->adc0->setSamplingSpeed(ADC_SAMPLING_SPEED::VERY_HIGH_SPEED);     // Change the sampling speed
-  //adc->adc0->setConversionSpeed(ADC_CONVERSION_SPEED::HIGH_SPEED);        // Change the conversion speed
-  //adc->adc0->setSamplingSpeed(ADC_SAMPLING_SPEED::HIGH_SPEED);            // Change the sampling speed
+  adc->adc0->setConversionSpeed(ADC_CONVERSION_SPEED::VERY_HIGH_SPEED);   // Change the conversion speed
+  adc->adc0->setSamplingSpeed(ADC_SAMPLING_SPEED::VERY_HIGH_SPEED);       // Change the sampling speed
+  //adc->adc0->setConversionSpeed(ADC_CONVERSION_SPEED::HIGH_SPEED);      // Change the conversion speed
+  //adc->adc0->setSamplingSpeed(ADC_SAMPLING_SPEED::HIGH_SPEED);          // Change the sampling speed
 
   adc->adc1->setAveraging(1);                                             // Set number of averages
   adc->adc1->setResolution(8);                                            // Set bits of resolution
-  adc->adc1->setConversionSpeed(ADC_CONVERSION_SPEED::VERY_HIGH_SPEED); // Change the conversion speed
-  adc->adc1->setSamplingSpeed(ADC_SAMPLING_SPEED::VERY_HIGH_SPEED);     // Change the sampling speed
-  //adc->adc1->setConversionSpeed(ADC_CONVERSION_SPEED::HIGH_SPEED);        // Change the conversion speed/*
-  //adc->adc1->setSamplingSpeed(ADC_SAMPLING_SPEED::HIGH_SPEED);            // Change the sampling speed
+  adc->adc1->setConversionSpeed(ADC_CONVERSION_SPEED::VERY_HIGH_SPEED);   // Change the conversion speed
+  adc->adc1->setSamplingSpeed(ADC_SAMPLING_SPEED::VERY_HIGH_SPEED);       // Change the sampling speed
+  //adc->adc1->setConversionSpeed(ADC_CONVERSION_SPEED::HIGH_SPEED);      // Change the conversion speed/*
+  //adc->adc1->setSamplingSpeed(ADC_SAMPLING_SPEED::HIGH_SPEED);          // Change the sampling speed
 }
 
 void SCAN_SETUP(image_t* inputFrame_ptr) {
@@ -77,9 +93,7 @@ void calibrate_matrix(
 
   if (presets_ptr[CALIBRATE].update == true) {
     presets_ptr[CALIBRATE].update = false;
-
     uint16_t setRows;
-
     for (uint8_t i = 0; i < CALIBRATION_CYCLES; i++) {
       for (uint8_t col = 0; col < DUAL_COLS; col++) {         // ANNALOG_PINS [0-7] with [8-15]
 #if SET_ORIGIN_Y
@@ -89,10 +103,18 @@ void calibrate_matrix(
 #endif
         for (uint8_t row = 0; row < RAW_ROWS; row++) {        // DIGITAL_PINS [0-15]
           digitalWrite(SS1_PIN, LOW);                         // Set the Slave Select Pin LOW
+#if TEENY_32
+          //SPI1.transfer16(setRows);                         // Set up the two OUTPUT shift registers (FIXME)
+          SPI.transfer((uint8_t)(setRows & 0xFF));            // Shift out one byte to setup one OUTPUT shift register
+          SPI.transfer((uint8_t)((setRows >> 8) & 0xFF));     // Shift out one byte to setup one OUTPUT shift register
+          SPI.transfer(setDualRows[col]);                     // Shift out one byte that setup the two INPUT 8:1 analog multiplexers
+#endif
+#if TEENY_40
           //SPI1.transfer16(setRows);                         // Set up the two OUTPUT shift registers (FIXME)
           SPI1.transfer((uint8_t)(setRows & 0xFF));           // Shift out one byte to setup one OUTPUT shift register
           SPI1.transfer((uint8_t)((setRows >> 8) & 0xFF));    // Shift out one byte to setup one OUTPUT shift register
-          SPI1.transfer(setDualRows[col]);              // Shift out one byte that setup the two INPUT 8:1 analog multiplexers
+          SPI1.transfer(setDualRows[col]);                    // Shift out one byte that setup the two INPUT 8:1 analog multiplexers
+#endif
           digitalWrite(SS1_PIN, HIGH);                        // Set the Slave Select Pin HIGH
           uint8_t indexA = row * RAW_COLS + col;              // Compute 1D array indexA
           uint8_t indexB = indexA + DUAL_COLS;                // Compute 1D array indexB
@@ -118,7 +140,7 @@ void calibrate_matrix(
 
 // Columns are analog INPUT_PINS reded two by two
 // Rows are digital OUTPUT_PINS supplyed one by one sequentially with 3.3V
-void scan_matrix() {
+void scan_matrix(void) {
   uint16_t setRows;
   for (uint8_t col = 0; col < DUAL_COLS; col++) {         // ANNALOG_PINS [0-7] with [8-15]
 #if SET_ORIGIN_Y
@@ -128,10 +150,18 @@ void scan_matrix() {
 #endif
     for (uint8_t row = 0; row < RAW_ROWS; row++) {        // DIGITAL_PINS [0-15]
       digitalWrite(SS1_PIN, LOW);                         // Set the Slave Select Pin LOW
+#if TEENY_32
       //SPI1.transfer16(setRows);                         // Set up the two OUTPUT shift registers (FIXME)
-      SPI1.transfer((uint8_t)(setRows & 0xFF));           // Shift out LSB byte to setup one OUTPUT shift register
-      SPI1.transfer((uint8_t)((setRows >> 8) & 0xFF));    // Shift out MSB byte to setup one OUTPUT shift register
-      SPI1.transfer(setDualRows[col]);              // Shift out one byte that setup the two INPUT 8:1 analog multiplexers
+      SPI.transfer((uint8_t)(setRows & 0xFF));            // Shift out one byte to setup one OUTPUT shift register
+      SPI.transfer((uint8_t)((setRows >> 8) & 0xFF));     // Shift out one byte to setup one OUTPUT shift register
+      SPI.transfer(setDualRows[col]);                     // Shift out one byte that setup the two INPUT 8:1 analog multiplexers
+#endif
+#if TEENY_40
+      //SPI1.transfer16(setRows);                         // Set up the two OUTPUT shift registers (FIXME)
+      SPI1.transfer((uint8_t)(setRows & 0xFF));           // Shift out one byte to setup one OUTPUT shift register
+      SPI1.transfer((uint8_t)((setRows >> 8) & 0xFF));    // Shift out one byte to setup one OUTPUT shift register
+      SPI1.transfer(setDualRows[col]);                    // Shift out one byte that setup the two INPUT 8:1 analog multiplexers
+#endif
       digitalWrite(SS1_PIN, HIGH);                        // Set the Slave Select Pin HIGH
       uint8_t indexA = row * RAW_COLS + col;              // Compute 1D array indexA
       uint8_t indexB = indexA + DUAL_COLS;                // Compute 1D array indexB

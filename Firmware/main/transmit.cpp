@@ -15,7 +15,7 @@ midiNode_t midiInArray[MAX_SYNTH] = {0}; // 1D Array to alocate memory for incom
 llist_t  midiNodes;                      // Midi nodes stack
 
 #if USB_SLIP_OSC
-SLIPEncodedUSBSerial SLIPSerial(thisBoardsSerialUSB); // FIXME
+SLIPEncodedUSBSerial SLIPSerial(thisBoardsSerialUSB);
 
 void USB_SLIP_OSC_SETUP(void) {
   SLIPSerial.begin(BAUD_RATE); // FIXME
@@ -34,14 +34,13 @@ void usb_slipOsc(llist_t* llist_ptr) {
     msg.add(blob_ptr->box.D);
     OSCbundle.add(msg);
   }
-  SLIPSerial.beginPacket();     //
-  OSCbundle.send(SLIPSerial);   // Send the bytes to the SLIP stream
-  SLIPSerial.endPacket();       // Mark the end of the OSC Packet
+  SLIPSerial.beginPacket();     // Send SLIP header
+  OSCbundle.send(SLIPSerial);   // Send the OSC bundle
+  SLIPSerial.endPacket();       // Send the SLIP end of packet
 }
 #endif
 
 #if HARDWARE_MIDI
-
 void midi_llist_init(llist_t* nodes_ptr, midiNode_t* nodeArray_ptr) {
   llist_raz(nodes_ptr);
   for (int i = 0; i < MAX_SYNTH; i++) {
@@ -72,19 +71,19 @@ boolean handleMidiInput(llist_t* llist_ptr) {
             llist_extract_node(llist_ptr, prevNode_ptr, midiNode);
             llist_push_front(&midiNodes, midiNode);
             break;
-          }
+          };
           prevNode_ptr = midiNode;
-        }
+        };
         break;
       default:
         break;
-    }
+    };
     return true;
   }
   else {
     return false;
-  }
-}
+  };
+};
 #endif
 
 //////////////////////////////////////////////////////
