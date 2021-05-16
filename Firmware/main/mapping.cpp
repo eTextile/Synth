@@ -6,8 +6,12 @@
 
 #include "mapping.h"
 
-#define GRID_COLS   8
-#define GRID_ROWS   8
+#if HARDWARE_MIDI
+MIDI_CREATE_INSTANCE(HardwareSerial, Serial3, MIDI);
+#endif
+
+#define GRID_COLS   12
+#define GRID_ROWS   10
 #define GRID_KEYS   (GRID_COLS * GRID_ROWS)
 #define GRID_GAP    (float)0.5
 #define KEY_SIZE    (float)(((X_MAX - ((GRID_COLS + 1) * GRID_GAP))) / GRID_COLS)
@@ -75,23 +79,26 @@ void gridPlay(llist_t* llist_ptr) {
         // Test if the blob is within the key limits
         if (!blob_ptr->lastState) {
 #if HARDWARE_MIDI
-          MIDI.sendNoteOn(midiKeyLayout[keyPress], 127, 1);                       // Send NoteON (CHANNEL_1)
+          //MIDI.sendNoteOn(midiKeyLayout[keyPress], 127, 1);                       // Send NoteON (CHANNEL_1)
+          MIDI.sendNoteOn(harmonicKeyboard[keyPress], 127, 1);                      // Send NoteON (CHANNEL_1)
 #endif
 #if DEBUG_MAPPING
           Serial.printf("\nGRID_GAP\tBLOB:%d\t\tKEYDOWN_NOTE_ON: %d",
-                        blob_ptr->UID, midiKeyLayout[keyPress]);
+                        blob_ptr->UID, harmonicKeyboard[keyPress]);
 #endif
-          lastKeyPress[blob_ptr->UID] = keyPress;                                 // Save current key
+          lastKeyPress[blob_ptr->UID] = keyPress;                                  // Save current key
         }
         else {
-          if (keyPress != lastKeyPress[blob_ptr->UID]) {                          // Test if new key is pressed
+          if (keyPress != lastKeyPress[blob_ptr->UID]) {                           // Test if new key is pressed
 #if HARDWARE_MIDI
-            MIDI.sendNoteOff(midiKeyLayout[lastKeyPress[blob_ptr->UID]], 0, 1);   // Send NoteOFF (CHANNEL_1)
-            MIDI.sendNoteOn(midiKeyLayout[keyPress], 127, 1);                     // Send NoteON (CHANNEL_1)
+            //MIDI.sendNoteOff(midiKeyLayout[lastKeyPress[blob_ptr->UID]], 0, 1);  // Send NoteOFF (CHANNEL_1)
+            MIDI.sendNoteOff(harmonicKeyboard[lastKeyPress[blob_ptr->UID]], 0, 1); // Send NoteOFF (CHANNEL_1)
+            //MIDI.sendNoteOn(midiKeyLayout[keyPress], 127, 1);                    // Send NoteON (CHANNEL_1)
+            MIDI.sendNoteOn(harmonicKeyboard[keyPress], 127, 1);                   // Send NoteON (CHANNEL_1)
 #endif
 #if DEBUG_MAPPING
             Serial.printf("\nGRID_GAP\tBLOB: %d\tSLIDING_NOTE_OFF: %d\tSLIDING_NOTE_ON: %d",
-                          blob_ptr->UID, midiKeyLayout[lastKeyPress[blob_ptr->UID]], midiKeyLayout[keyPress]);
+                          blob_ptr->UID, harmonicKeyboard[lastKeyPress[blob_ptr->UID]], midiKeyLayout[keyPress]);
 #endif
             lastKeyPress[blob_ptr->UID] = keyPress;
           };
@@ -100,11 +107,12 @@ void gridPlay(llist_t* llist_ptr) {
     }
     else {
 #if HARDWARE_MIDI
-      MIDI.sendNoteOff(midiKeyLayout[lastKeyPress[blob_ptr->UID]], 0, 1);         // Send NoteOFF (CHANNEL_1)
+      //MIDI.sendNoteOff(midiKeyLayout[lastKeyPress[blob_ptr->UID]], 0, 1);      // Send NoteOFF (CHANNEL_1)
+      MIDI.sendNoteOff(harmonicKeyboard[lastKeyPress[blob_ptr->UID]], 0, 1);     // Send NoteOFF (CHANNEL_1)
 #endif
 #if DEBUG_MAPPING
       Serial.printf("\nGRID_GAP\tBLOB:%d\tKEYUP_NOTE_OFF: %d",
-                    blob_ptr->UID, midiKeyLayout[lastKeyPress[blob_ptr->UID]]);
+                    blob_ptr->UID, harmonicKeyboard[lastKeyPress[blob_ptr->UID]]);
 #endif
     };
   };
@@ -150,18 +158,18 @@ void gridGapPlay(llist_t* llist_ptr) {
            ) {
           if (!blob_ptr->lastState) {
 #if HARDWARE_MIDI
-            MIDI.sendNoteOn(keyMapp[keyPress], 127, 1);                             // Send NoteON (CHANNEL_1)
+            MIDI.sendNoteOn(harmonicKeyboard[keyPress], 127, 1);                     // Send NoteON (CHANNEL_1)
 #endif
 #if DEBUG_MAPPING
             Serial.printf("\nGRID_GAP\tBLOB:%d\t\tKEYDOWN_NOTE_ON: %d", blob_ptr->UID, keyPress);
 #endif
-            lastKeyPress[blob_ptr->UID] = keyPress;                                 // Save current key
+            lastKeyPress[blob_ptr->UID] = keyPress;                                  // Save current key
           }
           else {
-            if (keyPress != lastKeyPress[blob_ptr->UID]) {                          // Test if new key is pressed
+            if (keyPress != lastKeyPress[blob_ptr->UID]) {                           // Test if new key is pressed
 #if HARDWARE_MIDI
-              MIDI.sendNoteOff(keyMapp[lastKeyPress[blob_ptr->UID]], 0, 1);         // Send NoteOFF (CHANNEL_1)
-              MIDI.sendNoteOn(keyMapp[keyPress], 127, 1);                           // Send NoteON (CHANNEL_1)
+              MIDI.sendNoteOff(harmonicKeyboard[lastKeyPress[blob_ptr->UID]], 0, 1); // Send NoteOFF (CHANNEL_1)
+              MIDI.sendNoteOn(harmonicKeyboard[keyPress], 127, 1);                   // Send NoteON (CHANNEL_1)
 #endif
 #if DEBUG_MAPPING
               Serial.printf("\nGRID_GAP\tBLOB: %d\tSLIDING_NOTE_OFF: %d\tSLIDING_NOTE_ON: %d", blob_ptr->UID, lastKeyPress[blob_ptr->UID], keyPress);
@@ -173,7 +181,7 @@ void gridGapPlay(llist_t* llist_ptr) {
       }
       else {
 #if HARDWARE_MIDI
-        MIDI.sendNoteOff(keyMapp[lastKeyPress[blob_ptr->UID]], 0, 1);               // Send NoteOFF (CHANNEL_1)
+        MIDI.sendNoteOff(harmonicKeyboard[lastKeyPress[blob_ptr->UID]], 0, 1);        // Send NoteOFF (CHANNEL_1)
 #endif
 #if DEBUG_MAPPING
         Serial.printf("\nGRID_GAP\tBLOB:%d\tKEYUP_NOTE_OFF: %d", blob_ptr->UID, lastKeyPress[blob_ptr->UID]);
@@ -191,9 +199,9 @@ void gridPopulate(llist_t* llist_ptr) {
       midiKeyLayout[keyIndex].velocity = node_ptr->velocity;
       midiKeyLayout[keyIndex].channel = node_ptr->channel;
       keyIndex++;
-    }
-  }
-}
+    };
+  };
+};
 
 void vSlider(llist_t* llist_ptr, vSlider_t* slider_ptr) {
   uint8_t val = 0;
@@ -208,11 +216,11 @@ void vSlider(llist_t* llist_ptr, vSlider_t* slider_ptr) {
 #if DEBUG_MAPPING
           Serial.printf("\nDEBUG_V_SLIDER : % d", val);
 #endif
-        }
-      }
-    }
-  }
-}
+        };
+      };
+    };
+  };
+};
 
 void hSlider(llist_t* llist_ptr, hSlider_t* slider_ptr) {
   uint8_t val = 0;
@@ -227,11 +235,11 @@ void hSlider(llist_t* llist_ptr, hSlider_t* slider_ptr) {
 #if DEBUG_MAPPING
           Serial.printf("\nDEBUG_H_SLIDER : % d", val);
 #endif
-        }
-      }
-    }
-  }
-}
+        };
+      };
+    };
+  };
+};
 
 void cSlider(llist_t* llist_ptr, polar_t* polar_ptr, cSlider_t* slider_ptr) {
   float phi = 0;
@@ -248,7 +256,7 @@ void cSlider(llist_t* llist_ptr, polar_t* polar_ptr, cSlider_t* slider_ptr) {
 #if DEBUG_MAPPING
         Serial.printf("\nDEBUG_C_SLIDER_ % d phi : % f", i, map(constrain(phi, 0.2, 5.9), 0.2, 5.9, 0, 127));
 #endif
-      }
-    }
-  }
-}
+      };
+    };
+  };
+};

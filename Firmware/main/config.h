@@ -11,14 +11,10 @@
 
 #define NAME                "ETEXTILE_SYNTHESIZER"
 #define VERSION             "1.0.4"
-#define TEENY_32            0  // [0:1] if using Teensy 3.2
-#define TEENY_40            1  // [0:1] if using Teensy 4.0
 
-#define MAX_SYNTH           8  // [1:8] How many synthesizers can be played at the same time
-
-#define USB_MIDI            1  // [0:1] Set the eTextile-Synthesizer as USB MIDI divice **DO NOT FORGET: Arduino/Touls/USB_Type/MIDI**
+#define USB_MIDI            0  // [0:1] Set the eTextile-Synthesizer as USB MIDI divice **DO NOT FORGET: Arduino/Touls/USB_Type/MIDI**
 #define USB_SLIP_OSC        0  // [0:1] Set the eTextile-Synthesizer as USB SLIP_OSC divice **DO NOT FORGET: Arduino/Touls/USB_Type/Serial**
-#define HARDWARE_MIDI       0  // [0:1] Set the eTextile-Synthesizer as MIDI divice
+#define HARDWARE_MIDI       1  // [0:1] Set the eTextile-Synthesizer as MIDI divice **DO NOT FORGET: Arduino/Touls/USB_Type/Serial**
 #define SYNTH_PLAYER        0  // [0:1] Set the eTextile-Synthesizer as STANDALONE divice
 #define GRANULAR_PLAYER     0  // [0:1] Set the eTextile-Synthesizer as STANDALONE divice
 #define FLASH_PLAYER        0  // [0:1] Set the eTextile-Synthesizer as STANDALONE divice
@@ -31,7 +27,7 @@
 #define DEBUG_INTERP        0  // [0:1] Print 64x64 interpolated values
 #define DEBUG_BITMAP        0  // [0:1] Print 64x64 binary image based on threshold
 #define DEBUG_BLOBS         0  // [0:1] Print blobs values
-#define DEBUG_MAPPING       0  // [0:1] Print blobs values
+#define DEBUG_MAPPING       1  // [0:1] Print blobs values
 #define DEBUG_BLOBS_ID      0  // [0:1] Print lowlevel blobs values
 #define DEBUG_SORT          0  // [0:1] Print lowlevel blobs sort (NOT_USED)
 
@@ -48,6 +44,7 @@
 #define CENTER_Y            (NEW_ROWS / 2)
 #define X_MAX               58 // Blobs centroid X max value
 #define Y_MAX               58 // Blobs centroid Y max value
+#define MAX_SYNTH           8  // [1:8] How many synthesizers can be played at the same time
 
 #define PI                  3.1415926535897932384626433832795
 #define PI2                 (PI+PI)

@@ -9,7 +9,7 @@
 ADC* adc = new ADC();                    // ADC object
 ADC::Sync_result result;                 // Store ADC_0 & ADC_1
 
-#if TEENY_32
+#if defined(__MK20DX256__)               // If using Teensy 3.2
 #define SS_PIN            10             // Teensy3.2 hardware SPI1 (SELECT : STCP)
 #define SCK_PIN           13             // Teensy3.2 hardware SPI1 (CLOCK - SHCP)
 #define MOSI_PIN          11             // Teensy3.2 hardware SPI1 (DATA - DS)
@@ -17,7 +17,7 @@ ADC::Sync_result result;                 // Store ADC_0 & ADC_1
 #define ADC1_PIN          A3             // Teensy3.2 pin 17 is connected to the output of multiplexerB (SIG pin)
 #endif
 
-#if TEENY_40
+#if defined(ARDUINO_TEENSY40)            // If using Teensy 4.0
 #define SS1_PIN           0              // Teensy4.0 hardware SPI1 (SELECT : STCP)
 #define SCK1_PIN          27             // Teensy4.0 hardware SPI1 (CLOCK - SHCP)
 #define MOSI1_PIN         26             // Teensy4.0 hardware SPI1 (DATA - DS)
