@@ -46,11 +46,11 @@ uint8_t setDualRows[DUAL_COLS] = {
 
 void SPI_SETUP(void) {
   pinMode(SS1_PIN, OUTPUT);                                               // Set the Slave Select Pin as OUTPUT
-#if TEENY_32
+#if defined(__MK20DX256__)                                                // If using Teensy 3.2
   SPI.begin();                                                            // Start the SPI module
   SPI.beginTransaction(SPISettings(30000000, MSBFIRST, SPI_MODE0));       // 74HC595BQ Shift out register frequency is 100 MHz = 100000000 Hz
 #endif
-#if TEENY_40
+#if defined(__IMXRT1062__)                                                // If using Teensy 4.0 & 4.1
   SPI1.begin();                                                           // Start the SPI module
   SPI1.beginTransaction(SPISettings(30000000, MSBFIRST, SPI_MODE0));      // 74HC595BQ Shift out register frequency is 100 MHz = 100000000 Hz
 #endif
