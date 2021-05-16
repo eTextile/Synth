@@ -35,11 +35,9 @@ void update_volumes(presetMode_t curentMode, preset_t* presets_ptr) {
         // HIGHEST level is 0 (3.12 Volts p-p)
         AudioNoInterrupts();
         sgtl5000.lineInLevel(presets_ptr[SIG_IN].val);
-        //$
-        sgtl5000.micGain(presets_ptr[SIG_IN].val);
+        //sgtl5000.micGain(presets_ptr[SIG_IN].val);
         AudioInterrupts();
         break;
-
       case SIG_OUT:
         // FONCTION : sig_out level adjustment using rotary encoder
         // According to https://github.com/PaulStoffregen/Audio/blob/master/control_sgtl5000.cpp

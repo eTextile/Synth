@@ -48,30 +48,26 @@ void INTERP_SETUP(image_t* outputFrame_ptr) {
   }
 }
 
+
+
 // Bilinear interpolation
 void interp_matrix(image_t* inputFrame_ptr, image_t* outputFrame_ptr, uint8_t interpThreshold) {
-  uint8_t inIndexA = 0;
-  uint8_t inIndexB = 0;
-  uint8_t inIndexC = 0;
-  uint8_t inIndexD = 0;
 
+  // Clear interpFrameArray
+  memset((uint8_t*)interpFrameArray, 0, NEW_FRAME * sizeof(uint8_t));
+  
   for (uint8_t rowPos = 0; rowPos < RAW_ROWS - 1; rowPos++) {
+    uint8_t* row_ptr = COMPUTE_IMAGE_ROW_PTR(inputFrame_ptr, rowPos);
     for (uint8_t colPos = 0; colPos < RAW_COLS - 1; colPos++) {
-
-      inIndexA = rowPos * RAW_COLS + colPos;
-
-      if (inputFrame_ptr->pData[inIndexA] > interpThreshold) { // 'Windowing' implementation
-
-        inIndexB = inIndexA + 1;
-        inIndexC = inIndexA + RAW_COLS;
-        inIndexD = inIndexC + 1;
-
+      if (IMAGE_GET_PIXEL_FAST(row_ptr, colPos) > interpThreshold) { // 'Windowing' interpolation
+        uint8_t inIndexA = rowPos * RAW_COLS + colPos;
+        uint8_t inIndexB = inIndexA + 1;
+        uint8_t inIndexC = inIndexA + RAW_COLS;
+        uint8_t inIndexD = inIndexC + 1;
         for (uint8_t row = 0; row < interp.scaleY; row++) {
           for (uint8_t col = 0; col < interp.scaleX; col++) {
-
             uint8_t coefIndex = row * interp.scaleX + col;
             uint16_t outIndex = rowPos * interp.outputStrideY + colPos * interp.scaleX + row * NEW_COLS + col;
-
             outputFrame_ptr->pData[outIndex] =
               (uint8_t)round(
                 inputFrame_ptr->pData[inIndexA] * interp.pCoefA[coefIndex] +
@@ -79,21 +75,12 @@ void interp_matrix(image_t* inputFrame_ptr, image_t* outputFrame_ptr, uint8_t in
                 inputFrame_ptr->pData[inIndexC] * interp.pCoefC[coefIndex] +
                 inputFrame_ptr->pData[inIndexD] * interp.pCoefD[coefIndex]
               );
-          }
-        }
-      }
-      else {
-        for (uint8_t row = 0; row < interp.scaleY; row++) {
-          int rowIndex = row * NEW_COLS;
-          for (uint8_t col = 0; col < interp.scaleX; col++) {
-            uint16_t outIndex = rowPos * interp.outputStrideY + colPos * interp.scaleX + rowIndex + col;
-            outputFrame_ptr->pData[outIndex] = 0;
-          }
-        }
-      }
-    }
-  }
-}
+          };
+        };
+      };
+    };
+  };
+};
 
 void print_interp(image_t* frame_ptr) {
   for (uint8_t posY = 0; posY < NEW_ROWS; posY++) {

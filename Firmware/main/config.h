@@ -26,7 +26,7 @@
 #define DEBUG_ADC           0  // [0:1] Print 16x16 Analog raw values
 #define DEBUG_INTERP        0  // [0:1] Print 64x64 interpolated values
 #define DEBUG_BITMAP        0  // [0:1] Print 64x64 binary image based on threshold
-#define DEBUG_BLOBS         0  // [0:1] Print blobs values
+#define DEBUG_BLOBS         1  // [0:1] Print blobs values
 #define DEBUG_MAPPING       0  // [0:1] Print blobs values
 #define DEBUG_BLOBS_ID      0  // [0:1] Print lowlevel blobs values
 
