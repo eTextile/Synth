@@ -10,19 +10,19 @@ ADC* adc = new ADC();                    // ADC object
 ADC::Sync_result result;                 // Store ADC_0 & ADC_1
 
 #if defined(__MK20DX256__)               // If using Teensy 3.2
-#define SS_PIN            10             // Teensy3.2 hardware SPI1 (SELECT : STCP)
-#define SCK_PIN           13             // Teensy3.2 hardware SPI1 (CLOCK - SHCP)
-#define MOSI_PIN          11             // Teensy3.2 hardware SPI1 (DATA - DS)
-#define ADC0_PIN          A9             // Teensy3.2 pin 23 is connected to the output of multiplexerA (SIG pin)
-#define ADC1_PIN          A3             // Teensy3.2 pin 17 is connected to the output of multiplexerB (SIG pin)
+#define SS_PIN            10             // Hardware SPI (SELECT : STCP)
+#define SCK_PIN           13             // Hardware SPI (CLOCK - SHCP)
+#define MOSI_PIN          11             // Hardware SPI (DATA - DS)
+#define ADC0_PIN          A9             // Pin 23 is connected to the output of multiplexerA (SIG pin)
+#define ADC1_PIN          A3             // Pin 17 is connected to the output of multiplexerB (SIG pin)
 #endif
 
 #if defined(__IMXRT1062__)               // If using Teensy 4.0 & 4.1
-#define SS1_PIN           0              // Teensy4.0 hardware SPI1 (SELECT : STCP)
-#define SCK1_PIN          27             // Teensy4.0 hardware SPI1 (CLOCK - SHCP)
-#define MOSI1_PIN         26             // Teensy4.0 hardware SPI1 (DATA - DS)
-#define ADC0_PIN          A3             // Teensy4.0 pin 17 is connected to the output of multiplexerA (SIG pin) 
-#define ADC1_PIN          A2             // Teensy4.0 pin 16 is connected to the output of multiplexerB (SIG pin)
+#define SS1_PIN           0              // Hardware SPI1 (SELECT : STCP)
+#define SCK1_PIN          27             // Hardware SPI1 (CLOCK - SHCP)
+#define MOSI1_PIN         26             // Hardware SPI1 (DATA - DS)
+#define ADC0_PIN          A3             // Pin 17 is connected to the output of multiplexerA (SIG pin) 
+#define ADC1_PIN          A2             // Pin 16 is connected to the output of multiplexerB (SIG pin)
 #endif
 
 #define DUAL_COLS         (RAW_COLS / 2)
@@ -56,7 +56,7 @@ void SPI_SETUP(void) {
 #endif
   digitalWrite(SS1_PIN, LOW);                                             // Set latchPin LOW
   digitalWrite(SS1_PIN, HIGH);                                            // Set latchPin HIGH
-}
+};
 
 void ADC_SETUP(void) {
   pinMode(ADC0_PIN, INPUT);                                               // PIN A2 (Teensy 4.0 pin 16)
@@ -74,14 +74,14 @@ void ADC_SETUP(void) {
   adc->adc1->setSamplingSpeed(ADC_SAMPLING_SPEED::VERY_HIGH_SPEED);       // Change the sampling speed
   //adc->adc1->setConversionSpeed(ADC_CONVERSION_SPEED::HIGH_SPEED);      // Change the conversion speed/*
   //adc->adc1->setSamplingSpeed(ADC_SAMPLING_SPEED::HIGH_SPEED);          // Change the sampling speed
-}
+};
 
 void SCAN_SETUP(image_t* inputFrame_ptr) {
   // image_t* rawFrame init config
   inputFrame_ptr->pData = &rawFrameArray[0];
   inputFrame_ptr->numCols = RAW_COLS;
   inputFrame_ptr->numRows = RAW_ROWS;
-}
+};
 
 // Columns are analog INPUT_PINS reded two by two
 // Rows are digital OUTPUT_PINS supplyed one by one sequentially with 3.3V
@@ -129,14 +129,14 @@ void calibrate_matrix(
 #else
           setRows = setRows >> 1;
 #endif
-        }
-      }
-    }
+        };
+      };
+    };
     *curentMode_ptr = *lastMode_ptr;
     *lastMode_ptr = CALIBRATE;
     presets_ptr[*curentMode_ptr].setLed = true;
-  }
-}
+  };
+};
 
 // Columns are analog INPUT_PINS reded two by two
 // Rows are digital OUTPUT_PINS supplyed one by one sequentially with 3.3V
@@ -176,17 +176,17 @@ void scan_matrix(void) {
 #else
       setRows = setRows >> 1;
 #endif
-    }
-  }
-}
+    };
+  };
+};
 
 void print_adc(image_t* image_ptr) {
   for (uint8_t posY = 0; posY < RAW_ROWS; posY++) {
     uint8_t* row_ptr = COMPUTE_IMAGE_ROW_PTR(image_ptr, posY);
     for (uint8_t posX = 0; posX < RAW_COLS; posX++) {
       Serial.printf("\t%d", IMAGE_GET_PIXEL_FAST(row_ptr, posX));
-    }
+    };
     Serial.printf("\n");
-  }
+  };
   Serial.printf("\n");
-}
+};
