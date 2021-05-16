@@ -17,7 +17,7 @@ ADC::Sync_result result;                 // Store ADC_0 & ADC_1
 #define ADC1_PIN          A3             // Teensy3.2 pin 17 is connected to the output of multiplexerB (SIG pin)
 #endif
 
-#if defined(ARDUINO_TEENSY40)            // If using Teensy 4.0
+#if defined(__IMXRT1062__)               // If using Teensy 4.0 & 4.1
 #define SS1_PIN           0              // Teensy4.0 hardware SPI1 (SELECT : STCP)
 #define SCK1_PIN          27             // Teensy4.0 hardware SPI1 (CLOCK - SHCP)
 #define MOSI1_PIN         26             // Teensy4.0 hardware SPI1 (DATA - DS)
@@ -103,13 +103,13 @@ void calibrate_matrix(
 #endif
         for (uint8_t row = 0; row < RAW_ROWS; row++) {        // DIGITAL_PINS [0-15]
           digitalWrite(SS1_PIN, LOW);                         // Set the Slave Select Pin LOW
-#if TEENY_32
+#if defined(__MK20DX256__)                                    // If using Teensy 3.2
           //SPI1.transfer16(setRows);                         // Set up the two OUTPUT shift registers (FIXME)
           SPI.transfer((uint8_t)(setRows & 0xFF));            // Shift out one byte to setup one OUTPUT shift register
           SPI.transfer((uint8_t)((setRows >> 8) & 0xFF));     // Shift out one byte to setup one OUTPUT shift register
           SPI.transfer(setDualRows[col]);                     // Shift out one byte that setup the two INPUT 8:1 analog multiplexers
 #endif
-#if TEENY_40
+#if defined(__IMXRT1062__)                                    // If using Teensy 4.0 & 4.1
           //SPI1.transfer16(setRows);                         // Set up the two OUTPUT shift registers (FIXME)
           SPI1.transfer((uint8_t)(setRows & 0xFF));           // Shift out one byte to setup one OUTPUT shift register
           SPI1.transfer((uint8_t)((setRows >> 8) & 0xFF));    // Shift out one byte to setup one OUTPUT shift register
@@ -150,13 +150,13 @@ void scan_matrix(void) {
 #endif
     for (uint8_t row = 0; row < RAW_ROWS; row++) {        // DIGITAL_PINS [0-15]
       digitalWrite(SS1_PIN, LOW);                         // Set the Slave Select Pin LOW
-#if TEENY_32
+#if defined(__MK20DX256__)                                // If using Teensy 3.2
       //SPI1.transfer16(setRows);                         // Set up the two OUTPUT shift registers (FIXME)
       SPI.transfer((uint8_t)(setRows & 0xFF));            // Shift out one byte to setup one OUTPUT shift register
       SPI.transfer((uint8_t)((setRows >> 8) & 0xFF));     // Shift out one byte to setup one OUTPUT shift register
       SPI.transfer(setDualRows[col]);                     // Shift out one byte that setup the two INPUT 8:1 analog multiplexers
 #endif
-#if TEENY_40
+#if defined(__IMXRT1062__)                                // If using Teensy 4.0 & 4.1
       //SPI1.transfer16(setRows);                         // Set up the two OUTPUT shift registers (FIXME)
       SPI1.transfer((uint8_t)(setRows & 0xFF));           // Shift out one byte to setup one OUTPUT shift register
       SPI1.transfer((uint8_t)((setRows >> 8) & 0xFF));    // Shift out one byte to setup one OUTPUT shift register
