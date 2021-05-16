@@ -33,6 +33,7 @@ void llist_save_nodes(llist_t* dst_ptr, llist_t* src_ptr);
 ////////////// Iterators //////////////
 
 #define ITERATOR_START_FROM_HEAD(list) (((llist_t *)(list))->head_ptr)
+#define ITERATOR_START_FROM_TAIL(list) (((llist_t *)(list))->tail_ptr)
 #define ITERATOR_NEXT(node) (((lnode_t*)(node))->next_ptr)
 
 #endif /*__LLIST_H__*/

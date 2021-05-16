@@ -7,13 +7,14 @@
 #ifndef __PLAYER_GRANULAR_H__
 #define __PLAYER_GRANULAR_H__
 
-#include <Audio.h>              // https://github.com/PaulStoffregen/Audio
+#include <Audio.h>         // https://github.com/PaulStoffregen/Audio
+#include <Wire.h>          // https://github.com/PaulStoffregen/Wire
 #include "config.h"
 #include "llist.h"
 #include "blob.h"
 
-typedef struct llist llist_t;   // Forward declaration
 typedef struct lnode lnode_t;   // Forward declaration
+typedef struct llist llist_t;   // Forward declaration
 typedef struct blob blob_t;     // Forward declaration
 
 void GRANULAR_PLAYER_SETUP(AudioEffectGranular* granular_ptr);

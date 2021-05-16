@@ -44,6 +44,8 @@ uint8_t setDualRows[DUAL_COLS] = {
 #endif
 };
 
+#define SPI_HAS_TRANSACTION 0
+
 void SPI_SETUP(void) {
   pinMode(SS1_PIN, OUTPUT);                                               // Set the Slave Select Pin as OUTPUT
 #if defined(__MK20DX256__)                                                // If using Teensy 3.2
@@ -104,7 +106,7 @@ void calibrate_matrix(
         for (uint8_t row = 0; row < RAW_ROWS; row++) {        // DIGITAL_PINS [0-15]
           digitalWrite(SS1_PIN, LOW);                         // Set the Slave Select Pin LOW
 #if defined(__MK20DX256__)                                    // If using Teensy 3.2
-          //SPI1.transfer16(setRows);                         // Set up the two OUTPUT shift registers (FIXME)
+          //SPI.transfer16(setRows);                          // Set up the two OUTPUT shift registers (FIXME)
           SPI.transfer((uint8_t)(setRows & 0xFF));            // Shift out one byte to setup one OUTPUT shift register
           SPI.transfer((uint8_t)((setRows >> 8) & 0xFF));     // Shift out one byte to setup one OUTPUT shift register
           SPI.transfer(setDualRows[col]);                     // Shift out one byte that setup the two INPUT 8:1 analog multiplexers
@@ -118,7 +120,7 @@ void calibrate_matrix(
           digitalWrite(SS1_PIN, HIGH);                        // Set the Slave Select Pin HIGH
           uint8_t indexA = row * RAW_COLS + col;              // Compute 1D array indexA
           uint8_t indexB = indexA + DUAL_COLS;                // Compute 1D array indexB
-          delayMicroseconds(15);
+          delayMicroseconds(10);
           result = adc->analogSynchronizedRead(ADC0_PIN, ADC1_PIN);
           uint8_t ADC0_val = result.result_adc0;
           if (ADC0_val > offsetArray[indexA]) offsetArray[indexA] = ADC0_val;
@@ -151,7 +153,7 @@ void scan_matrix(void) {
     for (uint8_t row = 0; row < RAW_ROWS; row++) {        // DIGITAL_PINS [0-15]
       digitalWrite(SS1_PIN, LOW);                         // Set the Slave Select Pin LOW
 #if defined(__MK20DX256__)                                // If using Teensy 3.2
-      //SPI1.transfer16(setRows);                         // Set up the two OUTPUT shift registers (FIXME)
+      //SPI.transfer16(setRows);                          // Set up the two OUTPUT shift registers (FIXME)
       SPI.transfer((uint8_t)(setRows & 0xFF));            // Shift out one byte to setup one OUTPUT shift register
       SPI.transfer((uint8_t)((setRows >> 8) & 0xFF));     // Shift out one byte to setup one OUTPUT shift register
       SPI.transfer(setDualRows[col]);                     // Shift out one byte that setup the two INPUT 8:1 analog multiplexers

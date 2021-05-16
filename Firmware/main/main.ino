@@ -261,6 +261,7 @@ void loop() {
   };
   fps++;
 #endif
+
 #if DEBUG_ADC
   if (debugTimer >= 1000) {
     debugTimer = 0;

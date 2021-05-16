@@ -88,7 +88,8 @@ void llist_save_nodes(llist_t* dst_ptr, llist_t* src_ptr) {
   void llist_sort(llist_t* llist_ptr) {
   lnode_t* nodeA_prev_ptr = NULL;
   while (1) {
-    boolean isSorted = true;
+    boolean isSorted = true;  lnode_t* node = llist_ptr->head_ptr;
+
     for (lnode_t* nodeA = ITERATOR_START_FROM_HEAD(llist_ptr); nodeA != NULL; nodeA = ITERATOR_NEXT(nodeA)) {
       if (nodeA->UID > nodeA->next_ptr->UID) {
         isSorted = false;

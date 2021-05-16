@@ -11,17 +11,10 @@
 #include "interp.h"
 
 #include <Bounce2.h>                                    // https://github.com/thomasfredericks/Bounce2
-//#include "../library/Bounce2/src/Bounce2.h"           // https://github.com/thomasfredericks/Bounce2 (FIXME)
-
 #define ENCODER_OPTIMIZE_INTERRUPTS
 #include <Encoder.h>                                    // https://github.com/PaulStoffregen/Encoder
-//#include "../library/Encoder/Encoder.h"               // https://github.com/PaulStoffregen/Encoder (FIXME)
-
 //#include <EEPROM.h>                                   // https://www.arduino.cc/en/Reference/EEPROM (TODO)
-//#include "../library/..."                             // (FIXME)
-
 #include <elapsedMillis.h>                              // https://github.com/pfeerick/elapsedMillis
-//#include "../library/elapsedMillis/elapsedMillis.h"   // https://github.com/pfeerick/elapsedMillis (FIXME)
 
 typedef struct interp interp_t; // forward declaration
 
