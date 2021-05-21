@@ -44,18 +44,16 @@ void INTERP_SETUP(image_t* outputFrame_ptr) {
       interp.pCoefB[index] = col * (interp.scaleY - row) / sFactor;
       interp.pCoefC[index] = (interp.scaleX - col) * row / sFactor;
       interp.pCoefD[index] = row * col / sFactor;
-    }
-  }
-}
-
-
+    };
+  };
+};
 
 // Bilinear interpolation
 void interp_matrix(image_t* inputFrame_ptr, image_t* outputFrame_ptr, uint8_t interpThreshold) {
 
   // Clear interpFrameArray
-  memset((uint8_t*)interpFrameArray, 0, NEW_FRAME * sizeof(uint8_t));
-  
+  memset((uint8_t*)interpFrameArray, 0, SIZEOF_FRAME);
+
   for (uint8_t rowPos = 0; rowPos < RAW_ROWS - 1; rowPos++) {
     uint8_t* row_ptr = COMPUTE_IMAGE_ROW_PTR(inputFrame_ptr, rowPos);
     for (uint8_t colPos = 0; colPos < RAW_COLS - 1; colPos++) {

@@ -21,7 +21,6 @@ struct llist {
 };
 
 ////////////// Linked list - Fonction prototypes //////////////
-
 void llist_raz(llist_t* llist_ptr);
 void* llist_pop_front(llist_t* llist_ptr);
 void llist_extract_node(llist_t* llist_ptr, void* prevData_ptr, void* data_ptr);
@@ -31,9 +30,7 @@ void llist_save_nodes(llist_t* dst_ptr, llist_t* src_ptr);
 //void llist_sort(llist_t* src_ptr);
 
 ////////////// Iterators //////////////
-
 #define ITERATOR_START_FROM_HEAD(list) (((llist_t *)(list))->head_ptr)
-#define ITERATOR_START_FROM_TAIL(list) (((llist_t *)(list))->tail_ptr)
 #define ITERATOR_NEXT(node) (((lnode_t*)(node))->next_ptr)
 
 #endif /*__LLIST_H__*/

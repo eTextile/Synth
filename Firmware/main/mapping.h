@@ -17,14 +17,18 @@ typedef struct blob blob_t;         // Forward declaration
 typedef struct llist llist_t;       // Forward declaration
 typedef struct midiNode midiNode_t; // Forward declaration
 
+#undef round
+#define round(x) lround(x)
+
 #define C_SLIDERS  3
 
 typedef struct squareKey squareKey_t;
 struct squareKey {
-  float Xmin;
-  float Xmax;
-  float Ymin;
-  float Ymax;
+  uint8_t val;
+  uint8_t Xmin;
+  uint8_t Xmax;
+  uint8_t Ymin;
+  uint8_t Ymax;
 };
 
 typedef struct tSwitch tSwitch_t;
@@ -64,17 +68,18 @@ struct cSlider {
   uint8_t val;
 };
 
+#define GRID_COMPUTE_ROW_PTR(grid_ptr, y) (((squareKey_t *)(grid_ptr)) + ((GRID_COLS * sizeof(squareKey_t)) * y));
+#define GRID_GET_KEY_PTR(col_ptr, x) (col_ptr + x);
+
 void GRID_LAYOUT_SETUP();
 
-void gridPlay(llist_t* llist_ptr);
-void gridGapPlay(llist_t* llist_ptr);
 void gridPopulate(llist_t* llist_ptr);
+void gridPlay(llist_t* llist_ptr);
 
 boolean trigger(llist_t* llist_ptr, tSwitch_t* switch_ptr);
 boolean toggle(llist_t* llist_ptr, tSwitch_t* switch_ptr);
 void hSlider(llist_t* llist_ptr, hSlider_t* slider_ptr);
 void vSlider(llist_t* llist_ptr, vSlider_t* slider_ptr);
 void cSlider(llist_t* llist_ptr, polar_t* polar_ptr, cSlider_t* slider_ptr);
-
 
 #endif /*__MAPPING_H__*/

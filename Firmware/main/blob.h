@@ -30,6 +30,8 @@ typedef struct llist llist_t;          // Forward declaration
 #define UINT8_T_MASK    (UINT8_T_BITS - 1)
 #define UINT8_T_SHIFT   IM_LOG2(UINT8_T_MASK)
 
+#define SIZEOF_FRAME    (NEW_FRAME * sizeof(uint8_t))
+
 #define COMPUTE_IMAGE_ROW_PTR(pImage, y) \
   ({ \
     __typeof__ (pImage) _pImage = (pImage); \
@@ -119,6 +121,7 @@ struct box {
 
 typedef enum status {
   FREE,
+  NOT_FOUND,
   TO_REMOVE
 } status_t;
 
@@ -127,7 +130,7 @@ struct blob {
   lnode_t node;
   uint8_t UID;
   status_t status;
-  uint32_t timeTag; // TODO
+  uint32_t timeTag;
   uint16_t pixels;
   boolean state;
   boolean lastState;
@@ -135,23 +138,11 @@ struct blob {
   point_t centroid;
 };
 
-void bitmap_clear();
-static int sum_m_to_n(int m, int n);
-
-void blob_llist_init(llist_t *list, blob_t* nodesArray);
 void lifo_llist_init(llist_t *list, xylr_t* nodesArray);
+void blob_llist_init(llist_t *list, blob_t* nodesArray);
 
-void BLOB_SETUP(
-  llist_t* outputBlobs_ptr
-);
-
-float distance(blob_t* blobA, blob_t* blobB);
-
-void find_blobs(
-  uint8_t   zThreshold,
-  image_t*  inputFrame_ptr,
-  llist_t*  outputBlobs_ptr
-);
+void BLOB_SETUP(llist_t* outputBlobs_ptr);
+void find_blobs(uint8_t zThreshold, image_t* inputFrame_ptr, llist_t* outputBlobs_ptr);
 
 typedef struct velocity velocity_t;
 struct velocity {

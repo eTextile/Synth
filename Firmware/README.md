@@ -6,8 +6,8 @@
  
 ### Requirements
 - **eTextile-Synthesizer PCB** & **Teensy 4.0**
-- **Arduino IDE** : Arduino 1.8.13 or higher [DOWNLOAD](https://www.arduino.cc/en/Main/Software)
-- **Arduino IDE additional board** : Teensyduino 1.53 or higher [DOWNLOAD](https://www.pjrc.com/teensy/teensyduino.html)
+- **Arduino IDE** : Arduino 1.8.14 or higher [DOWNLOAD](https://www.arduino.cc/en/Main/Software)
+- **Arduino IDE additional board** : Teensyduino 1.54 or higher [DOWNLOAD](https://www.pjrc.com/teensy/td_download.html)
 - **Arduino IDE additional library**
   - **Included in Teensyduino**
     - **SPI**: https://github.com/PaulStoffregen/SPI
@@ -39,9 +39,9 @@ The embedded Software is implementing **image analysis algorithms** on the E256 
 - **Blob shape and movement characterisation** Blobs coordinates, size and pressure are used to play music...
 
 ### eTextile-Synthesizer / Benchmark
-  - ADC_INPUT : 442 FPS
-  - ADC_INPUT / BILINEAR_INTERPOLATION : 420 FPS
-  - ADC_INPUT / BILINEAR_INTERPOLATION / BLOB_TRACKING : 412 FPS
+  - ADC_INPUT : 610 FPS
+  - ADC_INPUT / BILINEAR_INTERPOLATION : 600 FPS
+  - ADC_INPUT / BILINEAR_INTERPOLATION / BLOB_TRACKING : 590 FPS
   - ADC_INPUT / BILINEAR_INTERPOLATION / BLOB_TRACKING / AUDIO : ...
 
 ## Configuring the system

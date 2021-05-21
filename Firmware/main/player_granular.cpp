@@ -15,7 +15,7 @@ void GRANULAR_PLAYER_SETUP(AudioEffectGranular* granular_ptr) {
 
 void granular_player(llist_t* llist_ptr, AudioEffectGranular* granular_ptr) {
 
-  blob_t* blob_ptr = (blob_t*)ITERATOR_START_FROM_TAIL(llist_ptr);
+  blob_t* blob_ptr = (blob_t*)llist_ptr->tail_ptr;
 
   if (blob_ptr != NULL && blob_ptr->state) {
     if (!blob_ptr->lastState) {

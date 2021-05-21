@@ -103,6 +103,13 @@ AudioConnection                   patchCord27(playFlashRaw, 0, mix_3, 2);
 AudioConnection                   patchCord28(mix_3, 0, i2s_OUT, 0);
 AudioConnection                   patchCord29(mix_3, 0, i2s_OUT, 1);
 
+#if GRANULAR_PLAYER
+AudioEffectGranular               granular;
+AudioConnection                   patchCord1(i2s_IN, 0, granular, 0);
+AudioConnection                   patchCord2(granular, 0, i2s_OUT, 0);
+AudioConnection                   patchCord3(granular, 0, i2s_OUT, 1);
+#endif
+
 synth_t allSynth[MAX_SYNTH] = {
   {&wf_1, &fm_1, &fade_1, &mix_1},
   {&wf_2, &fm_2, &fade_2, &mix_1},
@@ -113,13 +120,6 @@ synth_t allSynth[MAX_SYNTH] = {
   {&wf_7, &fm_7, &fade_7, &mix_2},
   {&wf_8, &fm_8, &fade_8, &mix_2}
 };
-#endif
-
-#if GRANULAR_PLAYER
-AudioEffectGranular               granular;
-AudioConnection                   patchCord1(i2s_IN, 0, granular, 0);
-AudioConnection                   patchCord2(granular, 0, i2s_OUT, 0);
-AudioConnection                   patchCord3(granular, 0, i2s_OUT, 1);
 #endif
 
 presetMode_t lastMode = LINE_OUT;       // Init lastMode with LINE_OUT (DEFAULT_MODE)
@@ -208,6 +208,7 @@ void loop() {
   scan_matrix();
   interp_matrix(&rawFrame, &interpFrame, interpThreshold);
   find_blobs(presets[THRESHOLD].val, &interpFrame, &blobs);
+
   //median(&blobs);
   //getPolarCoordinates(&blobs);
   //getBlobsVelocity(&blobs);
@@ -231,10 +232,9 @@ void loop() {
   };
 #endif
 
-  //gridPlay(&blobs);
-  gridGapPlay(&blobs);
+  gridPlay(&blobs);
+  
   //controlChange(&blobs, &ccParam);
-
   //boolean toggSwitch = toggle(&blobs, &toggParam);
   //boolean trigSwitch = trigger(&blobs, &trigParam);
   //hSlider(&blobs, &hSliderParam);
