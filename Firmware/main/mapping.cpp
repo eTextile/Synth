@@ -119,7 +119,7 @@ void gridPlay(llist_t* llist_ptr) {
       };
       if (!blob_ptr->state) {
 #if HARDWARE_MIDI
-        MIDI.sendNoteOff(lastKeyPress_ptr[blob_ptr->UID]->val, 0, 1);       // Send NoteOFF (CHANNEL_1)
+        //MIDI.sendNoteOff(lastKeyPress_ptr[blob_ptr->UID]->val, 0, 1);       // Send NoteOFF (CHANNEL_1)
         Serial.printf("\nGRID\tBLOB:%d\tKEYUP:%d", blob_ptr->UID, (uint8_t)lastKeyPress_ptr[blob_ptr->UID]->val); //BUG!?
 #endif
         lastKeyPress_ptr[blob_ptr->UID] = NULL;
