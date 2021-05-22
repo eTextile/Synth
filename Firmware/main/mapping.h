@@ -24,7 +24,7 @@ typedef struct midiNode midiNode_t; // Forward declaration
 
 typedef struct squareKey squareKey_t;
 struct squareKey {
-  uint8_t val;
+  int8_t val;
   uint8_t Xmin;
   uint8_t Xmax;
   uint8_t Ymin;

@@ -74,8 +74,8 @@ void GRID_LAYOUT_SETUP() {
   for (int row = 0; row < GRID_ROWS; row++) {
     for (int col = 0; col < GRID_COLS; col++) {
       uint8_t index = row * GRID_COLS + col;
-      keyPos[index].val = index;
-      //keyPos[index].val = harmonicKeyboard[index];
+      //keyPos[index].val = index;
+      keyPos[index].val = (int8_t)harmonicKeyboard[index];
       keyPos[index].Xmin = col * KEY_SIZE_X + ((col + 1) * GRID_GAP);
       keyPos[index].Xmax = keyPos[index].Xmin + KEY_SIZE_X;
       keyPos[index].Ymin = row * KEY_SIZE_Y + ((row + 1) * GRID_GAP);
@@ -95,32 +95,30 @@ void GRID_LAYOUT_SETUP() {
 void gridPlay(llist_t* llist_ptr) {
   for (blob_t* blob_ptr = (blob_t*)ITERATOR_START_FROM_HEAD(llist_ptr); blob_ptr != NULL; blob_ptr = (blob_t*)ITERATOR_NEXT(blob_ptr)) {
     if (blob_ptr->UID < MAX_SYNTH) {                                       // Test if the blob UID is less than MAX_SYNTH
-
       uint8_t keyPosY = round((blob_ptr->centroid.Y / Y_MAX) * GRID_ROWS); // Compute Y window position
       uint8_t keyPosX = round((blob_ptr->centroid.X / X_MAX) * GRID_COLS); // Compute X window position
       uint8_t index = keyPosY * GRID_COLS + keyPosX;                       // Compute 1D key index position
       squareKey_t* keyPress_ptr = &keyPos[index];
-      //Serial.printf("\nGRID\tBLOB:%d\tLAST_STATE:%d\tSTATE:%d\tKEY:%d", blob_ptr->UID, blob_ptr->lastState, blob_ptr->state, keyPress->val);
-
       // Test if the blob is within the key limits
       if (blob_ptr->centroid.X > keyPress_ptr->Xmin && blob_ptr->centroid.X < keyPress_ptr->Xmax &&
           blob_ptr->centroid.Y > keyPress_ptr->Ymin && blob_ptr->centroid.Y < keyPress_ptr->Ymax) {
         //Serial.printf("\nGRID\tBLOB:%d\tLAST_STATE:%d\tSTATE:%d\tKEY:%d", blob_ptr->UID, blob_ptr->lastState, blob_ptr->state, keyPress_ptr->val);
-
-        //if (!blob_ptr->lastState) {
         if (keyPress_ptr != lastKeyPress_ptr[blob_ptr->UID]) {
+          if (lastKeyPress_ptr[blob_ptr->UID] != NULL) {
+            MIDI.sendNoteOff(lastKeyPress_ptr[blob_ptr->UID]->val, 0, 1);     // Send NoteOFF (CHANNEL_1)
+            //Serial.printf("\nGRID\tBLOB:%d\t\tKEYDOWN_SLIDE:%d", blob_ptr->UID, (uint8_t)keyPress_ptr->val);
+          };
 #if HARDWARE_MIDI
-          //MIDI.sendNoteOff(lastKeyPress_ptr[blob_ptr->UID]->val, 0, 1);     // Send NoteOFF (CHANNEL_1)
-          //MIDI.sendNoteOn(keyPress_ptr->val, 127, 1);                       // Send NoteON (CHANNEL_1)
-          Serial.printf("\nGRID\tBLOB:%d\t\tKEYDOWN:%d", blob_ptr->UID, keyPress_ptr->val);
+          MIDI.sendNoteOn(keyPress_ptr->val, 127, 1);                       // Send NoteON (CHANNEL_1)
+          //Serial.printf("\nGRID\tBLOB:%d\t\tKEYDOWN:%d", blob_ptr->UID, (uint8_t)keyPress_ptr->val);
 #endif
-          lastKeyPress_ptr[blob_ptr->UID] = keyPress_ptr;                     // Save current keyPress_ptr
+          lastKeyPress_ptr[blob_ptr->UID] = keyPress_ptr;                   // Save current keyPress_ptr
         };
       };
-      if (!blob_ptr->state) {
+      if (!blob_ptr->state && lastKeyPress_ptr[blob_ptr->UID] != NULL) {
 #if HARDWARE_MIDI
         //MIDI.sendNoteOff(lastKeyPress_ptr[blob_ptr->UID]->val, 0, 1);       // Send NoteOFF (CHANNEL_1)
-        Serial.printf("\nGRID\tBLOB:%d\tKEYUP:%d", blob_ptr->UID, (uint8_t)lastKeyPress_ptr[blob_ptr->UID]->val); //BUG!?
+        //Serial.printf("\nGRID\tBLOB:%d\tKEYUP:%d", blob_ptr->UID, (uint8_t)lastKeyPress_ptr[blob_ptr->UID]->val); //BUG!?
 #endif
         lastKeyPress_ptr[blob_ptr->UID] = NULL;
       };

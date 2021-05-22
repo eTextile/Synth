@@ -160,7 +160,7 @@ cSlider_t cSlidersParam[C_SLIDERS] = {
 ccPesets_t ccParam = {NULL, BD, 44, 1, 0};          // ARGS[blobID, [BX,BY,BW,BH,BD], cChange, midiChannel, Val]
 
 void setup() {
-#if DEBUG_ADC || DEBUG_INTERP || DEBUG_SFF_BITMADEBUG_SFF_BITMAPP || DEBUG_BLOBS || DEBUG_FPS || DEBUG_ENCODER || DEBUG_BUTTONS
+#if DEBUG_ADC || DEBUG_INTERP || DEBUG_SFF_BITMADEBUG_SFF_BITMAPP || DEBUG_BLOBS || DEBUG_FPS || DEBUG_ENCODER || DEBUG_BUTTONS || DEBUG_MAPPING
   Serial.begin(BAUD_RATE); // Start Serial communication using 230400 baud
   while (!Serial);
   Serial.printf("\n%s_%s", NAME, VERSION);

@@ -138,7 +138,7 @@
 #define  Fd9   126       // 11839.82
 #define  G9    127       // 12543.85
 
-const uint8_t note[128] = {
+const int8_t note[128] = {
   Cm1, Cdm1, Dm1, Ddm1, Em1, Fm1, Fdm1, Gm1, Gdm1, Am1, Adm1, Bm1,
   C0,  Cd0,  D0,  Dd0,  E0,  F0,  Fd0,  G0,  Gd0,  A0_, Ad0,  B0_,
   C1,  Cd1,  D1,  Dd1,  E1,  F1,  Fd1,  G1,  Gd1,  A1_, Ad1,  B1_,
@@ -153,7 +153,7 @@ const uint8_t note[128] = {
 };
 
 //See: https://www.c-thru-music.com/cgi/?page=layout_octaves
-const uint8_t harmonicKeyboard[128] = {
+const int8_t harmonicKeyboard[128] = {
   Gd7, F7,  A7_, Fd7, Ad7, G7,  B7,  Gd7, C8,  A7_, Cd8, Ad7, D8,  B7,
   Cd7, Ad6, D7,  B6,  Dd7, C7,  E7,  Cd7, F7,  D7,  Fd7, Dd7, G7,  E7,
   Fd6, Dd6, G6,  E6,  Gd6, F6,  A6_, Fd6, Ad6, G6,  B6,  Gd6, C7,  A6_,
