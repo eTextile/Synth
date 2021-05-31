@@ -338,10 +338,6 @@ void find_blobs(uint8_t zThreshold, image_t* inputFrame_ptr, llist_t* outputBlob
 
   llist_swap_llist(outputBlobs_ptr, &llist_blobs);     // Swap inputBlobs with outputBlobs linked list
   llist_save_nodes(&llist_blobs_stack, &llist_blobs);  // Rescure all dead blobs Linked list nodes
-
-#if DEBUG_FIND_BLOBS
-  //Serial.printf("\nDEBUG_FIND_BLOBS / END OFF BLOB FONCTION");
-#endif
 }
 
 void getBlobsVelocity(llist_t* blobs_ptr) {

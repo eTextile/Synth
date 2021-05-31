@@ -16,8 +16,10 @@
 
 Encoder encoder(ENCODER_PIN_A, ENCODER_PIN_B);
 
-Button BUTTON_L = Button();
-Button BUTTON_R = Button();
+//Button BUTTON_L = Button();
+Bounce2::Button BUTTON_L = Bounce2::Button();
+//Button BUTTON_R = Button();
+Bounce2::Button BUTTON_R = Bounce2::Button();
 
 #define LONG_HOLD               1500
 #define MIDI_LEARN_LED_TIMEON   600

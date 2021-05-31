@@ -109,7 +109,6 @@ void setup() {
 #endif
 };
 
-//////////////////// LOOP
 void loop() {
   //if (loadPreset) preset_load(&presets[0], &loadPreset); // TODO
   //if (savePreset) preset_save(&presets[0], &savePreset); // TODO
