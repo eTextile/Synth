@@ -32,7 +32,7 @@
 #define  Gd0   20        // 25.98 Hz
 #define  A0_   21        // 27.50 Hz
 #define  Ad0   22        // 29.14 Hz
-#define  B0_    23        // 30.87 Hz
+#define  B0_   23        // 30.87 Hz
 #define  C1    24        // 32.70 Hz
 #define  Cd1   25        // 34.65 Hz
 #define  D1    26        // 36.71 Hz
@@ -44,7 +44,7 @@
 #define  Gd1   32        // 51.91 Hz
 #define  A1_   33        // 55.00 Hz
 #define  Ad1   34        // 58.27 Hz
-#define  B1_    35        // 61.74 Hz
+#define  B1_   35        // 61.74 Hz
 #define  C2    36        // 65.41 Hz
 #define  Cd2   37        // 69.30 Hz
 #define  D2    38        // 73.42 Hz
@@ -190,7 +190,7 @@ const int8_t harmonicKeyboard[128] = {
 #define  Gd0   25.98     // note[20]
 #define  A0_   27.50     // note[21]
 #define  Ad0   29.14     // note[22]
-#define  B0_    30.87     // note[23]
+#define  B0_   30.87     // note[23]
 #define  C1    32.70     // note[24]
 #define  Cd1   34.65     // note[25]
 #define  D1    36.71     // note[26]
@@ -202,7 +202,7 @@ const int8_t harmonicKeyboard[128] = {
 #define  Gd1   51.91     // note[32]
 #define  A1_   55.00     // note[33]
 #define  Ad1   58.27     // note[34]
-#define  B1_    61.74     // note[35]
+#define  B1_   61.74     // note[35]
 #define  C2    65.41     // note[36]
 #define  Cd2   69.30     // note[37]
 #define  D2    73.42     // note[38]

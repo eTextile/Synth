@@ -7,7 +7,12 @@
 #ifndef __PLAYER_SYNTH_H__
 #define __PLAYER_SYNTH_H__
 
-#include <Audio.h>              // https://github.com/PaulStoffregen/Audio
+#include <Audio.h>         // https://github.com/PaulStoffregen/Audio
+#include <Wire.h>          // https://github.com/PaulStoffregen/Wire
+#include <SPI.h>           // https://github.com/PaulStoffregen/SPI
+#include <SD.h>            // https://github.com/PaulStoffregen/SD
+#include <SerialFlash.h>   // https://github.com/PaulStoffregen/SerialFlash
+
 #include "config.h"
 #include "llist.h"
 #include "blob.h"
@@ -18,13 +23,13 @@ typedef struct blob blob_t;         // Forward declaration
 
 typedef struct synth synth_t;
 struct synth {
-  AudioSynthWaveform* wf_ptr;
-  AudioSynthWaveformSineModulated* fm_ptr;
-  AudioEffectFade* fade_ptr;
-  AudioMixer4* mix_ptr;
+  AudioSynthWaveform* wf;
+  AudioSynthWaveformSineModulated* fm;
+  AudioEffectFade* fade;
+  AudioMixer4* mix;
 };
 
-void SYNTH_PLAYER_SETUP(synth_t* allSynth_ptr);
-void synth_player(llist_t* blobs_ptr, synth_t* allSynth_ptr);
+void SYNTH_PLAYER_SETUP(void);
+void synth_player(llist_t* blobs_ptr);
 
 #endif /*__PLAYER_SYNTH_H__*/

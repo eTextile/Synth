@@ -68,14 +68,15 @@ boolean toggle(llist_t* llist_ptr, tSwitch_t* switch_ptr) {
   };
 };
 
+#if HARDWARE_MIDI || SYNTH_PLAYER
 // Pre-compute key min & max coordinates
 void GRID_LAYOUT_SETUP() {
   Serial.printf("\nKEY_SIZE_X:%d \tKEY_SIZE_Y:%d", KEY_SIZE_X, KEY_SIZE_Y);
   for (int row = 0; row < GRID_ROWS; row++) {
     for (int col = 0; col < GRID_COLS; col++) {
       uint8_t index = row * GRID_COLS + col;
-      //keyPos[index].val = index;
-      keyPos[index].val = (int8_t)harmonicKeyboard[index];
+      keyPos[index].val = index;
+      //keyPos[index].val = (int8_t)harmonicKeyboard[index];
       keyPos[index].Xmin = col * KEY_SIZE_X + ((col + 1) * GRID_GAP);
       keyPos[index].Xmax = keyPos[index].Xmin + KEY_SIZE_X;
       keyPos[index].Ymin = row * KEY_SIZE_Y + ((row + 1) * GRID_GAP);
@@ -89,15 +90,17 @@ void GRID_LAYOUT_SETUP() {
     };
   };
 };
+#endif
 
-// Compute the grid index location acording to the blobs XY (centroid) coordinates
-// Play corresponding midi **note** or **freq**
-void gridPlay(llist_t* llist_ptr) {
+/*
+  // Compute the grid index location acording to the blobs XY (centroid) coordinates
+  // Play corresponding midi **note** or **freq**
+  void gridPlay(llist_t* llist_ptr) {
   for (blob_t* blob_ptr = (blob_t*)ITERATOR_START_FROM_HEAD(llist_ptr); blob_ptr != NULL; blob_ptr = (blob_t*)ITERATOR_NEXT(blob_ptr)) {
-    if (blob_ptr->UID < MAX_SYNTH) {                                       // Test if the blob UID is less than MAX_SYNTH
-      uint8_t keyPosY = round((blob_ptr->centroid.Y / Y_MAX) * GRID_ROWS); // Compute Y window position
-      uint8_t keyPosX = round((blob_ptr->centroid.X / X_MAX) * GRID_COLS); // Compute X window position
-      uint8_t index = keyPosY * GRID_COLS + keyPosX;                       // Compute 1D key index position
+    if (blob_ptr->UID < MAX_SYNTH) {                                          // Test if the blob UID is less than MAX_SYNTH
+      int keyPosX = round((blob_ptr->centroid.X / (float)X_MAX) * GRID_COLS); // Compute X window position
+      int keyPosY = round((blob_ptr->centroid.Y / (float)Y_MAX) * GRID_ROWS); // Compute Y window position
+      uint8_t index = keyPosY * GRID_COLS + keyPosX;                          // Compute 1D key index position
       squareKey_t* keyPress_ptr = &keyPos[index];
       // Test if the blob is within the key limits
       if (blob_ptr->centroid.X > keyPress_ptr->Xmin && blob_ptr->centroid.X < keyPress_ptr->Xmax &&
@@ -105,22 +108,68 @@ void gridPlay(llist_t* llist_ptr) {
         //Serial.printf("\nGRID\tBLOB:%d\tLAST_STATE:%d\tSTATE:%d\tKEY:%d", blob_ptr->UID, blob_ptr->lastState, blob_ptr->state, keyPress_ptr->val);
         if (keyPress_ptr != lastKeyPress_ptr[blob_ptr->UID]) {
           if (lastKeyPress_ptr[blob_ptr->UID] != NULL) {
+  #if HARDWARE_MIDI
             MIDI.sendNoteOff(lastKeyPress_ptr[blob_ptr->UID]->val, 0, 1);     // Send NoteOFF (CHANNEL_1)
-            //Serial.printf("\nGRID\tBLOB:%d\t\tKEYDOWN_SLIDE:%d", blob_ptr->UID, (uint8_t)keyPress_ptr->val);
+  #endif
+  #if DEBUG_MAPPING
+            Serial.printf("\nGRID\tBLOB:%d\t\tKEYUP:%d", blob_ptr->UID, (uint8_t)keyPress_ptr->val);
+  #endif
           };
-#if HARDWARE_MIDI
+  #if HARDWARE_MIDI
           MIDI.sendNoteOn(keyPress_ptr->val, 127, 1);                       // Send NoteON (CHANNEL_1)
-          //Serial.printf("\nGRID\tBLOB:%d\t\tKEYDOWN:%d", blob_ptr->UID, (uint8_t)keyPress_ptr->val);
-#endif
+  #endif
+  #if DEBUG_MAPPING
+          Serial.printf("\nGRID\tBLOB:%d\t\tKEYDOWN:%d", blob_ptr->UID, (uint8_t)keyPress_ptr->val);
+  #endif
           lastKeyPress_ptr[blob_ptr->UID] = keyPress_ptr;                   // Save current keyPress_ptr
         };
       };
       if (!blob_ptr->state && lastKeyPress_ptr[blob_ptr->UID] != NULL) {
-#if HARDWARE_MIDI
+  #if HARDWARE_MIDI
         //MIDI.sendNoteOff(lastKeyPress_ptr[blob_ptr->UID]->val, 0, 1);       // Send NoteOFF (CHANNEL_1)
-        //Serial.printf("\nGRID\tBLOB:%d\tKEYUP:%d", blob_ptr->UID, (uint8_t)lastKeyPress_ptr[blob_ptr->UID]->val); //BUG!?
-#endif
+  #endif
+  #if DEBUG_MAPPING
+        Serial.printf("\nGRID\tBLOB:%d\tKEYUP:%d", blob_ptr->UID, (uint8_t)lastKeyPress_ptr[blob_ptr->UID]->val);
+  #endif
         lastKeyPress_ptr[blob_ptr->UID] = NULL;
+      };
+    };
+  };
+  };
+*/
+
+
+// Compute the grid index location acording to the blobs XY (centroid) coordinates
+// Play corresponding midi **note** or **freq**
+void gridPlay(llist_t* llist_ptr) {
+  for (blob_t* blob_ptr = (blob_t*)ITERATOR_START_FROM_HEAD(llist_ptr); blob_ptr != NULL; blob_ptr = (blob_t*)ITERATOR_NEXT(blob_ptr)) {
+    if (blob_ptr->UID < MAX_SYNTH) {                                          // Test if the blob UID is less than MAX_SYNTH
+      int keyPosX = round((blob_ptr->centroid.X / (float)X_MAX) * GRID_COLS); // Compute X window position
+      int keyPosY = round((blob_ptr->centroid.Y / (float)Y_MAX) * GRID_ROWS); // Compute Y window position
+      int index = (keyPosY * GRID_COLS) + keyPosX;                            // Compute 1D key index position
+      //Serial.printf("\nGRID\tBLOB:%d\tSTATE:%d\tLAST_STATE:%d\tKEY:%d", blob_ptr->UID, blob_ptr->state, blob_ptr->lastState, index);
+      squareKey_t* keyPress_ptr = &keyPos[index];
+      // Test if the blob is within the key limits
+      if (blob_ptr->centroid.X > keyPress_ptr->Xmin && blob_ptr->centroid.X < keyPress_ptr->Xmax &&
+          blob_ptr->centroid.Y > keyPress_ptr->Ymin && blob_ptr->centroid.Y < keyPress_ptr->Ymax) {
+        if (blob_ptr->state) {
+          if (!blob_ptr->lastState) {
+#if HARDWARE_MIDI
+            MIDI.sendNoteOn(keyPress_ptr->val, 127, 1);                   // Send NoteON (CHANNEL_1)
+#endif
+#if DEBUG_MAPPING
+            Serial.printf("\nGRID\tBLOB:%d\t\tKEYDOWN:%d", blob_ptr->UID, (uint8_t)keyPress_ptr->val);
+#endif
+          };
+        }
+        else {
+#if HARDWARE_MIDI
+          MIDI.sendNoteOff(lastKeyPress_ptr[blob_ptr->UID]->val, 0, 1);  // Send NoteOFF (CHANNEL_1)
+#endif
+#if DEBUG_MAPPING
+          Serial.printf("\nGRID\tBLOB:%d\t\tKEYUP:%d", blob_ptr->UID, (uint8_t)keyPress_ptr->val);
+#endif
+        };
       };
     };
   };

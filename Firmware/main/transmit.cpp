@@ -27,8 +27,8 @@ void usb_slipOsc(llist_t* llist_ptr) {
     OSCMessage msg("/b");
     msg.add(blob_ptr->UID);
     msg.add(blob_ptr->state);
-    msg.add(blob_ptr->centroid.X);
-    msg.add(blob_ptr->centroid.Y);
+    msg.add((float)blob_ptr->centroid.X);
+    msg.add((float)blob_ptr->centroid.Y);
     msg.add(blob_ptr->box.W);
     msg.add(blob_ptr->box.H);
     msg.add(blob_ptr->box.D);
@@ -96,28 +96,30 @@ void USB_MIDI_SETUP(void) {
 // Send only the last blob that have been added to the sensor surface
 // Separate blob's values according to the encoder position to allow the mapping into Max4Live
 void usb_midi_learn(llist_t* llist_ptr, preset_t* preset_ptr) {
-  blob_t* lastBlob_ptr = (blob_t*)llist_ptr->tail_ptr;
-  switch (preset_ptr->val) {
-    case BS:
-      usbMIDI.sendControlChange(BS, lastBlob_ptr->state, lastBlob_ptr->UID + 1);
-      break;
-    case BX:
-      usbMIDI.sendControlChange(BX, (uint8_t)round(map(lastBlob_ptr->centroid.X, 0.0, 59.0, 0, 127)), lastBlob_ptr->UID + 1);
-      break;
-    case BY:
-      usbMIDI.sendControlChange(BY, (uint8_t)round(map(lastBlob_ptr->centroid.Y, 0.0, 59.0, 0, 127)), lastBlob_ptr->UID + 1);
-      break;
-    case BW:
-      usbMIDI.sendControlChange(BW, lastBlob_ptr->box.W, lastBlob_ptr->UID + 1);
-      break;
-    case BH:
-      usbMIDI.sendControlChange(BH, lastBlob_ptr->box.H, lastBlob_ptr->UID + 1);
-      break;
-    case BD:
-      usbMIDI.sendControlChange(BD, constrain(lastBlob_ptr->box.D, 0, 127), lastBlob_ptr->UID + 1);
-      break;
+  if (llist_ptr->tail_ptr != NULL) {
+    blob_t* tailBlob_ptr = (blob_t*)llist_ptr->tail_ptr;
+    switch (preset_ptr->val) {
+      case BS:
+        usbMIDI.sendControlChange(BS, tailBlob_ptr->state, tailBlob_ptr->UID + 1);
+        break;
+      case BX:
+        usbMIDI.sendControlChange(BX, (uint8_t)round(map(tailBlob_ptr->centroid.X, 0.0, 59.0, 0, 127)), tailBlob_ptr->UID + 1);
+        break;
+      case BY:
+        usbMIDI.sendControlChange(BY, (uint8_t)round(map(tailBlob_ptr->centroid.Y, 0.0, 59.0, 0, 127)), tailBlob_ptr->UID + 1);
+        break;
+      case BW:
+        usbMIDI.sendControlChange(BW, tailBlob_ptr->box.W, tailBlob_ptr->UID + 1);
+        break;
+      case BH:
+        usbMIDI.sendControlChange(BH, tailBlob_ptr->box.H, tailBlob_ptr->UID + 1);
+        break;
+      case BD:
+        usbMIDI.sendControlChange(BD, constrain(tailBlob_ptr->box.D, 0, 127), tailBlob_ptr->UID + 1);
+        break;
+    }
+    while (usbMIDI.read()); // Read and discard any incoming MIDI messages
   }
-  while (usbMIDI.read()); // Read and discard any incoming MIDI messages
 }
 
 // Send all blobs values using ControlChange MIDI format
@@ -132,6 +134,7 @@ void usb_midi_play(llist_t* llist_ptr) {
   }
   while (usbMIDI.read()); // Read and discard any incoming MIDI messages
 }
+
 #endif
 
 // ccPesets_ptr -> ARGS[blobID, [BX,BY,BW,BH,BD], cChange, midiChannel, Val]

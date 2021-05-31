@@ -5,122 +5,33 @@
   This work is licensed under Creative Commons Attribution-ShareAlike 4.0 International license, see the LICENSE file for details.
 */
 
-#include <Audio.h>         // https://github.com/PaulStoffregen/Audio
-#include <Wire.h>          // https://github.com/PaulStoffregen/Wire
-#include <SPI.h>           // https://github.com/PaulStoffregen/SPI
-#include <SD.h>            // https://github.com/PaulStoffregen/SD
-#include <SerialFlash.h>   // https://github.com/PaulStoffregen/SerialFlash
-#include <MIDI.h>          // http://www.pjrc.com/teensy/td_midi.html
-
 #include "config.h"
 #include "presets.h"
 #include "scan.h"
 #include "interp.h"
 #include "blob.h"
 #include "median.h"
+#include "notes.h"
 #include "mapping.h"
+#include "soundCard.h"
 #include "transmit.h"
 
-#include "soundCard.h"
-#include "notes.h"
+#if FLASH_PLAYER
 #include "player_flash.h"
+#endif
+#if SYNTH_PLAYER
 #include "player_synth.h"
+#endif
+#if GRANULAR_PLAYER
 #include "player_granular.h"
+#endif
 
-uint8_t interpThreshold = 10;
+uint8_t interpThreshold = 5;
 
 image_t  rawFrame;         // Input frame values
 image_t  interpFrame;      // Interpolated frame values
 llist_t  blobs;            // Output blobs linked list
 llist_t  midiIn;           // MidiIn linked list
-
-AudioInputI2S                     i2s_IN;
-AudioOutputI2S                    i2s_OUT;
-
-#if FLASH_PLAYER
-AudioPlaySerialflashRaw           playFlashRaw;
-#endif
-
-#if SYNTH_PLAYER
-AudioSynthWaveform                wf_1;
-AudioSynthWaveform                wf_2;
-AudioSynthWaveform                wf_3;
-AudioSynthWaveform                wf_4;
-AudioSynthWaveform                wf_5;
-AudioSynthWaveform                wf_6;
-AudioSynthWaveform                wf_7;
-AudioSynthWaveform                wf_8;
-AudioSynthWaveformSineModulated   fm_1;
-AudioSynthWaveformSineModulated   fm_2;
-AudioSynthWaveformSineModulated   fm_3;
-AudioSynthWaveformSineModulated   fm_4;
-AudioSynthWaveformSineModulated   fm_5;
-AudioSynthWaveformSineModulated   fm_6;
-AudioSynthWaveformSineModulated   fm_7;
-AudioSynthWaveformSineModulated   fm_8;
-AudioEffectFade                   fade_1;
-AudioEffectFade                   fade_2;
-AudioEffectFade                   fade_3;
-AudioEffectFade                   fade_4;
-AudioEffectFade                   fade_5;
-AudioEffectFade                   fade_6;
-AudioEffectFade                   fade_7;
-AudioEffectFade                   fade_8;
-AudioMixer4                       mix_1;
-AudioMixer4                       mix_2;
-AudioMixer4                       mix_3;
-
-AudioConnection                   patchCord1(wf_1, fm_1);
-AudioConnection                   patchCord2(wf_2, fm_2);
-AudioConnection                   patchCord3(wf_3, fm_3);
-AudioConnection                   patchCord4(wf_4, fm_4);
-AudioConnection                   patchCord5(wf_5, fm_5);
-AudioConnection                   patchCord6(wf_6, fm_6);
-AudioConnection                   patchCord7(wf_7, fm_7);
-AudioConnection                   patchCord8(wf_8, fm_8);
-AudioConnection                   patchCord9(fm_1, fade_1);
-AudioConnection                   patchCord10(fm_2, fade_2);
-AudioConnection                   patchCord11(fm_3, fade_3);
-AudioConnection                   patchCord12(fm_4, fade_4);
-AudioConnection                   patchCord13(fm_5, fade_5);
-AudioConnection                   patchCord14(fm_6, fade_6);
-AudioConnection                   patchCord15(fm_7, fade_7);
-AudioConnection                   patchCord16(fm_8, fade_8);
-AudioConnection                   patchCord17(fade_1, 0, mix_1, 0);
-AudioConnection                   patchCord18(fade_2, 0, mix_1, 1);
-AudioConnection                   patchCord19(fade_3, 0, mix_1, 2);
-AudioConnection                   patchCord20(fade_4, 0, mix_1, 3);
-AudioConnection                   patchCord21(fade_5, 0, mix_2, 0);
-AudioConnection                   patchCord22(fade_6, 0, mix_2, 1);
-AudioConnection                   patchCord23(fade_7, 0, mix_2, 2);
-AudioConnection                   patchCord24(fade_8, 0, mix_2, 3);
-
-AudioConnection                   patchCord25(mix_1, 0, mix_3, 0);
-AudioConnection                   patchCord26(mix_2, 0, mix_3, 1);
-#if FLASH_PLAYER
-AudioConnection                   patchCord27(playFlashRaw, 0, mix_3, 2);
-#endif
-AudioConnection                   patchCord28(mix_3, 0, i2s_OUT, 0);
-AudioConnection                   patchCord29(mix_3, 0, i2s_OUT, 1);
-
-#if GRANULAR_PLAYER
-AudioEffectGranular               granular;
-AudioConnection                   patchCord1(i2s_IN, 0, granular, 0);
-AudioConnection                   patchCord2(granular, 0, i2s_OUT, 0);
-AudioConnection                   patchCord3(granular, 0, i2s_OUT, 1);
-#endif
-
-synth_t allSynth[MAX_SYNTH] = {
-  {&wf_1, &fm_1, &fade_1, &mix_1},
-  {&wf_2, &fm_2, &fade_2, &mix_1},
-  {&wf_3, &fm_3, &fade_3, &mix_1},
-  {&wf_4, &fm_4, &fade_4, &mix_1},
-  {&wf_5, &fm_5, &fade_5, &mix_2},
-  {&wf_6, &fm_6, &fade_6, &mix_2},
-  {&wf_7, &fm_7, &fade_7, &mix_2},
-  {&wf_8, &fm_8, &fade_8, &mix_2}
-};
-#endif
 
 presetMode_t lastMode = LINE_OUT;       // Init lastMode with LINE_OUT (DEFAULT_MODE)
 presetMode_t currentMode = CALIBRATE;   // Init currentMode with CALIBRATE (DEFAULT_MODE)
@@ -134,14 +45,14 @@ unsigned int fps = 0;
 elapsedMillis debugTimer;
 #endif
 
-boolean loadPreset = true;
-boolean savePreset = false;
+//boolean loadPreset = true;
+//boolean savePreset = false;
 
 preset_t presets[7] = {
   {13, 31, 29, 0, false, false, false, LOW,  LOW },  // LINE_OUT   - ARGS[minVal, maxVal, val, ledVal, setLed, updateLed, update, D1, D2]
   { 1, 50, 12, 0, false, false, false, HIGH, LOW },  // SIG_IN     - ARGS[minVal, maxVal, val, ledVal, setLed, updateLed, update, D1, D2]
   { 1, 31, 17, 0, false, false, false, LOW,  HIGH},  // SIG_OUT    - ARGS[minVal, maxVal, val, ledVal, setLed, updateLed, update, D1, D2]
-  { 15, 60, 20, 0, false, false, false, HIGH, HIGH}, // THRESHOLD  - ARGS[minVal, maxVal, val, ledVal, setLed, updateLed, update, D1, D2]
+  { 5, 30, 10, 0, false, false, false, HIGH, HIGH},  // THRESHOLD  - ARGS[minVal, maxVal, val, ledVal, setLed, updateLed, update, D1, D2]
   { 1, 6,  1,  0, false, false, false, NULL, NULL},  // MIDI_LEARN - ARGS[minVal, maxVal, val, ledVal, setLed, updateLed, update, D1, D2]
   { 0, 0,  0,  0, true,  true,  false, NULL, NULL},  // CALIBRATE  - ARGS[minVal, maxVal, val, ledVal, setLed, updateLed, update, D1, D2]
   { 0, 0,  0,  0, false, false, false, NULL, NULL}   // SAVE       - ARGS[minVal, maxVal, val, ledVal, setLed, updateLed, update, D1, D2]
@@ -160,7 +71,7 @@ cSlider_t cSlidersParam[C_SLIDERS] = {
 ccPesets_t ccParam = {NULL, BD, 44, 1, 0};          // ARGS[blobID, [BX,BY,BW,BH,BD], cChange, midiChannel, Val]
 
 void setup() {
-#if DEBUG_ADC || DEBUG_INTERP || DEBUG_SFF_BITMADEBUG_SFF_BITMAPP || DEBUG_BLOBS || DEBUG_FPS || DEBUG_ENCODER || DEBUG_BUTTONS || DEBUG_MAPPING
+#if DEBUG_ADC || DEBUG_INTERP || DEBUG_BITMAP || DEBUG_BLOBS || DEBUG_FPS || DEBUG_ENCODER || DEBUG_BUTTONS || DEBUG_MAPPING
   Serial.begin(BAUD_RATE); // Start Serial communication using 230400 baud
   while (!Serial);
   Serial.printf("\n%s_%s", NAME, VERSION);
@@ -185,15 +96,17 @@ void setup() {
   SOUND_CARD_SETUP();
 #endif
 #if SYNTH_PLAYER
-  SYNTH_PLAYER_SETUP(&allSynth[0]);
+  SYNTH_PLAYER_SETUP();
 #endif
 #if FLASH_PLAYER
   FLASH_PLAYER_SETUP();
 #endif
 #if GRANULAR_PLAYER
-  GRANULAR_PLAYER_SETUP(&granular);
+  GRANULAR_PLAYER_SETUP();
 #endif
+#if HARDWARE_MIDI || SYNTH_PLAYER
   GRID_LAYOUT_SETUP();
+#endif
 };
 
 //////////////////// LOOP
@@ -232,8 +145,8 @@ void loop() {
   };
 #endif
 
-  gridPlay(&blobs);
-  
+  //gridPlay(&blobs);
+
   //controlChange(&blobs, &ccParam);
   //boolean toggSwitch = toggle(&blobs, &toggParam);
   //boolean trigSwitch = trigger(&blobs, &trigParam);
@@ -242,13 +155,13 @@ void loop() {
   //cSlider(&blobs, &polarCoord[0], &cSlidersParam[0]);
 
 #if SYNTH_PLAYER
-  synth_player(&blobs, &allSynth[0]);
+  synth_player(&blobs);
 #endif
 #if GRANULAR_PLAYER
-  granular_player(&blobs, &granular);
+  granular_player(&blobs);
 #endif
 #if FLASH_PLAYER
-  flash_player(&blobs, &playFlashRaw);
+  flash_player(&blobs);
 #endif
 
 #if DEBUG_FPS

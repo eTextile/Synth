@@ -9,6 +9,10 @@
 
 #include <Audio.h>         // https://github.com/PaulStoffregen/Audio
 #include <Wire.h>          // https://github.com/PaulStoffregen/Wire
+#include <SPI.h>           // https://github.com/PaulStoffregen/SPI
+#include <SD.h>            // https://github.com/PaulStoffregen/SD
+#include <SerialFlash.h>   // https://github.com/PaulStoffregen/SerialFlash
+
 #include "config.h"
 #include "llist.h"
 #include "blob.h"
@@ -17,7 +21,7 @@ typedef struct lnode lnode_t;   // Forward declaration
 typedef struct llist llist_t;   // Forward declaration
 typedef struct blob blob_t;     // Forward declaration
 
-void GRANULAR_PLAYER_SETUP(AudioEffectGranular* granular_ptr);
-void granular_player(llist_t* llist_ptr, AudioEffectGranular* granular_ptr);
+void GRANULAR_PLAYER_SETUP(void);
+void granular_player(llist_t* llist_ptr);
 
 #endif /*__PLAYER_GRANULAR_H__*/

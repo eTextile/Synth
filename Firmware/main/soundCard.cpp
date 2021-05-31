@@ -25,7 +25,8 @@ void update_volumes(presetMode_t curentMode, preset_t* presets_ptr) {
         // LOWEST level is 31 (1.16 Volts p-p)
         // HIGHEST level is 13 (3.16 Volts p-p)
         AudioNoInterrupts();
-        sgtl5000.dacVolume(presets_ptr[LINE_OUT].val);
+        //sgtl5000.dacVolume(presets_ptr[LINE_OUT].val);
+        //sgtl5000.volume(presets_ptr[LINE_OUT].val); // DO NOT WORK!?
         AudioInterrupts();
         break;
       case SIG_IN:

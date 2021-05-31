@@ -225,17 +225,7 @@ void find_blobs(uint8_t zThreshold, image_t* inputFrame_ptr, llist_t* outputBlob
           blob->box.W = (blob_x2 - blob_x1);
           blob->box.H = blob_height;
           blob->box.D = blob_depth - zThreshold; // NEED TO ADD A LIMIT?
-          /*
-            Serial.printf("\nDEBUG_SFF / blob_X:%f \tblob_Y:%f \tblob_W:%d \tblob_H:%d \tblob_D:%d",
-                        blob->centroid.X,
-                        blob->centroid.Y,
-                        blob->box.W,
-                        blob->box.H,
-                        blob->box.D
-                       );
-          */
           llist_push_front(&llist_blobs, blob);
-          //Serial.printf("\n DEBUG_SFF / Blob: %p added to the **blobs** linked list", (lnode_t*)blob);
         }
         posX = oldX;
         posY = oldY;
