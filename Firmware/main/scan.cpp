@@ -123,7 +123,7 @@ void calibrate_matrix(
           digitalWrite(SS1_PIN, HIGH);                        // Set the Slave Select Pin HIGH
           uint8_t indexA = row * RAW_COLS + col;              // Compute 1D array indexA
           uint8_t indexB = indexA + DUAL_COLS;                // Compute 1D array indexB
-          
+
           //delayMicroseconds(10);
           pinMode(ADC0_PIN, OUTPUT);
           pinMode(ADC1_PIN, OUTPUT);
@@ -131,7 +131,7 @@ void calibrate_matrix(
           digitalWrite(ADC1_PIN, LOW);                        // Set the Slave Select Pin LOW
           pinMode(ADC0_PIN, INPUT);
           pinMode(ADC1_PIN, INPUT);
-          
+
           result = adc->analogSynchronizedRead(ADC0_PIN, ADC1_PIN);
           uint8_t ADC0_val = result.result_adc0;
           if (ADC0_val > offsetArray[indexA]) offsetArray[indexA] = ADC0_val;
@@ -179,7 +179,7 @@ void scan_matrix(void) {
       digitalWrite(SS1_PIN, HIGH);                        // Set the Slave Select Pin HIGH
       uint8_t indexA = row * RAW_COLS + cols;             // Compute 1D array indexA
       uint8_t indexB = indexA + DUAL_COLS;                // Compute 1D array indexB
-      
+
       //delayMicroseconds(10);
       pinMode(ADC0_PIN, OUTPUT);
       pinMode(ADC1_PIN, OUTPUT);
@@ -200,15 +200,16 @@ void scan_matrix(void) {
 #endif
     };
   };
-};
 
-void print_adc(image_t* image_ptr) {
+#if DEBUG_ADC
   for (uint8_t posY = 0; posY < RAW_ROWS; posY++) {
-    uint8_t* row_ptr = COMPUTE_IMAGE_ROW_PTR(image_ptr, posY);
+    uint8_t* row_ptr = COMPUTE_IMAGE_ROW_PTR(&rawFrameArray[0], posY);
     for (uint8_t posX = 0; posX < RAW_COLS; posX++) {
       Serial.printf("\t%d", IMAGE_GET_PIXEL_FAST(row_ptr, posX));
     };
     Serial.printf("\n");
   };
   Serial.printf("\n");
+#endif
+
 };

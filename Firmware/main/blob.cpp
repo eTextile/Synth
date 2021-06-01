@@ -19,6 +19,9 @@
 #define MIN_BLOB_PIX        5             // Set the minimum blob pixels
 #define DEBOUNCE_TIME       20            // Avioding undesired bouncing effect when taping on the sensor
 
+#define CENTER_X            (NEW_COLS / 2)
+#define CENTER_Y            (NEW_ROWS / 2)
+
 uint8_t bitmapFrame[NEW_FRAME] = {0};     // 1D Array to store (64*64) binary values
 xylr_t lifoArray[LIFO_NODES] = {0};       // 1D Array to store lifo nodes
 blob_t blobArray[MAX_BLOBS] = {0};        // 1D Array to store blobs
@@ -338,6 +341,32 @@ void find_blobs(uint8_t zThreshold, image_t* inputFrame_ptr, llist_t* outputBlob
 
   llist_swap_llist(outputBlobs_ptr, &llist_blobs);     // Swap inputBlobs with outputBlobs linked list
   llist_save_nodes(&llist_blobs_stack, &llist_blobs);  // Rescure all dead blobs Linked list nodes
+
+#if DEBUG_BLOBS
+  for (blob_t* blob = (blob_t*)ITERATOR_START_FROM_HEAD(outputBlobs_ptr); blob != NULL; blob = (blob_t*)ITERATOR_NEXT(blob)) {
+    Serial.printf("\nDEBUG_FIND_BLOBS:%d\tLS:%d\tS:%d\tX:%f\tY:%f\tW:%d\tH:%d\tD:%d\t",
+                  blob->UID,
+                  blob->lastState,
+                  blob->state,
+                  blob->centroid.X,
+                  blob->centroid.Y,
+                  blob->box.W,
+                  blob->box.H,
+                  blob->box.D
+                 );
+  }
+#endif
+
+#if DEBUG_BITMAP
+  for (uint8_t posY = 0; posY < NEW_ROWS; posY++) {
+    uint8_t* row_ptr = COMPUTE_BINARY_IMAGE_ROW_PTR(&bitmapFrame[0], posY);
+    for (uint8_t posX = 0; posX < NEW_COLS; posX++) {
+      IMAGE_GET_BINARY_PIXEL_FAST(row_ptr, posX) == 0 ? Serial.printf(".") : Serial.printf("o");
+    }
+    Serial.printf("\n");
+  }
+  Serial.printf("\n");
+#endif
 }
 
 void getBlobsVelocity(llist_t* blobs_ptr) {
@@ -347,11 +376,11 @@ void getBlobsVelocity(llist_t* blobs_ptr) {
       float vy = blob_ptr->centroid.Y - blobVelocity[blob_ptr->UID].lastPos.Y;
 
       blobVelocity[blob_ptr->UID].vxy = sqrt(vx * vx + vy * vy); //pow(vx, 2) + pow(vy, 2)
-      blobVelocity[blob_ptr->UID].vz = blob_ptr->box.D - blobVelocity[blob_ptr->UID].lastVz;
+      blobVelocity[blob_ptr->UID].vz = blob_ptr->box.D - blobVelocity[blob_ptr->UID].lvz;
 
       blobVelocity[blob_ptr->UID].lastPos.X = blob_ptr->centroid.X;
       blobVelocity[blob_ptr->UID].lastPos.Y = blob_ptr->centroid.Y;
-      blobVelocity[blob_ptr->UID].lastVz = blob_ptr->box.D;
+      blobVelocity[blob_ptr->UID].lvz = blob_ptr->box.D;
 
 #if DEBUG_MAPPING
       Serial.printf("\nDEBUG_VELOCITY:\tvxy:%f\tvz:%f",
@@ -390,33 +419,3 @@ void getPolarCoordinates(llist_t* blobs_ptr) {
 #endif
   }
 }
-
-#if DEBUG_BITMAP
-void print_bitmap(void) {
-  for (uint8_t posY = 0; posY < NEW_ROWS; posY++) {
-    uint8_t* row_ptr = COMPUTE_BINARY_IMAGE_ROW_PTR(&bitmapFrame[0], posY);
-    for (uint8_t posX = 0; posX < NEW_COLS; posX++) {
-      IMAGE_GET_BINARY_PIXEL_FAST(row_ptr, posX) == 0 ? Serial.printf(".") : Serial.printf("o");
-    }
-    Serial.printf("\n");
-  }
-  Serial.printf("\n");
-}
-#endif
-
-#if DEBUG_BLOBS
-void print_blobs(llist_t* llist_ptr) {
-  for (blob_t* blob = (blob_t*)ITERATOR_START_FROM_HEAD(llist_ptr); blob != NULL; blob = (blob_t*)ITERATOR_NEXT(blob)) {
-    Serial.printf("\nDEBUG_FIND_BLOBS:%d\tLS:%d\tS:%d\tX:%f\tY:%f\tW:%d\tH:%d\tD:%d\t",
-                  blob->UID,
-                  blob->lastState,
-                  blob->state,
-                  blob->centroid.X,
-                  blob->centroid.Y,
-                  blob->box.W,
-                  blob->box.H,
-                  blob->box.D
-                 );
-  }
-}
-#endif

@@ -112,11 +112,13 @@ void setup() {
 void loop() {
   //if (loadPreset) preset_load(&presets[0], &loadPreset); // TODO
   //if (savePreset) preset_save(&presets[0], &savePreset); // TODO
+  
   update_buttons(&lastMode, &currentMode, &presets[0]);
   update_presets(currentMode, &presets[0]);
   update_volumes(currentMode, &presets[0]);
   update_leds(currentMode, &presets[0]);
   calibrate_matrix(&lastMode, &currentMode, &presets[0]);
+  
   scan_matrix();
   interp_matrix(&rawFrame, &interpFrame, interpThreshold);
   find_blobs(presets[THRESHOLD].val, &interpFrame, &blobs);
@@ -145,7 +147,6 @@ void loop() {
 #endif
 
   //gridPlay(&blobs);
-
   //controlChange(&blobs, &ccParam);
   //boolean toggSwitch = toggle(&blobs, &toggParam);
   //boolean trigSwitch = trigger(&blobs, &trigParam);
@@ -174,25 +175,4 @@ void loop() {
   fps++;
 #endif
 
-#if DEBUG_ADC
-  if (debugTimer >= 1000) {
-    debugTimer = 0;
-    print_adc(&rawFrame);
-  };
-#endif
-#if DEBUG_INTERP
-  if (debugTimer >= 500) {
-    debugTimer = 0;
-    print_interp(&interpFrame);
-  };
-#endif
-#if DEBUG_BITMAP
-  if (debugTimer >= 100) {
-    debugTimer = 0;
-    print_bitmap();
-  };
-#endif
-#if DEBUG_BLOBS
-  print_blobs(&blobs);
-#endif
 };

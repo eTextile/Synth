@@ -148,8 +148,8 @@ typedef struct velocity velocity_t;
 struct velocity {
   point_t lastPos;
   float vxy;
-  float lastVz;
   float vz;
+  float lvz;
 };
 
 void getBlobsVelocity(llist_t* blobs_ptr);
@@ -161,8 +161,5 @@ struct polar {
 };
 
 void getPolarCoordinates(llist_t* blobs_ptr);
-
-void print_bitmap(void);
-void print_blobs(llist_t* llist_ptr);
 
 #endif /*__BLOB_H__*/

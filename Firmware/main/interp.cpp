@@ -78,9 +78,8 @@ void interp_matrix(image_t* inputFrame_ptr, image_t* outputFrame_ptr, uint8_t in
       };
     };
   };
-};
 
-void print_interp(image_t* frame_ptr) {
+#if DEBUG_INTERP
   for (uint8_t posY = 0; posY < NEW_ROWS; posY++) {
     uint8_t* row_ptr = COMPUTE_IMAGE_ROW_PTR(frame_ptr, posY);
     for (int posX = 0; posX < NEW_COLS; posX++) {
@@ -89,4 +88,6 @@ void print_interp(image_t* frame_ptr) {
     Serial.printf("\n");
   };
   Serial.printf("\n\n");
+#endif
+
 };

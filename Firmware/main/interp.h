@@ -30,6 +30,5 @@ struct interp {
 
 void INTERP_SETUP(image_t* outputFrame);
 void interp_matrix(image_t* inputFrame_ptr, image_t* outputFrame_ptr, uint8_t interpThreshold);
-void print_interp(image_t* frame_ptr);
 
 #endif /*__INTERP_H__*/
