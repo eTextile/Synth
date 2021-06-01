@@ -73,7 +73,7 @@ void update_buttons(preset_t* presets_ptr) {
   // FONCTION : SELECT_MODE
   if (BUTTON_R.rose() && BUTTON_R.previousDuration() < LONG_HOLD) {
     lastMode = currentMode;                // Save last Mode
-    currentMode = (currentMode + 1) % 4;    // Loop into the modes FIXME
+    currentMode = (currentMode + 1) % 4;   // Loop into the modes
     encoder.write(presets_ptr[currentMode].val << 2);
     presets_ptr[currentMode].setLed = true;
 #if DEBUG_BUTTONS

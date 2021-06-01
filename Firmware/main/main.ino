@@ -41,10 +41,6 @@ elapsedMillis curentMillisFps;
 unsigned int fps = 0;
 #endif
 
-#if DEBUG_ADC || DEBUG_BITMAP || DEBUG_INTERP
-elapsedMillis debugTimer;
-#endif
-
 //boolean loadPreset = true;
 //boolean savePreset = false;
 
