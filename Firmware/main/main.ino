@@ -33,8 +33,8 @@ image_t  interpFrame;      // Interpolated frame values
 llist_t  blobs;            // Output blobs linked list
 llist_t  midiIn;           // MidiIn linked list
 
-presetMode_t lastMode = LINE_OUT;       // Init lastMode with LINE_OUT (DEFAULT_MODE)
-presetMode_t currentMode = CALIBRATE;   // Init currentMode with CALIBRATE (DEFAULT_MODE)
+uint8_t currentMode = CALIBRATE;   // Init currentMode with CALIBRATE (DEFAULT_MODE)
+uint8_t lastMode = LINE_OUT;       // Init lastMode with LINE_OUT (DEFAULT_MODE)
 
 #if DEBUG_FPS
 elapsedMillis curentMillisFps;
@@ -112,13 +112,13 @@ void setup() {
 void loop() {
   //if (loadPreset) preset_load(&presets[0], &loadPreset); // TODO
   //if (savePreset) preset_save(&presets[0], &savePreset); // TODO
-  
-  update_buttons(&lastMode, &currentMode, &presets[0]);
-  update_presets(currentMode, &presets[0]);
-  update_volumes(currentMode, &presets[0]);
-  update_leds(currentMode, &presets[0]);
-  calibrate_matrix(&lastMode, &currentMode, &presets[0]);
-  
+
+  update_buttons(&presets[0]);
+  update_presets(&presets[0]);
+  update_volumes(&presets[0]);
+  update_leds(&presets[0]);
+  calibrate_matrix(&presets[0]);
+
   scan_matrix();
   interp_matrix(&rawFrame, &interpFrame, interpThreshold);
   find_blobs(presets[THRESHOLD].val, &interpFrame, &blobs);

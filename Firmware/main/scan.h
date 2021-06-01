@@ -17,16 +17,13 @@ typedef struct preset preset_t;     // Forward declaration
 #include <SPI.h>                    // https://github.com/PaulStoffregen/SPI
 #include <ADC.h>                    // https://github.com/pedvide/ADC
 
+extern uint8_t currentMode;
+extern uint8_t lastMode;
+
 void SPI_SETUP(void);
 void ADC_SETUP(void);
 void SCAN_SETUP(image_t* inputFrame_ptr);
-
-void calibrate_matrix(
-  presetMode_t* lastMode_ptr,
-  presetMode_t* curentMode_ptr,
-  preset_t* presets_ptr
-);
-
+void calibrate_matrix(preset_t* presets_ptr);
 void scan_matrix(void);
 void print_adc(image_t* frame_ptr);
 

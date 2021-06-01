@@ -90,11 +90,7 @@ void SCAN_SETUP(image_t* inputFrame_ptr) {
 
 // Columns are analog INPUT_PINS reded two by two
 // Rows are digital OUTPUT_PINS supplyed one by one sequentially with 3.3V
-void calibrate_matrix(
-  presetMode_t* lastMode_ptr,
-  presetMode_t* curentMode_ptr,
-  preset_t* presets_ptr
-) {
+void calibrate_matrix(preset_t* presets_ptr) {
 
   if (presets_ptr[CALIBRATE].update == true) {
     presets_ptr[CALIBRATE].update = false;
@@ -145,9 +141,9 @@ void calibrate_matrix(
         };
       };
     };
-    *curentMode_ptr = *lastMode_ptr;
-    *lastMode_ptr = CALIBRATE;
-    presets_ptr[*curentMode_ptr].setLed = true;
+    currentMode = lastMode;
+    lastMode = CALIBRATE;
+    presets_ptr[currentMode].setLed = true;
   };
 };
 
@@ -211,5 +207,4 @@ void scan_matrix(void) {
   };
   Serial.printf("\n");
 #endif
-
 };

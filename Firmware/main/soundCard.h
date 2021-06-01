@@ -10,17 +10,13 @@
 #include "config.h"
 #include "presets.h"
 
-#include <Audio.h>              // https://github.com/PaulStoffregen/Audio
-
-typedef struct preset preset_t; // Forward declaration
+#include <Audio.h>                    // https://github.com/PaulStoffregen/Audio
 
 extern AudioControlSGTL5000  sgtl5000;
 
-void SOUND_CARD_SETUP();
+typedef struct preset preset_t;       // Forward declaration
 
-void update_volumes(
-  presetMode_t curentMode,
-  preset_t* presets_ptr
-);
+void SOUND_CARD_SETUP(void);
+void update_volumes(preset_t* presets_ptr);
 
 #endif /*__SOUND_CARD_H__*/

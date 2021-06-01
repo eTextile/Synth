@@ -8,6 +8,9 @@
 
 AudioControlSGTL5000  sgtl5000;
 
+extern uint8_t currentMode;
+extern uint8_t lastMode;
+
 void SOUND_CARD_SETUP() {
   AudioMemory(100);
   sgtl5000.enable();
@@ -15,10 +18,10 @@ void SOUND_CARD_SETUP() {
   //sgtl5000.inputSelect(AUDIO_INPUT_MIC);
 }
 
-void update_volumes(presetMode_t curentMode, preset_t* presets_ptr) {
-  if (presets_ptr[curentMode].update) {
-    presets_ptr[curentMode].update = false;
-    switch (curentMode) {
+void update_volumes(preset_t* presets_ptr) {
+  if (presets_ptr[currentMode].update) {
+    presets_ptr[currentMode].update = false;
+    switch (currentMode) {
       case LINE_OUT:
         // FONCTION : line_out level adjustment using rotary encoder // DEFAULT MODE
         // According to https://github.com/PaulStoffregen/Audio/blob/master/control_sgtl5000.cpp
@@ -50,7 +53,7 @@ void update_volumes(presetMode_t curentMode, preset_t* presets_ptr) {
         break;
     };
 #if DEBUG_ENCODER
-    Serial.printf("\nSIG_IN : %d", presets_ptr[curentMode].val);
+    Serial.printf("\nSIG_IN : %d", presets_ptr[currentMode].val);
 #endif
   };
 };

@@ -10,24 +10,24 @@
 #include "config.h"
 #include "interp.h"
 
-#include <Bounce2.h>                                    // https://github.com/thomasfredericks/Bounce2
+#include <Bounce2.h>                   // https://github.com/thomasfredericks/Bounce2
 #define ENCODER_OPTIMIZE_INTERRUPTS
-#include <Encoder.h>                                    // https://github.com/PaulStoffregen/Encoder
-//#include <EEPROM.h>                                   // https://www.arduino.cc/en/Reference/EEPROM (TODO)
-#include <elapsedMillis.h>                              // https://github.com/pfeerick/elapsedMillis
+#include <Encoder.h>                   // https://github.com/PaulStoffregen/Encoder
+//#include <EEPROM.h>                  // https://www.arduino.cc/en/Reference/EEPROM (TODO)
+#include <elapsedMillis.h>             // https://github.com/pfeerick/elapsedMillis
 
-typedef struct interp interp_t; // forward declaration
+typedef struct interp interp_t;        // forward declaration
 
-// MODES
-typedef enum {
-  LINE_OUT,
-  SIG_IN,
-  SIG_OUT,
-  THRESHOLD,
-  MIDI_LEARN,
-  CALIBRATE,
-  SAVE
-} presetMode_t;
+#define LINE_OUT    0
+#define SIG_IN      1
+#define SIG_OUT     2
+#define THRESHOLD   3
+#define MIDI_LEARN  4
+#define CALIBRATE   5
+#define SAVE        6
+
+extern uint8_t currentMode;
+extern uint8_t lastMode;
 
 typedef struct preset preset_t;
 struct preset {
@@ -44,22 +44,9 @@ struct preset {
 
 void LEDS_SETUP(void);
 void SWITCHES_SETUP(void);
-
-void update_buttons(
-  presetMode_t* lastMode_ptr,
-  presetMode_t* curentMode_ptr,
-  preset_t* presets_ptr
-);
-
-void update_presets(
-  presetMode_t curentMode,
-  preset_t* presets_ptr
-);
-
-void update_leds(
-  presetMode_t curentMode,
-  preset_t* preset_ptr
-);
+void update_buttons(preset_t* presets_ptr);
+void update_presets(preset_t* presets_ptr);
+void update_leds(preset_t* preset_ptr);
 
 void preset_load(preset_t* preset_ptr, boolean* state_ptr); // TODO
 void preset_save(preset_t* preset_ptr, boolean* state_ptr); // TODO

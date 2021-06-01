@@ -41,62 +41,61 @@ void LEDS_SETUP(void) {
 void SWITCHES_SETUP(void) {
   BUTTON_L.attach(BUTTON_PIN_L, INPUT_PULLUP);  // Attach the debouncer to a pin with INPUT_PULLUP mode
   BUTTON_R.attach(BUTTON_PIN_R, INPUT_PULLUP);  // Attach the debouncer to a pin with INPUT_PULLUP mode
-  BUTTON_L.interval(25);                        // Debounce interval of 15 millis
-  BUTTON_R.interval(25);                        // Debounce interval of 15 millis
+  BUTTON_L.interval(25);                        // Debounce interval of 25 millis
+  BUTTON_R.interval(25);                        // Debounce interval of 25 millis
 }
 
-void update_buttons(presetMode_t* lastMode_ptr, presetMode_t* curentMode_ptr, preset_t* presets_ptr) {
+void update_buttons(preset_t* presets_ptr) {
   BUTTON_L.update();
   BUTTON_R.update();
   // ACTION : BUTTON_L short press
   // FONCTION : CALIBRATE THE SENSOR MATRIX
   if (BUTTON_L.rose() && BUTTON_L.previousDuration() < LONG_HOLD) {
-    *lastMode_ptr = *curentMode_ptr;
-    *curentMode_ptr = CALIBRATE;
+    lastMode = currentMode;
+    currentMode = CALIBRATE;
     presets_ptr[CALIBRATE].setLed = true;
     presets_ptr[CALIBRATE].updateLed = true;
 #if DEBUG_BUTTONS
-    Serial.printf("\nBUTTON_L : CALIBRATE : %d", *curentMode_ptr);
+    Serial.printf("\nBUTTON_L : CALIBRATE : %d", currentMode);
 #endif
   }
   // ACTION : BUTTON_L long press
   // FONCTION : SAVE ALL PARAMETERS TO THE EEPROM MEMORY
   if (BUTTON_L.rose() && BUTTON_L.previousDuration() > LONG_HOLD) {
-    *lastMode_ptr = *curentMode_ptr;
-    *curentMode_ptr = SAVE;
+    lastMode = currentMode;
+    currentMode = SAVE;
     presets_ptr[SAVE].setLed = true;
 #if DEBUG_BUTTONS
-    Serial.printf("\nBUTTON_L : SAVE : %d", *curentMode_ptr);
+    Serial.printf("\nBUTTON_L : SAVE : %d", currentMode);
 #endif
   }
   // ACTION : BUTTON_R short press
   // FONCTION : SELECT_MODE
   if (BUTTON_R.rose() && BUTTON_R.previousDuration() < LONG_HOLD) {
-    *lastMode_ptr = *curentMode_ptr;                // Save last Mode
-    *curentMode_ptr = (*curentMode_ptr + 1) % 4;    // Loop into the modes
-    encoder.write(presets_ptr[*curentMode_ptr].val << 2);
-    presets_ptr[*curentMode_ptr].setLed = true;
+    lastMode = currentMode;                // Save last Mode
+    currentMode = (currentMode + 1) % 4;    // Loop into the modes FIXME
+    encoder.write(presets_ptr[currentMode].val << 2);
+    presets_ptr[currentMode].setLed = true;
 #if DEBUG_BUTTONS
-    Serial.printf("\nBUTTON_R : SELECT_MODE : %d", *curentMode_ptr);
+    Serial.printf("\nBUTTON_R : SELECT_MODE : %d", currentMode);
 #endif
   }
-
   // ACTION : BUTTON_R long press
   // FONCTION : MIDI_LEARN (send blob values separately for Max4Live MIDI_LEARN)
   // LEDs : alternates durring all the learning process
   if (BUTTON_R.rose() && BUTTON_R.previousDuration() > LONG_HOLD) {
-    *lastMode_ptr = *curentMode_ptr;
-    *curentMode_ptr = MIDI_LEARN;
+    lastMode = currentMode;
+    currentMode = MIDI_LEARN;
     encoder.write(0x1);
     presets_ptr[MIDI_LEARN].setLed = true;
 #if DEBUG_BUTTONS
-    Serial.printf("\nMIDI_LEARN : %d", *curentMode_ptr);
+    Serial.printf("\nMIDI_LEARN : %d", currentMode);
 #endif
   }
 }
 
-void update_presets(presetMode_t curentMode, preset_t* presets_ptr) {
-  switch (curentMode) {
+void update_presets(preset_t* presets_ptr) {
+  switch (currentMode) {
     case LINE_OUT:
       if (setLevel(&presets_ptr[LINE_OUT])) {
         presets_ptr[LINE_OUT].ledVal = map(presets_ptr[LINE_OUT].val, presets_ptr[LINE_OUT].minVal, presets_ptr[LINE_OUT].maxVal, 0, 255);
@@ -138,11 +137,11 @@ void update_presets(presetMode_t curentMode, preset_t* presets_ptr) {
 }
 
 // Update LEDs according to the mode and rotary encoder values
-void update_leds(presetMode_t curentMode, preset_t* presets_ptr) {
+void update_leds(preset_t* presets_ptr) {
   static uint32_t timeStamp = 0;
   static uint8_t iter = 0;
 
-  switch (curentMode) {
+  switch (currentMode) {
     case LINE_OUT:
       if (presets_ptr[LINE_OUT].setLed) {
         presets_ptr[LINE_OUT].setLed = false;
@@ -157,7 +156,6 @@ void update_leds(presetMode_t curentMode, preset_t* presets_ptr) {
         analogWrite(LED_PIN_D2, abs(presets_ptr[LINE_OUT].ledVal - 255));
       }
       break;
-
     case SIG_IN:
       if (presets_ptr[SIG_IN].setLed) {
         presets_ptr[SIG_IN].setLed = false;
@@ -172,7 +170,6 @@ void update_leds(presetMode_t curentMode, preset_t* presets_ptr) {
         analogWrite(LED_PIN_D2, abs(presets_ptr[SIG_IN].ledVal - 255));
       }
       break;
-
     case SIG_OUT:
       if (presets_ptr[SIG_OUT].setLed) {
         presets_ptr[SIG_OUT].setLed = false;
@@ -187,7 +184,6 @@ void update_leds(presetMode_t curentMode, preset_t* presets_ptr) {
         analogWrite(LED_PIN_D2, abs(presets_ptr[SIG_OUT].ledVal - 255));
       }
       break;
-
     case THRESHOLD:
       if (presets_ptr[THRESHOLD].setLed) {
         presets_ptr[THRESHOLD].setLed = false;
@@ -202,7 +198,6 @@ void update_leds(presetMode_t curentMode, preset_t* presets_ptr) {
         analogWrite(LED_PIN_D2, abs(presets_ptr[THRESHOLD].ledVal - 255));
       }
       break;
-
     case MIDI_LEARN: // LEDs : alternating blink
       if (presets_ptr[MIDI_LEARN].setLed) {
         presets_ptr[MIDI_LEARN].setLed = false;
@@ -224,7 +219,6 @@ void update_leds(presetMode_t curentMode, preset_t* presets_ptr) {
         timeStamp = millis();
       }
       break;
-
     case CALIBRATE: // LEDs : both LED are blinking three time
       if (presets_ptr[CALIBRATE].setLed) {
         presets_ptr[CALIBRATE].setLed = false;
@@ -253,7 +247,6 @@ void update_leds(presetMode_t curentMode, preset_t* presets_ptr) {
         }
       }
       break;
-
     case SAVE: // LEDs : Both LED are blinking weary fast
       if (presets_ptr[SAVE].setLed) {
         presets_ptr[SAVE].setLed = false;
@@ -289,13 +282,8 @@ void update_leds(presetMode_t curentMode, preset_t* presets_ptr) {
 
 // Values adjustment using rotary encoder
 boolean setLevel(preset_t* preset_ptr) {
-
   uint8_t val = encoder.read() >> 2;
-
   if (val != preset_ptr->val) {
-
-    //Serial.printf("\nDEBUG_ENCODER:\tVAL:%d", preset_ptr->val);
-
     if (val > preset_ptr->maxVal) {
       encoder.write(preset_ptr->maxVal << 2);
       return false;
