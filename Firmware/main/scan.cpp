@@ -123,8 +123,8 @@ void calibrate_matrix(preset_t* presets_ptr) {
           //delayMicroseconds(10);
           pinMode(ADC0_PIN, OUTPUT);
           pinMode(ADC1_PIN, OUTPUT);
-          digitalWrite(ADC0_PIN, LOW);                        // Set the Slave Select Pin LOW
-          digitalWrite(ADC1_PIN, LOW);                        // Set the Slave Select Pin LOW
+          digitalWrite(ADC0_PIN, LOW);                        // Set the ADC0 Pin to GND to discharge
+          digitalWrite(ADC1_PIN, LOW);                        // Set the ADC0 Pin to GND to discharge
           pinMode(ADC0_PIN, INPUT);
           pinMode(ADC1_PIN, INPUT);
 
@@ -179,8 +179,8 @@ void scan_matrix(void) {
       //delayMicroseconds(10);
       pinMode(ADC0_PIN, OUTPUT);
       pinMode(ADC1_PIN, OUTPUT);
-      digitalWrite(ADC0_PIN, LOW);                        // Set the Slave Select Pin LOW
-      digitalWrite(ADC1_PIN, LOW);                        // Set the Slave Select Pin LOW
+      digitalWrite(ADC0_PIN, LOW);                        // Set the ADC0 Pin to GND to discharge
+      digitalWrite(ADC1_PIN, LOW);                        // Set the ADC0 Pin to GND to discharge
       pinMode(ADC0_PIN, INPUT);
       pinMode(ADC1_PIN, INPUT);
 

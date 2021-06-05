@@ -14,6 +14,8 @@ float coef_B[SCALE_X * SCALE_Y] = {0};
 float coef_C[SCALE_X * SCALE_Y] = {0};
 float coef_D[SCALE_X * SCALE_Y] = {0};
 
+uint8_t interpThreshold = 5;
+
 /*
     Bilinear interpolation
     Pre-compute the four coefficient values for all interpolated output matrix positions
@@ -47,7 +49,7 @@ void INTERP_SETUP(image_t* outputFrame_ptr) {
 };
 
 // Bilinear interpolation
-void interp_matrix(image_t* inputFrame_ptr, image_t* outputFrame_ptr, uint8_t interpThreshold) {
+void interp_matrix(image_t* inputFrame_ptr, image_t* outputFrame_ptr) {
 
   // Clear interpFrameArray
   memset((uint8_t*)interpFrameArray, 0, SIZEOF_FRAME);

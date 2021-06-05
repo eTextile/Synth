@@ -18,7 +18,7 @@ void SOUND_CARD_SETUP() {
   //sgtl5000.inputSelect(AUDIO_INPUT_MIC);
 }
 
-void update_volumes(preset_t* presets_ptr) {
+void update_levels(preset_t* presets_ptr) {
   if (presets_ptr[currentMode].update) {
     presets_ptr[currentMode].update = false;
     switch (currentMode) {

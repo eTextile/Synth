@@ -14,7 +14,6 @@
 #define ENCODER_OPTIMIZE_INTERRUPTS
 #include <Encoder.h>                   // https://github.com/PaulStoffregen/Encoder
 //#include <EEPROM.h>                  // https://www.arduino.cc/en/Reference/EEPROM (TODO)
-#include <elapsedMillis.h>             // https://github.com/pfeerick/elapsedMillis
 
 typedef struct interp interp_t;        // forward declaration
 
@@ -26,6 +25,7 @@ typedef struct interp interp_t;        // forward declaration
 #define CALIBRATE   5
 #define SAVE        6
 
+extern uint8_t interpThreshold;
 extern uint8_t currentMode;
 extern uint8_t lastMode;
 
@@ -47,10 +47,9 @@ void SWITCHES_SETUP(void);
 void update_buttons(preset_t* presets_ptr);
 void update_presets(preset_t* presets_ptr);
 void update_leds(preset_t* preset_ptr);
+boolean setLevel(preset_t* preset_ptr);
 
 void preset_load(preset_t* preset_ptr, boolean* state_ptr); // TODO
 void preset_save(preset_t* preset_ptr, boolean* state_ptr); // TODO
-
-boolean setLevel(preset_t* preset_ptr);
 
 #endif /*__PRESETS_H__*/

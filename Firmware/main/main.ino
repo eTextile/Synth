@@ -11,10 +11,24 @@
 #include "interp.h"
 #include "blob.h"
 #include "median.h"
+
+#include <elapsedMillis.h>             // https://github.com/pfeerick/elapsedMillis
+
+#if FLASH_PLAYER || SYNTH_PLAYER || GRANULAR_PLAYER
+#include "soundCard.h"
+#endif
+
+#if MAPPING_LAYAOUT
 #include "notes.h"
 #include "mapping.h"
-#include "soundCard.h"
-#include "transmit.h"
+#endif
+
+#if HARDWARE_MIDI || USB_MIDI
+#include "transmit_mdi.h"
+#endif
+#if USB_SLIP_OSC
+#include "transmit_osc.h"
+#endif
 
 #if FLASH_PLAYER
 #include "player_flash.h"
@@ -26,12 +40,10 @@
 #include "player_granular.h"
 #endif
 
-uint8_t interpThreshold = 5;
-
-image_t  rawFrame;         // Input frame values
-image_t  interpFrame;      // Interpolated frame values
-llist_t  blobs;            // Output blobs linked list
-llist_t  midiIn;           // MidiIn linked list
+image_t  rawFrame;      // Input frame values
+image_t  interpFrame;   // Interpolated frame values
+llist_t  blobs;         // Output blobs linked list
+llist_t  midiIn;        // MidiIn linked list
 
 uint8_t currentMode = CALIBRATE;   // Init currentMode with CALIBRATE (DEFAULT_MODE)
 uint8_t lastMode = LINE_OUT;       // Init lastMode with LINE_OUT (DEFAULT_MODE)
@@ -54,7 +66,7 @@ preset_t presets[7] = {
   { 0, 0,  0,  0, false, false, false, NULL, NULL}   // SAVE       - ARGS[minVal, maxVal, val, ledVal, setLed, updateLed, update, D1, D2]
 };
 
-// MAPPING
+#if MAPPING_LAYAOUT
 tSwitch_t trigParam = {10, 10, 5, 1000, false};     // ARGS[posX, posY, rSize, debounceTimer, state]
 tSwitch_t toggParam = {40, 30, 5, 1000, false};     // ARGS[posX, posY, rSize, debounceTimer, state]
 vSlider_t vSliderParam = {10, 15, 40, 5, 0};        // ARGS[posX, Ymin, Ymax, width, val]
@@ -65,6 +77,7 @@ cSlider_t cSlidersParam[C_SLIDERS] = {
   {  20, 4,  4.8,  5, 0}                            // ARGS[r, width, phiOffset, phiMax, val]
 };
 ccPesets_t ccParam = {NULL, BD, 44, 1, 0};          // ARGS[blobID, [BX,BY,BW,BH,BD], cChange, midiChannel, Val]
+#endif
 
 void setup() {
 #if DEBUG_ADC || DEBUG_INTERP || DEBUG_BITMAP || DEBUG_BLOBS || DEBUG_FPS || DEBUG_ENCODER || DEBUG_BUTTONS || DEBUG_MAPPING
@@ -76,9 +89,11 @@ void setup() {
   SWITCHES_SETUP();
   SPI_SETUP();
   ADC_SETUP();
+  
   SCAN_SETUP(&rawFrame);
   INTERP_SETUP(&interpFrame);
   BLOB_SETUP(&blobs);
+  
 #if USB_MIDI
   USB_MIDI_SETUP();
 #endif
@@ -88,6 +103,7 @@ void setup() {
 #if HARDWARE_MIDI
   HARDWARE_MIDI_SETUP();
 #endif
+
 #if SYNTH_PLAYER || GRANULAR_PLAYER || FLASH_PLAYER
   SOUND_CARD_SETUP();
 #endif
@@ -100,7 +116,7 @@ void setup() {
 #if GRANULAR_PLAYER
   GRANULAR_PLAYER_SETUP();
 #endif
-#if HARDWARE_MIDI || SYNTH_PLAYER
+#if MAPPING_LAYAOUT
   GRID_LAYOUT_SETUP();
 #endif
 };
@@ -111,12 +127,16 @@ void loop() {
 
   update_buttons(&presets[0]);
   update_presets(&presets[0]);
-  update_volumes(&presets[0]);
+  
+#if SYNTH_PLAYER || GRANULAR_PLAYER || FLASH_PLAYER
+  update_levels(&presets[0]);
+#endif
+
   update_leds(&presets[0]);
   calibrate_matrix(&presets[0]);
 
   scan_matrix();
-  interp_matrix(&rawFrame, &interpFrame, interpThreshold);
+  interp_matrix(&rawFrame, &interpFrame);
   find_blobs(presets[THRESHOLD].val, &interpFrame, &blobs);
 
   //median(&blobs);
@@ -133,7 +153,7 @@ void loop() {
 #endif
 
 #if USB_SLIP_OSC
-  usb_slipOsc(&blobs);
+  usb_slipOsc(&presets[0], &rawFrame, &interpFrame, &blobs);
 #endif
 
 #if HARDWARE_MIDI
@@ -142,13 +162,15 @@ void loop() {
   };
 #endif
 
-  //gridPlay(&blobs);
+#if MAPPING_LAYAOUT
+  gridPlay(&blobs);
   //controlChange(&blobs, &ccParam);
   //boolean toggSwitch = toggle(&blobs, &toggParam);
   //boolean trigSwitch = trigger(&blobs, &trigParam);
   //hSlider(&blobs, &hSliderParam);
   //vSlider(&blobs, &vSliderParam);
   //cSlider(&blobs, &polarCoord[0], &cSlidersParam[0]);
+#endif
 
 #if SYNTH_PLAYER
   synth_player(&blobs);

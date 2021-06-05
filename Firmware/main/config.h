@@ -13,14 +13,17 @@
 #define VERSION             "1.0.5"
 
 #define USB_MIDI            0  // [0:1] Set the eTextile-Synthesizer as USB MIDI divice **DO NOT FORGET: Arduino/Touls/USB_Type/MIDI**
-#define USB_SLIP_OSC        0  // [0:1] Set the eTextile-Synthesizer as USB SLIP_OSC divice **DO NOT FORGET: Arduino/Touls/USB_Type/Serial**
+#define USB_SLIP_OSC        1  // [0:1] Set the eTextile-Synthesizer as USB SLIP_OSC divice **DO NOT FORGET: Arduino/Touls/USB_Type/Serial**
 #define HARDWARE_MIDI       0  // [0:1] Set the eTextile-Synthesizer as MIDI divice **DO NOT FORGET: Arduino/Touls/USB_Type/Serial**
+
+#define MAPPING_LAYAOUT     1
+
 #define SYNTH_PLAYER        0  // [0:1] Set the eTextile-Synthesizer as STANDALONE divice
 #define GRANULAR_PLAYER     0  // [0:1] Set the eTextile-Synthesizer as STANDALONE divice
 #define FLASH_PLAYER        0  // [0:1] Set the eTextile-Synthesizer as STANDALONE divice
 
 // Arduino serial monitor
-#define DEBUG_FPS           1  // [0:1] Print Frames Per Second
+#define DEBUG_FPS           0  // [0:1] Print Frames Per Second
 #define DEBUG_ENCODER       0  // [0:1] Print encoder value 
 #define DEBUG_BUTTONS       0  // [0:1] Print buttons states
 #define DEBUG_ADC           0  // [0:1] Print 16x16 Analog raw values

@@ -68,9 +68,8 @@ boolean toggle(llist_t* llist_ptr, tSwitch_t* switch_ptr) {
   };
 };
 
-#if HARDWARE_MIDI || SYNTH_PLAYER
 // Pre-compute key min & max coordinates
-void GRID_LAYOUT_SETUP() {
+void GRID_LAYOUT_SETUP(void) {
   Serial.printf("\nKEY_SIZE_X:%d \tKEY_SIZE_Y:%d", KEY_SIZE_X, KEY_SIZE_Y);
   for (int row = 0; row < GRID_ROWS; row++) {
     for (int col = 0; col < GRID_COLS; col++) {
@@ -90,7 +89,6 @@ void GRID_LAYOUT_SETUP() {
     };
   };
 };
-#endif
 
 /*
   // Compute the grid index location acording to the blobs XY (centroid) coordinates
@@ -155,7 +153,7 @@ void gridPlay(llist_t* llist_ptr) {
         if (blob_ptr->state) {
           if (!blob_ptr->lastState) {
 #if HARDWARE_MIDI
-            MIDI.sendNoteOn(keyPress_ptr->val, 127, 1);                   // Send NoteON (CHANNEL_1)
+            //MIDI.sendNoteOn(keyPress_ptr->val, 127, 1);                   // Send NoteON (CHANNEL_1)
 #endif
 #if DEBUG_MAPPING
             Serial.printf("\nGRID\tBLOB:%d\t\tKEYDOWN:%d", blob_ptr->UID, (uint8_t)keyPress_ptr->val);
@@ -164,7 +162,7 @@ void gridPlay(llist_t* llist_ptr) {
         }
         else {
 #if HARDWARE_MIDI
-          MIDI.sendNoteOff(lastKeyPress_ptr[blob_ptr->UID]->val, 0, 1);  // Send NoteOFF (CHANNEL_1)
+          //MIDI.sendNoteOff(lastKeyPress_ptr[blob_ptr->UID]->val, 0, 1);  // Send NoteOFF (CHANNEL_1)
 #endif
 #if DEBUG_MAPPING
           Serial.printf("\nGRID\tBLOB:%d\t\tKEYUP:%d", blob_ptr->UID, (uint8_t)keyPress_ptr->val);

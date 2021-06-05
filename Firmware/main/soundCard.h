@@ -17,6 +17,6 @@ extern AudioControlSGTL5000  sgtl5000;
 typedef struct preset preset_t;       // Forward declaration
 
 void SOUND_CARD_SETUP(void);
-void update_volumes(preset_t* presets_ptr);
+void update_levels(preset_t* presets_ptr);
 
 #endif /*__SOUND_CARD_H__*/

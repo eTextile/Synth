@@ -25,6 +25,5 @@ void ADC_SETUP(void);
 void SCAN_SETUP(image_t* inputFrame_ptr);
 void calibrate_matrix(preset_t* presets_ptr);
 void scan_matrix(void);
-void print_adc(image_t* frame_ptr);
 
 #endif /*__SCAN_H__*/

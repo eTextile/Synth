@@ -10,7 +10,7 @@
 #include "config.h"
 #include "blob.h"
 #include "llist.h"
-#include "transmit.h"
+#include "transmit_midi.h"
 #include "notes.h"
 
 typedef struct blob blob_t;         // Forward declaration
@@ -69,9 +69,9 @@ struct cSlider {
 };
 
 #define GRID_COMPUTE_ROW_PTR(grid_ptr, y) (((squareKey_t *)(grid_ptr)) + ((GRID_COLS * sizeof(squareKey_t)) * y));
-#define GRID_GET_KEY_PTR(col_ptr, x) (col_ptr + x);
+#define GRID_GET_KEY_PTR(col_ptr, x)(col_ptr + x);
 
-void GRID_LAYOUT_SETUP();
+void GRID_LAYOUT_SETUP(void);
 
 void gridPopulate(llist_t* llist_ptr);
 void gridPlay(llist_t* llist_ptr);

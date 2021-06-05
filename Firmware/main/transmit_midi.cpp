@@ -9,36 +9,10 @@
   https://www.midi.org/midi-articles/midi-polyphonic-expression-mpe
 */
 
-#include "transmit.h"
+#include "transmit_midi.h"
 
 midiNode_t midiInArray[MAX_SYNTH] = {0}; // 1D Array to alocate memory for incoming midi notes
 llist_t  midiNodes;                      // Midi nodes stack
-
-#if USB_SLIP_OSC
-SLIPEncodedUSBSerial SLIPSerial(thisBoardsSerialUSB);
-
-void USB_SLIP_OSC_SETUP(void) {
-  SLIPSerial.begin(BAUD_RATE); // FIXME
-}
-
-void usb_slipOsc(llist_t* llist_ptr) {
-  OSCBundle OSCbundle;
-  for (blob_t* blob_ptr = (blob_t*)ITERATOR_START_FROM_HEAD(llist_ptr); blob_ptr != NULL; blob_ptr = (blob_t*)ITERATOR_NEXT(blob_ptr)) {
-    OSCMessage msg("/b");
-    msg.add(blob_ptr->UID);
-    msg.add(blob_ptr->state);
-    msg.add((float)blob_ptr->centroid.X);
-    msg.add((float)blob_ptr->centroid.Y);
-    msg.add(blob_ptr->box.W);
-    msg.add(blob_ptr->box.H);
-    msg.add(blob_ptr->box.D);
-    OSCbundle.add(msg);
-  }
-  SLIPSerial.beginPacket();     // Send SLIP header
-  OSCbundle.send(SLIPSerial);   // Send the OSC bundle
-  SLIPSerial.endPacket();       // Send the SLIP end of packet
-}
-#endif
 
 #if HARDWARE_MIDI
 void midi_llist_init(llist_t* nodes_ptr, midiNode_t* nodeArray_ptr) {
