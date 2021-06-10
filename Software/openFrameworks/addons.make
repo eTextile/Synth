@@ -1,5 +1,2 @@
-ofxIO
-ofxOsc
-ofxPoco
-ofxSerial
 ofxGui
+ofxMidi

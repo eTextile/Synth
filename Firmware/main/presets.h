@@ -25,6 +25,28 @@ typedef struct interp interp_t;        // forward declaration
 #define CALIBRATE   5
 #define SAVE        6
 
+/*
+  #define BI  0  // Blob UID
+  #define BS  1  // Blob State
+  #define BL, 2  // Blob Last State
+  #define BX  3  // Blob Centroid PosX
+  #define BY  4  // Blob Centroid PosY
+  #define BW  5  // Blob width
+  #define BH  6  // Blob Height
+  #define BD  7  // Blob Depth
+*/
+
+typedef enum params {
+  BI,  // Blob UID
+  BS,  // Blob State
+  BL,  // Blob Last State
+  BX,  // Blob Centroid PosX
+  BY,  // Blob Centroid PosY
+  BW,  // Blob width
+  BH,  // Blob Height
+  BD   // Blob Depth
+} params_t;
+
 extern uint8_t interpThreshold;
 extern uint8_t currentMode;
 extern uint8_t lastMode;

@@ -23,11 +23,14 @@
 #include "mapping.h"
 #endif
 
-#if HARDWARE_MIDI || USB_MIDI
-#include "transmit_mdi.h"
+#if USB_MIDI
+#include "usb_midi_transmit.h"
 #endif
 #if USB_SLIP_OSC
-#include "transmit_osc.h"
+#include "usb_osc_transmit.h"
+#endif
+#if HARDWARE_MIDI
+#include "hardware_midi_transmit.h"
 #endif
 
 #if FLASH_PLAYER
@@ -42,6 +45,7 @@
 
 image_t  rawFrame;      // Input frame values
 image_t  interpFrame;   // Interpolated frame values
+
 llist_t  blobs;         // Output blobs linked list
 llist_t  midiIn;        // MidiIn linked list
 
@@ -89,11 +93,11 @@ void setup() {
   SWITCHES_SETUP();
   SPI_SETUP();
   ADC_SETUP();
-  
+
   SCAN_SETUP(&rawFrame);
   INTERP_SETUP(&interpFrame);
   BLOB_SETUP(&blobs);
-  
+
 #if USB_MIDI
   USB_MIDI_SETUP();
 #endif
@@ -127,7 +131,7 @@ void loop() {
 
   update_buttons(&presets[0]);
   update_presets(&presets[0]);
-  
+
 #if SYNTH_PLAYER || GRANULAR_PLAYER || FLASH_PLAYER
   update_levels(&presets[0]);
 #endif
@@ -136,7 +140,7 @@ void loop() {
   calibrate_matrix(&presets[0]);
 
   scan_matrix();
-  interp_matrix(&rawFrame, &interpFrame);
+  interp_matrix(&rawFrame);
   find_blobs(presets[THRESHOLD].val, &interpFrame, &blobs);
 
   //median(&blobs);
@@ -144,11 +148,12 @@ void loop() {
   //getBlobsVelocity(&blobs);
 
 #if USB_MIDI
+  usb_midi_handle_input();
   if (currentMode == MIDI_LEARN) {
     usb_midi_learn(&blobs, &presets[MIDI_LEARN]);
   }
   else {
-    usb_midi_play(&blobs);
+    usb_midi_send_blobs(&blobs);
   };
 #endif
 
@@ -157,7 +162,7 @@ void loop() {
 #endif
 
 #if HARDWARE_MIDI
-  if (handleMidiInput(&midiIn)) {
+  if (midi_handle_hardware_input(&midiIn)) {
     gridPopulate(&midiIn);
   };
 #endif

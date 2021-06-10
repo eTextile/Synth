@@ -7,6 +7,24 @@
 #ifndef __NOTES_H__
 #define __NOTES_H__
 
+
+typedef struct midiNode midiNode_t;
+struct midiNode {
+  lnode_t node;
+  uint8_t pithch;
+  uint8_t velocity;
+  uint8_t channel;
+};
+
+typedef struct ccPesets ccPesets_t;
+struct ccPesets {
+  uint8_t blobID;
+  uint8_t mappVal;
+  int8_t cChange;
+  int8_t midiChannel;
+  int8_t val;
+};
+
 #include "config.h"
 #if HARDWARE_MIDI
 #define  Cm1   0         // 8.18 Hz
@@ -35,7 +53,7 @@
 #define  B0_   23        // 30.87 Hz
 #define  C1    24        // 32.70 Hz
 #define  Cd1   25        // 34.65 Hz
-#define  D1    26        // 36.71 Hz
+#define  D1_    26        // 36.71 Hz
 #define  Dd1   27        // 38.89 Hz
 #define  E1    28        // 41.20 Hz
 #define  F1    29        // 43.65 Hz
@@ -47,7 +65,7 @@
 #define  B1_   35        // 61.74 Hz
 #define  C2    36        // 65.41 Hz
 #define  Cd2   37        // 69.30 Hz
-#define  D2    38        // 73.42 Hz
+#define  D2_    38        // 73.42 Hz
 #define  Dd2   39        // 77.78 Hz
 #define  E2    40        // 82.41 Hz
 #define  F2    41        // 87.31 Hz
@@ -141,8 +159,8 @@
 const int8_t note[128] = {
   Cm1, Cdm1, Dm1, Ddm1, Em1, Fm1, Fdm1, Gm1, Gdm1, Am1, Adm1, Bm1,
   C0,  Cd0,  D0,  Dd0,  E0,  F0,  Fd0,  G0,  Gd0,  A0_, Ad0,  B0_,
-  C1,  Cd1,  D1,  Dd1,  E1,  F1,  Fd1,  G1,  Gd1,  A1_, Ad1,  B1_,
-  C2,  Cd2,  D2,  Dd2,  E2,  F2,  Fd2,  G2,  Gd2,  A2_, Ad2,  B2,
+  C1,  Cd1,  D1_,  Dd1,  E1,  F1,  Fd1,  G1,  Gd1,  A1_, Ad1,  B1_,
+  C2,  Cd2,  D2_,  Dd2,  E2,  F2,  Fd2,  G2,  Gd2,  A2_, Ad2,  B2,
   C3,  Cd3,  D3,  Dd3,  E3,  F3,  Fd3,  G3,  Gd3,  A3_, Ad3,  B3,
   C4,  Cd4,  D4,  Dd4,  E4,  F4,  Fd4,  G4,  Gd4,  A4_, Ad4,  B4,
   C5,  Cd5,  D5,  Dd5,  E5,  F5,  Fd5,  G5,  Gd5,  A5_, Ad5,  B5,
@@ -193,7 +211,7 @@ const int8_t harmonicKeyboard[128] = {
 #define  B0_   30.87     // note[23]
 #define  C1    32.70     // note[24]
 #define  Cd1   34.65     // note[25]
-#define  D1    36.71     // note[26]
+#define  D1_    36.71     // note[26]
 #define  Dd1   38.89     // note[27]
 #define  E1    41.20     // note[28]
 #define  F1    43.65     // note[29]
@@ -205,7 +223,7 @@ const int8_t harmonicKeyboard[128] = {
 #define  B1_   61.74     // note[35]
 #define  C2    65.41     // note[36]
 #define  Cd2   69.30     // note[37]
-#define  D2    73.42     // note[38]
+#define  D2_    73.42     // note[38]
 #define  Dd2   77.78     // note[39]
 #define  E2    82.41     // note[40]
 #define  F2    87.31     // note[41]
@@ -299,8 +317,8 @@ const int8_t harmonicKeyboard[128] = {
 const float note[128] = {
   Cm1, Cdm1, Dm1, Ddm1, Em1, Fm1, Fdm1, Gm1, Gdm1, Am1, Adm1, Bm1,
   C0,  Cd0,  D0,  Dd0,  E0,  F0,  Fd0,  G0,  Gd0,  A0_, Ad0,  B0_,
-  C1,  Cd1,  D1,  Dd1,  E1,  F1,  Fd1,  G1,  Gd1,  A1_, Ad1,  B1_,
-  C2,  Cd2,  D2,  Dd2,  E2,  F2,  Fd2,  G2,  Gd2,  A2_, Ad2,  B2,
+  C1,  Cd1,  D1_,  Dd1,  E1,  F1,  Fd1,  G1,  Gd1,  A1_, Ad1,  B1_,
+  C2,  Cd2,  D2_,  Dd2,  E2,  F2,  Fd2,  G2,  Gd2,  A2_, Ad2,  B2,
   C3,  Cd3,  D3,  Dd3,  E3,  F3,  Fd3,  G3,  Gd3,  A3_, Ad3,  B3,
   C4,  Cd4,  D4,  Dd4,  E4,  F4,  Fd4,  G4,  Gd4,  A4_, Ad4,  B4,
   C5,  Cd5,  D5,  Dd5,  E5,  F5,  Fd5,  G5,  Gd5,  A5_, Ad5,  B5,

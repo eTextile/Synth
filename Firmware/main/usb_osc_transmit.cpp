@@ -4,7 +4,9 @@
   This work is licensed under Creative Commons Attribution-ShareAlike 4.0 International license, see the LICENSE file for details.
 */
 
-#include "transmit_osc.h"
+#include "usb_osc_transmit.h"
+
+#if USB_SLIP_OSC
 
 SLIPEncodedUSBSerial SLIPSerial(thisBoardsSerialUSB);
 
@@ -36,6 +38,7 @@ void usb_slipOsc(preset_t* presets_ptr, image_t* rawFrame_ptr, image_t*interpFra
       /*
         presets_ptr[THRESHOLD].ledVal = map(presets_ptr[THRESHOLD].val, presets_ptr[THRESHOLD].minVal, presets_ptr[THRESHOLD].maxVal, 0, 255);
         interpThreshold = constrain(presets_ptr[THRESHOLD].val - 5, presets_ptr[THRESHOLD].minVal, presets_ptr[THRESHOLD].maxVal);
+        presets_ptr[THRESHOLD].setLed = true;
         presets_ptr[THRESHOLD].updateLed = true;
         presets_ptr[THRESHOLD].update = true;
       */
@@ -58,11 +61,12 @@ void usb_slipOsc(preset_t* presets_ptr, image_t* rawFrame_ptr, image_t*interpFra
       OSCBundle OSCbundle;
       for (blob_t* blob_ptr = (blob_t*)ITERATOR_START_FROM_HEAD(blobs_ptr); blob_ptr != NULL; blob_ptr = (blob_t*)ITERATOR_NEXT(blob_ptr)) {
         OSCMessage msg("/b");
+        //msg.add((uint8_t*)blobs_ptr, 14); // FIXME
         msg.add(blob_ptr->UID);
         msg.add(blob_ptr->state);
         msg.add(blob_ptr->lastState);
-        msg.add((float)blob_ptr->centroid.X);
-        msg.add((float)blob_ptr->centroid.Y);
+        msg.add(blob_ptr->centroid.X);
+        msg.add(blob_ptr->centroid.Y);
         msg.add(blob_ptr->box.W);
         msg.add(blob_ptr->box.H);
         msg.add(blob_ptr->box.D);
@@ -74,3 +78,4 @@ void usb_slipOsc(preset_t* presets_ptr, image_t* rawFrame_ptr, image_t*interpFra
     }
   }
 }
+#endif

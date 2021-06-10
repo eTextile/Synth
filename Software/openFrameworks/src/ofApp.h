@@ -1,13 +1,10 @@
 #pragma once
 
 #include "ofMain.h"
-#include "ofxSerial.h"
-#include "ofxOsc.h"
 #include "ofxGui.h"
-#include "ofxOsc.h"
+#include "ofxMidi.h"
 
-#define USB_PORT              "/dev/ttyACM0"
-#define BAUD_RATE             230400  // With Teensy, it's always the same native speed. The baud rate setting is ignored.
+#define MIDI_PORT_NAME        "ETEXTILE_SYNTH"
 #define RAW_COLS              16
 #define RAW_ROWS              16
 #define DUAL_ROWS             (RAW_ROWS / 2)
@@ -21,11 +18,6 @@
 #define OUT_BUFFER_SIZE       1024
 #define IN_BUFFER_SIZE        65535
 
-//#define HOST                "192.168.0.101"
-#define HOST                  "localhost"
-#define UDP_OUTPUT_PORT       7771
-#define UDP_INPUT_PORT        1234
-
 struct blob {
   uint8_t UID;
   uint8_t state;
@@ -37,12 +29,7 @@ struct blob {
   uint8_t boxD;
 };
 
-struct serialMessage {
-    std::string OSCmessage;
-    std::string exception;
-};
 
-using namespace ofxIO;
 
 class ofApp: public ofBaseApp {
 
@@ -51,19 +38,7 @@ public:
     void                          update(void);
     void                          draw(void);
     void                          exit(void);
-    char                          requestBuffer[OUT_BUFFER_SIZE];
 
-    void                          onSerialBuffer(const ofxIO::SerialBufferEventArgs& args);
-    void                          onSerialError(const ofxIO::SerialBufferErrorEventArgs& args);
-
-    ofxIO::SLIPPacketSerialDevice serialDevice;
-    std::vector<serialMessage>    serialMessages; // SerialMessages is a vector of SerialMessage
-    std::vector<ofxOscMessage>    blobs;
-
-    //ofxOscBundle                  OSCbundle;
-    serialMessage                 message;
-    bool                          serialRawData;
-    bool                          serialBlobs;
     ofxPanel                      gui;
     ofxButton                     setCalirationButton; // Button to calibrate E256
     ofxIntSlider                  setTresholdSlider;   // Set E256 threshold value
@@ -72,10 +47,14 @@ public:
     ofxToggle                     getInterpDataToggle;
     ofxToggle                     getBinDataToggle;
 
-    uint8_t                       inputFrameBuffer[IN_BUFFER_SIZE];
-    uint8_t                       rawValues[RAW_FRAME];    // 1D array (16*16)
-    uint8_t                       interpValues[NEW_FRAME]; // 1D array (64*64)
-    uint8_t                       binValues[NEW_FRAME];    // 1D array (64*64)
+    uint8_t                       rawFrameBuffer[RAW_FRAME];
+    uint8_t                       interpFrameBuffer[NEW_FRAME];
+
+    //MIDI stuff
+    void newMidiMessage(ofxMidiMessage& eventArgs);
+	ofxMidiIn midiIn;
+	std::vector<ofxMidiMessage> midiMessages;
+
 
     void                          E256_setCaliration(void);
     void                          E256_setTreshold(int & sliderValue);
@@ -91,7 +70,6 @@ public:
     void                          E256_blobsRequestStart(bool & val);
 
     bool                          E256_dataRequest;
-
     void                          E256_rawDataRequest(void);
     void                          E256_interpDataRequest(void);
     void                          E256_binDataRequest(void);
@@ -104,5 +82,4 @@ public:
     void                          keyPressed(int key);
     ofxOscSender                  sender;
     //std::vector<ofboxPrimitive>  boxe;
-
-  };
+};

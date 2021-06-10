@@ -67,13 +67,13 @@ OPTIONS = -DF_CPU=600000000 -DUSB_SERIAL -DLAYOUT_US_ENGLISH -DUSING_MAKEFILE
 #   -DUSB_FLIGHTSIM_JOYSTICK
 
 # options needed by many Arduino libraries to configure for Teensy model
-OPTIONS += -D__$(MCU)__ -DARDUINO=10813 -DTEENSYDUINO=153 -D$(MCU_DEF)
+OPTIONS += -D__$(MCU)__ -DARDUINO=10813 -DTEENSYDUINO=154 -D$(MCU_DEF)
 
 # for Cortex M7 with single & double precision FPU
 CPUOPTIONS = -mcpu=cortex-m7 -mfloat-abi=hard -mfpu=fpv5-d16 -mthumb
 
 # use this for a smaller, no-float printf
-SPECS = --specs=nano.specs
+#SPECS = --specs=nano.specs
 
 # Other Makefiles and project templates for Teensy
 #
@@ -95,7 +95,7 @@ SPECS = --specs=nano.specs
 # the NO_ARDUINO behaviour.
 ifndef NO_ARDUINO
 # Path to your arduino installation
-ARDUINOPATH=/home/maurin/Applications/arduino-1.8.13/
+ARDUINOPATH ?= ../../../../..
 endif
 
 ifdef ARDUINOPATH

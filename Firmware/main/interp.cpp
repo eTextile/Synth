@@ -49,7 +49,7 @@ void INTERP_SETUP(image_t* outputFrame_ptr) {
 };
 
 // Bilinear interpolation
-void interp_matrix(image_t* inputFrame_ptr, image_t* outputFrame_ptr) {
+void interp_matrix(image_t* inputFrame_ptr) {
 
   // Clear interpFrameArray
   memset((uint8_t*)interpFrameArray, 0, SIZEOF_FRAME);
@@ -68,7 +68,7 @@ void interp_matrix(image_t* inputFrame_ptr, image_t* outputFrame_ptr) {
           for (uint8_t col = 0; col < SCALE_X; col++) {
             uint8_t coefIndex = row * SCALE_X + col;
             uint16_t outIndex = rowPos * interp.outputStrideY + colPos * SCALE_X + row * NEW_COLS + col;
-            outputFrame_ptr->pData[outIndex] =
+            interpFrameArray[outIndex] =
               (uint8_t)round(
                 inputFrame_ptr->pData[inIndexA] * interp.pCoefA[coefIndex] +
                 inputFrame_ptr->pData[inIndexB] * interp.pCoefB[coefIndex] +
@@ -80,7 +80,6 @@ void interp_matrix(image_t* inputFrame_ptr, image_t* outputFrame_ptr) {
       };
     };
   };
-
 #if DEBUG_INTERP
   for (uint8_t posY = 0; posY < NEW_ROWS; posY++) {
     uint8_t* row_ptr = COMPUTE_IMAGE_ROW_PTR(frame_ptr, posY);
@@ -91,5 +90,4 @@ void interp_matrix(image_t* inputFrame_ptr, image_t* outputFrame_ptr) {
   };
   Serial.printf("\n\n");
 #endif
-
 };

@@ -22,8 +22,10 @@ void FLASH_PLAYER_SETUP(void) {
 }
 
 void flash_player(llist_t* llist_ptr) {
-  blob_t* blob_ptr = (blob_t*)llist_ptr->tail_ptr;
-  if (blob_ptr != NULL) {
+  
+  if (llist_ptr->tail_ptr != NULL) {
+    blob_t* blob_ptr = (blob_t*)llist_ptr->tail_ptr;
+
     //AudioNoInterrupts();
     if (blob_ptr->state) {
       if (!blob_ptr->lastState) {

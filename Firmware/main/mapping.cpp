@@ -17,6 +17,9 @@ MIDI_CREATE_INSTANCE(HardwareSerial, Serial3, MIDI);
 #define KEY_SIZE_X  (uint8_t)((X_MAX - (GRID_GAP * (GRID_COLS + 1))) / GRID_COLS)
 #define KEY_SIZE_Y  (uint8_t)((Y_MAX - (GRID_GAP * (GRID_ROWS + 1))) / GRID_ROWS)
 
+#define GRID_COMPUTE_ROW_PTR(grid_ptr, y) (((squareKey_t *)(grid_ptr)) + ((GRID_COLS * sizeof(squareKey_t)) * y));
+#define GRID_GET_KEY_PTR(col_ptr, x)(col_ptr + x);
+
 #define SWITCH_DEBOUNCE_TIME    15 // TO_REMOVE: this have been done in find_blobs();
 
 squareKey_t keyPos[GRID_KEYS];                  // 1D array of struct squareKey_t to store pre-compute key positions ARGS[Xmin, Xmax, Ymin, Ymax]
@@ -89,53 +92,6 @@ void GRID_LAYOUT_SETUP(void) {
     };
   };
 };
-
-/*
-  // Compute the grid index location acording to the blobs XY (centroid) coordinates
-  // Play corresponding midi **note** or **freq**
-  void gridPlay(llist_t* llist_ptr) {
-  for (blob_t* blob_ptr = (blob_t*)ITERATOR_START_FROM_HEAD(llist_ptr); blob_ptr != NULL; blob_ptr = (blob_t*)ITERATOR_NEXT(blob_ptr)) {
-    if (blob_ptr->UID < MAX_SYNTH) {                                          // Test if the blob UID is less than MAX_SYNTH
-      int keyPosX = round((blob_ptr->centroid.X / (float)X_MAX) * GRID_COLS); // Compute X window position
-      int keyPosY = round((blob_ptr->centroid.Y / (float)Y_MAX) * GRID_ROWS); // Compute Y window position
-      uint8_t index = keyPosY * GRID_COLS + keyPosX;                          // Compute 1D key index position
-      squareKey_t* keyPress_ptr = &keyPos[index];
-      // Test if the blob is within the key limits
-      if (blob_ptr->centroid.X > keyPress_ptr->Xmin && blob_ptr->centroid.X < keyPress_ptr->Xmax &&
-          blob_ptr->centroid.Y > keyPress_ptr->Ymin && blob_ptr->centroid.Y < keyPress_ptr->Ymax) {
-        //Serial.printf("\nGRID\tBLOB:%d\tLAST_STATE:%d\tSTATE:%d\tKEY:%d", blob_ptr->UID, blob_ptr->lastState, blob_ptr->state, keyPress_ptr->val);
-        if (keyPress_ptr != lastKeyPress_ptr[blob_ptr->UID]) {
-          if (lastKeyPress_ptr[blob_ptr->UID] != NULL) {
-  #if HARDWARE_MIDI
-            MIDI.sendNoteOff(lastKeyPress_ptr[blob_ptr->UID]->val, 0, 1);     // Send NoteOFF (CHANNEL_1)
-  #endif
-  #if DEBUG_MAPPING
-            Serial.printf("\nGRID\tBLOB:%d\t\tKEYUP:%d", blob_ptr->UID, (uint8_t)keyPress_ptr->val);
-  #endif
-          };
-  #if HARDWARE_MIDI
-          MIDI.sendNoteOn(keyPress_ptr->val, 127, 1);                       // Send NoteON (CHANNEL_1)
-  #endif
-  #if DEBUG_MAPPING
-          Serial.printf("\nGRID\tBLOB:%d\t\tKEYDOWN:%d", blob_ptr->UID, (uint8_t)keyPress_ptr->val);
-  #endif
-          lastKeyPress_ptr[blob_ptr->UID] = keyPress_ptr;                   // Save current keyPress_ptr
-        };
-      };
-      if (!blob_ptr->state && lastKeyPress_ptr[blob_ptr->UID] != NULL) {
-  #if HARDWARE_MIDI
-        //MIDI.sendNoteOff(lastKeyPress_ptr[blob_ptr->UID]->val, 0, 1);       // Send NoteOFF (CHANNEL_1)
-  #endif
-  #if DEBUG_MAPPING
-        Serial.printf("\nGRID\tBLOB:%d\tKEYUP:%d", blob_ptr->UID, (uint8_t)lastKeyPress_ptr[blob_ptr->UID]->val);
-  #endif
-        lastKeyPress_ptr[blob_ptr->UID] = NULL;
-      };
-    };
-  };
-  };
-*/
-
 
 // Compute the grid index location acording to the blobs XY (centroid) coordinates
 // Play corresponding midi **note** or **freq**

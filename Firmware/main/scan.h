@@ -17,9 +17,6 @@ typedef struct preset preset_t;     // Forward declaration
 #include <SPI.h>                    // https://github.com/PaulStoffregen/SPI
 #include <ADC.h>                    // https://github.com/pedvide/ADC
 
-extern uint8_t currentMode;
-extern uint8_t lastMode;
-
 void SPI_SETUP(void);
 void ADC_SETUP(void);
 void SCAN_SETUP(image_t* inputFrame_ptr);

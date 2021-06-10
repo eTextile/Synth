@@ -141,9 +141,6 @@ void calibrate_matrix(preset_t* presets_ptr) {
         };
       };
     };
-    currentMode = lastMode;
-    lastMode = CALIBRATE;
-    presets_ptr[currentMode].setLed = true;
   };
 };
 

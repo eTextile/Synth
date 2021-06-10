@@ -4,8 +4,8 @@
   This work is licensed under Creative Commons Attribution-ShareAlike 4.0 International license, see the LICENSE file for details.
 */
 
-#ifndef __TRANSMIT_OSC_H__
-#define __TRANSMIT_OSC_H__
+#ifndef __USB_OSC_TRANSMIT_H__
+#define __USB_OSC_TRANSMIT_H__
 
 #include "config.h"
 #include "presets.h"
@@ -32,4 +32,4 @@ void get_raw(image_t*interpFrame_ptr);
 void get_interp(image_t*interpFrame_ptr);
 void get_blobs(llist_t* blobs_ptr);
 
-#endif /*__TRANSMIT_OSC_H__*/
+#endif /*__USB_OSC_TRANSMIT_H__*/

@@ -1,0 +1,1 @@
+name.o: name.c

@@ -16,9 +16,9 @@
 
 Encoder encoder(ENCODER_PIN_A, ENCODER_PIN_B);
 
-//Button BUTTON_L = Button();
+//Button BUTTON_L = Button(); // DEPRECATED
 Bounce2::Button BUTTON_L = Bounce2::Button();
-//Button BUTTON_R = Button();
+//Button BUTTON_R = Button(); // DEPRECATED
 Bounce2::Button BUTTON_R = Bounce2::Button();
 
 #define LONG_HOLD               1500
@@ -32,7 +32,8 @@ Bounce2::Button BUTTON_R = Bounce2::Button();
 #define SAVE_LED_ITER           10
 
 void LEDS_SETUP(void) {
-  // Nothing to do!
+  pinMode(LED_PIN_D1, OUTPUT);
+  pinMode(LED_PIN_D2, OUTPUT);
 }
 
 // Hear it should not compile if you didn't install the library (Manually!)
@@ -242,7 +243,9 @@ void update_leds(preset_t* presets_ptr) {
           if (iter <= CALIBRATE_LED_ITER) {
             timeStamp = millis();
             iter++;
-            if (iter == CALIBRATE_LED_ITER) presets_ptr[CALIBRATE].update = true;
+          }
+          else {
+            presets_ptr[CALIBRATE].update = true;
           }
         }
       }
@@ -274,7 +277,6 @@ void update_leds(preset_t* presets_ptr) {
         }
       }
       break;
-
     default:
       break;
   }

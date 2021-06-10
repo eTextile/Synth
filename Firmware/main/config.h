@@ -13,9 +13,9 @@
 #define VERSION             "1.0.5"
 
 #define USB_MIDI            0  // [0:1] Set the eTextile-Synthesizer as USB MIDI divice **DO NOT FORGET: Arduino/Touls/USB_Type/MIDI**
-#define USB_SLIP_OSC        1  // [0:1] Set the eTextile-Synthesizer as USB SLIP_OSC divice **DO NOT FORGET: Arduino/Touls/USB_Type/Serial**
-#define HARDWARE_MIDI       0  // [0:1] Set the eTextile-Synthesizer as MIDI divice **DO NOT FORGET: Arduino/Touls/USB_Type/Serial**
+#define USB_SLIP_OSC        0  // [0:1] Set the eTextile-Synthesizer as USB SLIP_OSC divice **DO NOT FORGET: Arduino/Touls/USB_Type/Serial**
 
+#define HARDWARE_MIDI       1  // [0:1] Set the eTextile-Synthesizer as MIDI divice **DO NOT FORGET: Arduino/Touls/USB_Type/Serial**
 #define MAPPING_LAYAOUT     1
 
 #define SYNTH_PLAYER        0  // [0:1] Set the eTextile-Synthesizer as STANDALONE divice
@@ -32,6 +32,9 @@
 #define DEBUG_FIND_BLOBS    0  // [0:1] Print lowlevel blobs values
 #define DEBUG_BLOBS         0  // [0:1] Print blobs values
 #define DEBUG_MAPPING       0  // [0:1] Print blobs values
+
+#define DEBUG_MIDI_USB      0
+#define DEBUG_MIDI_HARDWARE 0
 
 #define BAUD_RATE           230400
 #define RAW_COLS            16
