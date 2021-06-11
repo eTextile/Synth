@@ -6,7 +6,7 @@
 
 #include "presets.h"
 
-// DO NOT CHANGE
+// HARDWARE CONSTANTES **DO NOT CHANGE**
 #define LED_PIN_D1              5
 #define LED_PIN_D2              4
 #define BUTTON_PIN_L            2
@@ -14,13 +14,7 @@
 #define ENCODER_PIN_A           22
 #define ENCODER_PIN_B           9
 
-Encoder encoder(ENCODER_PIN_A, ENCODER_PIN_B);
-
-//Button BUTTON_L = Button(); // DEPRECATED
-Bounce2::Button BUTTON_L = Bounce2::Button();
-//Button BUTTON_R = Button(); // DEPRECATED
-Bounce2::Button BUTTON_R = Bounce2::Button();
-
+// SOFTWARE CONSTANTES **DO NOT CHANGE**
 #define LONG_HOLD               1500
 #define MIDI_LEARN_LED_TIMEON   600
 #define MIDI_LEARN_LED_TIMEOFF  600
@@ -30,6 +24,25 @@ Bounce2::Button BUTTON_R = Bounce2::Button();
 #define SAVE_LED_TIMEON         20
 #define SAVE_LED_TIMEOFF        50
 #define SAVE_LED_ITER           10
+
+Encoder encoder(ENCODER_PIN_A, ENCODER_PIN_B);
+//Button BUTTON_L = Button(); // DEPRECATED
+Bounce2::Button BUTTON_L = Bounce2::Button();
+//Button BUTTON_R = Button(); // DEPRECATED
+Bounce2::Button BUTTON_R = Bounce2::Button();
+
+uint8_t currentMode = CALIBRATE;   // Init currentMode with CALIBRATE (DEFAULT_MODE)
+uint8_t lastMode = LINE_OUT;       // Init lastMode with LINE_OUT (DEFAULT_MODE)
+
+preset_t presets[7] = {
+  {13, 31, 29, 0, false, false, false, LOW,  LOW },  // LINE_OUT   - ARGS[minVal, maxVal, val, ledVal, setLed, updateLed, update, D1, D2]
+  { 1, 50, 12, 0, false, false, false, HIGH, LOW },  // SIG_IN     - ARGS[minVal, maxVal, val, ledVal, setLed, updateLed, update, D1, D2]
+  { 1, 31, 17, 0, false, false, false, LOW,  HIGH},  // SIG_OUT    - ARGS[minVal, maxVal, val, ledVal, setLed, updateLed, update, D1, D2]
+  { 5, 30, 10, 0, false, false, false, HIGH, HIGH},  // THRESHOLD  - ARGS[minVal, maxVal, val, ledVal, setLed, updateLed, update, D1, D2]
+  { 1, 6,  1,  0, false, false, false, NULL, NULL},  // MIDI_LEARN - ARGS[minVal, maxVal, val, ledVal, setLed, updateLed, update, D1, D2]
+  { 0, 0,  0,  0, true,  true,  false, NULL, NULL},  // CALIBRATE  - ARGS[minVal, maxVal, val, ledVal, setLed, updateLed, update, D1, D2]
+  { 0, 0,  0,  0, false, false, false, NULL, NULL}   // SAVE       - ARGS[minVal, maxVal, val, ledVal, setLed, updateLed, update, D1, D2]
+};
 
 void LEDS_SETUP(void) {
   pinMode(LED_PIN_D1, OUTPUT);
@@ -305,19 +318,15 @@ boolean setLevel(preset_t* preset_ptr) {
 }
 
 // TODO
-void preset_load(preset_t* preset_ptr, boolean* state_ptr) {
-
+void preset_load(void) {
   for (int i = 0; i < 4; i++) {
-    // EEPROM.read(i, preset_ptr[i].val); // uint8_t
+    // EEPROM.read(i, preset[i].val); // uint8_t
   }
-  state_ptr = false;
 }
 
 // TODO
-void preset_save(preset_t* preset_ptr, boolean* state_ptr) {
-
+void save_presets(void) {
   for (int i = 0; i < 4; i++) {
-    //EEPROM.write(i, preset_ptr[i].val); // uint8_t
+    //EEPROM.write(i, preset[i].val); // uint8_t
   }
-  state_ptr = false;
 }

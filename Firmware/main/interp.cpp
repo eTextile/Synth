@@ -6,15 +6,15 @@
 
 #include "interp.h"
 
+uint8_t interpThreshold = 5;                // 
 uint8_t interpFrameArray[NEW_FRAME] = {0};  // 1D Array to store E256 bilinear interpolated values
 interp_t interp;                            // Interpolation parameters structure
+image_t interpFrame;                        // Interpolated frame values
 
 float coef_A[SCALE_X * SCALE_Y] = {0};
 float coef_B[SCALE_X * SCALE_Y] = {0};
 float coef_C[SCALE_X * SCALE_Y] = {0};
 float coef_D[SCALE_X * SCALE_Y] = {0};
-
-uint8_t interpThreshold = 5;
 
 /*
     Bilinear interpolation

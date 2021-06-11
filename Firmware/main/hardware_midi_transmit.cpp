@@ -17,6 +17,7 @@ MIDI_CREATE_INSTANCE(HardwareSerial, Serial3, MIDI);
 
 midiNode_t midiNodesArray[MAX_SYNTH] = {0}; // 1D Array to alocate memory for incoming midi notes
 llist_t midiNodesStack;                     // Midi nodes stack
+llist_t midiIn;                             // Midi input linked list
 
 void hardware_midi_llist_init(llist_t* nodes_ptr, midiNode_t* nodeArray_ptr, const int nodes) {
   llist_raz(nodes_ptr);
@@ -60,7 +61,7 @@ void hardware_midi_handle_input(void) {
   };
 };
 
-// Send all blobs values using ControlChange MIDI format
+// Send all blobs values using ControlChange or AfterTouchPoly MIDI format
 void hardware_midi_send_blobs(void) {
   for (blob_t* blob_ptr = (blob_t*)ITERATOR_START_FROM_HEAD(&blobs); blob_ptr != NULL; blob_ptr = (blob_t*)ITERATOR_NEXT(blob_ptr)) {
     if (!blob_ptr->lastState) MIDI.sendNoteOn(blob_ptr->UID + 1, 1, 0);
@@ -78,6 +79,6 @@ void hardware_midi_send_blobs(void) {
     */
     if (!blob_ptr->state) MIDI.sendNoteOff(blob_ptr->UID + 1, 0, 0);
   }
-  //while (MIDI.read()); // Read and discard any incoming MIDI messages
+  while (MIDI.read()); // Read and discard any incoming MIDI messages
 }
 #endif

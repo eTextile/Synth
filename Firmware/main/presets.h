@@ -15,8 +15,6 @@
 #include <Encoder.h>                   // https://github.com/PaulStoffregen/Encoder
 //#include <EEPROM.h>                  // https://www.arduino.cc/en/Reference/EEPROM (TODO)
 
-typedef struct interp interp_t;        // forward declaration
-
 #define LINE_OUT    0
 #define SIG_IN      1
 #define SIG_OUT     2
@@ -25,27 +23,7 @@ typedef struct interp interp_t;        // forward declaration
 #define CALIBRATE   5
 #define SAVE        6
 
-/*
-  #define BI  0  // Blob UID
-  #define BS  1  // Blob State
-  #define BL, 2  // Blob Last State
-  #define BX  3  // Blob Centroid PosX
-  #define BY  4  // Blob Centroid PosY
-  #define BW  5  // Blob width
-  #define BH  6  // Blob Height
-  #define BD  7  // Blob Depth
-*/
-
-typedef enum params {
-  BI,  // Blob UID
-  BS,  // Blob State
-  BL,  // Blob Last State
-  BX,  // Blob Centroid PosX
-  BY,  // Blob Centroid PosY
-  BW,  // Blob width
-  BH,  // Blob Height
-  BD   // Blob Depth
-} params_t;
+typedef struct interp interp_t;        // forward declaration
 
 extern uint8_t interpThreshold;
 extern uint8_t currentMode;
@@ -66,6 +44,17 @@ struct preset {
 
 extern preset_t presets[];
 
+typedef enum params {
+  BI,  // [0] Blob UID
+  BS,  // [1] Blob State
+  BL,  // [2] Blob Last State
+  BX,  // [3] Blob Centroid PosX
+  BY,  // [4] Blob Centroid PosY
+  BW,  // [5] Blob width
+  BH,  // [6] Blob Height
+  BD   // [7] Blob Depth
+} params_t;
+
 void LEDS_SETUP(void);
 void SWITCHES_SETUP(void);
 void update_buttons(void);
@@ -73,7 +62,7 @@ void update_presets(void);
 void update_leds(void);
 boolean setLevel(preset_t* preset_ptr);
 
-void preset_load(preset_t* preset_ptr, boolean* state_ptr); // TODO
-void preset_save(preset_t* preset_ptr, boolean* state_ptr); // TODO
+void load_presets(void); // TODO
+void save_presets(void); // TODO
 
 #endif /*__PRESETS_H__*/

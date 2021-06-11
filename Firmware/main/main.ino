@@ -14,10 +14,6 @@
 
 #include <elapsedMillis.h>             // https://github.com/pfeerick/elapsedMillis
 
-#if FLASH_PLAYER || SYNTH_PLAYER || GRANULAR_PLAYER
-#include "soundCard.h"
-#endif
-
 #if MAPPING_LAYAOUT
 #include "mapping.h"
 #endif
@@ -41,15 +37,9 @@
 #if GRANULAR_PLAYER
 #include "player_granular.h"
 #endif
-
-image_t rawFrame;      // Input frame values
-image_t interpFrame;   // Interpolated frame values
-
-llist_t blobs;         // Output blobs linked list
-llist_t midiIn;        // Midi input linked list
-
-uint8_t currentMode = CALIBRATE;   // Init currentMode with CALIBRATE (DEFAULT_MODE)
-uint8_t lastMode = LINE_OUT;       // Init lastMode with LINE_OUT (DEFAULT_MODE)
+#if FLASH_PLAYER || SYNTH_PLAYER || GRANULAR_PLAYER
+#include "soundCard.h"
+#endif
 
 #if DEBUG_FPS
 elapsedMillis curentMillisFps;
@@ -58,16 +48,6 @@ unsigned int fps = 0;
 
 //boolean loadPreset = true;
 //boolean savePreset = false;
-
-preset_t presets[7] = {
-  {13, 31, 29, 0, false, false, false, LOW,  LOW },  // LINE_OUT   - ARGS[minVal, maxVal, val, ledVal, setLed, updateLed, update, D1, D2]
-  { 1, 50, 12, 0, false, false, false, HIGH, LOW },  // SIG_IN     - ARGS[minVal, maxVal, val, ledVal, setLed, updateLed, update, D1, D2]
-  { 1, 31, 17, 0, false, false, false, LOW,  HIGH},  // SIG_OUT    - ARGS[minVal, maxVal, val, ledVal, setLed, updateLed, update, D1, D2]
-  { 5, 30, 10, 0, false, false, false, HIGH, HIGH},  // THRESHOLD  - ARGS[minVal, maxVal, val, ledVal, setLed, updateLed, update, D1, D2]
-  { 1, 6,  1,  0, false, false, false, NULL, NULL},  // MIDI_LEARN - ARGS[minVal, maxVal, val, ledVal, setLed, updateLed, update, D1, D2]
-  { 0, 0,  0,  0, true,  true,  false, NULL, NULL},  // CALIBRATE  - ARGS[minVal, maxVal, val, ledVal, setLed, updateLed, update, D1, D2]
-  { 0, 0,  0,  0, false, false, false, NULL, NULL}   // SAVE       - ARGS[minVal, maxVal, val, ledVal, setLed, updateLed, update, D1, D2]
-};
 
 #if MAPPING_LAYAOUT
 tSwitch_t trigParam = {10, 10, 5, 1000, false};     // ARGS[posX, posY, rSize, debounceTimer, state]
@@ -124,8 +104,8 @@ void setup() {
 };
 
 void loop() {
-  //if (loadPreset) preset_load(&presets[0], &loadPreset); // TODO
-  //if (savePreset) preset_save(&presets[0], &savePreset); // TODO
+  //if (loadPreset) preset_load(); // TODO
+  //if (savePreset) preset_save(); // TODO
 
   update_buttons();
   update_presets();
@@ -138,8 +118,7 @@ void loop() {
   calibrate_matrix();
   scan_matrix();
   interp_matrix();
-  find_blobs(presets[THRESHOLD].val);
-
+  find_blobs();
   //median();
 
 #if USB_MIDI_TRANSMIT
@@ -154,9 +133,8 @@ void loop() {
 
 #if MAPPING_LAYAOUT
   mapping_gridPlay();
-  mapping_control_change(&ccParam);
+  mapping_controlChange(&ccParam);
   mapping_toggle(&toggParam);
-  mapping_trigger(&trigParam);
   mapping_hSlider(&hSliderParam);
   mapping_vSlider(&vSliderParam);
   mapping_cSlider(&cSlidersParam[0]);
@@ -175,9 +153,10 @@ void loop() {
 #if DEBUG_FPS
   if (curentMillisFps >= 1000) {
     curentMillisFps = 0;
-    Serial.printf("\nFPS:%d\tCPU:%f\tMEM:%f", fps, AudioProcessorUsageMax(), AudioMemoryUsageMax());
-    AudioProcessorUsageMaxReset();
-    AudioMemoryUsageMaxReset();
+    Serial.printf("\nFPS:%d", fps);
+    //Serial.printf("\nFPS:%d\tCPU:%f\tMEM:%f", fps, AudioProcessorUsageMax(), AudioMemoryUsageMax());
+    //AudioProcessorUsageMaxReset();
+    //AudioMemoryUsageMaxReset();
     fps = 0;
   };
   fps++;

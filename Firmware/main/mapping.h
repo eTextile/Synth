@@ -81,6 +81,6 @@ void mapping_toggle(tSwitch_t* switch_ptr);
 void mapping_hSlider(hSlider_t* slider_ptr);
 void mapping_vSlider(vSlider_t* slider_ptr);
 void mapping_cSlider(cSlider_t* slider_ptr);
-void mapping_control_change(ccPesets_t* ccPesets_ptr);
+void mapping_controlChange(ccPesets_t* ccPesets_ptr);
 
 #endif /*__MAPPING_H__*/

@@ -15,9 +15,11 @@
 
 #include "config.h"
 #include "llist.h"
+#include "presets.h"
 
 typedef struct lnode lnode_t;          // Forward declaration
 typedef struct llist llist_t;          // Forward declaration
+typedef struct preset preset_t;        // Forward declaration
 
 typedef struct image image_t;
 struct image {
@@ -26,6 +28,7 @@ struct image {
   uint8_t numRows;
 };
 
+extern preset_t presets[];
 extern image_t interpFrame;
 extern llist_t blobs;
 
@@ -122,12 +125,6 @@ struct box {
   uint8_t D; // TODO Make it as float
 };
 
-typedef enum status {
-  FREE,
-  NOT_FOUND,
-  TO_REMOVE
-} status_t;
-
 typedef struct polar polar_t;
 struct polar {
   float r;
@@ -140,6 +137,12 @@ struct velocity {
   float Z;
   float lz;
 };
+
+typedef enum status {
+  FREE,
+  NOT_FOUND,
+  TO_REMOVE
+} status_t;
 
 typedef struct blob blob_t;
 struct blob {
@@ -161,6 +164,6 @@ void lifo_llist_init(llist_t *list, xylr_t* nodesArray, const int nodes); // TOD
 void blob_llist_init(llist_t *list, blob_t* nodesArray, const int nodes); // TODO: Separation of concerns (SoC)
 
 void BLOB_SETUP(void);
-void find_blobs(uint8_t zThreshold);
+void find_blobs(void);
 
 #endif /*__BLOB_H__*/

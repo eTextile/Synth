@@ -22,15 +22,15 @@ typedef struct llist llist_t;       // Forward declaration
 typedef struct blob blob_t;         // Forward declaration
 typedef struct preset preset_t;     // Forward declaration
 
-extern Encoder encoder;
-extern image_t rawFrame;
-extern image_t interpFrame;
-extern llist_t blobs;
-extern preset_t presets[];
-extern uint8_t currentMode;
-extern uint8_t lastMode;
+extern image_t rawFrame;            // Declared in scan.cpp
+extern image_t interpFrame;         // Declared in interp.cpp
+extern llist_t blobs;               // Declared in blob.cpp
+extern Encoder encoder;             // Declared in presets.cpp
+extern preset_t presets[];          // Declared in presets.cpp
+extern uint8_t currentMode;         // Declared in presets.cpp
+extern uint8_t lastMode;            // Declared in presets.cpp
 
 void USB_SLIP_OSC_SETUP(void);
 void usb_slip_osc_handle_input(void);
 
-#endif /*__USB_OSC_TRANSMIT_H__*/
+#endif /*__USB_SLIP_OSC_TRANSMIT_H__*/

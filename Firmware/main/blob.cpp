@@ -32,7 +32,8 @@ polar_t polarCoord[MAX_SYNTH] = {0};      // 1D Array of struct polar_t to store
 llist_t llist_context_stack;              // Free nodes stack
 llist_t llist_context;                    // Used nodes
 llist_t llist_blobs_stack;                // Free nodes stack
-llist_t llist_blobs;                      // Intermediate blobs linked list
+llist_t llist_blobs_temp;                 // Intermediate blobs linked list
+llist_t blobs;                            // Output blobs linked list
 
 void lifo_llist_init(llist_t* llist_ptr, xylr_t* nodesArray_ptr, const int nodes) {
   llist_raz(llist_ptr);
@@ -50,15 +51,15 @@ void blob_llist_init(llist_t* llist_ptr, blob_t* nodesArray_ptr, const int nodes
 
 void BLOB_SETUP(void) {
   lifo_llist_init(&llist_context_stack, &lifoArray[0], LIFO_NODES); // Add X nodes to the llist_context_stack
-  blob_llist_init(&llist_blobs_stack, &blobArray[0], MAX_BLOBS);    // Add X nodes to the llist_blobs_stack linked list
+  blob_llist_init(&llist_blobs_stack, &blobArray[0], MAX_BLOBS);    // Add X nodes to the llist_blobs_stack
   llist_raz(&llist_context);
-  llist_raz(&llist_blobs);
+  llist_raz(&llist_blobs_temp);
   llist_raz(&blobs);
 }
 
 /////////////////////////////// Scanline flood fill algorithm / SFF
 /////////////////////////////// Connected-component labeling / CCL
-void find_blobs(uint8_t zThreshold) {
+void find_blobs(void) {
 
   memset((uint8_t*)bitmapFrame, 0, SIZEOF_FRAME);
 
@@ -69,7 +70,7 @@ void find_blobs(uint8_t zThreshold) {
 
     for (uint8_t posX = (posY % X_STRIDE); posX < NEW_COLS; posX += X_STRIDE) {
       if (!IMAGE_GET_BINARY_PIXEL_FAST(bmp_row_ptr_A, posX)
-          && PIXEL_THRESHOLD(IMAGE_GET_PIXEL_FAST(row_ptr_A, posX), zThreshold)) {
+          && PIXEL_THRESHOLD(IMAGE_GET_PIXEL_FAST(row_ptr_A, posX), presets[THRESHOLD].val)) {
 
         uint8_t oldX = posX;
         uint8_t oldY = posY;
@@ -93,13 +94,13 @@ void find_blobs(uint8_t zThreshold) {
 
           while ((left > 0)
                  && (!IMAGE_GET_BINARY_PIXEL_FAST(bmp_row_ptr_B, left - 1))
-                 && PIXEL_THRESHOLD(IMAGE_GET_PIXEL_FAST(row_ptr_B, left - 1), zThreshold)) {
+                 && PIXEL_THRESHOLD(IMAGE_GET_PIXEL_FAST(row_ptr_B, left - 1), presets[THRESHOLD].val)) {
             left--;
           }
 
           while (right < (NEW_COLS - 1)
                  && (!IMAGE_GET_BINARY_PIXEL_FAST(bmp_row_ptr_B, right + 1))
-                 && PIXEL_THRESHOLD(IMAGE_GET_PIXEL_FAST(row_ptr_B, right + 1), zThreshold)) {
+                 && PIXEL_THRESHOLD(IMAGE_GET_PIXEL_FAST(row_ptr_B, right + 1), presets[THRESHOLD].val)) {
             right++;
           }
 
@@ -133,7 +134,7 @@ void find_blobs(uint8_t zThreshold) {
               for (uint8_t i = top_left; i <= right; i++) {
 
                 if ((!IMAGE_GET_BINARY_PIXEL_FAST(bmp_row_ptr_B, i))
-                    && (PIXEL_THRESHOLD(IMAGE_GET_PIXEL_FAST(row_ptr_B, i), zThreshold))) {
+                    && (PIXEL_THRESHOLD(IMAGE_GET_PIXEL_FAST(row_ptr_B, i), presets[THRESHOLD].val))) {
 
                   xylr_t* context = (xylr_t*)llist_pop_front(&llist_context_stack);
                   //Serial.printf("\nDEBUG_LIFO / A / llist_context_stack / llist_pop_front: %p", (lnode_t*)context);
@@ -166,7 +167,7 @@ void find_blobs(uint8_t zThreshold) {
             for (uint8_t i = bot_left; i <= right; i++) {
 
               if (!IMAGE_GET_BINARY_PIXEL_FAST(bmp_row_ptr_B, i)
-                  && PIXEL_THRESHOLD(IMAGE_GET_PIXEL_FAST(row_ptr_B, i), zThreshold)) {
+                  && PIXEL_THRESHOLD(IMAGE_GET_PIXEL_FAST(row_ptr_B, i), presets[THRESHOLD].val)) {
 
                 xylr_t* context = (xylr_t*)llist_pop_front(&llist_context_stack);
                 //Serial.printf("\nDEBUG_LIFO / B / llist_context_stack / llist_pop_front: %p", (lnode_t*)context);
@@ -217,18 +218,43 @@ void find_blobs(uint8_t zThreshold) {
             break;
           }
         } // END while_A
-
         if (blob_pixels > MIN_BLOB_PIX) {
+          blob_t* blob_ptr = (blob_t*)llist_pop_front(&llist_blobs_stack);
+          blob_ptr->timeTag = millis();
 
-          blob_t* blob = (blob_t*)llist_pop_front(&llist_blobs_stack);
+          blob_ptr->lastCentroid.X = blob_ptr->centroid.X;
+          blob_ptr->lastCentroid.Y = blob_ptr->centroid.Y;
 
-          blob->timeTag = millis();
-          blob->centroid.X = blob_cx / (float)blob_pixels;
-          blob->centroid.Y = blob_cy / (float)blob_pixels;
-          blob->box.W = (blob_x2 - blob_x1);
-          blob->box.H = blob_height;
-          blob->box.D = blob_depth - zThreshold; // NEED TO ADD A LIMIT?
-          llist_push_front(&llist_blobs, blob);
+          blob_ptr->centroid.X = blob_cx / (float)blob_pixels;
+          blob_ptr->centroid.Y = blob_cy / (float)blob_pixels;
+          blob_ptr->box.W = (blob_x2 - blob_x1);
+          blob_ptr->box.H = blob_height;
+          blob_ptr->box.D = blob_depth - presets[THRESHOLD].val;
+
+#if GET_BLOBS_POLAR_COORDINATES
+          float posX = blob_ptr->centroid.X - CENTER_X;
+          float posY = blob_ptr->centroid.Y - CENTER_Y;
+          if (posX == 0 && posY == 0 ) {
+            blob_ptr->polar.r = 0;
+            blob_ptr->polar.phi = 0;
+          }
+          else {
+            blob_ptr->polar.r = sqrt(posX * posX + posY * posY);
+            if (posX == 0 && 0 < posY) {
+              blob_ptr->polar.phi = PI / 2;
+            } else if (posX == 0 && posY < 0) {
+              blob_ptr->polar.phi = PI * 3 / 2;
+            } else if (posX < 0) {
+              blob_ptr->polar.phi = atan(posY / posX) + PI;
+            } else if (posY < 0) {
+              blob_ptr->polar.phi = atan(posY / posX) + 2 * PI;
+            } else {
+              blob_ptr->polar.phi = atan(posY / posX);
+            }
+          }
+#else
+          llist_push_front(&llist_blobs_temp, blob_ptr);
+#endif
         }
         posX = oldX;
         posY = oldY;
@@ -256,7 +282,7 @@ void find_blobs(uint8_t zThreshold) {
 
   // NEW BLOBS MANAGMENT
   // Look for corresponding blobs into the **inputBlobs** and **outputBlobs** linked list
-  for (blob_t* blobIn = (blob_t*)ITERATOR_START_FROM_HEAD(&llist_blobs); blobIn != NULL; blobIn = (blob_t*)ITERATOR_NEXT(blobIn)) {
+  for (blob_t* blobIn = (blob_t*)ITERATOR_START_FROM_HEAD(&llist_blobs_temp); blobIn != NULL; blobIn = (blob_t*)ITERATOR_NEXT(blobIn)) {
     float minDist = 255.0f;
     blob_t* nearestBlob = NULL;
     for (blob_t* blobOut = (blob_t*)ITERATOR_START_FROM_HEAD(&blobs); blobOut != NULL; blobOut = (blob_t*)ITERATOR_NEXT(blobOut)) {
@@ -313,7 +339,7 @@ void find_blobs(uint8_t zThreshold) {
     blob_t* prevBlob_ptr = NULL;
     for (blob_t* blobOut = (blob_t*)ITERATOR_START_FROM_HEAD(&blobs); blobOut != NULL; blobOut = (blob_t*)ITERATOR_NEXT(blobOut)) {
       boolean found = false;
-      for (blob_t* blobIn = (blob_t*)ITERATOR_START_FROM_HEAD(&llist_blobs); blobIn != NULL; blobIn = (blob_t*)ITERATOR_NEXT(blobIn)) {
+      for (blob_t* blobIn = (blob_t*)ITERATOR_START_FROM_HEAD(&llist_blobs_temp); blobIn != NULL; blobIn = (blob_t*)ITERATOR_NEXT(blobIn)) {
         if (blobOut->UID == blobIn->UID) {
           found = true;
           break;
@@ -329,7 +355,7 @@ void find_blobs(uint8_t zThreshold) {
           blobOut->status = TO_REMOVE;
           //Serial.printf("\nDEBUG_FIND_BLOBS / Blob: %p in the **outputBlobs** linked list taged TO_REMOVE", (lnode_t*)blobOut);
         }
-        llist_push_front(&llist_blobs, blobOut);
+        llist_push_front(&llist_blobs_temp, blobOut);
         break;
       }
       prevBlob_ptr = blobOut;
@@ -339,43 +365,16 @@ void find_blobs(uint8_t zThreshold) {
     }
   }
 
-  llist_swap_llist(&blobs, &llist_blobs);     // Swap inputBlobs with outputBlobs linked list
-  llist_save_nodes(&llist_blobs_stack, &llist_blobs);  // Rescure all dead blobs Linked list nodes
-
-#if GET_BLOBS_POLAR_COORDINATES
-  for (blob_t* blob_ptr = (blob_t*)ITERATOR_START_FROM_HEAD(&blobs); blob_ptr != NULL; blob_ptr = (blob_t*)ITERATOR_NEXT(blob_ptr)) {
-    float posX = blob_ptr->centroid.X - CENTER_X;
-    float posY = blob_ptr->centroid.Y - CENTER_Y;
-    if (posX == 0 && posY == 0 ) {
-      blob_ptr->polar.r = 0;
-      blob_ptr->polar.phi = 0;
-    }
-    else {
-      blob_ptr->polar.r = sqrt(posX * posX + posY * posY);
-      if (posX == 0 && 0 < posY) {
-        blob_ptr->polar.phi = PI / 2;
-      } else if (posX == 0 && posY < 0) {
-        blob_ptr->polar.phi = PI * 3 / 2;
-      } else if (posX < 0) {
-        blob_ptr->polar.phi = atan(posY / posX) + PI;
-      } else if (posY < 0) {
-        blob_ptr->polar.phi = atan(posY / posX) + 2 * PI;
-      } else {
-        blob_ptr->polar.phi = atan(posY / posX);
-      }
-    }
-  }
-#endif
+  llist_swap_llist(&blobs, &llist_blobs_temp);             // Swap inputBlobs with outputBlobs linked list
+  llist_save_nodes(&llist_blobs_stack, &llist_blobs_temp); // Rescure all dead blobs Linked list nodes
 
 #if GET_BLOBS_VELOCITY
   for (blob_t* blob_ptr = (blob_t*)ITERATOR_START_FROM_HEAD(&blobs); blob_ptr != NULL; blob_ptr = (blob_t*)ITERATOR_NEXT(blob_ptr)) {
     if (blob_ptr->UID < MAX_SYNTH) {
       float vx = blob_ptr->centroid.X - blob_ptr->lastCentroid.X;
       float vy = blob_ptr->centroid.Y - blob_ptr->lastCentroid.Y;
-      blob_ptr->velocity.XY = sqrt(vx * vx + vy * vy); // pow(vx, 2) + pow(vy, 2)
+      blob_ptr->velocity.XY = sqrt(sq(vx) + sq(vy));
       blob_ptr->velocity.Z = blob_ptr->box.D - blob_ptr->velocity.lz;
-      blob_ptr->lastCentroid.X = blob_ptr->centroid.X;
-      blob_ptr->lastCentroid.Y = blob_ptr->centroid.Y;
       blob_ptr->velocity.lz = blob_ptr->box.D;
     };
   };
@@ -393,7 +392,7 @@ void find_blobs(uint8_t zThreshold) {
 #endif
 #if DEBUG_BLOBS
   for (blob_t* blob_ptr = (blob_t*)ITERATOR_START_FROM_HEAD(&blobs); blob_ptr != NULL; blob_ptr = (blob_t*)ITERATOR_NEXT(blob_ptr)) {
-    Serial.printf("\nDEBUG_FIND_BLOBS:%d\tLS:%d\tS:%d\tX:%f\tY:%f\tW:%d\tH:%d\tD:%d\tR:%d\tP:%d\tVXY:%d\tVZ:%d\t",
+    Serial.printf("\nDEBUG_BLOBS:%d\tLS:%d\tS:%d\tX:%f\tY:%f\tW:%d\tH:%d\tD:%d\tR:%d\tP:%d\tVXY:%f\tVZ:%f",
                   blob_ptr->UID,
                   blob_ptr->lastState,
                   blob_ptr->state,
@@ -401,7 +400,7 @@ void find_blobs(uint8_t zThreshold) {
                   blob_ptr->centroid.Y,
                   blob_ptr->box.W,
                   blob_ptr->box.H,
-                  blob_ptr->box.D
+                  blob_ptr->box.D,
                   blob_ptr->polar.r,
                   blob_ptr->polar.phi,
                   blob_ptr->velocity.XY,

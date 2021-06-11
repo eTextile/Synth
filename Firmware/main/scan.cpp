@@ -37,6 +37,8 @@ ADC::Sync_result result;                 // Store ADC_0 & ADC_1
 uint8_t offsetArray[RAW_FRAME] = {0};    // 1D Array to store E256 smallest values
 uint8_t rawFrameArray[RAW_FRAME] = {0};  // 1D Array to store E256 ofseted analog input values
 
+image_t rawFrame;                        // Input frame values
+
 // Array to store all parameters used to configure the two 8:1 analog multiplexeurs
 // Each byte |ENA|A|B|C|ENA|A|B|C|
 uint8_t setDualCols[DUAL_COLS] = {
@@ -47,6 +49,7 @@ uint8_t setDualCols[DUAL_COLS] = {
 #endif
 };
 
+#undef SPI_HAS_TRANSACTION
 #define SPI_HAS_TRANSACTION 0
 
 void SPI_SETUP(void) {
