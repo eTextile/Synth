@@ -9,11 +9,11 @@
 
 #include "median.h"
 
-median_t blobMedian[MAX_SYNTH] = {0};       // 1D ...
+median_t blobMedian[MAX_SYNTH] = {0};  // 1D ...
 
-void median(llist_t* blobs_ptr) {
+void median(void) {
 
-  for (blob_t* blob_ptr = (blob_t*)ITERATOR_START_FROM_HEAD(blobs_ptr); blob_ptr != NULL; blob_ptr = (blob_t*)ITERATOR_NEXT(blob_ptr)) {
+  for (blob_t* blob_ptr = (blob_t*)ITERATOR_START_FROM_HEAD(&blobs); blob_ptr != NULL; blob_ptr = (blob_t*)ITERATOR_NEXT(blob_ptr)) {
 
     float inputVal = blob_ptr->box.D; // The new value
     float outputVal = inputVal;       // The new value could be the median

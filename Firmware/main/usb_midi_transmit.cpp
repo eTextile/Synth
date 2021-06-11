@@ -16,24 +16,30 @@
 midiNode_t midiInArray[MAX_SYNTH] = {0}; // 1D Array to alocate memory for incoming midi notes
 llist_t  midiNodes_stack;                // Midi nodes stack
 
-void midi_llist_init(llist_t* nodes_ptr, midiNode_t* nodeArray_ptr) {
+void usb_midi_llist_init(llist_t* nodes_ptr, midiNode_t* nodeArray_ptr, const int nodes) {
   llist_raz(nodes_ptr);
-  for (int i = 0; i < MAX_SYNTH; i++) {
+  for (int i = 0; i < nodes; i++) {
     llist_push_front(nodes_ptr, &nodeArray_ptr[i]);
   }
 }
 
 void USB_MIDI_SETUP(void) {
-  midi_llist_init(&midiNodes_stack, &midiInArray[0]);
+  usb_midi_llist_init(&midiNodes_stack, &midiInArray[0], MAX_SYNTH);
   usbMIDI.begin();
-  usbMIDI.setHandleControlChange(usb_control_change);
+  usbMIDI.setHandleControlChange(usb_midi_update_presets);
 };
 
 void usb_midi_handle_input(void) {
   usbMIDI.read();
+  if (currentMode == MIDI_LEARN) {
+    usb_midi_learn();
+  }
+  else {
+    usb_midi_send_blobs();
+  };
 };
 
-void usb_control_change(byte channel, byte control, byte value) {
+void usb_midi_update_presets(byte channel, byte control, byte value) {
   switch (control) {
     case CALIBRATE: // CONTROL 5
       lastMode = currentMode;
@@ -42,7 +48,7 @@ void usb_control_change(byte channel, byte control, byte value) {
       presets[CALIBRATE].updateLed = true;
       break;
     case THRESHOLD: // CONTROL 3
-      //lastMode = currentMode;
+      lastMode = currentMode;
       currentMode = THRESHOLD;
       presets[THRESHOLD].val = map(value, 0, 127, presets[THRESHOLD].minVal, presets[THRESHOLD].maxVal);
       encoder.write(presets[THRESHOLD].val << 2);
@@ -57,23 +63,23 @@ void usb_control_change(byte channel, byte control, byte value) {
   };
 };
 
-void usb_midi_send_raw(image_t* frame_ptr) {
-  usbMIDI.sendSysEx(RAW_FRAME, &frame_ptr->pData[0]);
+void usb_midi_send_raw(void) {
+  usbMIDI.sendSysEx(RAW_FRAME, &rawFrame.pData[0]);
   while (usbMIDI.read()); // Read and discard any incoming MIDI messages
 }
 
-void usb_midi_send_interp(image_t* frame_ptr) {
-  usbMIDI.sendSysEx(NEW_FRAME, &frame_ptr->pData[0]);
+void usb_midi_send_interp(void) {
+  usbMIDI.sendSysEx(NEW_FRAME, &interpFrame.pData[0]);
   while (usbMIDI.read()); // Read and discard any incoming MIDI messages
 }
 
 // Send blobs values using ControlChange MIDI format
 // Send only the last blob that have been added to the sensor surface
 // Separate blob's values according to the encoder position to allow the mapping into Max4Live
-void usb_midi_learn(llist_t* llist_ptr, preset_t* preset_ptr) {
-  if (llist_ptr->tail_ptr != NULL) {
-    blob_t* blob_ptr = (blob_t*)llist_ptr->tail_ptr;
-    switch (preset_ptr->val) {
+void usb_midi_learn(void) {
+  blob_t* blob_ptr = (blob_t*)blobs.tail_ptr;
+  if (blob_ptr != NULL) {
+    switch (presets[MIDI_LEARN].val) {
       case BS:
         //usbMIDI.sendControlChange(BS, blob_ptr->state, blob_ptr->UID + 1);
         if (!blob_ptr->lastState) usbMIDI.sendNoteOn(blob_ptr->UID + 1, 1, 0);
@@ -103,8 +109,8 @@ void usb_midi_learn(llist_t* llist_ptr, preset_t* preset_ptr) {
 }
 
 // Send all blobs values using MIDI format
-void usb_midi_send_blobs(llist_t* llist_ptr) {
-  for (blob_t* blob_ptr = (blob_t*)ITERATOR_START_FROM_HEAD(llist_ptr); blob_ptr != NULL; blob_ptr = (blob_t*)ITERATOR_NEXT(blob_ptr)) {
+void usb_midi_send_blobs(void) {
+  for (blob_t* blob_ptr = (blob_t*)ITERATOR_START_FROM_HEAD(&blobs); blob_ptr != NULL; blob_ptr = (blob_t*)ITERATOR_NEXT(blob_ptr)) {
     if (!blob_ptr->lastState) usbMIDI.sendNoteOn(blob_ptr->UID + 1, 1, 0);
     usbMIDI.sendControlChange(BX, (uint8_t)round(map(blob_ptr->centroid.X, 0.0, X_MAX, 0, 127)), blob_ptr->UID + 1);
     usbMIDI.sendControlChange(BY, (uint8_t)round(map(blob_ptr->centroid.Y, 0.0, Y_MAX, 0, 127)), blob_ptr->UID + 1);

@@ -64,11 +64,13 @@ struct preset {
   boolean D2;
 };
 
+extern preset_t presets[];
+
 void LEDS_SETUP(void);
 void SWITCHES_SETUP(void);
-void update_buttons(preset_t* presets_ptr);
-void update_presets(preset_t* presets_ptr);
-void update_leds(preset_t* preset_ptr);
+void update_buttons(void);
+void update_presets(void);
+void update_leds(void);
 boolean setLevel(preset_t* preset_ptr);
 
 void preset_load(preset_t* preset_ptr, boolean* state_ptr); // TODO

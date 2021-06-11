@@ -12,10 +12,13 @@
 #define NAME                     "ETEXTILE_SYNTHESIZER"
 #define VERSION                  "1.0.5"
 
-#define USB_MIDI_TRANSMIT        0  // [0:1] Set the eTextile-Synthesizer as USB MIDI divice **DO NOT FORGET: Arduino/Touls/USB_Type/MIDI**
+#define GET_POLAR_COORDINATES    1  // [0:1]
+#define GET_BLOBS_VELOCITY       1  // [0:1]
+
+#define USB_MIDI_TRANSMIT        1  // [0:1] Set the eTextile-Synthesizer as USB MIDI divice **DO NOT FORGET: Arduino/Touls/USB_Type/MIDI**
 #define USB_SLIP_OSC_TRANSMIT    0  // [0:1] Set the eTextile-Synthesizer as USB SLIP_OSC divice **DO NOT FORGET: Arduino/Touls/USB_Type/Serial**
 
-#define HARDWARE_MIDI_TRANSMIT   1  // [0:1] Set the eTextile-Synthesizer as MIDI divice **DO NOT FORGET: Arduino/Touls/USB_Type/Serial**
+#define HARDWARE_MIDI_TRANSMIT   0  // [0:1] Set the eTextile-Synthesizer as MIDI divice **DO NOT FORGET: Arduino/Touls/USB_Type/Serial**
 #define MAPPING_LAYAOUT          0
 
 #define SYNTH_PLAYER             0  // [0:1] Set the eTextile-Synthesizer as STANDALONE divice

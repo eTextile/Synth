@@ -81,19 +81,19 @@ void ADC_SETUP(void) {
   //adc->adc1->setSamplingSpeed(ADC_SAMPLING_SPEED::HIGH_SPEED);          // Change the sampling speed
 };
 
-void SCAN_SETUP(image_t* inputFrame_ptr) {
+void SCAN_SETUP(void) {
   // image_t* rawFrame init config
-  inputFrame_ptr->pData = &rawFrameArray[0];
-  inputFrame_ptr->numCols = RAW_COLS;
-  inputFrame_ptr->numRows = RAW_ROWS;
+  rawFrame.pData = &rawFrameArray[0];
+  rawFrame.numCols = RAW_COLS;
+  rawFrame.numRows = RAW_ROWS;
 };
 
 // Columns are analog INPUT_PINS reded two by two
 // Rows are digital OUTPUT_PINS supplyed one by one sequentially with 3.3V
-void calibrate_matrix(preset_t* presets_ptr) {
+void calibrate_matrix(void) {
 
-  if (presets_ptr[CALIBRATE].update == true) {
-    presets_ptr[CALIBRATE].update = false;
+  if (presets[CALIBRATE].update == true) {
+    presets[CALIBRATE].update = false;
     uint16_t setRows;
     for (uint8_t i = 0; i < CALIBRATION_CYCLES; i++) {
       for (uint8_t col = 0; col < DUAL_COLS; col++) {         // ANNALOG_PINS [0-7] with [8-15]

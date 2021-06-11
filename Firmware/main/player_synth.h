@@ -21,6 +21,8 @@
 typedef struct llist llist_t;       // Forward declaration
 typedef struct blob blob_t;         // Forward declaration
 
+extern llist_t blobs;
+
 typedef struct synth synth_t;
 struct synth {
   AudioSynthWaveform* wf;
@@ -30,6 +32,6 @@ struct synth {
 };
 
 void SYNTH_PLAYER_SETUP(void);
-void synth_player(llist_t* blobs_ptr);
+void synth_player(void);
 
 #endif /*__PLAYER_SYNTH_H__*/

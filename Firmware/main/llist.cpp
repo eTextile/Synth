@@ -6,6 +6,15 @@
 
 #include "llist.h"
 
+/* TODO
+void llist_init(llist_t* nodes_ptr, void* nodeArray_ptr, const int nodes) {
+  llist_raz(nodes_ptr);
+  for (int i = 0; i < nodes; i++) {
+    llist_push_front(nodes_ptr, &nodeArray_ptr[i]);
+  }
+}
+*/
+
 void llist_raz(llist_t* llist_ptr) {
   llist_ptr->head_ptr = llist_ptr->tail_ptr = NULL;
 }

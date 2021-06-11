@@ -20,6 +20,8 @@ typedef struct blob blob_t;         // Forward declaration
 typedef struct llist llist_t;       // Forward declaration
 typedef struct midiNode midiNode_t; // Forward declaration
 
+extern llist_t blobs;
+
 #undef round
 #define round(x) lround(x)
 
@@ -72,12 +74,13 @@ struct cSlider {
 };
 
 void GRID_LAYOUT_SETUP(void);
-void gridPopulate(llist_t* llist_ptr);
-void gridPlay(llist_t* llist_ptr);
-boolean trigger(llist_t* llist_ptr, tSwitch_t* switch_ptr);
-boolean toggle(llist_t* llist_ptr, tSwitch_t* switch_ptr);
-void hSlider(llist_t* llist_ptr, hSlider_t* slider_ptr);
-void vSlider(llist_t* llist_ptr, vSlider_t* slider_ptr);
-void cSlider(llist_t* llist_ptr, polar_t* polar_ptr, cSlider_t* slider_ptr);
+void gridPopulate(void);
+void gridPlay(void);
+void trigger(tSwitch_t* switch_ptr);
+void toggle(tSwitch_t* switch_ptr);
+void hSlider(hSlider_t* slider_ptr);
+void vSlider(vSlider_t* slider_ptr);
+void cSlider(polar_t* polar_ptr, cSlider_t* slider_ptr);
+void control_change(ccPesets_t* ccPesets_ptr);
 
 #endif /*__MAPPING_H__*/

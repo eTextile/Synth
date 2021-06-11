@@ -34,37 +34,37 @@ llist_t llist_context;                    // Used nodes
 llist_t llist_blobs_stack;                // Free nodes stack
 llist_t llist_blobs;                      // Intermediate blobs linked list
 
-void blob_llist_init(llist_t* llist_ptr, blob_t* nodesArray_ptr) {
+void lifo_llist_init(llist_t* llist_ptr, xylr_t* nodesArray_ptr, const int nodes) {
   llist_raz(llist_ptr);
-  for (int i = 0; i < MAX_BLOBS; i++) {
+  for (int i = 0; i < nodes; i++) {
     llist_push_front(llist_ptr, &nodesArray_ptr[i]);
   }
 }
 
-void lifo_llist_init(llist_t* llist_ptr, xylr_t* nodesArray_ptr) {
+void blob_llist_init(llist_t* llist_ptr, blob_t* nodesArray_ptr, const int nodes) {
   llist_raz(llist_ptr);
-  for (int i = 0; i < LIFO_NODES; i++) {
+  for (int i = 0; i < nodes; i++) {
     llist_push_front(llist_ptr, &nodesArray_ptr[i]);
   }
 }
 
-void BLOB_SETUP(llist_t* blobs_ptr) {
-  lifo_llist_init(&llist_context_stack, &lifoArray[0]); // Add X nodes to the llist_context_stack
-  blob_llist_init(&llist_blobs_stack, &blobArray[0]); // Add X nodes to the llist_blobs_stack linked list
+void BLOB_SETUP(void) {
+  lifo_llist_init(&llist_context_stack, &lifoArray[0], LIFO_NODES); // Add X nodes to the llist_context_stack
+  blob_llist_init(&llist_blobs_stack, &blobArray[0], MAX_BLOBS);    // Add X nodes to the llist_blobs_stack linked list
   llist_raz(&llist_context);
   llist_raz(&llist_blobs);
-  llist_raz(blobs_ptr);
+  llist_raz(&blobs);
 }
 
 /////////////////////////////// Scanline flood fill algorithm / SFF
 /////////////////////////////// Connected-component labeling / CCL
-void find_blobs(uint8_t zThreshold, image_t* inputFrame_ptr, llist_t* outputBlobs_ptr) {
+void find_blobs(uint8_t zThreshold) {
 
   memset((uint8_t*)bitmapFrame, 0, SIZEOF_FRAME);
 
   for (uint8_t posY = 0; posY < NEW_ROWS; posY += Y_STRIDE) {
 
-    uint8_t* row_ptr_A = COMPUTE_IMAGE_ROW_PTR(inputFrame_ptr, posY);
+    uint8_t* row_ptr_A = COMPUTE_IMAGE_ROW_PTR(&interpFrame, posY);
     uint8_t* bmp_row_ptr_A = COMPUTE_BINARY_IMAGE_ROW_PTR(&bitmapFrame[0], posY);
 
     for (uint8_t posX = (posY % X_STRIDE); posX < NEW_COLS; posX += X_STRIDE) {
@@ -88,7 +88,7 @@ void find_blobs(uint8_t zThreshold, image_t* inputFrame_ptr, llist_t* outputBlob
           uint8_t left = posX;
           uint8_t right = posX;
 
-          uint8_t* row_ptr_B = COMPUTE_IMAGE_ROW_PTR(inputFrame_ptr, posY);
+          uint8_t* row_ptr_B = COMPUTE_IMAGE_ROW_PTR(&interpFrame, posY);
           uint8_t* bmp_row_ptr_B = COMPUTE_BINARY_IMAGE_ROW_PTR (&bitmapFrame[0], posY);
 
           while ((left > 0)
@@ -126,7 +126,7 @@ void find_blobs(uint8_t zThreshold, image_t* inputFrame_ptr, llist_t* outputBlob
           while (1) { // while_B
 
             if (posY > 0) {
-              row_ptr_B = COMPUTE_IMAGE_ROW_PTR(inputFrame_ptr, posY - 1);
+              row_ptr_B = COMPUTE_IMAGE_ROW_PTR(&interpFrame, posY - 1);
               bmp_row_ptr_B = COMPUTE_BINARY_IMAGE_ROW_PTR(&bitmapFrame[0], posY - 1);
 
               boolean recurse = false;
@@ -159,7 +159,7 @@ void find_blobs(uint8_t zThreshold, image_t* inputFrame_ptr, llist_t* outputBlob
               }
             }
 
-            row_ptr_B = COMPUTE_IMAGE_ROW_PTR(inputFrame_ptr, posY + 1);
+            row_ptr_B = COMPUTE_IMAGE_ROW_PTR(&interpFrame, posY + 1);
             bmp_row_ptr_B = COMPUTE_BINARY_IMAGE_ROW_PTR(&bitmapFrame[0], posY + 1);
 
             boolean recurse = false;
@@ -241,10 +241,10 @@ void find_blobs(uint8_t zThreshold, image_t* inputFrame_ptr, llist_t* outputBlob
   // Suppress DEAD blobs from the outputBlobs linked list
   while (1) {
     boolean deadFound = false;
-    blob_t* blob_ptr = (blob_t*)ITERATOR_START_FROM_HEAD(outputBlobs_ptr);
+    blob_t* blob_ptr = (blob_t*)ITERATOR_START_FROM_HEAD(&blobs);
     if (blob_ptr != NULL && blob_ptr->status == TO_REMOVE) {
       deadFound = true;
-      blob_ptr = (blob_t*)llist_pop_front(outputBlobs_ptr);
+      blob_ptr = (blob_t*)llist_pop_front(&blobs);
       blob_ptr->status = FREE;
       llist_push_front(&llist_blobs_stack, blob_ptr);
       //Serial.printf("\nDEBUG_FIND_BLOBS / Blob: %p removed from **outputBlobs** linked list", (lnode_t*)blob_ptr);
@@ -259,7 +259,7 @@ void find_blobs(uint8_t zThreshold, image_t* inputFrame_ptr, llist_t* outputBlob
   for (blob_t* blobIn = (blob_t*)ITERATOR_START_FROM_HEAD(&llist_blobs); blobIn != NULL; blobIn = (blob_t*)ITERATOR_NEXT(blobIn)) {
     float minDist = 255.0f;
     blob_t* nearestBlob = NULL;
-    for (blob_t* blobOut = (blob_t*)ITERATOR_START_FROM_HEAD(outputBlobs_ptr); blobOut != NULL; blobOut = (blob_t*)ITERATOR_NEXT(blobOut)) {
+    for (blob_t* blobOut = (blob_t*)ITERATOR_START_FROM_HEAD(&blobs); blobOut != NULL; blobOut = (blob_t*)ITERATOR_NEXT(blobOut)) {
       float dist = sqrtf(pow(blobIn->centroid.X - blobOut->centroid.X, 2) + pow(blobIn->centroid.Y - blobOut->centroid.Y, 2));
 #if DEBUG_FIND_BLOBS
       Serial.printf("\nDEBUG_FIND_BLOBS / Distance between input & output blobs positions: %f ", dist);
@@ -288,7 +288,7 @@ void find_blobs(uint8_t zThreshold, image_t* inputFrame_ptr, llist_t* outputBlob
       uint8_t minID = 0;
       while (1) {
         boolean isFree = true;
-        for (blob_t* blob_ptr = (blob_t*)ITERATOR_START_FROM_HEAD(outputBlobs_ptr); blob_ptr != NULL; blob_ptr = (blob_t*)ITERATOR_NEXT(blob_ptr)) {
+        for (blob_t* blob_ptr = (blob_t*)ITERATOR_START_FROM_HEAD(&blobs); blob_ptr != NULL; blob_ptr = (blob_t*)ITERATOR_NEXT(blob_ptr)) {
           if (blob_ptr->UID == minID) {
             isFree = false;
             minID++;
@@ -311,7 +311,7 @@ void find_blobs(uint8_t zThreshold, image_t* inputFrame_ptr, llist_t* outputBlob
   while (1) {
     boolean allDone = true;
     blob_t* prevBlob_ptr = NULL;
-    for (blob_t* blobOut = (blob_t*)ITERATOR_START_FROM_HEAD(outputBlobs_ptr); blobOut != NULL; blobOut = (blob_t*)ITERATOR_NEXT(blobOut)) {
+    for (blob_t* blobOut = (blob_t*)ITERATOR_START_FROM_HEAD(&blobs); blobOut != NULL; blobOut = (blob_t*)ITERATOR_NEXT(blobOut)) {
       boolean found = false;
       for (blob_t* blobIn = (blob_t*)ITERATOR_START_FROM_HEAD(&llist_blobs); blobIn != NULL; blobIn = (blob_t*)ITERATOR_NEXT(blobIn)) {
         if (blobOut->UID == blobIn->UID) {
@@ -321,7 +321,7 @@ void find_blobs(uint8_t zThreshold, image_t* inputFrame_ptr, llist_t* outputBlob
       }
       if (!found) {
         allDone = false;
-        llist_extract_node(outputBlobs_ptr, prevBlob_ptr, blobOut);
+        llist_extract_node(&blobs, prevBlob_ptr, blobOut);
         blobOut->status = NOT_FOUND;
         //Serial.printf("\nDEBUG_FIND_BLOBS / Blob: %p in the **outputBlobs** linked list is NOT_FOUND", (lnode_t*)blobOut);
         if ((millis() - blobOut->timeTag) > DEBOUNCE_TIME) {
@@ -339,22 +339,46 @@ void find_blobs(uint8_t zThreshold, image_t* inputFrame_ptr, llist_t* outputBlob
     }
   }
 
-  llist_swap_llist(outputBlobs_ptr, &llist_blobs);     // Swap inputBlobs with outputBlobs linked list
+  llist_swap_llist(&blobs, &llist_blobs);     // Swap inputBlobs with outputBlobs linked list
   llist_save_nodes(&llist_blobs_stack, &llist_blobs);  // Rescure all dead blobs Linked list nodes
 
-#if DEBUG_BLOBS
-  for (blob_t* blob = (blob_t*)ITERATOR_START_FROM_HEAD(outputBlobs_ptr); blob != NULL; blob = (blob_t*)ITERATOR_NEXT(blob)) {
-    Serial.printf("\nDEBUG_FIND_BLOBS:%d\tLS:%d\tS:%d\tX:%f\tY:%f\tW:%d\tH:%d\tD:%d\t",
-                  blob->UID,
-                  blob->lastState,
-                  blob->state,
-                  blob->centroid.X,
-                  blob->centroid.Y,
-                  blob->box.W,
-                  blob->box.H,
-                  blob->box.D
-                 );
+#if GET_BLOBS_POLAR_COORDINATES
+  for (blob_t* blob_ptr = (blob_t*)ITERATOR_START_FROM_HEAD(&blobs); blob_ptr != NULL; blob_ptr = (blob_t*)ITERATOR_NEXT(blob_ptr)) {
+    float posX = blob_ptr->centroid.X - CENTER_X;
+    float posY = blob_ptr->centroid.Y - CENTER_Y;
+    if (posX == 0 && posY == 0 ) {
+      blob_ptr->polar.r = 0;
+      blob_ptr->polar.phi = 0;
+    }
+    else {
+      blob_ptr->polar.r = sqrt(posX * posX + posY * posY);
+      if (posX == 0 && 0 < posY) {
+        blob_ptr->polar.phi = PI / 2;
+      } else if (posX == 0 && posY < 0) {
+        blob_ptr->polar.phi = PI * 3 / 2;
+      } else if (posX < 0) {
+        blob_ptr->polar.phi = atan(posY / posX) + PI;
+      } else if (posY < 0) {
+        blob_ptr->polar.phi = atan(posY / posX) + 2 * PI;
+      } else {
+        blob_ptr->polar.phi = atan(posY / posX);
+      }
+    }
   }
+#endif
+
+#if GET_BLOBS_VELOCITY
+  for (blob_t* blob_ptr = (blob_t*)ITERATOR_START_FROM_HEAD(&blobs); blob_ptr != NULL; blob_ptr = (blob_t*)ITERATOR_NEXT(blob_ptr)) {
+    if (blob_ptr->UID < MAX_SYNTH) {
+      float vx = blob_ptr->centroid.X - blob_ptr->lastCentroid.X;
+      float vy = blob_ptr->centroid.Y - blob_ptr->lastCentroid.Y;
+      blob_ptr->velocity.XY = sqrt(vx * vx + vy * vy); // pow(vx, 2) + pow(vy, 2)
+      blob_ptr->velocity.Z = blob_ptr->box.D - blob_ptr->velocity.lz;
+      blob_ptr->lastCentroid.X = blob_ptr->centroid.X;
+      blob_ptr->lastCentroid.Y = blob_ptr->centroid.Y;
+      blob_ptr->velocity.lz = blob_ptr->box.D;
+    };
+  };
 #endif
 
 #if DEBUG_BITMAP
@@ -367,55 +391,22 @@ void find_blobs(uint8_t zThreshold, image_t* inputFrame_ptr, llist_t* outputBlob
   }
   Serial.printf("\n");
 #endif
-}
-
-void getBlobsVelocity(llist_t* blobs_ptr) {
-  for (blob_t* blob_ptr = (blob_t*)ITERATOR_START_FROM_HEAD(blobs_ptr); blob_ptr != NULL; blob_ptr = (blob_t*)ITERATOR_NEXT(blob_ptr)) {
-    if (blob_ptr->UID < MAX_SYNTH) {
-      float vx = blob_ptr->centroid.X - blobVelocity[blob_ptr->UID].lastPos.X;
-      float vy = blob_ptr->centroid.Y - blobVelocity[blob_ptr->UID].lastPos.Y;
-
-      blobVelocity[blob_ptr->UID].vxy = sqrt(vx * vx + vy * vy); //pow(vx, 2) + pow(vy, 2)
-      blobVelocity[blob_ptr->UID].vz = blob_ptr->box.D - blobVelocity[blob_ptr->UID].lvz;
-
-      blobVelocity[blob_ptr->UID].lastPos.X = blob_ptr->centroid.X;
-      blobVelocity[blob_ptr->UID].lastPos.Y = blob_ptr->centroid.Y;
-      blobVelocity[blob_ptr->UID].lvz = blob_ptr->box.D;
-
-#if DEBUG_MAPPING
-      Serial.printf("\nDEBUG_VELOCITY:\tvxy:%f\tvz:%f",
-                    blobVelocity[blob_ptr->UID].vxy,
-                    blobVelocity[blob_ptr->UID].vz
-                   );
-#endif
-    };
-  };
-};
-
-void getPolarCoordinates(llist_t* blobs_ptr) {
-  for (blob_t* blob_ptr = (blob_t*)ITERATOR_START_FROM_HEAD(blobs_ptr); blob_ptr != NULL; blob_ptr = (blob_t*)ITERATOR_NEXT(blob_ptr)) {
-    float posX = blob_ptr->centroid.X - CENTER_X;
-    float posY = blob_ptr->centroid.Y - CENTER_Y;
-    if (posX == 0 && posY == 0 ) {
-      polarCoord[blob_ptr->UID].r = 0;
-      polarCoord[blob_ptr->UID].phi = 0;
-    }
-    else {
-      polarCoord[blob_ptr->UID].r = sqrt(posX * posX + posY * posY);
-      if (posX == 0 && 0 < posY) {
-        polarCoord[blob_ptr->UID].phi = PI / 2;
-      } else if (posX == 0 && posY < 0) {
-        polarCoord[blob_ptr->UID].phi = PI * 3 / 2;
-      } else if (posX < 0) {
-        polarCoord[blob_ptr->UID].phi = atan(posY / posX) + PI;
-      } else if (posY < 0) {
-        polarCoord[blob_ptr->UID].phi = atan(posY / posX) + 2 * PI;
-      } else {
-        polarCoord[blob_ptr->UID].phi = atan(posY / posX);
-      }
-    }
-#if DEBUG_MAPPING
-    Serial.printf("\nDEBUG_POLAR:\tR:%f\tPHY:%f", polarCoord[blob_ptr->UID].r, polarCoord[blob_ptr->UID].phi);
-#endif
+#if DEBUG_BLOBS
+  for (blob_t* blob_ptr = (blob_t*)ITERATOR_START_FROM_HEAD(&blobs); blob_ptr != NULL; blob_ptr = (blob_t*)ITERATOR_NEXT(blob_ptr)) {
+    Serial.printf("\nDEBUG_FIND_BLOBS:%d\tLS:%d\tS:%d\tX:%f\tY:%f\tW:%d\tH:%d\tD:%d\tR:%d\tP:%d\tVXY:%d\tVZ:%d\t",
+                  blob_ptr->UID,
+                  blob_ptr->lastState,
+                  blob_ptr->state,
+                  blob_ptr->centroid.X,
+                  blob_ptr->centroid.Y,
+                  blob_ptr->box.W,
+                  blob_ptr->box.H,
+                  blob_ptr->box.D
+                  blob_ptr->polar.r,
+                  blob_ptr->polar.phi,
+                  blob_ptr->velocity.XY,
+                  blob_ptr->velocity.Z
+                 );
   }
-}
+#endif
+};

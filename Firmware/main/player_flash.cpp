@@ -21,11 +21,9 @@ void FLASH_PLAYER_SETUP(void) {
   while (!SerialFlash.begin(6));
 }
 
-void flash_player(llist_t* llist_ptr) {
-  
-  if (llist_ptr->tail_ptr != NULL) {
-    blob_t* blob_ptr = (blob_t*)llist_ptr->tail_ptr;
-
+void flash_player(void) {
+  blob_t* blob_ptr = (blob_t*)llist_ptr->tail_ptr;
+  if (blob_ptr != NULL) {
     //AudioNoInterrupts();
     if (blob_ptr->state) {
       if (!blob_ptr->lastState) {

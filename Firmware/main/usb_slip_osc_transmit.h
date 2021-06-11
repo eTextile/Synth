@@ -7,8 +7,6 @@
 #ifndef __USB_SLIP_OSC_TRANSMIT_H__
 #define __USB_SLIP_OSC_TRANSMIT_H__
 
-#if USB_SLIP_OSC_TRANSMIT
-
 #include "config.h"
 #include "presets.h"
 #include "llist.h"
@@ -19,21 +17,20 @@
 #include <OSCBundle.h>              // https://github.com/CNMAT/OSC
 #include <SLIPEncodedUSBSerial.h>   // https://github.com/CNMAT/OSC
 
-typedef struct preset preset_t;     // Forward declaration
+typedef struct image image_t;       // Forward declaration
 typedef struct llist llist_t;       // Forward declaration
 typedef struct blob blob_t;         // Forward declaration
+typedef struct preset preset_t;     // Forward declaration
 
+extern Encoder encoder;
+extern image_t rawFrame;
+extern image_t interpFrame;
+extern llist_t blobs;
+extern preset_t presets[];
 extern uint8_t currentMode;
 extern uint8_t lastMode;
 
 void USB_SLIP_OSC_SETUP(void);
-void usb_slipOsc(preset_t* presets_ptr, image_t* rawFrame_ptr, image_t*interpFrame_ptr, llist_t* blobs_ptr);
-void set_calibration(preset_t* presets_ptr);
-void set_threshold(preset_t* presets_ptr);
-void get_raw(image_t*interpFrame_ptr);
-void get_interp(image_t*interpFrame_ptr);
-void get_blobs(llist_t* blobs_ptr);
-
-#endif
+void usb_slip_osc_handle_input(void);
 
 #endif /*__USB_OSC_TRANSMIT_H__*/

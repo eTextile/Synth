@@ -19,6 +19,16 @@
 typedef struct lnode lnode_t;          // Forward declaration
 typedef struct llist llist_t;          // Forward declaration
 
+typedef struct image image_t;
+struct image {
+  uint8_t* pData;
+  uint8_t numCols;
+  uint8_t numRows;
+};
+
+extern image_t interpFrame;
+extern llist_t blobs;
+
 #define IM_LOG2_2(x)    (((x) &                0x2ULL) ? ( 2                        ) :             1) // NO ({ ... }) !
 #define IM_LOG2_4(x)    (((x) &                0xCULL) ? ( 2 +  IM_LOG2_2((x) >>  2)) :  IM_LOG2_2(x)) // NO ({ ... }) !
 #define IM_LOG2_8(x)    (((x) &               0xF0ULL) ? ( 4 +  IM_LOG2_4((x) >>  4)) :  IM_LOG2_4(x)) // NO ({ ... }) !
@@ -88,13 +98,6 @@ typedef struct llist llist_t;          // Forward declaration
     _a < _b ? _a : _b; \
   })
 
-typedef struct image image_t;
-struct image {
-  uint8_t* pData;
-  uint8_t numCols;
-  uint8_t numRows;
-};
-
 typedef struct xylr xylr_t;
 struct xylr {
   lnode_t node;
@@ -125,6 +128,19 @@ typedef enum status {
   TO_REMOVE
 } status_t;
 
+typedef struct polar polar_t;
+struct polar {
+  float r;
+  float phi;
+};
+
+typedef struct velocity velocity_t;
+struct velocity {
+  float XY;
+  float Z;
+  float lz;
+};
+
 typedef struct blob blob_t;
 struct blob {
   lnode_t node;
@@ -136,30 +152,15 @@ struct blob {
   boolean lastState;
   box_t box;
   point_t centroid;
+  point_t lastCentroid;
+  polar_t polar;
+  velocity_t velocity;
 };
 
-void lifo_llist_init(llist_t *list, xylr_t* nodesArray);
-void blob_llist_init(llist_t *list, blob_t* nodesArray);
+void lifo_llist_init(llist_t *list, xylr_t* nodesArray, const int nodes); // TODO: Separation of concerns (SoC)
+void blob_llist_init(llist_t *list, blob_t* nodesArray, const int nodes); // TODO: Separation of concerns (SoC)
 
-void BLOB_SETUP(llist_t* outputBlobs_ptr);
-void find_blobs(uint8_t zThreshold, image_t* inputFrame_ptr, llist_t* outputBlobs_ptr);
-
-typedef struct velocity velocity_t;
-struct velocity {
-  point_t lastPos;
-  float vxy;
-  float vz;
-  float lvz;
-};
-
-void getBlobsVelocity(llist_t* blobs_ptr);
-
-typedef struct polar polar_t;
-struct polar {
-  float r;
-  float phi;
-};
-
-void getPolarCoordinates(llist_t* blobs_ptr);
+void BLOB_SETUP(void);
+void find_blobs(uint8_t zThreshold);
 
 #endif /*__BLOB_H__*/

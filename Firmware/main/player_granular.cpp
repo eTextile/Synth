@@ -21,9 +21,9 @@ void GRANULAR_PLAYER_SETUP(void) {
   granular.begin(&granularMemory[0], GRANULAR_MEMORY_SIZE);  // [ARGS](buffer_ptr, buffer_size)
 };
 
-void granular_player(llist_t* llist_ptr) {
+void granular_player(void) {
 
-  blob_t* blob_ptr = (blob_t*)llist_ptr->tail_ptr;
+  blob_t* blob_ptr = (blob_t*)blobs.tail_ptr;
   if (blob_ptr != NULL) {
     AudioNoInterrupts();
     if (blob_ptr->state) {

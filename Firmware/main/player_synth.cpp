@@ -76,7 +76,7 @@ synth_t allSynth[MAX_SYNTH] = {
   {&wf_8, &fm_8, &fade_8, &mix_2}
 };
 
-void SYNTH_PLAYER_SETUP() {
+void SYNTH_PLAYER_SETUP(void) {
   for (int i = 0; i < MAX_SYNTH; i++) {
     allSynth[i].fade->fadeOut(0);
     allSynth[i].wf->begin(WAVEFORM_SINE);
@@ -95,10 +95,10 @@ void SYNTH_PLAYER_SETUP() {
 }
 
 /////////////////////////// MAKE NOISE FONCTION !
-void synth_player(llist_t* blobs_ptr) {
+void synth_player(void) {
   //static boolean lastState[MAX_BLOBS] = {false};
 
-  for (blob_t* blob_ptr = (blob_t *)ITERATOR_START_FROM_HEAD(blobs_ptr); blob_ptr != NULL; blob_ptr = (blob_t *)ITERATOR_NEXT(blob_ptr)) {
+  for (blob_t* blob_ptr = (blob_t *)ITERATOR_START_FROM_HEAD(&blobs); blob_ptr != NULL; blob_ptr = (blob_t *)ITERATOR_NEXT(blob_ptr)) {
 
     if (blob_ptr->UID < MAX_SYNTH) {
       AudioNoInterrupts();

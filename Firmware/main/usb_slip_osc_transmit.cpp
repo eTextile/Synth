@@ -14,7 +14,7 @@ void USB_SLIP_OSC_SETUP(void) {
   SLIPSerial.begin(BAUD_RATE);
 }
 
-void usb_slipOsc(preset_t* presets_ptr, image_t* rawFrame_ptr, image_t*interpFrame_ptr, llist_t* blobs_ptr) {
+void usb_slip_osc_handle_input(void) {
 
   OSCMessage request;
 
@@ -31,37 +31,41 @@ void usb_slipOsc(preset_t* presets_ptr, image_t* rawFrame_ptr, image_t*interpFra
     if (request.fullMatch("/c")) { // Calibrate
       lastMode = currentMode;
       currentMode = CALIBRATE;
-      presets_ptr[CALIBRATE].setLed = true;
-      presets_ptr[CALIBRATE].updateLed = true;
+      presets[CALIBRATE].setLed = true;
+      presets[CALIBRATE].updateLed = true;
     }
     else if (request.fullMatch("/t")) { // Set threshold
       /*
-        presets_ptr[THRESHOLD].ledVal = map(presets_ptr[THRESHOLD].val, presets_ptr[THRESHOLD].minVal, presets_ptr[THRESHOLD].maxVal, 0, 255);
-        interpThreshold = constrain(presets_ptr[THRESHOLD].val - 5, presets_ptr[THRESHOLD].minVal, presets_ptr[THRESHOLD].maxVal);
-        presets_ptr[THRESHOLD].setLed = true;
-        presets_ptr[THRESHOLD].updateLed = true;
-        presets_ptr[THRESHOLD].update = true;
+        lastMode = currentMode;
+        currentMode = THRESHOLD;
+        presets[THRESHOLD].val = map(value, 0, 127, presets[THRESHOLD].minVal, presets[THRESHOLD].maxVal);
+        encoder.write(presets[THRESHOLD].val << 2);
+        interpThreshold = constrain(presets[THRESHOLD].val - 5, presets[THRESHOLD].minVal, presets[THRESHOLD].maxVal);
+        presets[THRESHOLD].setLed = true;
+        presets[THRESHOLD].ledVal = map(value, 0, 127, 0, 255);
+        presets[THRESHOLD].updateLed = true;
+        presets[THRESHOLD].update = true;
       */
     }
     else if (request.fullMatch("/r")) { // Get raw datas
       OSCMessage m("/r");
-      m.add(rawFrame_ptr->pData, RAW_FRAME);
+      m.add(rawFrame.pData, RAW_FRAME);
       SLIPSerial.beginPacket();
       m.send(SLIPSerial);
       SLIPSerial.endPacket();
     }
     else if (request.fullMatch("/i")) { // Get interp
       OSCMessage m("/i");
-      m.add(interpFrame_ptr->pData, NEW_FRAME);
+      m.add(interpFrame.pData, NEW_FRAME);
       SLIPSerial.beginPacket();
       m.send(SLIPSerial);
       SLIPSerial.endPacket();
     }
     else if (request.fullMatch("/b")) { // Get blobs
       OSCBundle OSCbundle;
-      for (blob_t* blob_ptr = (blob_t*)ITERATOR_START_FROM_HEAD(blobs_ptr); blob_ptr != NULL; blob_ptr = (blob_t*)ITERATOR_NEXT(blob_ptr)) {
+      for (blob_t* blob_ptr = (blob_t*)ITERATOR_START_FROM_HEAD(&blobs); blob_ptr != NULL; blob_ptr = (blob_t*)ITERATOR_NEXT(blob_ptr)) {
         OSCMessage msg("/b");
-        //msg.add((uint8_t*)blobs_ptr, 14); // FIXME
+        //msg.add((uint8_t*)&blobs, 14); // FIXME
         msg.add(blob_ptr->UID);
         msg.add(blob_ptr->state);
         msg.add(blob_ptr->lastState);

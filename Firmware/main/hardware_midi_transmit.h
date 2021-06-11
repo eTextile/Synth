@@ -8,8 +8,6 @@
 #ifndef __HARDWARE_MIDI_TRANSMIT_H__
 #define __HARDWARE_MIDI_TRANSMIT_H__
 
-//#if HARDWARE_MIDI_TRANSMIT
-
 #include <MIDI.h>               // http://www.pjrc.com/teensy/td_midi.html
 
 #include "config.h"
@@ -23,12 +21,13 @@ typedef struct preset preset_t; // Forward declaration
 typedef struct llist llist_t;   // Forward declaration
 typedef struct blob blob_t;     // Forward declaration
 
-void HARDWARE_MIDI_SETUP(void);
-void midi_llist_init(llist_t* midiNodes_ptr, midiNode_t* nodeArray_ptr);
-boolean midi_handle_hardware_input(llist_t* llist_ptr);
-void midi_send_blobs(llist_t* llist_ptr);
-void control_change(llist_t* llist_ptr, ccPesets_t* ccPesets_ptr);
+extern llist_t blobs;
+extern llist_t midiIn;
+extern preset_t presets[];
 
-//#endif
+void HARDWARE_MIDI_SETUP(void);
+void hardware_midi_llist_init(llist_t* nodes_ptr, midiNode_t nodeArray_ptr, const int nodes); // TODO: Separation of concerns (SoC)
+void hardware_midi_handle_input(void);
+void hardware_midi_send_blobs(void);
 
 #endif /*___HARDWARE_MIDI_TRANSMIT_H___*/

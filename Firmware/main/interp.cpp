@@ -21,12 +21,10 @@ uint8_t interpThreshold = 5;
     Pre-compute the four coefficient values for all interpolated output matrix positions
 */
 
-void INTERP_SETUP(image_t* outputFrame_ptr) {
-
-  // image_t* outputFrame_ptr init config
-  outputFrame_ptr->pData = &interpFrameArray[0];  // Setup -> uint8_t bilinInterpOutput[NEW_FRAME] (64x64)
-  outputFrame_ptr->numCols = NEW_COLS;
-  outputFrame_ptr->numRows = NEW_ROWS;
+void INTERP_SETUP(void) {
+  interpFrame.pData = &interpFrameArray[0];
+  interpFrame.numCols = NEW_COLS;
+  interpFrame.numRows = NEW_ROWS;
 
   // interp_t* interp init config
   interp.outputStrideY = SCALE_X * SCALE_Y * RAW_COLS;
@@ -49,13 +47,13 @@ void INTERP_SETUP(image_t* outputFrame_ptr) {
 };
 
 // Bilinear interpolation
-void interp_matrix(image_t* inputFrame_ptr) {
+void interp_matrix(void) {
 
   // Clear interpFrameArray
   memset((uint8_t*)interpFrameArray, 0, SIZEOF_FRAME);
 
   for (uint8_t rowPos = 0; rowPos < (RAW_ROWS - 1); rowPos++) {
-    uint8_t* row_ptr = COMPUTE_IMAGE_ROW_PTR(inputFrame_ptr, rowPos);
+    uint8_t* row_ptr = COMPUTE_IMAGE_ROW_PTR(&rawFrame, rowPos);
     for (uint8_t colPos = 0; colPos < (RAW_COLS - 1); colPos++) {
       if (IMAGE_GET_PIXEL_FAST(row_ptr, colPos) > interpThreshold) { // 'Windowing' interpolation
 
@@ -70,10 +68,10 @@ void interp_matrix(image_t* inputFrame_ptr) {
             uint16_t outIndex = rowPos * interp.outputStrideY + colPos * SCALE_X + row * NEW_COLS + col;
             interpFrameArray[outIndex] =
               (uint8_t)round(
-                inputFrame_ptr->pData[inIndexA] * interp.pCoefA[coefIndex] +
-                inputFrame_ptr->pData[inIndexB] * interp.pCoefB[coefIndex] +
-                inputFrame_ptr->pData[inIndexC] * interp.pCoefC[coefIndex] +
-                inputFrame_ptr->pData[inIndexD] * interp.pCoefD[coefIndex]
+                rawFrame.pData[inIndexA] * interp.pCoefA[coefIndex] +
+                rawFrame.pData[inIndexB] * interp.pCoefB[coefIndex] +
+                rawFrame.pData[inIndexC] * interp.pCoefC[coefIndex] +
+                rawFrame.pData[inIndexD] * interp.pCoefD[coefIndex]
               );
           };
         };

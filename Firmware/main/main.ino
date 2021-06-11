@@ -42,11 +42,11 @@
 #include "player_granular.h"
 #endif
 
-image_t  rawFrame;      // Input frame values
-image_t  interpFrame;   // Interpolated frame values
+image_t rawFrame;      // Input frame values
+image_t interpFrame;   // Interpolated frame values
 
-llist_t  blobs;         // Output blobs linked list
-llist_t  midiIn;        // Midi input linked list
+llist_t blobs;         // Output blobs linked list
+llist_t midiIn;        // Midi input linked list
 
 uint8_t currentMode = CALIBRATE;   // Init currentMode with CALIBRATE (DEFAULT_MODE)
 uint8_t lastMode = LINE_OUT;       // Init lastMode with LINE_OUT (DEFAULT_MODE)
@@ -92,9 +92,9 @@ void setup() {
   SWITCHES_SETUP();
   SPI_SETUP();
   ADC_SETUP();
-  SCAN_SETUP(&rawFrame);
-  INTERP_SETUP(&interpFrame);
-  BLOB_SETUP(&blobs);
+  SCAN_SETUP();
+  INTERP_SETUP();
+  BLOB_SETUP();
 
 #if USB_MIDI_TRANSMIT
   USB_MIDI_SETUP();
@@ -127,62 +127,49 @@ void loop() {
   //if (loadPreset) preset_load(&presets[0], &loadPreset); // TODO
   //if (savePreset) preset_save(&presets[0], &savePreset); // TODO
 
-  update_buttons(&presets[0]);
-  update_presets(&presets[0]);
+  update_buttons();
+  update_presets();
 
 #if SYNTH_PLAYER || GRANULAR_PLAYER || FLASH_PLAYER
-  update_levels(&presets[0]);
+  update_levels();
 #endif
 
-  update_leds(&presets[0]);
-  calibrate_matrix(&presets[0]);
-
+  update_leds();
+  calibrate_matrix();
   scan_matrix();
-  interp_matrix(&rawFrame);
-  find_blobs(presets[THRESHOLD].val, &interpFrame, &blobs);
+  interp_matrix();
+  find_blobs(presets[THRESHOLD].val);
 
-  //median(&blobs);
-  //getPolarCoordinates(&blobs);
-  //getBlobsVelocity(&blobs);
+  //median();
 
 #if USB_MIDI_TRANSMIT
   usb_midi_handle_input();
-  if (currentMode == MIDI_LEARN) {
-    usb_midi_learn(&blobs, &presets[MIDI_LEARN]);
-  }
-  else {
-    usb_midi_send_blobs(&blobs);
-  };
 #endif
-
 #if USB_SLIP_OSC_TRANSMIT
-  usb_slipOsc(&presets[0], &rawFrame, &interpFrame, &blobs);
+  usb_slip_osc_handle_input();
 #endif
-
 #if HARDWARE_MIDI_TRANSMIT
-  if (midi_handle_hardware_input(&midiIn)) {
-    //gridPopulate(&midiIn);
-  };
+  hardware_midi_handle_input();
 #endif
 
 #if MAPPING_LAYAOUT
   gridPlay(&blobs);
-  //controlChange(&blobs, &ccParam);
-  //boolean toggSwitch = toggle(&blobs, &toggParam);
-  //boolean trigSwitch = trigger(&blobs, &trigParam);
-  //hSlider(&blobs, &hSliderParam);
-  //vSlider(&blobs, &vSliderParam);
-  //cSlider(&blobs, &polarCoord[0], &cSlidersParam[0]);
+  controlChange(&ccParam);
+  toggle(&toggParam);
+  trigger(&trigParam);
+  hSlider(&hSliderParam);
+  vSlider(&vSliderParam);
+  cSlider(&polarCoord[0], &cSlidersParam[0]);
 #endif
 
 #if SYNTH_PLAYER
-  synth_player(&blobs);
+  synth_player();
 #endif
 #if GRANULAR_PLAYER
-  granular_player(&blobs);
+  granular_player();
 #endif
 #if FLASH_PLAYER
-  flash_player(&blobs);
+  flash_player();
 #endif
 
 #if DEBUG_FPS

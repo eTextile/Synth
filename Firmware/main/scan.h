@@ -14,13 +14,16 @@
 typedef struct image image_t;       // Forward declaration
 typedef struct preset preset_t;     // Forward declaration
 
+extern image_t rawFrame;
+extern preset_t presets[];
+
 #include <SPI.h>                    // https://github.com/PaulStoffregen/SPI
 #include <ADC.h>                    // https://github.com/pedvide/ADC
 
 void SPI_SETUP(void);
 void ADC_SETUP(void);
-void SCAN_SETUP(image_t* inputFrame_ptr);
-void calibrate_matrix(preset_t* presets_ptr);
+void SCAN_SETUP(void);
+void calibrate_matrix(void);
 void scan_matrix(void);
 
 #endif /*__SCAN_H__*/
