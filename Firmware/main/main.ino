@@ -153,13 +153,13 @@ void loop() {
 #endif
 
 #if MAPPING_LAYAOUT
-  gridPlay(&blobs);
-  controlChange(&ccParam);
-  toggle(&toggParam);
-  trigger(&trigParam);
-  hSlider(&hSliderParam);
-  vSlider(&vSliderParam);
-  cSlider(&polarCoord[0], &cSlidersParam[0]);
+  mapping_gridPlay();
+  mapping_control_change(&ccParam);
+  mapping_toggle(&toggParam);
+  mapping_trigger(&trigParam);
+  mapping_hSlider(&hSliderParam);
+  mapping_vSlider(&vSliderParam);
+  mapping_cSlider(&cSlidersParam[0]);
 #endif
 
 #if SYNTH_PLAYER

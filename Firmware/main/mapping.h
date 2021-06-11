@@ -74,13 +74,13 @@ struct cSlider {
 };
 
 void GRID_LAYOUT_SETUP(void);
-void gridPopulate(void);
-void gridPlay(void);
-void trigger(tSwitch_t* switch_ptr);
-void toggle(tSwitch_t* switch_ptr);
-void hSlider(hSlider_t* slider_ptr);
-void vSlider(vSlider_t* slider_ptr);
-void cSlider(polar_t* polar_ptr, cSlider_t* slider_ptr);
-void control_change(ccPesets_t* ccPesets_ptr);
+void mapping_gridPopulate(void);
+void mapping_gridPlay(void);
+void mapping_trigger(tSwitch_t* switch_ptr);
+void mapping_toggle(tSwitch_t* switch_ptr);
+void mapping_hSlider(hSlider_t* slider_ptr);
+void mapping_vSlider(vSlider_t* slider_ptr);
+void mapping_cSlider(cSlider_t* slider_ptr);
+void mapping_control_change(ccPesets_t* ccPesets_ptr);
 
 #endif /*__MAPPING_H__*/

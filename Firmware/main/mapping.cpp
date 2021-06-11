@@ -29,7 +29,7 @@ squareKey_t* lastKeyPress_ptr[MAX_SYNTH];       // 1D array to store last keys p
 uint8_t freqKeyLayout[GRID_KEYS] = {0};         // 1D array to mapp freq
 midiNode_t midiKeyLayout[GRID_KEYS] = {0};      // 1D array to mapp incoming midi notes in the grid layout
 
-void trigger(tSwitch_t* switch_ptr) {
+void mapping_trigger(tSwitch_t* switch_ptr) {
   for (blob_t* blob_ptr = (blob_t*)ITERATOR_START_FROM_HEAD(&blobs); blob_ptr != NULL; blob_ptr = (blob_t*)ITERATOR_NEXT(blob_ptr)) {
     if (blob_ptr->centroid.X > switch_ptr->posX - switch_ptr->rSize &&
         blob_ptr->centroid.X < switch_ptr->posX + switch_ptr->rSize) {
@@ -52,7 +52,7 @@ void trigger(tSwitch_t* switch_ptr) {
   };
 };
 
-void toggle(tSwitch_t* switch_ptr) {
+void mapping_toggle(tSwitch_t* switch_ptr) {
   for (blob_t* blob_ptr = (blob_t*)ITERATOR_START_FROM_HEAD(&blobs); blob_ptr != NULL; blob_ptr = (blob_t*)ITERATOR_NEXT(blob_ptr)) {
     if (blob_ptr->centroid.X > switch_ptr->posX - switch_ptr->rSize &&
         blob_ptr->centroid.X < switch_ptr->posX + switch_ptr->rSize) {
@@ -96,7 +96,7 @@ void GRID_LAYOUT_SETUP(void) {
 
 // Compute the grid index location acording to the blobs XY (centroid) coordinates
 // Play corresponding midi **note** or **freq**
-void gridPlay(void) {
+void mapping_gridPlay(void) {
   for (blob_t* blob_ptr = (blob_t*)ITERATOR_START_FROM_HEAD(&blobs); blob_ptr != NULL; blob_ptr = (blob_t*)ITERATOR_NEXT(blob_ptr)) {
     if (blob_ptr->UID < MAX_SYNTH) {                                          // Test if the blob UID is less than MAX_SYNTH
       int keyPosX = round((blob_ptr->centroid.X / (float)X_MAX) * GRID_COLS); // Compute X window position
@@ -128,7 +128,7 @@ void gridPlay(void) {
   };
 };
 
-void gridPopulate(void) {
+void mapping_gridPopulate(void) {
   uint8_t keyIndex = 0;
   while (keyIndex < GRID_KEYS) {
     for (midiNode_t* node_ptr = (midiNode_t*)ITERATOR_START_FROM_HEAD(&blobs); node_ptr != NULL; node_ptr = (midiNode_t*)ITERATOR_NEXT(node_ptr)) {
@@ -140,7 +140,7 @@ void gridPopulate(void) {
   };
 };
 
-void vSlider(vSlider_t* slider_ptr) {
+void mapping_vSlider(vSlider_t* slider_ptr) {
   uint8_t val = 0;
   for (blob_t* blob_ptr = (blob_t*)ITERATOR_START_FROM_HEAD(&blobs); blob_ptr != NULL; blob_ptr = (blob_t*)ITERATOR_NEXT(blob_ptr)) {
     if (blob_ptr->centroid.X > slider_ptr->posX - slider_ptr->width &&
@@ -159,7 +159,7 @@ void vSlider(vSlider_t* slider_ptr) {
   };
 };
 
-void hSlider(hSlider_t* slider_ptr) {
+void mapping_hSlider(hSlider_t* slider_ptr) {
   uint8_t val = 0;
   for (blob_t* blob_ptr = (blob_t*)ITERATOR_START_FROM_HEAD(&blobs); blob_ptr != NULL; blob_ptr = (blob_t*)ITERATOR_NEXT(blob_ptr)) {
     if (blob_ptr->centroid.Y > slider_ptr->posY - slider_ptr->height &&
@@ -178,17 +178,17 @@ void hSlider(hSlider_t* slider_ptr) {
   };
 };
 
-void cSlider(polar_t* polar_ptr, cSlider_t* slider_ptr) {
+void mapping_cSlider(cSlider_t* slider_ptr) {
   float phi = 0;
   for (blob_t* blob_ptr = (blob_t*)ITERATOR_START_FROM_HEAD(&blobs); blob_ptr != NULL; blob_ptr = (blob_t*)ITERATOR_NEXT(blob_ptr)) {
     for (int i = 0; i < C_SLIDERS; i++) {
-      if (polar_ptr[blob_ptr->UID].r > slider_ptr[i].r - slider_ptr[i].width &&
-          polar_ptr[blob_ptr->UID].r < slider_ptr[i].r + slider_ptr[i].width) {
-        if (polar_ptr[blob_ptr->UID].phi > slider_ptr[i].phiOffset) {
-          phi = polar_ptr[blob_ptr->UID].phi - slider_ptr[i].phiOffset;
+      if (blob_ptr->polar.r > slider_ptr[i].r - slider_ptr[i].width &&
+          blob_ptr->polar.r < slider_ptr[i].r + slider_ptr[i].width) {
+        if (blob_ptr->polar.phi > slider_ptr[i].phiOffset) {
+          phi = blob_ptr->polar.phi - slider_ptr[i].phiOffset;
         }
         else {
-          phi = polar_ptr[blob_ptr->UID].phi + (PI2 - slider_ptr[i].phiOffset);
+          phi = blob_ptr->polar.phi + (PI2 - slider_ptr[i].phiOffset);
         }
 #if DEBUG_MAPPING
         Serial.printf("\nDEBUG_C_SLIDER_ % d phi : % f", i, map(constrain(phi, 0.2, 5.9), 0.2, 5.9, 0, 127));
@@ -200,7 +200,7 @@ void cSlider(polar_t* polar_ptr, cSlider_t* slider_ptr) {
 
 
 // ccPesets_ptr -> ARGS[blobID, [BX,BY,BW,BH,BD], cChange, midiChannel, Val]
-void midi_control_change(ccPesets_t* ccPesets_ptr) {
+void mapping_control_change(ccPesets_t* ccPesets_ptr) {
   for (blob_t* blob_ptr = (blob_t*)ITERATOR_START_FROM_HEAD(&blobs); blob_ptr != NULL; blob_ptr = (blob_t*)ITERATOR_NEXT(blob_ptr)) {
     // Test if we are within the blob limit
     if (blob_ptr->UID == ccPesets_ptr->blobID) {
