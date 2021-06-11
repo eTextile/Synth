@@ -4,9 +4,9 @@
   This work is licensed under Creative Commons Attribution-ShareAlike 4.0 International license, see the LICENSE file for details.
 */
 
-#include "usb_osc_transmit.h"
+#include "usb_slip_osc_transmit.h"
 
-#if USB_SLIP_OSC
+#if USB_SLIP_OSC_TRANSMIT
 
 SLIPEncodedUSBSerial SLIPSerial(thisBoardsSerialUSB);
 

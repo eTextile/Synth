@@ -11,7 +11,7 @@
 
 #include "usb_midi_transmit.h"
 
-#if USB_MIDI
+#if USB_MIDI_TRANSMIT
 
 midiNode_t midiInArray[MAX_SYNTH] = {0}; // 1D Array to alocate memory for incoming midi notes
 llist_t  midiNodes_stack;                // Midi nodes stack

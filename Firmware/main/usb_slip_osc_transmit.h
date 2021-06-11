@@ -4,8 +4,10 @@
   This work is licensed under Creative Commons Attribution-ShareAlike 4.0 International license, see the LICENSE file for details.
 */
 
-#ifndef __USB_OSC_TRANSMIT_H__
-#define __USB_OSC_TRANSMIT_H__
+#ifndef __USB_SLIP_OSC_TRANSMIT_H__
+#define __USB_SLIP_OSC_TRANSMIT_H__
+
+#if USB_SLIP_OSC_TRANSMIT
 
 #include "config.h"
 #include "presets.h"
@@ -31,5 +33,7 @@ void set_threshold(preset_t* presets_ptr);
 void get_raw(image_t*interpFrame_ptr);
 void get_interp(image_t*interpFrame_ptr);
 void get_blobs(llist_t* blobs_ptr);
+
+#endif
 
 #endif /*__USB_OSC_TRANSMIT_H__*/

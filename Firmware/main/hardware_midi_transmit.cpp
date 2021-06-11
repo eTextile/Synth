@@ -8,12 +8,15 @@
   What about the MIDI_MPE Protocol Specification
   https://www.midi.org/midi-articles/midi-polyphonic-expression-mpe
 */
-//#if HARDWARE_MIDI
 
 #include "hardware_midi_transmit.h"
 
-extern preset_t presets;
+#if HARDWARE_MIDI_TRANSMIT
 
+extern preset_t presets[];
+
+MIDI_CREATE_INSTANCE(HardwareSerial, Serial3, MIDI);
+ 
 midiNode_t midiInArray[MAX_SYNTH] = {0}; // 1D Array to alocate memory for incoming midi notes
 llist_t  midiNodes_stack;                // Midi nodes stack
 
@@ -138,4 +141,4 @@ void midi_control_change(llist_t* llist_ptr, ccPesets_t* ccPesets_ptr) {
     }
   }
 }
-//#endif
+#endif

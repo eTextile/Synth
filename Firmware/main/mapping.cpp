@@ -6,9 +6,10 @@
 
 #include "mapping.h"
 
-#if HARDWARE_MIDI
-MIDI_CREATE_INSTANCE(HardwareSerial, Serial3, MIDI);
-#endif
+#if MAPPING_LAYAOUT
+
+extern MIDI_NAMESPACE::SerialMIDI<HardwareSerial>serialMIDI;
+extern MIDI_NAMESPACE::MidiInterface<MIDI_NAMESPACE::SerialMIDI<HardwareSerial>> MIDI;
 
 #define GRID_COLS   14
 #define GRID_ROWS   10
@@ -108,20 +109,18 @@ void gridPlay(llist_t* llist_ptr) {
           blob_ptr->centroid.Y > keyPress_ptr->Ymin && blob_ptr->centroid.Y < keyPress_ptr->Ymax) {
         if (blob_ptr->state) {
           if (!blob_ptr->lastState) {
-#if HARDWARE_MIDI
-            //MIDI.sendNoteOn(keyPress_ptr->val, 127, 1);                   // Send NoteON (CHANNEL_1)
-#endif
 #if DEBUG_MAPPING
             Serial.printf("\nGRID\tBLOB:%d\t\tKEYDOWN:%d", blob_ptr->UID, (uint8_t)keyPress_ptr->val);
+#else
+            MIDI.sendNoteOn(keyPress_ptr->val, 127, 1);                   // Send NoteON (CHANNEL_1)
 #endif
           };
         }
         else {
-#if HARDWARE_MIDI
-          //MIDI.sendNoteOff(lastKeyPress_ptr[blob_ptr->UID]->val, 0, 1);  // Send NoteOFF (CHANNEL_1)
-#endif
 #if DEBUG_MAPPING
           Serial.printf("\nGRID\tBLOB:%d\t\tKEYUP:%d", blob_ptr->UID, (uint8_t)keyPress_ptr->val);
+#else
+          MIDI.sendNoteOff(lastKeyPress_ptr[blob_ptr->UID]->val, 0, 1);  // Send NoteOFF (CHANNEL_1)
 #endif
         };
       };
@@ -198,3 +197,5 @@ void cSlider(llist_t* llist_ptr, polar_t* polar_ptr, cSlider_t* slider_ptr) {
     };
   };
 };
+
+#endif

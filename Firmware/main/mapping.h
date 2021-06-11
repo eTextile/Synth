@@ -14,7 +14,7 @@
 
 #include "hardware_midi_transmit.h"
 #include "usb_midi_transmit.h"
-#include "usb_osc_transmit.h"
+#include "usb_slip_osc_transmit.h"
 
 typedef struct blob blob_t;         // Forward declaration
 typedef struct llist llist_t;       // Forward declaration
@@ -72,10 +72,8 @@ struct cSlider {
 };
 
 void GRID_LAYOUT_SETUP(void);
-
 void gridPopulate(llist_t* llist_ptr);
 void gridPlay(llist_t* llist_ptr);
-
 boolean trigger(llist_t* llist_ptr, tSwitch_t* switch_ptr);
 boolean toggle(llist_t* llist_ptr, tSwitch_t* switch_ptr);
 void hSlider(llist_t* llist_ptr, hSlider_t* slider_ptr);

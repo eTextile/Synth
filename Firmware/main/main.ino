@@ -19,17 +19,16 @@
 #endif
 
 #if MAPPING_LAYAOUT
-#include "notes.h"
 #include "mapping.h"
 #endif
 
-#if USB_MIDI
+#if USB_MIDI_TRANSMIT
 #include "usb_midi_transmit.h"
 #endif
-#if USB_SLIP_OSC
-#include "usb_osc_transmit.h"
+#if USB_SLIP_OSC_TRANSMIT
+#include "usb_slip_osc_transmit.h"
 #endif
-#if HARDWARE_MIDI
+#if HARDWARE_MIDI_TRANSMIT
 #include "hardware_midi_transmit.h"
 #endif
 
@@ -47,7 +46,7 @@ image_t  rawFrame;      // Input frame values
 image_t  interpFrame;   // Interpolated frame values
 
 llist_t  blobs;         // Output blobs linked list
-llist_t  midiIn;        // MidiIn linked list
+llist_t  midiIn;        // Midi input linked list
 
 uint8_t currentMode = CALIBRATE;   // Init currentMode with CALIBRATE (DEFAULT_MODE)
 uint8_t lastMode = LINE_OUT;       // Init lastMode with LINE_OUT (DEFAULT_MODE)
@@ -93,24 +92,20 @@ void setup() {
   SWITCHES_SETUP();
   SPI_SETUP();
   ADC_SETUP();
-
   SCAN_SETUP(&rawFrame);
   INTERP_SETUP(&interpFrame);
   BLOB_SETUP(&blobs);
 
-#if USB_MIDI
+#if USB_MIDI_TRANSMIT
   USB_MIDI_SETUP();
 #endif
-#if USB_SLIP_OSC
+#if USB_SLIP_OSC_TRANSMIT
   USB_SLIP_OSC_SETUP();
 #endif
-#if HARDWARE_MIDI
+#if HARDWARE_MIDI_TRANSMIT
   HARDWARE_MIDI_SETUP();
 #endif
 
-#if SYNTH_PLAYER || GRANULAR_PLAYER || FLASH_PLAYER
-  SOUND_CARD_SETUP();
-#endif
 #if SYNTH_PLAYER
   SYNTH_PLAYER_SETUP();
 #endif
@@ -122,6 +117,9 @@ void setup() {
 #endif
 #if MAPPING_LAYAOUT
   GRID_LAYOUT_SETUP();
+#endif
+#if SYNTH_PLAYER || GRANULAR_PLAYER || FLASH_PLAYER
+  SOUND_CARD_SETUP();
 #endif
 };
 
@@ -147,7 +145,7 @@ void loop() {
   //getPolarCoordinates(&blobs);
   //getBlobsVelocity(&blobs);
 
-#if USB_MIDI
+#if USB_MIDI_TRANSMIT
   usb_midi_handle_input();
   if (currentMode == MIDI_LEARN) {
     usb_midi_learn(&blobs, &presets[MIDI_LEARN]);
@@ -157,13 +155,13 @@ void loop() {
   };
 #endif
 
-#if USB_SLIP_OSC
+#if USB_SLIP_OSC_TRANSMIT
   usb_slipOsc(&presets[0], &rawFrame, &interpFrame, &blobs);
 #endif
 
-#if HARDWARE_MIDI
+#if HARDWARE_MIDI_TRANSMIT
   if (midi_handle_hardware_input(&midiIn)) {
-    gridPopulate(&midiIn);
+    //gridPopulate(&midiIn);
   };
 #endif
 
@@ -197,5 +195,4 @@ void loop() {
   };
   fps++;
 #endif
-
 };
