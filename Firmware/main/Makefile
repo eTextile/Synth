@@ -95,7 +95,7 @@ CPUOPTIONS = -mcpu=cortex-m7 -mfloat-abi=hard -mfpu=fpv5-d16 -mthumb
 # the NO_ARDUINO behaviour.
 ifndef NO_ARDUINO
 # Path to your arduino installation
-ARDUINOPATH ?= ../../../../..
+ARDUINOPATH ?='/home/maurin/Applications/arduino-1.8.15/'
 endif
 
 ifdef ARDUINOPATH

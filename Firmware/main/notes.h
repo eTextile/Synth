@@ -7,25 +7,8 @@
 #ifndef __NOTES_H__
 #define __NOTES_H__
 
-
-typedef struct midiNode midiNode_t;
-struct midiNode {
-  lnode_t node;
-  uint8_t pithch;
-  uint8_t velocity;
-  uint8_t channel;
-};
-
-typedef struct ccPesets ccPesets_t;
-struct ccPesets {
-  uint8_t blobID;
-  uint8_t mappVal;
-  int8_t cChange;
-  int8_t midiChannel;
-  int8_t val;
-};
-
 #include "config.h"
+
 #if HARDWARE_MIDI
 #define  Cm1   0         // 8.18 Hz
 #define  Cdm1  1         // 8.66 Hz

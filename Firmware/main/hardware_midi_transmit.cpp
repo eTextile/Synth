@@ -17,7 +17,6 @@ MIDI_CREATE_INSTANCE(HardwareSerial, Serial3, MIDI);
 
 midiNode_t midiNodesArray[MAX_SYNTH] = {0}; // 1D Array to alocate memory for incoming midi notes
 llist_t midiNodesStack;                     // Midi nodes stack
-llist_t midiIn;                             // Midi input linked list
 
 void hardware_midi_llist_init(llist_t* nodes_ptr, midiNode_t* nodeArray_ptr, const int nodes) {
   llist_raz(nodes_ptr);

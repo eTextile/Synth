@@ -32,17 +32,6 @@ extern preset_t presets[];
 extern image_t interpFrame;
 extern llist_t blobs;
 
-#define IM_LOG2_2(x)    (((x) &                0x2ULL) ? ( 2                        ) :             1) // NO ({ ... }) !
-#define IM_LOG2_4(x)    (((x) &                0xCULL) ? ( 2 +  IM_LOG2_2((x) >>  2)) :  IM_LOG2_2(x)) // NO ({ ... }) !
-#define IM_LOG2_8(x)    (((x) &               0xF0ULL) ? ( 4 +  IM_LOG2_4((x) >>  4)) :  IM_LOG2_4(x)) // NO ({ ... }) !
-#define IM_LOG2_16(x)   (((x) &             0xFF00ULL) ? ( 8 +  IM_LOG2_8((x) >>  8)) :  IM_LOG2_8(x)) // NO ({ ... }) !
-#define IM_LOG2_32(x)   (((x) &         0xFFFF0000ULL) ? (16 + IM_LOG2_16((x) >> 16)) : IM_LOG2_16(x)) // NO ({ ... }) !
-#define IM_LOG2(x)      (((x) & 0xFFFFFFFF00000000ULL) ? (32 + IM_LOG2_32((x) >> 32)) : IM_LOG2_32(x)) // NO ({ ... }) !
-
-#define UINT8_T_BITS    (sizeof(uint8_t) * 8)
-#define UINT8_T_MASK    (UINT8_T_BITS - 1)
-#define UINT8_T_SHIFT   IM_LOG2(UINT8_T_MASK)
-
 #define SIZEOF_FRAME    (NEW_FRAME * sizeof(uint8_t))
 
 #define COMPUTE_IMAGE_ROW_PTR(pImage, y) \
@@ -52,13 +41,6 @@ extern llist_t blobs;
     ((uint8_t*)_pImage->pData) + (_pImage->numCols * _y); \
   })
 
-#define COMPUTE_BINARY_IMAGE_ROW_PTR(bitmap, y) \
-  ({ \
-    __typeof__ (bitmap) _bitmap = (bitmap); \
-    __typeof__ (y) _y = (y); \
-    ((uint8_t*)_bitmap) + (((NEW_COLS + UINT8_T_MASK) >> UINT8_T_SHIFT) * _y); \
-  })
-
 #define IMAGE_GET_PIXEL_FAST(row_ptr, x) \
   ({ \
     __typeof__ (row_ptr) _row_ptr = (row_ptr); \
@@ -66,19 +48,13 @@ extern llist_t blobs;
     _row_ptr[_x]; \
   })
 
-#define IMAGE_SET_BINARY_PIXEL_FAST(row_ptr, x) \
-  ({ \
+  #define IMAGE_SET_PIXEL_FAST(row_ptr, x, v) \
+({ \
     __typeof__ (row_ptr) _row_ptr = (row_ptr); \
     __typeof__ (x) _x = (x); \
-    _row_ptr[_x >> UINT8_T_SHIFT] |= 1 << (_x & UINT8_T_MASK); \
-  })
-
-#define IMAGE_GET_BINARY_PIXEL_FAST(row_ptr, x) \
-  ({ \
-    __typeof__ (row_ptr) _row_ptr = (row_ptr); \
-    __typeof__ (x) _x = (x); \
-    (_row_ptr[_x >> UINT8_T_SHIFT] >> (_x & UINT8_T_MASK)) & 1; \
-  })
+    __typeof__ (v) _v = (v); \
+    _row_ptr[_x] = _v; \
+})
 
 #define PIXEL_THRESHOLD(pixel, Threshold) \
   ({ \
@@ -159,6 +135,17 @@ struct blob {
   polar_t polar;
   velocity_t velocity;
 };
+
+typedef enum params {
+  BI,  // [0] Blob UID
+  BS,  // [1] Blob State
+  BL,  // [2] Blob Last State
+  BX,  // [3] Blob Centroid PosX
+  BY,  // [4] Blob Centroid PosY
+  BW,  // [5] Blob width
+  BH,  // [6] Blob Height
+  BD   // [7] Blob Depth
+} params_t;
 
 void lifo_llist_init(llist_t *list, xylr_t* nodesArray, const int nodes); // TODO: Separation of concerns (SoC)
 void blob_llist_init(llist_t *list, blob_t* nodesArray, const int nodes); // TODO: Separation of concerns (SoC)

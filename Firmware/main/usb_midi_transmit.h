@@ -13,6 +13,7 @@
 #include "presets.h"
 #include "llist.h"
 #include "blob.h"
+#include "transmit.h"
 #include "notes.h"
 
 typedef struct preset preset_t; // Forward declaration

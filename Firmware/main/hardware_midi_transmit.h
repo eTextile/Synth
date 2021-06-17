@@ -17,13 +17,16 @@
 #include "notes.h"
 #include "mapping.h"
 
-typedef struct preset preset_t; // Forward declaration
-typedef struct llist llist_t;   // Forward declaration
-typedef struct blob blob_t;     // Forward declaration
+typedef struct preset preset_t;      // Forward declaration
+typedef struct llist llist_t;        // Forward declaration
+typedef struct blob blob_t;          // Forward declaration
+typedef struct midiNode midiNode_t;  // Forward declaration
+typedef struct ccPesets ccPesets_t;  // Forward declaration
 
+extern preset_t presets[];
 extern llist_t blobs;
 extern llist_t midiIn;
-extern preset_t presets[];
+extern llist_t midiOut;
 
 void HARDWARE_MIDI_SETUP(void);
 void hardware_midi_llist_init(llist_t* nodes_ptr, midiNode_t nodeArray_ptr, const int nodes); // TODO: Separation of concerns (SoC)

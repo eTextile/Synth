@@ -22,7 +22,7 @@
 #define CENTER_X            (NEW_COLS / 2)
 #define CENTER_Y            (NEW_ROWS / 2)
 
-uint8_t bitmapFrame[NEW_FRAME] = {0};     // 1D Array to store (64*64) binary values
+uint8_t bitmapArray[NEW_FRAME] = {0};     // 1D Array to store (64*64) binary values
 xylr_t lifoArray[LIFO_NODES] = {0};       // 1D Array to store lifo nodes
 blob_t blobArray[MAX_BLOBS] = {0};        // 1D Array to store blobs
 
@@ -61,16 +61,18 @@ void BLOB_SETUP(void) {
 /////////////////////////////// Connected-component labeling / CCL
 void find_blobs(void) {
 
-  memset((uint8_t*)bitmapFrame, 0, SIZEOF_FRAME);
+  memset((uint8_t*)bitmapArray, 0, SIZEOF_FRAME);
 
   for (uint8_t posY = 0; posY < NEW_ROWS; posY += Y_STRIDE) {
 
     uint8_t* row_ptr_A = COMPUTE_IMAGE_ROW_PTR(&interpFrame, posY);
-    uint8_t* bmp_row_ptr_A = COMPUTE_BINARY_IMAGE_ROW_PTR(&bitmapFrame[0], posY);
+    uint8_t* bmp_row_ptr_A = &bitmapArray[0] + posY * NEW_COLS;
 
     for (uint8_t posX = (posY % X_STRIDE); posX < NEW_COLS; posX += X_STRIDE) {
-      if (!IMAGE_GET_BINARY_PIXEL_FAST(bmp_row_ptr_A, posX)
-          && PIXEL_THRESHOLD(IMAGE_GET_PIXEL_FAST(row_ptr_A, posX), presets[THRESHOLD].val)) {
+      if (
+        !IMAGE_GET_PIXEL_FAST(bmp_row_ptr_A, posX) &&
+        PIXEL_THRESHOLD(IMAGE_GET_PIXEL_FAST(row_ptr_A, posX), presets[THRESHOLD].val)
+      ) {
 
         uint8_t oldX = posX;
         uint8_t oldY = posY;
@@ -90,25 +92,27 @@ void find_blobs(void) {
           uint8_t right = posX;
 
           uint8_t* row_ptr_B = COMPUTE_IMAGE_ROW_PTR(&interpFrame, posY);
-          uint8_t* bmp_row_ptr_B = COMPUTE_BINARY_IMAGE_ROW_PTR (&bitmapFrame[0], posY);
+          uint8_t* bmp_row_ptr_B = &bitmapArray[0] + posY * NEW_COLS;
 
-          while ((left > 0)
-                 && (!IMAGE_GET_BINARY_PIXEL_FAST(bmp_row_ptr_B, left - 1))
-                 && PIXEL_THRESHOLD(IMAGE_GET_PIXEL_FAST(row_ptr_B, left - 1), presets[THRESHOLD].val)) {
+          while (
+            (left > 0) &&
+            !IMAGE_GET_PIXEL_FAST(bmp_row_ptr_B, left - 1) &&
+            PIXEL_THRESHOLD(IMAGE_GET_PIXEL_FAST(row_ptr_B, left - 1), presets[THRESHOLD].val)
+          ) {
             left--;
           }
-
-          while (right < (NEW_COLS - 1)
-                 && (!IMAGE_GET_BINARY_PIXEL_FAST(bmp_row_ptr_B, right + 1))
-                 && PIXEL_THRESHOLD(IMAGE_GET_PIXEL_FAST(row_ptr_B, right + 1), presets[THRESHOLD].val)) {
+          while (
+            right < (NEW_COLS - 1) &&
+            !IMAGE_GET_PIXEL_FAST(bmp_row_ptr_B, right + 1) &&
+            PIXEL_THRESHOLD(IMAGE_GET_PIXEL_FAST(row_ptr_B, right + 1), presets[THRESHOLD].val)
+          ) {
             right++;
           }
 
           blob_x1 = MIN(blob_x1, left);
           blob_x2 = MAX(blob_x2, right);
-
           for (uint8_t i = left; i <= right; i++) {
-            IMAGE_SET_BINARY_PIXEL_FAST(bmp_row_ptr_B, i);
+            IMAGE_SET_PIXEL_FAST(bmp_row_ptr_B, i, 1);
             blob_depth = MAX(blob_depth, IMAGE_GET_PIXEL_FAST(row_ptr_B, i));
           }
 
@@ -128,12 +132,12 @@ void find_blobs(void) {
 
             if (posY > 0) {
               row_ptr_B = COMPUTE_IMAGE_ROW_PTR(&interpFrame, posY - 1);
-              bmp_row_ptr_B = COMPUTE_BINARY_IMAGE_ROW_PTR(&bitmapFrame[0], posY - 1);
+              bmp_row_ptr_B = &bitmapArray[0] + (posY - 1) * NEW_COLS;
 
               boolean recurse = false;
               for (uint8_t i = top_left; i <= right; i++) {
 
-                if ((!IMAGE_GET_BINARY_PIXEL_FAST(bmp_row_ptr_B, i))
+                if ((!IMAGE_GET_PIXEL_FAST(bmp_row_ptr_B, i))
                     && (PIXEL_THRESHOLD(IMAGE_GET_PIXEL_FAST(row_ptr_B, i), presets[THRESHOLD].val))) {
 
                   xylr_t* context = (xylr_t*)llist_pop_front(&llist_context_stack);
@@ -161,13 +165,13 @@ void find_blobs(void) {
             }
 
             row_ptr_B = COMPUTE_IMAGE_ROW_PTR(&interpFrame, posY + 1);
-            bmp_row_ptr_B = COMPUTE_BINARY_IMAGE_ROW_PTR(&bitmapFrame[0], posY + 1);
+            bmp_row_ptr_B = &bitmapArray[0] + (posY + 1) * NEW_COLS;
 
             boolean recurse = false;
             for (uint8_t i = bot_left; i <= right; i++) {
 
-              if (!IMAGE_GET_BINARY_PIXEL_FAST(bmp_row_ptr_B, i)
-                  && PIXEL_THRESHOLD(IMAGE_GET_PIXEL_FAST(row_ptr_B, i), presets[THRESHOLD].val)) {
+              if (!IMAGE_GET_PIXEL_FAST(bmp_row_ptr_B, i) &&
+                  PIXEL_THRESHOLD(IMAGE_GET_PIXEL_FAST(row_ptr_B, i), presets[THRESHOLD].val)) {
 
                 xylr_t* context = (xylr_t*)llist_pop_front(&llist_context_stack);
                 //Serial.printf("\nDEBUG_LIFO / B / llist_context_stack / llist_pop_front: %p", (lnode_t*)context);
@@ -224,37 +228,38 @@ void find_blobs(void) {
 
           blob_ptr->lastCentroid.X = blob_ptr->centroid.X;
           blob_ptr->lastCentroid.Y = blob_ptr->centroid.Y;
-
           blob_ptr->centroid.X = blob_cx / (float)blob_pixels;
           blob_ptr->centroid.Y = blob_cy / (float)blob_pixels;
+
           blob_ptr->box.W = (blob_x2 - blob_x1);
           blob_ptr->box.H = blob_height;
           blob_ptr->box.D = blob_depth - presets[THRESHOLD].val;
 
-#if GET_BLOBS_POLAR_COORDINATES
-          float posX = blob_ptr->centroid.X - CENTER_X;
-          float posY = blob_ptr->centroid.Y - CENTER_Y;
+#if BLOBS_POLAR_COORDINATES
+          float posX = blob_ptr->centroid.X - (float)CENTER_X;
+          float posY = blob_ptr->centroid.Y - (float)CENTER_Y;
           if (posX == 0 && posY == 0 ) {
             blob_ptr->polar.r = 0;
             blob_ptr->polar.phi = 0;
           }
           else {
+            //blob_ptr->polar.r = sqrt(sq(posX) + sq(posY));
             blob_ptr->polar.r = sqrt(posX * posX + posY * posY);
-            if (posX == 0 && 0 < posY) {
+
+            if (posX == 0 && posY > 0) {
               blob_ptr->polar.phi = PI / 2;
             } else if (posX == 0 && posY < 0) {
               blob_ptr->polar.phi = PI * 3 / 2;
             } else if (posX < 0) {
-              blob_ptr->polar.phi = atan(posY / posX) + PI;
+              blob_ptr->polar.phi = atanf(posY / posX) + PI;
             } else if (posY < 0) {
-              blob_ptr->polar.phi = atan(posY / posX) + 2 * PI;
+              blob_ptr->polar.phi = atanf(posY / posX) + 2 * PI;
             } else {
-              blob_ptr->polar.phi = atan(posY / posX);
+              blob_ptr->polar.phi = atanf(posY / posX);
             }
           }
-#else
-          llist_push_front(&llist_blobs_temp, blob_ptr);
 #endif
+          llist_push_front(&llist_blobs_temp, blob_ptr);
         }
         posX = oldX;
         posY = oldY;
@@ -297,7 +302,7 @@ void find_blobs(void) {
     }
     // If the distance between curent blob and last blob position is less than minDist:
     // Give the nearestBlob UID to the input blob.
-    if (minDist < 2) {
+    if (minDist < 3.5) {
 #if DEBUG_FIND_BLOBS
       Serial.printf("\nDEBUG_FIND_BLOBS / Found corresponding blob: %p in the **outputBlobs** linked list", (lnode_t*)nearestBlob);
 #endif
@@ -368,7 +373,7 @@ void find_blobs(void) {
   llist_swap_llist(&blobs, &llist_blobs_temp);             // Swap inputBlobs with outputBlobs linked list
   llist_save_nodes(&llist_blobs_stack, &llist_blobs_temp); // Rescure all dead blobs Linked list nodes
 
-#if GET_BLOBS_VELOCITY
+#if BLOBS_VELOCITY
   for (blob_t* blob_ptr = (blob_t*)ITERATOR_START_FROM_HEAD(&blobs); blob_ptr != NULL; blob_ptr = (blob_t*)ITERATOR_NEXT(blob_ptr)) {
     if (blob_ptr->UID < MAX_SYNTH) {
       float vx = blob_ptr->centroid.X - blob_ptr->lastCentroid.X;
@@ -379,20 +384,19 @@ void find_blobs(void) {
     };
   };
 #endif
-
 #if DEBUG_BITMAP
-  for (uint8_t posY = 0; posY < NEW_ROWS; posY++) {
-    uint8_t* row_ptr = COMPUTE_BINARY_IMAGE_ROW_PTR(&bitmapFrame[0], posY);
-    for (uint8_t posX = 0; posX < NEW_COLS; posX++) {
-      IMAGE_GET_BINARY_PIXEL_FAST(row_ptr, posX) == 0 ? Serial.printf(".") : Serial.printf("o");
-    }
+  for (uint8_t rowPos = 0; rowPos < NEW_ROWS; rowPos++) {
+    int rowPosIndex = rowPos * NEW_ROWS;
+    for (int colPos = 0; colPos < NEW_COLS; colPos++) {
+      Serial.printf("%d-", bitmapArray[rowPosIndex + colPos]);
+    };
     Serial.printf("\n");
   }
   Serial.printf("\n");
 #endif
 #if DEBUG_BLOBS
   for (blob_t* blob_ptr = (blob_t*)ITERATOR_START_FROM_HEAD(&blobs); blob_ptr != NULL; blob_ptr = (blob_t*)ITERATOR_NEXT(blob_ptr)) {
-    Serial.printf("\nDEBUG_BLOBS:%d\tLS:%d\tS:%d\tX:%f\tY:%f\tW:%d\tH:%d\tD:%d\tR:%d\tP:%d\tVXY:%f\tVZ:%f",
+    Serial.printf("\nDEBUG_BLOBS:%d\tLS:%d\tS:%d\tX:%f\tY:%f\tW:%d\tH:%d\tD:%d\tR:%f\tP:%f\tVXY:%f\tVZ:%f",
                   blob_ptr->UID,
                   blob_ptr->lastState,
                   blob_ptr->state,

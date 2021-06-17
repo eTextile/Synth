@@ -44,17 +44,6 @@ struct preset {
 
 extern preset_t presets[];
 
-typedef enum params {
-  BI,  // [0] Blob UID
-  BS,  // [1] Blob State
-  BL,  // [2] Blob Last State
-  BX,  // [3] Blob Centroid PosX
-  BY,  // [4] Blob Centroid PosY
-  BW,  // [5] Blob width
-  BH,  // [6] Blob Height
-  BD   // [7] Blob Depth
-} params_t;
-
 void LEDS_SETUP(void);
 void SWITCHES_SETUP(void);
 void update_buttons(void);

@@ -12,7 +12,7 @@
 #include "blob.h"
 #include "median.h"
 
-#include <elapsedMillis.h>             // https://github.com/pfeerick/elapsedMillis
+#include <elapsedMillis.h>  // https://github.com/pfeerick/elapsedMillis
 
 #if MAPPING_LAYAOUT
 #include "mapping.h"
@@ -59,7 +59,7 @@ cSlider_t cSlidersParam[C_SLIDERS] = {
   {13.5, 3,  3.8, 10, 0},                           // ARGS[r, width, phiOffset, phiMax, val]
   {  20, 4,  4.8,  5, 0}                            // ARGS[r, width, phiOffset, phiMax, val]
 };
-ccPesets_t ccParam = {NULL, BD, 44, 1, 0};          // ARGS[blobID, [BX,BY,BW,BH,BD], cChange, midiChannel, Val]
+cChange_t ccParam = {NULL, BD, 44, 1, 0};           // ARGS[blobID, [BX,BY,BW,BH,BD], cChange, midiChannel, Val]
 #endif
 
 void setup() {
@@ -133,11 +133,11 @@ void loop() {
 
 #if MAPPING_LAYAOUT
   mapping_gridPlay();
-  mapping_controlChange(&ccParam);
-  mapping_toggle(&toggParam);
-  mapping_hSlider(&hSliderParam);
-  mapping_vSlider(&vSliderParam);
-  mapping_cSlider(&cSlidersParam[0]);
+  //mapping_cChange(&ccParam);
+  //mapping_toggle(&toggParam);
+  //mapping_hSlider(&hSliderParam);
+  //mapping_vSlider(&vSliderParam);
+  //mapping_cSliders(&cSlidersParam[0]);
 #endif
 
 #if SYNTH_PLAYER

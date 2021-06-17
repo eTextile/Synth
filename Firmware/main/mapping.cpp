@@ -8,26 +8,16 @@
 
 #if MAPPING_LAYAOUT
 
-extern MIDI_NAMESPACE::SerialMIDI<HardwareSerial>serialMIDI;
-extern MIDI_NAMESPACE::MidiInterface<MIDI_NAMESPACE::SerialMIDI<HardwareSerial>> MIDI;
+#define GRID_X_SCAL_FACTOR    (float)(GRID_COLS * (1/X_MAX))
+#define GRID_Y_SCAL_FACTOR    (float)(GRID_ROWS * (1/Y_MAX))
+#define DEBOUNCE_TIME_SWITCH  15            // (TO_REMOVE) this is done in find_blobs();
 
-#define GRID_COLS   14
-#define GRID_ROWS   10
-#define GRID_KEYS   (GRID_COLS * GRID_ROWS)
-#define GRID_GAP    1
-#define KEY_SIZE_X  (uint8_t)((X_MAX - (GRID_GAP * (GRID_COLS + 1))) / GRID_COLS)
-#define KEY_SIZE_Y  (uint8_t)((Y_MAX - (GRID_GAP * (GRID_ROWS + 1))) / GRID_ROWS)
+squareKey_t keys[GRID_KEYS];                // 1D array to store keys limits
+squareKey_t* keyPress_ptr[MAX_SYNTH];       // 1D pointer array to store last keysPressed pointer
+squareKey_t* lastKeyPress_ptr[MAX_SYNTH];   // 1D pointer array to store last keysPressed pointer
 
-#define GRID_COMPUTE_ROW_PTR(grid_ptr, y) (((squareKey_t *)(grid_ptr)) + ((GRID_COLS * sizeof(squareKey_t)) * y));
-#define GRID_GET_KEY_PTR(col_ptr, x)(col_ptr + x);
-
-#define SWITCH_DEBOUNCE_TIME    15 // TO_REMOVE: this have been done in find_blobs();
-
-squareKey_t keyPos[GRID_KEYS];                  // 1D array of struct squareKey_t to store pre-compute key positions ARGS[Xmin, Xmax, Ymin, Ymax]
-squareKey_t* lastKeyPress_ptr[MAX_SYNTH];       // 1D array to store last keys pressed
-
-uint8_t freqKeyLayout[GRID_KEYS] = {0};         // 1D array to mapp freq
-midiNode_t midiKeyLayout[GRID_KEYS] = {0};      // 1D array to mapp incoming midi notes in the grid layout
+uint8_t freqKeyLayout[GRID_KEYS] = {0};     // 1D array to mapp freq
+midiNode_t midiKeyLayout[GRID_KEYS] = {0};  // 1D array to mapp incoming midi notes in the grid layout
 
 void mapping_trigger(tSwitch_t* switch_ptr) {
   for (blob_t* blob_ptr = (blob_t*)ITERATOR_START_FROM_HEAD(&blobs); blob_ptr != NULL; blob_ptr = (blob_t*)ITERATOR_NEXT(blob_ptr)) {
@@ -35,7 +25,7 @@ void mapping_trigger(tSwitch_t* switch_ptr) {
         blob_ptr->centroid.X < switch_ptr->posX + switch_ptr->rSize) {
       if (blob_ptr->centroid.Y > switch_ptr->posY - switch_ptr->rSize &&
           blob_ptr->centroid.Y < switch_ptr->posY + switch_ptr->rSize) {
-        if (millis() - switch_ptr->timeStamp > SWITCH_DEBOUNCE_TIME) {
+        if (millis() - switch_ptr->timeStamp > DEBOUNCE_TIME_SWITCH) {
           switch_ptr->timeStamp = millis();
           switch_ptr->state = true;
 #if DEBUG_MAPPING
@@ -58,7 +48,7 @@ void mapping_toggle(tSwitch_t* switch_ptr) {
         blob_ptr->centroid.X < switch_ptr->posX + switch_ptr->rSize) {
       if (blob_ptr->centroid.Y > switch_ptr->posY - switch_ptr->rSize &&
           blob_ptr->centroid.Y < switch_ptr->posY + switch_ptr->rSize) {
-        if (millis() - switch_ptr->timeStamp > SWITCH_DEBOUNCE_TIME) {
+        if (millis() - switch_ptr->timeStamp > DEBOUNCE_TIME_SWITCH) {
           switch_ptr->timeStamp = millis();
           switch_ptr->state = !switch_ptr->state;
 #if DEBUG_MAPPING
@@ -74,20 +64,23 @@ void mapping_toggle(tSwitch_t* switch_ptr) {
 
 // Pre-compute key min & max coordinates
 void GRID_LAYOUT_SETUP(void) {
-  Serial.printf("\nKEY_SIZE_X:%d \tKEY_SIZE_Y:%d", KEY_SIZE_X, KEY_SIZE_Y);
+
+  //Serial.printf("\nKEY_SIZE_X:%d \tKEY_SIZE_Y:%d", KEY_SIZE_X, KEY_SIZE_Y);
   for (int row = 0; row < GRID_ROWS; row++) {
     for (int col = 0; col < GRID_COLS; col++) {
       uint8_t index = row * GRID_COLS + col;
-      keyPos[index].val = index;
-      //keyPos[index].val = (int8_t)harmonicKeyboard[index];
-      keyPos[index].Xmin = col * KEY_SIZE_X + ((col + 1) * GRID_GAP);
-      keyPos[index].Xmax = keyPos[index].Xmin + KEY_SIZE_X;
-      keyPos[index].Ymin = row * KEY_SIZE_Y + ((row + 1) * GRID_GAP);
-      keyPos[index].Ymax = keyPos[index].Ymin + KEY_SIZE_Y;
+
+      if (index < 127) keys[index].val =  index; // FIXME!
+      //keys[index].val = (int8_t)harmonicKeyboard[index];
+
+      keys[index].Xmin = col * KEY_SIZE_X + ((col + 1) * GRID_GAP);
+      keys[index].Xmax = keys[index].Xmin + KEY_SIZE_X;
+      keys[index].Ymin = row * KEY_SIZE_Y + ((row + 1) * GRID_GAP);
+      keys[index].Ymax = keys[index].Ymin + KEY_SIZE_Y;
 #if DEBUG_MAPPING
       Serial.printf("\nGRID\tXmin:%d\tXmax:%d\tYmin:%d\tYmax:%d",
-                    keyPos[index].Xmin, keyPos[index].Xmax,
-                    keyPos[index].Ymin, keyPos[index].Ymax
+                    keys[index].Xmin, keys[index].Xmax,
+                    keys[index].Ymin, keys[index].Ymax
                    );
 #endif
     };
@@ -97,32 +90,50 @@ void GRID_LAYOUT_SETUP(void) {
 // Compute the grid index location acording to the blobs XY (centroid) coordinates
 // Play corresponding midi **note** or **freq**
 void mapping_gridPlay(void) {
+
   for (blob_t* blob_ptr = (blob_t*)ITERATOR_START_FROM_HEAD(&blobs); blob_ptr != NULL; blob_ptr = (blob_t*)ITERATOR_NEXT(blob_ptr)) {
     if (blob_ptr->UID < MAX_SYNTH) {                                          // Test if the blob UID is less than MAX_SYNTH
-      int keyPosX = round((blob_ptr->centroid.X / (float)X_MAX) * GRID_COLS); // Compute X window position
-      int keyPosY = round((blob_ptr->centroid.Y / (float)Y_MAX) * GRID_ROWS); // Compute Y window position
-      int index = (keyPosY * GRID_COLS) + keyPosX;                            // Compute 1D key index position
-      //Serial.printf("\nGRID\tBLOB:%d\tSTATE:%d\tLAST_STATE:%d\tKEY:%d", blob_ptr->UID, blob_ptr->state, blob_ptr->lastState, index);
-      squareKey_t* keyPress_ptr = &keyPos[index];
-      // Test if the blob is within the key limits
-      if (blob_ptr->centroid.X > keyPress_ptr->Xmin && blob_ptr->centroid.X < keyPress_ptr->Xmax &&
-          blob_ptr->centroid.Y > keyPress_ptr->Ymin && blob_ptr->centroid.Y < keyPress_ptr->Ymax) {
-        if (blob_ptr->state) {
-          if (!blob_ptr->lastState) {
+
+      int keyPosX = round(blob_ptr->centroid.X * GRID_X_SCAL_FACTOR); // Compute X grid position
+      int keyPosY = round(blob_ptr->centroid.Y * GRID_Y_SCAL_FACTOR); // Compute Y grid position
+      int index = keyPosY * GRID_COLS + keyPosX;                      // Compute 1D key index position
+
+      if (!blob_ptr->lastState) lastKeyPress_ptr[blob_ptr->UID] = NULL;
+      if (blob_ptr->state) {
+        if (&keys[index] != lastKeyPress_ptr[blob_ptr->UID]) {
+          // Test if the blob is within the key limits
+          if (blob_ptr->centroid.X > keys[index].Xmin && blob_ptr->centroid.X < keys[index].Xmax &&
+              blob_ptr->centroid.Y > keys[index].Ymin && blob_ptr->centroid.Y < keys[index].Ymax) {
+            if (lastKeyPress_ptr[blob_ptr->UID] != NULL) {
 #if DEBUG_MAPPING
-            Serial.printf("\nGRID\tBLOB:%d\t\tKEYDOWN:%d", blob_ptr->UID, (uint8_t)keyPress_ptr->val);
+              Serial.printf("\nGRID\tBLOB:%d\t\tKEY_OFF:%d", blob_ptr->UID, lastKeyPress_ptr[blob_ptr->UID]->val);
 #else
-            MIDI.sendNoteOn(keyPress_ptr->val, 127, 1);                   // Send NoteON (CHANNEL_1)
+              /*
+                //MIDI.sendNoteOff(lastKeyPress_ptr[blob_ptr->UID]->val, 0, 1);  // Send NoteOFF (CHANNEL_1)
+                midiNode_t* node = (midiNode_t*)llist_pop_front(&llist_midiNodes_stack);
+                node->pithch = 0;
+                node->velocity = 0;
+                //node->channel = blob_ptr->UID;
+                node->channel = 1;
+                llist_push_front(&midiOut, node);
+              */
 #endif
+            };
+#if DEBUG_MAPPING
+            Serial.printf("\nGRID\tBLOB:%d\t\tKEY_DOWN:%d", blob_ptr->UID, keys[index].val);
+#else
+            //MIDI.sendNoteOn(keyPress_ptr->val, 127, 1); // Send NoteON (CHANNEL_1)
+#endif
+            lastKeyPress_ptr[blob_ptr->UID] = &keys[index];
           };
-        }
-        else {
-#if DEBUG_MAPPING
-          Serial.printf("\nGRID\tBLOB:%d\t\tKEYUP:%d", blob_ptr->UID, (uint8_t)keyPress_ptr->val);
-#else
-          MIDI.sendNoteOff(lastKeyPress_ptr[blob_ptr->UID]->val, 0, 1);  // Send NoteOFF (CHANNEL_1)
-#endif
         };
+      }
+      else {
+#if DEBUG_MAPPING
+        Serial.printf("\nGRID\tBLOB:%d\t\tKEY_UP:%d", blob_ptr->UID, keys[index].val);
+#else
+        //MIDI.sendNoteOff(lastKeyPress_ptr[blob_ptr->UID]->val, 0, 1);  // Send NoteOFF (CHANNEL_1)
+#endif
       };
     };
   };
@@ -178,20 +189,32 @@ void mapping_hSlider(hSlider_t* slider_ptr) {
   };
 };
 
-void mapping_cSlider(cSlider_t* slider_ptr) {
+/*
+  float r;
+  uint8_t width;
+  float phiOffset;
+  float phiMin;
+  float phiMax;
+  uint8_t val;
+*/
+
+void mapping_cSliders(cSlider_t* cSliders_ptr) {
   float phi = 0;
   for (blob_t* blob_ptr = (blob_t*)ITERATOR_START_FROM_HEAD(&blobs); blob_ptr != NULL; blob_ptr = (blob_t*)ITERATOR_NEXT(blob_ptr)) {
     for (int i = 0; i < C_SLIDERS; i++) {
-      if (blob_ptr->polar.r > slider_ptr[i].r - slider_ptr[i].width &&
-          blob_ptr->polar.r < slider_ptr[i].r + slider_ptr[i].width) {
-        if (blob_ptr->polar.phi > slider_ptr[i].phiOffset) {
-          phi = blob_ptr->polar.phi - slider_ptr[i].phiOffset;
+
+      if (blob_ptr->polar.r > cSliders_ptr[i].r - cSliders_ptr[i].width &&
+          blob_ptr->polar.r < cSliders_ptr[i].r + cSliders_ptr[i].width) {
+
+        if (blob_ptr->polar.phi > cSliders_ptr[i].phiMin &&
+            blob_ptr->polar.phi < cSliders_ptr[i].phiMax) {
+          cSliders_ptr[i].val = blob_ptr->polar.phi - cSliders_ptr[i].phiOffset;
         }
         else {
-          phi = blob_ptr->polar.phi + (PI2 - slider_ptr[i].phiOffset);
-        }
+          phi = blob_ptr->polar.phi + (PI2 - cSliders_ptr[i].phiOffset);
+        };
 #if DEBUG_MAPPING
-        Serial.printf("\nDEBUG_C_SLIDER_ % d phi : % f", i, map(constrain(phi, 0.2, 5.9), 0.2, 5.9, 0, 127));
+        Serial.printf("\nDEBUG_C_SLIDER_%d - phi:%f", i, cSliders_ptr[i].val );
 #endif
       };
     };
@@ -200,66 +223,66 @@ void mapping_cSlider(cSlider_t* slider_ptr) {
 
 
 // ccPesets_ptr -> ARGS[blobID, [BX,BY,BW,BH,BD], cChange, midiChannel, Val]
-void mapping_controlChange(ccPesets_t* ccPesets_ptr) {
+void mapping_cChange(cChange_t* cChange_ptr) {
   for (blob_t* blob_ptr = (blob_t*)ITERATOR_START_FROM_HEAD(&blobs); blob_ptr != NULL; blob_ptr = (blob_t*)ITERATOR_NEXT(blob_ptr)) {
     // Test if we are within the blob limit
-    if (blob_ptr->UID == ccPesets_ptr->blobID) {
+    if (blob_ptr->UID == cChange_ptr->blobID) {
       // Test if the blob is alive
       if (blob_ptr->state) {
-        switch (ccPesets_ptr->mappVal) {
+        switch (cChange_ptr->mappVal) {
           case BX:
-            if (blob_ptr->centroid.X != ccPesets_ptr->val) {
-              ccPesets_ptr->val = blob_ptr->centroid.X;
+            if (blob_ptr->centroid.X != cChange_ptr->val) {
+              cChange_ptr->val = blob_ptr->centroid.X;
 #if DEBUG_MIDI_HARDWARE
-              Serial.printf("\nMIDI\tCC:%d\tVAL:%d\tCHAN:%d", blob_ptr->UID, constrain(blob_ptr->centroid.X, 0, 127), ccPesets_ptr->midiChannel);
+              Serial.printf("\nMIDI\tCC:%d\tVAL:%d\tCHAN:%d", blob_ptr->UID, constrain(blob_ptr->centroid.X, 0, 127), cChange_ptr->midiChannel);
 #else
-              MIDI.sendControlChange(ccPesets_ptr->cChange, constrain(blob_ptr->centroid.X, 0, 127), ccPesets_ptr->midiChannel);
+              //MIDI.sendControlChange(cChange_ptr->cChange, constrain(blob_ptr->centroid.X, 0, 127), cChange_ptr->midiChannel);
 #endif
-            }
+            };
             break;
           case BY:
-            if (blob_ptr->centroid.Y != ccPesets_ptr->val) {
-              ccPesets_ptr->val = blob_ptr->centroid.Y;
+            if (blob_ptr->centroid.Y != cChange_ptr->val) {
+              cChange_ptr->val = blob_ptr->centroid.Y;
 #if DEBUG_MIDI_HARDWARE
-              Serial.printf("\nMIDI\tCC:%d\tVAL:%d\tCHAN:%d", blob_ptr->UID, constrain(blob_ptr->centroid.Y, 0, 127), ccPesets_ptr->midiChannel);
+              Serial.printf("\nMIDI\tCC:%d\tVAL:%d\tCHAN:%d", blob_ptr->UID, constrain(blob_ptr->centroid.Y, 0, 127), ccParams_ptr->midiChannel);
 #else
-              MIDI.sendControlChange(ccPesets_ptr->cChange, constrain(blob_ptr->centroid.Y, 0, 127), ccPesets_ptr->midiChannel);
+              //MIDI.sendControlChange(cChange_ptr->cChange, constrain(blob_ptr->centroid.Y, 0, 127), cChange_ptr->midiChannel);
 #endif
-            }
+            };
             break;
           case BW:
-            if (blob_ptr->box.W != ccPesets_ptr->val) {
-              ccPesets_ptr->val = blob_ptr->box.W;
+            if (blob_ptr->box.W != cChange_ptr->val) {
+              cChange_ptr->val = blob_ptr->box.W;
 #if DEBUG_MIDI_HARDWARE
-              Serial.printf("\nMIDI\tCC:%d\tVAL:%d\tCHAN:%d", blob_ptr->UID, constrain(blob_ptr->box.W, 0, 127), ccPesets_ptr->midiChannel);
+              Serial.printf("\nMIDI\tCC:%d\tVAL:%d\tCHAN:%d", blob_ptr->UID, constrain(blob_ptr->box.W, 0, 127), ccParams_ptr->midiChannel);
 #else
-              MIDI.sendControlChange(ccPesets_ptr->cChange, constrain(blob_ptr->box.W, 0, 127), ccPesets_ptr->midiChannel);
+              //MIDI.sendControlChange(cChange_ptr->cChange, constrain(blob_ptr->box.W, 0, 127), cChange_ptr->midiChannel);
 #endif
-            }
+            };
             break;
           case BH:
-            if (blob_ptr->box.H != ccPesets_ptr->val) {
-              ccPesets_ptr->val = blob_ptr->box.H;
+            if (blob_ptr->box.H != cChange_ptr->val) {
+              cChange_ptr->val = blob_ptr->box.H;
 #if DEBUG_MIDI_HARDWARE
               Serial.printf("\nMIDI\tCC:%d\tVAL:%d\tCHAN:%d", blob_ptr->UID, constrain(blob_ptr->box.H, 0, 127), ccPesets_ptr->midiChannel);
 #else
-              MIDI.sendControlChange(ccPesets_ptr->cChange, constrain(blob_ptr->box.H, 0, 127), ccPesets_ptr->midiChannel);
+              //MIDI.sendControlChange(cChange_ptr->cChange, constrain(blob_ptr->box.H, 0, 127), cChange_ptr->midiChannel);
 #endif
-            }
+            };
             break;
           case BD:
-            if (blob_ptr->box.D != ccPesets_ptr->val) {
-              ccPesets_ptr->val = blob_ptr->box.D;
+            if (blob_ptr->box.D != cChange_ptr->val) {
+              cChange_ptr->val = blob_ptr->box.D;
 #if DEBUG_MIDI_HARDWARE
-              Serial.printf("\nBLOB:%d\tCC:%d\tVAL:%d\tCHAN:%d", blob_ptr->UID, ccPesets_ptr->cChange, constrain(blob_ptr->box.D, 0, 127), ccPesets_ptr->midiChannel);
+              Serial.printf("\nBLOB:%d\tCC:%d\tVAL:%d\tCHAN:%d", blob_ptr->UID, cChange_ptr->cChange, constrain(blob_ptr->box.D, 0, 127), cChange_ptr->midiChannel);
 #else
-              MIDI.sendControlChange(ccPesets_ptr->cChange, constrain(blob_ptr->box.D, 0, 127), ccPesets_ptr->midiChannel);
+              //MIDI.sendControlChange(cChange_ptr->cChange, constrain(blob_ptr->box.D, 0, 127), cChange_ptr->midiChannel);
 #endif
-            }
+            };
             break;
-        }
-      }
-    }
-  }
-}
+        };
+      };
+    };
+  };
+};
 #endif
