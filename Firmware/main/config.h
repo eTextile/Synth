@@ -12,7 +12,7 @@
 #define NAME                     "ETEXTILE_SYNTHESIZER"
 #define VERSION                  "1.0.5"
 
-#define POLAR_COORDINATES        0  // [0:1] FIXME!
+#define BLOBS_POLAR_COORD        1  // [0:1] FIXME!
 #define BLOBS_VELOCITY           0  // [0:1] FIXME!
 #define MAPPING_LAYAOUT          0  // [0:1] 
 
@@ -33,11 +33,10 @@
 #define DEBUG_BITMAP             0  // [0:1] Print 64x64 binary image based on threshold
 #define DEBUG_FIND_BLOBS         0  // [0:1] Print lowlevel blobs values
 #define DEBUG_BLOBS              1  // [0:1] Print blobs values
-#define DEBUG_MAPPING            0  // [0:1] Print blobs values
-
-#define DEBUG_MIDI_USB           0
-#define DEBUG_MIDI_HARDWARE      0
-#define DEBUG_MIDI_SLIP_OSC      0
+#define DEBUG_MAPPING            0  // [0:1] Print GUI values
+#define DEBUG_MIDI_USB           0  // [0:1] Print MIDI values
+#define DEBUG_MIDI_HARDWARE      0  // [0:1] Print MIDI values
+#define DEBUG_MIDI_SLIP_OSC      0  // [0:1] Print OSC values
 
 #define BAUD_RATE                230400
 #define RAW_COLS                 16

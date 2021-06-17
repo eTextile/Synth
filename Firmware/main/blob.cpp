@@ -14,18 +14,16 @@
 
 #define MAX_BLOBS           32            // [1:64] Set how many blobs can be tracked at the same time
 #define LIFO_NODES          512           // Set the maximum nodes number
-#define X_STRIDE            3             // Speed up the scanning X
-#define Y_STRIDE            3             // Speed up the scanning Y
+#define X_STRIDE            4             // Speed up the scanning X
+#define Y_STRIDE            4             // Speed up the scanning Y
 #define MIN_BLOB_PIX        5             // Set the minimum blob pixels
-#define DEBOUNCE_TIME       20            // Avioding undesired bouncing effect when taping on the sensor
-
+#define DEBOUNCE_TIME       10            // Avioding undesired bouncing effect when taping on the sensor
 #define CENTER_X            (NEW_COLS / 2)
 #define CENTER_Y            (NEW_ROWS / 2)
 
 uint8_t bitmapArray[NEW_FRAME] = {0};     // 1D Array to store (64*64) binary values
 xylr_t lifoArray[LIFO_NODES] = {0};       // 1D Array to store lifo nodes
 blob_t blobArray[MAX_BLOBS] = {0};        // 1D Array to store blobs
-
 velocity_t blobVelocity[MAX_SYNTH] = {0}; // 1D Array to store XY & Z blobs velocity
 polar_t polarCoord[MAX_SYNTH] = {0};      // 1D Array of struct polar_t to store blobs polar coordinates
 
@@ -235,7 +233,7 @@ void find_blobs(void) {
           blob_ptr->box.H = blob_height;
           blob_ptr->box.D = blob_depth - presets[THRESHOLD].val;
 
-#if BLOBS_POLAR_COORDINATES
+#if BLOBS_POLAR_COORD
           float posX = blob_ptr->centroid.X - (float)CENTER_X;
           float posY = blob_ptr->centroid.Y - (float)CENTER_Y;
           if (posX == 0 && posY == 0 ) {
@@ -243,9 +241,8 @@ void find_blobs(void) {
             blob_ptr->polar.phi = 0;
           }
           else {
-            //blob_ptr->polar.r = sqrt(sq(posX) + sq(posY));
-            blob_ptr->polar.r = sqrt(posX * posX + posY * posY);
-
+            //blob_ptr->polar.r = sqrt(posX * posX + posY * posY);
+            blob_ptr->polar.r = sqrt(sq(posX) + sq(posY));
             if (posX == 0 && posY > 0) {
               blob_ptr->polar.phi = PI / 2;
             } else if (posX == 0 && posY < 0) {
