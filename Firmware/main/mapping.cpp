@@ -271,12 +271,12 @@ void mapping_cChange(cChange_t* cChange_ptr) {
             };
             break;
           case BD:
-            if (blob_ptr->box.D != cChange_ptr->val) {
-              cChange_ptr->val = blob_ptr->box.D;
+            if (blob_ptr->centroid.Z != cChange_ptr->val) {
+              cChange_ptr->val = blob_ptr->centroid.Z;
 #if DEBUG_MIDI_HARDWARE
-              Serial.printf("\nBLOB:%d\tCC:%d\tVAL:%d\tCHAN:%d", blob_ptr->UID, cChange_ptr->cChange, constrain(blob_ptr->box.D, 0, 127), cChange_ptr->midiChannel);
+              Serial.printf("\nBLOB:%d\tCC:%d\tVAL:%d\tCHAN:%d", blob_ptr->UID, cChange_ptr->cChange, constrain(blob_ptr->centroid.Z, 0, 127), cChange_ptr->midiChannel);
 #else
-              //MIDI.sendControlChange(cChange_ptr->cChange, constrain(blob_ptr->box.D, 0, 127), cChange_ptr->midiChannel);
+              //MIDI.sendControlChange(cChange_ptr->cChange, constrain(blob_ptr->centroid.Z, 0, 127), cChange_ptr->midiChannel);
 #endif
             };
             break;

@@ -68,13 +68,13 @@ void hardware_midi_send_blobs(void) {
     MIDI.sendControlChange(BY, (uint8_t)round(map(blob_ptr->centroid.Y, 0.0, Y_MAX, 0, 127)), blob_ptr->UID + 1);
     MIDI.sendControlChange(BW, blob_ptr->box.W, blob_ptr->UID + 1);
     MIDI.sendControlChange(BH, blob_ptr->box.H, blob_ptr->UID + 1);
-    MIDI.sendControlChange(BD, constrain(blob_ptr->box.D, 0, 127), blob_ptr->UID + 1);
+    MIDI.sendControlChange(BD, constrain(blob_ptr->centroid.Z, 0, 127), blob_ptr->UID + 1);
     /*
       MIDI.sendAfterTouchPoly(BX, (uint8_t)round(map(blob_ptr->centroid.X, 0.0, X_MAX, 0, 127)), blob_ptr->UID + 1);
       MIDI.sendAfterTouchPoly(BY, (uint8_t)round(map(blob_ptr->centroid.Y, 0.0, Y_MAX, 0, 127)), blob_ptr->UID + 1);
       MIDI.sendAfterTouchPoly(BW, blob_ptr->box.W, blob_ptr->UID + 1);
       MIDI.sendAfterTouchPoly(BH, blob_ptr->box.H, blob_ptr->UID + 1);
-      MIDI.sendAfterTouchPoly(BD, constrain(blob_ptr->box.D, 0, 127), blob_ptr->UID + 1);
+      MIDI.sendAfterTouchPoly(BD, constrain(blob_ptr->centroid.Z, 0, 127), blob_ptr->UID + 1);
     */
     if (!blob_ptr->state) MIDI.sendNoteOff(blob_ptr->UID + 1, 0, 0);
   }

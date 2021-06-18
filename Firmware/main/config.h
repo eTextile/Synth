@@ -12,8 +12,8 @@
 #define NAME                     "ETEXTILE_SYNTHESIZER"
 #define VERSION                  "1.0.5"
 
-#define BLOBS_POLAR_COORD        1  // [0:1] FIXME!
-#define BLOBS_VELOCITY           0  // [0:1] FIXME!
+#define BLOBS_POLAR_COORD        1  // [0:1]
+#define BLOBS_VELOCITY           1  // [0:1]
 #define MAPPING_LAYAOUT          0  // [0:1] 
 
 #define USB_MIDI_TRANSMIT        0  // [0:1] Set the eTextile-Synthesizer as USB MIDI divice **DO NOT FORGET: Arduino/Touls/USB_Type/MIDI**

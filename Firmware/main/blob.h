@@ -48,13 +48,13 @@ extern llist_t blobs;
     _row_ptr[_x]; \
   })
 
-  #define IMAGE_SET_PIXEL_FAST(row_ptr, x, v) \
-({ \
+#define IMAGE_SET_PIXEL_FAST(row_ptr, x, v) \
+  ({ \
     __typeof__ (row_ptr) _row_ptr = (row_ptr); \
     __typeof__ (x) _x = (x); \
     __typeof__ (v) _v = (v); \
     _row_ptr[_x] = _v; \
-})
+  })
 
 #define PIXEL_THRESHOLD(pixel, Threshold) \
   ({ \
@@ -90,15 +90,15 @@ struct xylr {
 
 typedef struct point point_t;
 struct point {
-  float X;
-  float Y;
+  float   X;
+  float   Y;
+  uint8_t Z;
 };
 
 typedef struct box box_t;
 struct box {
   uint8_t W; // TODO Make it as float
   uint8_t H; // TODO Make it as float
-  uint8_t D; // TODO Make it as float
 };
 
 typedef struct polar polar_t;
@@ -109,9 +109,9 @@ struct polar {
 
 typedef struct velocity velocity_t;
 struct velocity {
+  unsigned long timeTag;
   float XY;
   float Z;
-  float lz;
 };
 
 typedef enum status {
@@ -125,13 +125,12 @@ struct blob {
   lnode_t node;
   uint8_t UID;
   status_t status;
-  uint32_t timeTag;
+  unsigned long timeTag;
   uint16_t pixels;
   boolean state;
   boolean lastState;
   box_t box;
   point_t centroid;
-  point_t lastCentroid;
   polar_t polar;
   velocity_t velocity;
 };

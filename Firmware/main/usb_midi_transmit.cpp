@@ -101,7 +101,7 @@ void usb_midi_learn(void) {
         usbMIDI.sendControlChange(BH, blob_ptr->box.H, blob_ptr->UID + 1);
         break;
       case BD:
-        usbMIDI.sendControlChange(BD, constrain(blob_ptr->box.D, 0, 127), blob_ptr->UID + 1);
+        usbMIDI.sendControlChange(BD, constrain(blob_ptr->centroid.Z, 0, 127), blob_ptr->UID + 1);
         break;
     }
     while (usbMIDI.read()); // Read and discard any incoming MIDI messages
@@ -116,13 +116,13 @@ void usb_midi_send_blobs(void) {
     usbMIDI.sendControlChange(BY, (uint8_t)round(map(blob_ptr->centroid.Y, 0.0, Y_MAX, 0, 127)), blob_ptr->UID + 1);
     usbMIDI.sendControlChange(BW, blob_ptr->box.W, blob_ptr->UID + 1);
     usbMIDI.sendControlChange(BH, blob_ptr->box.H, blob_ptr->UID + 1);
-    usbMIDI.sendControlChange(BD, constrain(blob_ptr->box.D, 0, 127), blob_ptr->UID + 1);
+    usbMIDI.sendControlChange(BD, constrain(blob_ptr->centroid.Z, 0, 127), blob_ptr->UID + 1);
     /*
       usbMIDI.sendAfterTouchPoly(BX, (uint8_t)round(map(blob_ptr->centroid.X, 0.0, X_MAX, 0, 127)), blob_ptr->UID + 1);
       usbMIDI.sendAfterTouchPoly(BY, (uint8_t)round(map(blob_ptr->centroid.Y, 0.0, Y_MAX, 0, 127)), blob_ptr->UID + 1);
       usbMIDI.sendAfterTouchPoly(BW, blob_ptr->box.W, blob_ptr->UID + 1);
       usbMIDI.sendAfterTouchPoly(BH, blob_ptr->box.H, blob_ptr->UID + 1);
-      usbMIDI.sendAfterTouchPoly(BD, constrain(blob_ptr->box.D, 0, 127), blob_ptr->UID + 1);
+      usbMIDI.sendAfterTouchPoly(BD, constrain(blob_ptr->centroid.Z, 0, 127), blob_ptr->UID + 1);
     */
     if (!blob_ptr->state) usbMIDI.sendNoteOff(blob_ptr->UID + 1, 0, 0);
   }
@@ -162,9 +162,9 @@ void controlChange(llist_t* llist_ptr, ccPesets_t* ccPesets_ptr) {
             }
             break;
           case BD:
-            if (blob_ptr->box.D != ccPesets_ptr->val) {
-              ccPesets_ptr->val = blob_ptr->box.D;
-              usbMIDI.sendControlChange(ccPesets_ptr->cChange, constrain(blob_ptr->box.D, 0, 127), ccPesets_ptr->midiChannel);
+            if (blob_ptr->centroid.Z != ccPesets_ptr->val) {
+              ccPesets_ptr->val = blob_ptr->centroid.Z;
+              usbMIDI.sendControlChange(ccPesets_ptr->cChange, constrain(blob_ptr->centroid.Z, 0, 127), ccPesets_ptr->midiChannel);
             }
             break;
         }
@@ -195,9 +195,9 @@ void controlChange(llist_t* llist_ptr, ccPesets_t* ccPesets_ptr) {
             }
             break;
           case BD:
-            if (blob_ptr->box.D != ccPesets_ptr->val) {
-              ccPesets_ptr->val = blob_ptr->box.D;
-              Serial.printf("\nBLOB:%d\tCC:%d\tVAL:%d\tCHAN:%d", blob_ptr->UID, ccPesets_ptr->cChange, constrain(blob_ptr->box.D, 0, 127), ccPesets_ptr->midiChannel);
+            if (blob_ptr->centroid.Z != ccPesets_ptr->val) {
+              ccPesets_ptr->val = blob_ptr->centroid.Z;
+              Serial.printf("\nBLOB:%d\tCC:%d\tVAL:%d\tCHAN:%d", blob_ptr->UID, ccPesets_ptr->cChange, constrain(blob_ptr->centroid.Z, 0, 127), ccPesets_ptr->midiChannel);
             }
             break;
         }

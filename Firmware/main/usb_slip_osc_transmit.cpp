@@ -73,7 +73,7 @@ void usb_slip_osc_handle_input(void) {
         msg.add(blob_ptr->centroid.Y);
         msg.add(blob_ptr->box.W);
         msg.add(blob_ptr->box.H);
-        msg.add(blob_ptr->box.D);
+        msg.add(blob_ptr->centroid.Z);
         OSCbundle.add(msg);
       }
       SLIPSerial.beginPacket();     // Send SLIP header
