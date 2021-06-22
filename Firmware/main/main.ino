@@ -49,18 +49,8 @@ unsigned int fps = 0;
 //boolean loadPreset = true;
 //boolean savePreset = false;
 
-#if MAPPING_LAYAOUT
-tSwitch_t trigParam = {10, 10, 5, 1000, false};     // ARGS[posX, posY, rSize, debounceTimer, state]
-tSwitch_t toggParam = {40, 30, 5, 1000, false};     // ARGS[posX, posY, rSize, debounceTimer, state]
-vSlider_t vSliderParam = {10, 15, 40, 5, 0};        // ARGS[posX, Ymin, Ymax, width, val]
 hSlider_t hSliderParam = {30, 15, 40, 5, 0};        // ARGS[posY, Xmin, Xmax, width, val]
-cSlider_t cSlidersParam[C_SLIDERS] = {
-  {   6, 4,  3.8,  5, 0},                           // ARGS[r, width, phiOffset, phiMax, val]
-  {13.5, 3,  3.8, 10, 0},                           // ARGS[r, width, phiOffset, phiMax, val]
-  {  20, 4,  4.8,  5, 0}                            // ARGS[r, width, phiOffset, phiMax, val]
-};
 cChange_t ccParam = {NULL, BD, 44, 1, 0};           // ARGS[blobID, [BX,BY,BW,BH,BD], cChange, midiChannel, Val]
-#endif
 
 void setup() {
 #if DEBUG_ADC || DEBUG_INTERP || DEBUG_BITMAP || DEBUG_BLOBS || DEBUG_FPS || DEBUG_ENCODER || DEBUG_BUTTONS || DEBUG_MAPPING
@@ -97,7 +87,12 @@ void setup() {
 #endif
 #if MAPPING_LAYAOUT
   GRID_LAYOUT_SETUP();
+  TOGGLES_SETUP();
+  TRIGGERS_SETUP();
+  VSLIDERS_SETUP();
+  HSLIDERS_SETUP();
 #endif
+
 #if SYNTH_PLAYER || GRANULAR_PLAYER || FLASH_PLAYER
   SOUND_CARD_SETUP();
 #endif
@@ -133,11 +128,11 @@ void loop() {
 
 #if MAPPING_LAYAOUT
   mapping_gridPlay();
+  mapping_toggles();
+  mapping_triggers();
+  mapping_hSliders();
+  mapping_vSliders();
   //mapping_cChange(&ccParam);
-  //mapping_toggle(&toggParam);
-  //mapping_hSlider(&hSliderParam);
-  //mapping_vSlider(&vSliderParam);
-  //mapping_cSliders(&cSlidersParam[0]);
 #endif
 
 #if SYNTH_PLAYER

@@ -13,12 +13,14 @@
 #include "presets.h"
 #include "llist.h"
 #include "blob.h"
+#include "mapping.h"
 #include "transmit.h"
 #include "notes.h"
 
-typedef struct preset preset_t; // Forward declaration
-typedef struct llist llist_t;   // Forward declaration
-typedef struct blob blob_t;     // Forward declaration
+typedef struct preset preset_t;     // Forward declaration
+typedef struct llist llist_t;       // Forward declaration
+typedef struct blob blob_t;         // Forward declaration
+typedef struct cChange cChange_t;   // Forward declaration
 
 extern Encoder encoder;
 extern image_t rawFrame;
@@ -34,5 +36,7 @@ void usb_midi_send_raw(void);
 void usb_midi_send_interp(void);
 void usb_midi_learn(void);
 void usb_midi_send_blobs(void);
+
+void controlChange(cChange_t* cChange_t);
 
 #endif /*__USB_MIDI_TRANSMIT_H__*/

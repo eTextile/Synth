@@ -6,9 +6,9 @@
 
 #include "transmit.h"
 
-midiNode_t nodesArray_ptr[MAX_SYNTH] = {0};  // 1D array to mapp incoming midi notes in the grid layout
+midiNode_t nodesArray_ptr[MAX_SYNTH] = {0}; // 1D array to mapp incoming midi notes in the grid layout
 
-llist_t llist_midi_stack;                   // 
+llist_t midi_nodes_stack;                   // 
 llist_t midiIn;                             // Main Midi Input linked list
 llist_t midiOut;                            // Main Midi Output linked list
 
@@ -20,7 +20,7 @@ void llist_midi_init(llist_t* llist_ptr, midiNode_t* nodesArray_ptr, const int n
 }
 
 void TRANSMIT_SETUP(void) {
-  llist_midi_init(&llist_midi_stack, &nodesArray_ptr[0], MAX_SYNTH); // Add X nodes to the llist_context_stack
+  llist_midi_init(&midi_nodes_stack, &nodesArray_ptr[0], MAX_SYNTH); // Add X nodes to the llist_context_stack
   llist_raz(&midiIn);
   llist_raz(&midiOut);
 }

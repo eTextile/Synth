@@ -37,15 +37,15 @@ void lifo_llist_init(llist_t* llist_ptr, xylr_t* nodesArray_ptr, const int nodes
   llist_raz(llist_ptr);
   for (int i = 0; i < nodes; i++) {
     llist_push_front(llist_ptr, &nodesArray_ptr[i]);
-  }
-}
+  };
+};
 
 void blob_llist_init(llist_t* llist_ptr, blob_t* nodesArray_ptr, const int nodes) {
   llist_raz(llist_ptr);
   for (int i = 0; i < nodes; i++) {
     llist_push_front(llist_ptr, &nodesArray_ptr[i]);
-  }
-}
+  };
+};
 
 void BLOB_SETUP(void) {
   lifo_llist_init(&llist_context_stack, &lifoArray[0], LIFO_NODES); // Add X nodes to the llist_context_stack
@@ -53,7 +53,7 @@ void BLOB_SETUP(void) {
   llist_raz(&llist_context);
   llist_raz(&llist_blobs_temp);
   llist_raz(&blobs);
-}
+};
 
 /////////////////////////////// Scanline flood fill algorithm / SFF
 /////////////////////////////// Connected-component labeling / CCL
@@ -247,7 +247,7 @@ void find_blobs(void) {
             } else if (posX < 0) {
               blob_ptr->polar.phi = atanf(posY / posX) + PI;
             } else if (posY < 0) {
-              blob_ptr->polar.phi = atanf(posY / posX) + 2 * PI;
+              blob_ptr->polar.phi = atanf(posY / posX) + PI2;
             } else {
               blob_ptr->polar.phi = atanf(posY / posX);
             }

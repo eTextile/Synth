@@ -20,7 +20,7 @@ typedef struct blob blob_t;    // Forward declaration
 extern llist_t blobs;
 
 #define MEDIAN_WINDOW 5                  // Allowed filter window size : 3, 5, 7...
-#define MEDIAN_POS ((MEDIAN_WINDOW-1)/2) // position of median in ordered list
+#define MEDIAN_POS ((MEDIAN_WINDOW-1)/2) // position of median in sorted list
 
 typedef struct median median_t;
 struct median {

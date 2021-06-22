@@ -21,6 +21,6 @@ extern uint8_t currentMode;
 extern uint8_t lastMode;
 
 void SOUND_CARD_SETUP(void);
-void update_levels(preset_t* presets_ptr);
+void update_levels(void);
 
 #endif /*__SOUND_CARD_H__*/

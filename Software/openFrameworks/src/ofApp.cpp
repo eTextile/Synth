@@ -1,25 +1,23 @@
+/*
+  **eTextile-Synthesizer**
+  This file is part of the eTextile-Synthesizer project - http://synth.eTextile.org
+  Copyright (c) 2014- Maurin Donneaud <maurin@etextile.org>
+  This work is licensed under Creative Commons Attribution-ShareAlike 4.0 International license, see the LICENSE file for details.
+*/
+
 #include "ofApp.h"
 
-void ofApp::setup(void) {
+void ofApp::setup() {
   ofSetVerticalSync(true);
-  ofSetWindowTitle("E256 - V1.3");
+  ofSetWindowTitle("E256 - " MIDI_PORT_NAME "_" VERSION);
   ofSetLogLevel(OF_LOG_VERBOSE);
-  // print input ports to console 
-  //midiIn.listPorts(); // via instance -> comment this line when done
-  //ofxMidiIn::listPorts(); // via static as well
-
-  // open port by number (you may need to change this)
-  //midiIn.openPort(1);
+  midiIn.listInPorts(); // via instance -> comment this line when done
   midiIn.openPort("MIDI_PORT_NAME");
-  //midiIn.openVirtualPort("ofxMidiIn Input"); // open a virtual port
-  // don't ignore sysex, timing, & active sense messages,
-  // these are ignored by default
+  midiOut.listOutPorts(); // via instance -> comment this line when done
+  midiOut.openPort("MIDI_PORT_NAME");
   midiIn.ignoreTypes(false, false, false);
-
-  // add ofApp as a listener
   midiIn.addListener(this);
-  // print received messages to the console
-  midiIn.setVerbose(true);
+  midiIn.setVerbose(true); // print received messages to the console
 
   FreeSansBold.load("./Data/FreeSansBold.ttf", 13, true, true);
 
@@ -32,7 +30,7 @@ void ofApp::setup(void) {
 
   gui.setup("E256 - Parameters");
   gui.add(setCalirationButton.setup("Calibrate"));
-  gui.add(setTresholdSlider.setup("Threshold", 20, 0, 100));
+  gui.add(setTresholdSlider.setup("Threshold", 10, 0, 60));
   gui.add(getRawDataToggle.setup("getRawData", false));
   gui.add(getInterpDataToggle.setup("getInterpData", true));
   gui.add(getBinDataToggle.setup("getBinData", false));
@@ -77,18 +75,14 @@ void ofApp::setup(void) {
   }
 }
 
+/*
 /////////////////////// SERIAL EVENT ///////////////////////
 void ofApp::onSerialBuffer(const ofxIO::SerialBufferEventArgs& args) {
 
   if (getRawData) {
-  //if (getRawDataToggle.getParameter() == true){
-
-    std::copy(args.buffer().begin(), args.buffer().end(), inputFrameBuffer);
-    //ofLogNotice("ofApp::onSerialBuffer") << "E256 - Serial message size : "<< message.OSCmessage.size();
-    //ofLogNotice("ofApp::onSerialBuffer") << "E256 - Serial message : " << message.OSCmessage;
+    //midiMessage.value
     for (int i=0; i<RAW_FRAME; i++) {
-      rawValues[i] = rawFrameBuffer[i];
-      //ofLogNotice("ofApp::onSerialBuffer") << "INDEX_" << i << " val_" << rawValues[i];
+      rawValues[i] = message[i];
     }
     // Update vertices with the E256 raw sensor values
     for (int index=0; index<RAW_FRAME; index++) {
@@ -135,11 +129,11 @@ void ofApp::onSerialBuffer(const ofxIO::SerialBufferEventArgs& args) {
     Poco::RegularExpression regex("/b(.){10}"); // GET X bytes after the "/b"
     Poco::RegularExpression::Match theMatch;
 
-    /*
+    
     for (size_t i=0; i<message.OSCmessage.size(); i++){
       ofLogNotice("ofApp::onSerialBuffer") << "INDEX_" << i << " val_" << message.OSCmessage[i];
     }
-    */
+    
 
     // Expand SLIP-OSC serial message to OSC messages
     // https://en.cppreference.com/w/cpp/regex
@@ -156,7 +150,6 @@ void ofApp::onSerialBuffer(const ofxIO::SerialBufferEventArgs& args) {
       oscMessage.addBoolArg(msg[offset + 2]);     // lastState
 
       ofLogNotice("ofApp::onSerialBuffer") << "GET__________________" << oscMessage.getArgAsInt(0);
-
 
       //uint32_t tempX = (msg[offset + 3] << 24) | (msg[offset + 4] << 16) | (msg[offset + 5] << 8) | (msg[offset + 6]);
       //ofLogNotice("ofApp::onSerialBuffer") << "X : " << (float)tempX;
@@ -176,40 +169,29 @@ void ofApp::onSerialBuffer(const ofxIO::SerialBufferEventArgs& args) {
     E256_dataRequest = false;
   }
 
-
-
 }
-
-
-
-
-void ofApp::onSerialError(const ofxIO::SerialBufferErrorEventArgs& args) {
-  message.exception = args.exception().displayText();
-  ofLogNotice("ofApp::onSerialError") << "E256 - Serial ERROR : " << args.exception().displayText();
-}
+*/
 
 /////////////////////// UPDATE ///////////////////////
-void ofApp::update(void) {
-
+void ofApp::update() {
 }
 
 //////////////////////// DRAW ////////////////////////
-void ofApp::draw(void) {
+void ofApp::draw() {
   ofBackground(0);
   gui.draw();
 
   std::stringstream dashboard;
-  dashboard << "     Connected to : " << serialDevice.port() << std::endl;
-  //dashboard << "SLIP-OSC-OUT port : " << UDP_OUTPUT_PORT << std::endl;
-  //dashboard << " SLIP-OSC-IN port : " << UDP_INPUT_PORT << std::endl;
-  dashboard << "              FPS : " << (int)ofGetFrameRate() << std::endl;
-  ofDrawBitmapString(dashboard.str(), ofVec2f(20, 200)); // Draw the GUI menu
+  dashboard << "MIDI_IN: " << midiIn.getInPortName(midiIn.getPort()) << std::endl;
+  dashboard << "MIDI_OUT: " << midiOut.getOutPortName(midiOut.getPort()) << std::endl;
+  dashboard << "FPS: " << (int)ofGetFrameRate() << std::endl;
+  ofDrawBitmapString(dashboard.str(), ofVec2f(20, 200));
 
-  //const int x = 0;  // X ofset
-  //const int y = 0;  // Y ofset FIXME : dont afect the matrix graph
-  const int SCALE_H = 50; // Scale 14
-  const int SCALE_V = 50; // Scale 14
-  const int BLOB_SCALE = 5;
+  //const int x = 0;       // X ofset
+  //const int y = 0;       // Y ofset FIXME : dont afect the matrix graph
+  const int SCALE_H = 50;  // Scale 14
+  const int SCALE_V = 50;  // Scale 14
+  //const int BLOB_SCALE = 5;
 
   if (getRawData) {
     ofPushMatrix();
@@ -219,7 +201,6 @@ void ofApp::draw(void) {
     ofScale(SCALE_H, SCALE_V, 1);
     rawDataMesh.drawWireframe(); // draws lines
     ofPopMatrix();
-
     if (E256_dataRequest == false){
       E256_rawDataRequest();
     }
@@ -233,31 +214,8 @@ void ofApp::draw(void) {
     ofScale(SCALE_H/4, SCALE_V/4, 1);
     interpDataMesh.drawWireframe(); // draws lines
     ofPopMatrix();
-
     if (E256_dataRequest == false){
       E256_interpDataRequest();
-    }
-  }
-
-  // Work in progress!
-  if (getBinData) {
-    int space_X = 60;
-    int space_Y = 70;
-
-    ofPushMatrix();
-    ofTranslate(ofGetWindowWidth()/3, ofGetWindowHeight()/10);
-    ofSetColor(245, 58, 135); // Pink
-    for (uint8_t posY = 0; posY < RAW_COLS; posY++) {
-      //uint8_t* bmp_row = COMPUTE_BINARY_IMAGE_ROW_PTR (&binValues, posY);
-      for (uint8_t posX = 0; posX < RAW_ROWS; posX++) {
-        uint16_t index = posX * RAW_COLS + posY; // Compute 1D array index
-        //FreeSansBold.drawString(ofToString(ofToBinary(binValues[index])), posX*space_X, posY*space_Y); // FIXME
-      }
-    }
-    ofPopMatrix();
-
-    if (E256_dataRequest == false){
-      E256_binDataRequest();
     }
   }
 
@@ -265,6 +223,7 @@ void ofApp::draw(void) {
     ofPushMatrix();
     ofRotateDeg(30, 1, 0, 0);
 
+/*
     for (size_t index = 0; index < blobs.size(); ++index){
       if(blobs[index].getAddress() == "/b"){
         uint8_t blobID    = blobs[index].getArgAsInt(0) & 0xFF;
@@ -311,37 +270,24 @@ void ofApp::draw(void) {
     if (E256_dataRequest == false){
       E256_blobsRequest();
     }
+*/
   }
 }
 
 // E256 matrix sensor - SET CALIBRATION
-void ofApp::E256_setCaliration(void) {
-  ofxOscMessage OSCmsg;
-  OSCmsg.setAddress("/c"); // calibrate
-  //OSCmsg.addInt32Arg(20);  // Set calibration cycles
-  osc::OutboundPacketStream packet(requestBuffer, 1024);
-  packet.Clear();
-  packet << osc::BeginMessage(OSCmsg.getAddress().data());
-  //packet << OSCmsg.getArgAsInt32(0);
-  packet << osc::EndMessage;
-  serialDevice.send(ByteBuffer(packet.Data(), packet.Size()));
+void ofApp::E256_setCaliration() {
+  midiMutex.lock();
+  midiOut.sendControlChange(1, 5, 0);
+  midiMutex.unlock();
   //ofLogNotice("ofApp::E256_setCaliration") << "E256 - Calibrate";
 }
-
 // E256 matrix sensor - SET THRESHOLD
 void ofApp::E256_setTreshold(int & tresholdValue) {
-  ofxOscMessage OSCmsg;
-  OSCmsg.setAddress("/t"); // threshold
-  OSCmsg.addIntArg((int32_t)tresholdValue);
-  osc::OutboundPacketStream packet(requestBuffer, 1024);
-  packet.Clear();
-  packet << osc::BeginMessage(OSCmsg.getAddress().data());
-  packet << OSCmsg.getArgAsInt32(0);
-  packet << osc::EndMessage;
-  serialDevice.send(ByteBuffer(packet.Data(), packet.Size()));
-  ofLogNotice("ofApp::E256_setTreshold") << "E256 - Threshold seted : " << OSCmsg.getArgAsInt32(0);
+  midiMutex.lock();
+  midiOut.sendControlChange(1, 3, (uint8_t)tresholdValue);
+  midiMutex.unlock();
+  //ofLogNotice("ofApp::E256_setTreshold") << "E256 - Threshold seted : " << (int8_t)tresholdValue;
 }
-
 // E256 matrix sensor - MATRIX RAW DATA REQUEST START
 // 16*16 matrix row data request
 void ofApp::E256_rawDataRequestStart(bool & val) {
@@ -363,56 +309,51 @@ void ofApp::E256_blobsRequestStart(bool & val) {
   if (val == true) E256_binDataRequest();
   getBlobs = val;
 }
-
 // E256 matrix sensor - MATRIX DATA REQUEST
 // 16*16 matrix row data request
-void ofApp::E256_rawDataRequest(void) {
-  ofxOscMessage OSCmsg;
-  OSCmsg.setAddress("/r"); //rowData
-  osc::OutboundPacketStream packet(requestBuffer, 1024);
-  packet.Clear();
-  packet << osc::BeginMessage(OSCmsg.getAddress().data());
-  packet << osc::EndMessage;
-  serialDevice.send(ByteBuffer(packet.Data(), packet.Size()));
+void ofApp::E256_rawDataRequest() {
   E256_dataRequest = true;
 }
-
 // E256 matrix sensor - MATRIX DATA REQUEST
 // 64*64 matrix interpolated data request
-void ofApp::E256_interpDataRequest(void) {
-  ofxOscMessage OSCmsg;
-  OSCmsg.setAddress("/i"); // Interpolated data
-  osc::OutboundPacketStream packet(requestBuffer, 1024);
-  packet.Clear();
-  packet << osc::BeginMessage(OSCmsg.getAddress().data());
-  packet << osc::EndMessage;
-  serialDevice.send(ByteBuffer(packet.Data(), packet.Size()));
+void ofApp::E256_interpDataRequest() {
   E256_dataRequest = true;
 }
-
 // E256 matrix sensor - MATRIX DATA REQUEST
 // 64*64 matrix binary data request
-void ofApp::E256_binDataRequest(void) {
-  ofxOscMessage OSCmsg;
-  OSCmsg.setAddress("/x"); // Binary
-  osc::OutboundPacketStream packet(requestBuffer, 1024);
-  packet.Clear();
-  packet << osc::BeginMessage(OSCmsg.getAddress().data());
-  packet << osc::EndMessage;
-  serialDevice.send(ByteBuffer(packet.Data(), packet.Size()));
+void ofApp::E256_binDataRequest() {
   E256_dataRequest = true;
 }
 
 // E256 matrix sensor - BLOBS REQUEST
-void ofApp::E256_blobsRequest(void) {
-  ofxOscMessage OSCmsg;
-  OSCmsg.setAddress("/b"); // Blobs
-  osc::OutboundPacketStream packet(requestBuffer, 1024);
-  packet.Clear();
-  packet << osc::BeginMessage(OSCmsg.getAddress().data());
-  packet << osc::EndMessage;
-  serialDevice.send(ByteBuffer(packet.Data(), packet.Size()));
+void ofApp::E256_blobsRequest() {
   E256_dataRequest = true;
+}
+
+void ofApp::exit() {
+  
+  midiIn.closePort();
+  midiIn.removeListener(this);
+  //midiOut.closePort();
+  
+  setCalirationButton.removeListener(this, &ofApp::E256_setCaliration);
+  setTresholdSlider.removeListener(this, &ofApp::E256_setTreshold);
+  getRawDataToggle.removeListener(this, &ofApp::E256_rawDataRequestStart);
+  getInterpDataToggle.removeListener(this, &ofApp::E256_interpDataRequestStart);
+  getBinDataToggle.removeListener(this, &ofApp::E256_binDataRequestStart);
+  getBlobsToggle.removeListener(this, &ofApp::E256_blobsRequestStart);
+}
+
+/////////////////////// MidiIN ///////////////////////
+void ofApp::newMidiMessage(ofxMidiMessage& msg) {
+    midiMutex.lock();
+	// add the latest message to the message queue
+	midiMessages.push_back(msg);
+	// remove any old messages if we have too many
+	while(midiMessages.size() > maxMessages) {
+		midiMessages.erase(midiMessages.begin());
+	}
+    midiMutex.unlock();
 }
 
 // E256 matrix sensor - Toggle full screen mode
@@ -426,24 +367,3 @@ void ofApp::keyPressed(int key) {
   }
 }
 
-void ofApp::exit(void) {
-
-  midiIn.closePort();
-  midiIn.removeListener(this);
-
-  setCalirationButton.removeListener(this, &ofApp::E256_setCaliration);
-  setTresholdSlider.removeListener(this, &ofApp::E256_setTreshold);
-  getRawDataToggle.removeListener(this, &ofApp::E256_rawDataRequestStart);
-  getInterpDataToggle.removeListener(this, &ofApp::E256_interpDataRequestStart);
-  getBinDataToggle.removeListener(this, &ofApp::E256_binDataRequestStart);
-  getBlobsToggle.removeListener(this, &ofApp::E256_blobsRequestStart);
-}
-
-void ofApp::newMidiMessage(ofxMidiMessage& msg) {
-  // add the latest message to the message queue
-  midiMessages.push_back(msg);
-  // remove any old messages if we have too many
-  while(midiMessages.size() > maxMessages) {
-  midiMessages.erase(midiMessages.begin());
-  }
-}

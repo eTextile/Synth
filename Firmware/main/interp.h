@@ -17,6 +17,7 @@ typedef struct image image_t; // forward declaration
   
 extern uint8_t interpThreshold;
 extern image_t rawFrame;
+
 extern image_t interpFrame;
 
 void INTERP_SETUP(void);

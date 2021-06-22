@@ -14,6 +14,7 @@
 
 typedef struct llist llist_t;   // Forward declaration
 
+extern llist_t midi_nodes_stack;
 extern llist_t midiIn;
 extern llist_t midiOut;
 

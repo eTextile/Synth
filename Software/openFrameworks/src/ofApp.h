@@ -1,10 +1,19 @@
+/*
+  **eTextile-Synthesizer**
+  This file is part of the eTextile-Synthesizer project - http://synth.eTextile.org
+  Copyright (c) 2014- Maurin Donneaud <maurin@etextile.org>
+  This work is licensed under Creative Commons Attribution-ShareAlike 4.0 International license, see the LICENSE file for details.
+*/
+
+
 #pragma once
 
 #include "ofMain.h"
-#include "ofxGui.h"
 #include "ofxMidi.h"
+#include "ofxGui.h"
 
 #define MIDI_PORT_NAME        "ETEXTILE_SYNTH"
+#define VERSION               "1.0.5"
 #define RAW_COLS              16
 #define RAW_ROWS              16
 #define DUAL_ROWS             (RAW_ROWS / 2)
@@ -29,34 +38,37 @@ struct blob {
   uint8_t boxD;
 };
 
-
-
-class ofApp: public ofBaseApp {
+class ofApp : public ofBaseApp, public ofxMidiListener {
 
 public:
-    void                          setup(void);
-    void                          update(void);
-    void                          draw(void);
-    void                          exit(void);
+
+    void                          setup();
+    void                          update();
+    void                          draw();
+    void                          exit();
 
     ofxPanel                      gui;
-    ofxButton                     setCalirationButton; // Button to calibrate E256
-    ofxIntSlider                  setTresholdSlider;   // Set E256 threshold value
+    ofxButton                     setCalirationButton;
+    ofxIntSlider                  setTresholdSlider;
     ofxToggle                     getBlobsToggle;
     ofxToggle                     getRawDataToggle;
     ofxToggle                     getInterpDataToggle;
     ofxToggle                     getBinDataToggle;
 
-    uint8_t                       rawFrameBuffer[RAW_FRAME];
-    uint8_t                       interpFrameBuffer[NEW_FRAME];
+    //uint8_t                       rawFrameBuffer[RAW_FRAME];
+    //uint8_t                       interpFrameBuffer[NEW_FRAME];
 
     //MIDI stuff
-    void newMidiMessage(ofxMidiMessage& eventArgs);
-	ofxMidiIn midiIn;
-	std::vector<ofxMidiMessage> midiMessages;
+    ofMutex                       midiMutex;     
 
+	void                          newMidiMessage(ofxMidiMessage& eventArgs);
+	ofxMidiIn                     midiIn;
+	std::vector<ofxMidiMessage>   midiMessages;
+	std::size_t maxMessages = 10; //< max number of messages to keep track of
+	ofxMidiOut                    midiOut;
+	//vector<unsigned char>         sysexMsg;
 
-    void                          E256_setCaliration(void);
+    void                          E256_setCaliration();
     void                          E256_setTreshold(int & sliderValue);
 
     bool                          getRawData;
@@ -70,16 +82,16 @@ public:
     void                          E256_blobsRequestStart(bool & val);
 
     bool                          E256_dataRequest;
-    void                          E256_rawDataRequest(void);
-    void                          E256_interpDataRequest(void);
-    void                          E256_binDataRequest(void);
-    void                          E256_blobsRequest(void);
+
+    void                          E256_rawDataRequest();
+    void                          E256_interpDataRequest();
+    void                          E256_binDataRequest();
+    void                          E256_blobsRequest();
 
     ofMesh                        rawDataMesh;
     ofMesh                        interpDataMesh;
 
     ofTrueTypeFont	              FreeSansBold;
     void                          keyPressed(int key);
-    ofxOscSender                  sender;
-    //std::vector<ofboxPrimitive>  boxe;
+
 };
