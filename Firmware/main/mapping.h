@@ -16,10 +16,9 @@
 #undef round
 #define round(x) lround(x)
 
-typedef struct llist llist_t;         // Forward declaration
-typedef struct blob blob_t;           // Forward declaration
-typedef struct midiNode midiNode_t;   // Forward declaration
-typedef struct cChange cChange_t;     // Forward declaration
+typedef struct llist llist_t;         // Forward declaration see llist.h
+typedef struct blob blob_t;           // Forward declaration see blob.h
+typedef struct midiNode midiNode_t;   // Forward declaration see transmit.h
 
 extern llist_t blobs;
 extern llist_t midiIn;

@@ -95,10 +95,8 @@ tSwitch_t* mapping_toggles(void) {
 #define GRID_X_SCALE_FACTOR    (float)(GRID_COLS * (1/X_MAX))
 #define GRID_Y_SCALE_FACTOR    (float)(GRID_ROWS * (1/Y_MAX))
 
-rect_t keys[GRID_KEYS] = {0};          // 1D array to store keys limits
-rect_t* keyPress_ptr[MAX_SYNTH];       // 1D pointer array to store last keysPressed pointer
-rect_t* lastKeyPress_ptr[MAX_SYNTH];   // 1D pointer array to store last keysPressed pointer
-
+rect_t keys[GRID_KEYS] = {0};            // 1D array to store keys limits
+rect_t* lastKeyPress[MAX_SYNTH];         // 1D pointer array to store last keysPressed pointer
 midiNode_t midiLayout[GRID_KEYS] = {0};  // 1D array to mapp incoming midi notes in the grid layout
 
 // Pre-compute key min & max coordinates
@@ -112,7 +110,7 @@ void GRID_LAYOUT_SETUP(void) {
       keys[pos].Ymin = row * KEY_SIZE_Y + (row + 1) * GRID_GAP;
       keys[pos].Ymax = keys[pos].Ymin + KEY_SIZE_Y;
 #if DEBUG_MAPPING
-      Serial.printf("\nGRID\tXmin:%d\tXmax:%d\tYmin:%d\tYmax:%d", *key_ptr->Xmin, *key_ptr->Xmax, *key_ptr->Ymin, *key_ptr->Ymax);
+      Serial.printf("\nGRID\tXmin:%d\tXmax:%d\tYmin:%d\tYmax:%d", keys[pos].Xmin, keys[pos].Xmax, keys[pos].Ymin, keys[pos].Ymax);
 #endif
     };
   };
@@ -122,22 +120,22 @@ void GRID_LAYOUT_SETUP(void) {
 // Play corresponding midi **note** or **freq**
 void mapping_gridPlay(void) {
   for (blob_t* blob_ptr = (blob_t*)ITERATOR_START_FROM_HEAD(&blobs); blob_ptr != NULL; blob_ptr = (blob_t*)ITERATOR_NEXT(blob_ptr)) {
-    if (blob_ptr->UID < MAX_SYNTH) {                                          // Test if the blob UID is less than MAX_SYNTH
-      int keyPosX = round(blob_ptr->centroid.X * GRID_X_SCALE_FACTOR); // Compute X grid position
-      int keyPosY = round(blob_ptr->centroid.Y * GRID_Y_SCALE_FACTOR); // Compute Y grid position
-      int pos = keyPosY * GRID_COLS + keyPosX;                      // Compute 1D key index position
-      if (!blob_ptr->lastState) lastKeyPress_ptr[blob_ptr->UID] = NULL;
+    if (blob_ptr->UID < MAX_SYNTH) {                                    // Test if the blob UID is less than MAX_SYNTH
+      int keyPosX = round(blob_ptr->centroid.X * GRID_X_SCALE_FACTOR);  // Compute X grid position
+      int keyPosY = round(blob_ptr->centroid.Y * GRID_Y_SCALE_FACTOR);  // Compute Y grid position
+      int pos = keyPosY * GRID_COLS + keyPosX;                          // Compute 1D key index position
+      if (!blob_ptr->lastState) lastKeyPress[blob_ptr->UID] = NULL;
       if (blob_ptr->state) {
-        if (&keys[pos] != lastKeyPress_ptr[blob_ptr->UID]) {
+        if (&keys[pos] != lastKeyPress[blob_ptr->UID]) {
           // Test if the blob is within the key limits
           if (blob_ptr->centroid.X > keys[pos].Xmin && blob_ptr->centroid.X < keys[pos].Xmax &&
               blob_ptr->centroid.Y > keys[pos].Ymin && blob_ptr->centroid.Y < keys[pos].Ymax) {
-            if (lastKeyPress_ptr[blob_ptr->UID] != NULL) {
+            if (lastKeyPress[blob_ptr->UID] != NULL) {
 #if DEBUG_MAPPING
-              Serial.printf("\nGRID\tBLOB:%d\t\tKEY_OFF:%d", blob_ptr->UID, lastKeyPress_ptr[blob_ptr->UID]->val);
+              Serial.printf("\nGRID\tBLOB:%d\t\tKEY_OFF:%p", blob_ptr->UID, &lastKeyPress[blob_ptr->UID]);
 #else
               /*
-                //MIDI.sendNoteOff(lastKeyPress_ptr[blob_ptr->UID]->val, 0, 1);  // Send NoteOFF (CHANNEL_1)
+                //MIDI.sendNoteOff(lastKeyPress[blob_ptr->UID]->val, 0, 1);  // Send NoteOFF (CHANNEL_1)
                 midiNode_t* node = (midiNode_t*)llist_pop_front(&llist_midiNodes_stack);
                 node->pithch = 0;
                 node->velocity = 0;
@@ -148,19 +146,19 @@ void mapping_gridPlay(void) {
 #endif
             };
 #if DEBUG_MAPPING
-            Serial.printf("\nGRID\tBLOB:%d\t\tKEY_DOWN:%d", blob_ptr->UID, keys[pos].val);
+            Serial.printf("\nGRID\tBLOB:%d\t\tKEY_DOWN:%p", blob_ptr->UID, &keys[pos]);
 #else
             //MIDI.sendNoteOn(keyPress_ptr->val, 127, 1); // Send NoteON (CHANNEL_1)
 #endif
-            lastKeyPress_ptr[blob_ptr->UID] = &keys[pos];
+            lastKeyPress[blob_ptr->UID] = &keys[pos];
           };
         };
       }
       else {
 #if DEBUG_MAPPING
-        Serial.printf("\nGRID\tBLOB:%d\t\tKEY_UP:%d", blob_ptr->UID, keys[pos].val);
+        Serial.printf("\nGRID\tBLOB:%d\t\tKEY_UP:%p", blob_ptr->UID, &keys[pos]);
 #else
-        //MIDI.sendNoteOff(lastKeyPress_ptr[blob_ptr->UID]->val, 0, 1);  // Send NoteOFF (CHANNEL_1)
+        //MIDI.sendNoteOff(lastKeyPress[blob_ptr->UID]->val, 0, 1);  // Send NoteOFF (CHANNEL_1)
 #endif
       };
     };
@@ -182,14 +180,14 @@ void mapping_gridPopulate(void) {
 #define VSLIDERS   2
 rect_t vSlider[VSLIDERS] = {0};
 vSlider_t vSliderParams[VSLIDERS] = {
-  {10, 15, 40, 5, 0},  // ARGS[posX, Ymin, Ymax, width, val]
-  {10, 15, 40, 5, 0}   // ARGS[posX, Ymin, Ymax, width, val]
+  {10, 10, 40, 10, 0},  // ARGS[posX, Ymin, Ymax, width, val]
+  {30, 10, 40, 10, 0}   // ARGS[posX, Ymin, Ymax, width, val]
 };
 
 void VSLIDERS_SETUP(void) {
   for (uint8_t pos = 0; pos < VSLIDERS; pos++) {
-    vSlider[pos].Xmin = vSliderParams[pos].posX - vSliderParams[pos].width / 2;
-    vSlider[pos].Xmax = vSliderParams[pos].posX + vSliderParams[pos].width / 2;
+    vSlider[pos].Xmin = vSliderParams[pos].posX - (vSliderParams[pos].width / 2);
+    vSlider[pos].Xmax = vSliderParams[pos].posX + (vSliderParams[pos].width / 2);
     vSlider[pos].Ymin = vSliderParams[pos].Ymin;
     vSlider[pos].Ymax = vSliderParams[pos].Ymax;
   };
@@ -205,7 +203,7 @@ void mapping_vSliders(void) {
           if (val != vSliderParams[pos].val) {
             vSliderParams[pos].val = val;
 #if DEBUG_MAPPING
-            Serial.printf("\nDEBUG_V_SLIDER : % d", val);
+            Serial.printf("\nDEBUG_V_SLIDER:\t%d", val);
 #endif
           };
         };
@@ -217,8 +215,8 @@ void mapping_vSliders(void) {
 #define HSLIDERS   2
 rect_t hSlider[HSLIDERS] = {0};
 hSlider_t hSliderParams[HSLIDERS] = {
-  {10, 15, 40, 5, 0},  // ARGS[posY, Xmin, Xmax, height, val]
-  {10, 15, 40, 5, 0}   // ARGS[posY, Xmin, Xmax, height, val]
+  {15, 15, 40, 10, 0},  // ARGS[posY, Xmin, Xmax, height, val]
+  {30, 15, 40, 10, 0}   // ARGS[posY, Xmin, Xmax, height, val]
 };
 
 void HSLIDERS_SETUP(void) {
@@ -240,7 +238,7 @@ void mapping_hSliders(void) {
           if (val != hSliderParams[pos].val) {
             hSliderParams[pos].val = val;
 #if DEBUG_MAPPING
-            Serial.printf("\nDEBUG_H_SLIDER : % d", val);
+            Serial.printf("\nDEBUG_H_SLIDER:\t%d", val);
 #endif
           };
         };
@@ -283,22 +281,18 @@ void C_SLIDER_SETUP(void) {
 
 void mapping_cSliders(void) {
   for (blob_t* blob_ptr = (blob_t*)ITERATOR_START_FROM_HEAD(&blobs); blob_ptr != NULL; blob_ptr = (blob_t*)ITERATOR_NEXT(blob_ptr)) {
-    if (blob_ptr->UID < MAX_SYNTH) {                              // Test if the blob UID is less than MAX_SYNTH
+    if (blob_ptr->UID < MAX_SYNTH) {   // Test if the blob UID is less than MAX_SYNTH
       uint8_t track = (uint8_t)round(blob_ptr->polar.r * CS_SCALE_FACTOR); // Compute track position
-      if (blob_ptr->polar.r > cTracks[track].rMin &&
-          blob_ptr->polar.r < cTracks[track].rMax) {
+      if (blob_ptr->polar.r > cTracks[track].rMin && blob_ptr->polar.r < cTracks[track].rMax) {
         for (uint8_t pos = 0; pos < cTracks[track].div; pos++) {
-
           if (blob_ptr->polar.phi > cSliders[pos].phiMin && blob_ptr->polar.phi < cSliders[pos].phiMax) {
-
             //cSliders[pos].val = blob_ptr->polar.phi - cSliders[pos].phiOffset; // TODO! mapping 0-127
-
           }
           else {
-            //float phi = blob_ptr->polar.phi + (PI2 - cSliders_ptr[pos].phiOffset);
+            //float phi = blob_ptr->polar.phi + (PI2 - cSliders[pos].phiOffset);
           };
 #if DEBUG_MAPPING
-          Serial.printf("\nDEBUG_C_SLIDER_%d - phi:%f", pos, cSliders_ptr[pos].val );
+          Serial.printf("\nDEBUG_C_SLIDER_%d - phi:%f", pos, cSliders[pos].val );
 #endif
         };
       };

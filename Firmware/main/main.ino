@@ -67,12 +67,15 @@ void setup() {
   BLOB_SETUP();
 
 #if USB_MIDI_TRANSMIT
+  TRANSMIT_SETUP();
   USB_MIDI_SETUP();
 #endif
 #if USB_SLIP_OSC_TRANSMIT
+  TRANSMIT_SETUP();
   USB_SLIP_OSC_SETUP();
 #endif
 #if HARDWARE_MIDI_TRANSMIT
+  TRANSMIT_SETUP();
   HARDWARE_MIDI_SETUP();
 #endif
 
@@ -128,10 +131,10 @@ void loop() {
 
 #if MAPPING_LAYAOUT
   mapping_gridPlay();
-  mapping_toggles();
-  mapping_triggers();
-  mapping_hSliders();
-  mapping_vSliders();
+  //mapping_toggles();
+  //mapping_triggers();
+  //mapping_hSliders();
+  //mapping_vSliders();
   //mapping_cChange(&ccParam);
 #endif
 
