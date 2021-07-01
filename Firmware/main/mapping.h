@@ -13,9 +13,6 @@
 #include "notes.h"
 #include "transmit.h"
 
-#undef round
-#define round(x) lround(x)
-
 typedef struct llist llist_t;         // Forward declaration see llist.h
 typedef struct blob blob_t;           // Forward declaration see blob.h
 typedef struct midiNode midiNode_t;   // Forward declaration see transmit.h
@@ -46,7 +43,7 @@ struct vSlider {
   uint8_t Ymin;
   uint8_t Ymax;
   uint8_t width;
-  uint8_t val;
+  int8_t val;
 };
 
 typedef struct hSlider hSlider_t;
@@ -55,22 +52,27 @@ struct hSlider {
   uint8_t Xmin;
   uint8_t Xmax;
   uint8_t height;
-  uint8_t val;
+  int8_t val;
+};
+
+typedef struct polar polar_t;
+struct polar {
+  float radius;
+  float theta;
 };
 
 typedef struct cTrack cTrack_t;
 struct cTrack {
-  uint8_t div;
-  float rMin;
-  float rMax;
+  uint8_t sliders;
+  uint8_t index;
+  float offset;
 };
 
 typedef struct cSlider cSlider_t;
 struct cSlider {
-  float phiMin;
-  float phiMax;
-  float phiOffset;
-  uint8_t val;
+  float thetaMin;
+  float thetaMax;
+  int8_t val;
 };
 
 typedef struct cChange cChange_t;
@@ -83,24 +85,20 @@ struct cChange {
 };
 
 void GRID_LAYOUT_SETUP(void);
+void CSLIDERS_SETUP(void);
+void TRIGGERS_SETUP(void);
+void TOGGLES_SETUP(void);
+void VSLIDERS_SETUP(void);
+void HSLIDERS_SETUP(void);
+void CCHANGE_SETUP(void);
+
 void mapping_gridPopulate(void);
 void mapping_gridPlay(void);
-
-void C_SLIDERS_SETUP(void);
 void mapping_cSliders(void);
-
-void TRIGGERS_SETUP(void);
 tSwitch_t* mapping_triggers(void);
-
-void TOGGLES_SETUP(void);
 tSwitch_t* mapping_toggles(void);
-
-void VSLIDERS_SETUP(void);
 void mapping_vSliders(void);
-
-void HSLIDERS_SETUP(void);
 void mapping_hSliders(void);
-
-void mapping_cChange(cChange_t* cChange_ptr);
+void mapping_cChange(void);
 
 #endif /*__MAPPING_H__*/

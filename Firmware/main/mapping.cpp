@@ -177,7 +177,7 @@ void mapping_gridPopulate(void) {
   };
 };
 
-#define VSLIDERS   2
+#define VSLIDERS 2
 rect_t vSlider[VSLIDERS] = {0};
 vSlider_t vSliderParams[VSLIDERS] = {
   {10, 10, 40, 10, 0},  // ARGS[posX, Ymin, Ymax, width, val]
@@ -203,7 +203,7 @@ void mapping_vSliders(void) {
           if (val != vSliderParams[pos].val) {
             vSliderParams[pos].val = val;
 #if DEBUG_MAPPING
-            Serial.printf("\nDEBUG_V_SLIDER:\t%d", val);
+            Serial.printf("\nDEBUG_VSLIDER:\t%d", val);
 #endif
           };
         };
@@ -212,7 +212,7 @@ void mapping_vSliders(void) {
   };
 };
 
-#define HSLIDERS   2
+#define HSLIDERS 2
 rect_t hSlider[HSLIDERS] = {0};
 hSlider_t hSliderParams[HSLIDERS] = {
   {15, 15, 40, 10, 0},  // ARGS[posY, Xmin, Xmax, height, val]
@@ -238,7 +238,7 @@ void mapping_hSliders(void) {
           if (val != hSliderParams[pos].val) {
             hSliderParams[pos].val = val;
 #if DEBUG_MAPPING
-            Serial.printf("\nDEBUG_H_SLIDER:\t%d", val);
+            Serial.printf("\nDEBUG_HSLIDER:\t%d", val);
 #endif
           };
         };
@@ -247,117 +247,170 @@ void mapping_hSliders(void) {
   };
 };
 
+// https://live.staticflickr.com/65535/50866229007_398065fd9a_k_d.jpg
 // CIRCULAR_SLIDERS_CONSTANTS
-#define CS_ID            6
-#define CS_TRACKS        4
-#define CS_WIDTH         5
-#define CS_GAP           2
-#define CS_MARGIN_IN     4
-#define CS_MARGIN_OUT    4
-#define CS_SCALE_FACTOR  (float)((CS_TRACKS * (1 / ((Y_MAX / 2) - (CS_MARGIN_IN + CS_MARGIN_OUT))))) // SCAL FACTOR
+#define CS_TRACKS         4
+#define CS_SLIDERS        7
 
-cTrack_t cTracks[CS_TRACKS] = {
-  { 0, 0, 0},  // ARGS[div, rMin, rMax]
-  { 2, 0, 0},  // ARGS[div, rMin, rMax]
-  { 1, 0, 0},  // ARGS[div, rMin, rMax]
-  { 3, 0, 0}   // ARGS[div, rMin, rMax]
+#define CS_RADIUS         (float)0.5
+#define CS_MARGIN         (float)0.049
+#define CS_RMIN           (float)0.07
+#define CS_RMAX           (float)(CS_RADIUS - CS_MARGIN)
+#define CS_TRACK_WIDTH    (float)((CS_RMAX - (CS_RMIN + CS_MARGIN)) / (CS_TRACKS - 1))
+#define CS_SCALE_FACTOR   (float)(1 / CS_TRACK_WIDTH)
+
+cTrack_t cTrack[CS_TRACKS] = {
+  {1, 0, 0  },        // PARAMS[sliders, index, track-offset-rad]
+  {1, 1, 1  },        // PARAMS[sliders, index, track-offset-rad]
+  {2, 2, 2.4},        // PARAMS[sliders, index, track-offset-rad]
+  {3, 4, 3.0}         // PARAMS[sliders, index, track-offset-rad]
 };
 
-cSlider_t cSliders[CS_ID] = {
-  { 0, 3.8,  5, 0 },  // ARGS[phiMin, phiMax, phiOffset, val]
-  { 0, 3.8, 10, 0 },  // ARGS[phiMin, phiMax, phiOffset, val]
-  { 0, 4.8,  5, 0 },  // ARGS[phiMin, phiMax, phiOffset, val]
-  { 0, 4.8,  5, 0 },  // ARGS[phiMin, phiMax, phiOffset, val]
-  { 0, 4.8,  5, 0 },  // ARGS[phiMin, phiMax, phiOffset, val]
-  { 0, 4.8,  5, 0 }   // ARGS[phiMin, phiMax, phiOffset, val]
+cSlider_t* csMapping[CS_SLIDERS] = {NULL};
+cSlider_t cSliders[CS_SLIDERS] = {
+  {0,    IIPi, 0},  // PARAMS[thetaMin, thetaMax, val]
+  {0,    IIPi, 0},  // PARAMS[thetaMin, thetaMax, val]
+  {0,    3.60, 0},  // PARAMS[thetaMin, thetaMax, val]
+  {3.80, IIPi, 0},  // PARAMS[thetaMin, thetaMax, val]
+  {0,    3.20, 0},  // PARAMS[thetaMin, thetaMax, val]
+  {3.40, 5.20, 0},  // PARAMS[thetaMin, thetaMax, val]
+  {5.30, 8, IIPi}   // PARAMS[thetaMin, thetaMax, val]
 };
 
-void C_SLIDER_SETUP(void) {
-  for (uint8_t track = 0; track < CS_TRACKS; track++) {
-    cTracks[track].rMin = (CS_TRACKS * (CS_WIDTH + CS_GAP)) + (CS_WIDTH / 2);
-    cTracks[track].rMax = (CS_TRACKS * (CS_WIDTH + CS_GAP)) - (CS_WIDTH / 2);
-  };
+void CSLIDERS_SETUP(void) {
+#if DEBUG_MAPPING
+  Serial.printf("\nDEBUG_CSLIDER_SETUP\tCS_WIDTH:\t%f", CS_TRACK_WIDTH);
+  Serial.printf("\nDEBUG_CSLIDER_SETUP\tCS_SCALE_FACTOR:\t%f", CS_SCALE_FACTOR);
+#endif
 };
 
 void mapping_cSliders(void) {
   for (blob_t* blob_ptr = (blob_t*)ITERATOR_START_FROM_HEAD(&blobs); blob_ptr != NULL; blob_ptr = (blob_t*)ITERATOR_NEXT(blob_ptr)) {
-    if (blob_ptr->UID < MAX_SYNTH) {   // Test if the blob UID is less than MAX_SYNTH
-      uint8_t track = (uint8_t)round(blob_ptr->polar.r * CS_SCALE_FACTOR); // Compute track position
-      if (blob_ptr->polar.r > cTracks[track].rMin && blob_ptr->polar.r < cTracks[track].rMax) {
-        for (uint8_t pos = 0; pos < cTracks[track].div; pos++) {
-          if (blob_ptr->polar.phi > cSliders[pos].phiMin && blob_ptr->polar.phi < cSliders[pos].phiMax) {
-            //cSliders[pos].val = blob_ptr->polar.phi - cSliders[pos].phiOffset; // TODO! mapping 0-127
-          }
-          else {
-            //float phi = blob_ptr->polar.phi + (PI2 - cSliders[pos].phiOffset);
-          };
+
+    float x = blob_ptr->centroid.X - CS_RADIUS;
+    float y = blob_ptr->centroid.Y - CS_RADIUS;
+
+    float radius = sqrt(x * x + y * y);
+    //Serial.printf("\nDEBUG_CSLIDER:\tRadius:\t%f", radius);
+
+    if (radius > CS_RMIN && radius < CS_RMAX) {
+      float theta = 0;
+
+      uint8_t track = (uint8_t)roundf(radius * CS_SCALE_FACTOR) - 1; // Compute track position
+      //Serial.printf("\nDEBUG_CSLIDER:\tTrack:\t%d", track);
+
+      // Rotation of Axes through an angle without shifting Origin
+      float posX = x * cos(cTrack[track].offset) + y * sin(cTrack[track].offset);
+      float posY = -x * sin(cTrack[track].offset) + y * cos(cTrack[track].offset);
+      if (posX == 0 && 0 < posY) {
+        theta = PiII;
+      } else if (posX == 0 && posY < 0) {
+        theta = IIIPiII;
+      } else if (posX < 0) {
+        theta = atanf(posY / posX) + PI;
+      } else if (posY < 0) {
+        theta = atanf(posY / posX) + IIPi;
+      } else {
+        theta = atanf(posY / posX);
+      }
+      //Serial.printf("\nDEBUG_CSLIDER:\tTrack:\t%d\tTheta:\t%f", track, theta);
+
+      if (blob_ptr->state) {
+        if (!blob_ptr->lastState) {
+          for (uint8_t id = cTrack[track].index; id < cTrack[track].index + cTrack[track].sliders; id++) {
+            if (theta > cSliders[id].thetaMin && theta < cSliders[id].thetaMax) {
+              csMapping[blob_ptr->UID] = &cSliders[id]; // Record pointer to slider
 #if DEBUG_MAPPING
-          Serial.printf("\nDEBUG_C_SLIDER_%d - phi:%f", pos, cSliders[pos].val );
+              Serial.printf("\nDEBUG_CSLIDER:\tBlob:\t%d\tSlider:\t%d", blob_ptr->UID, id);
+#else
 #endif
+            };
+          };
+        }
+        else {
+          cSlider_t* cSlider_ptr = csMapping[blob_ptr->UID];
+          if (cSlider_ptr != NULL) {
+            if (theta > cSlider_ptr->thetaMin && theta < cSlider_ptr->thetaMax) {
+              cSlider_ptr->val = (int8_t)map(theta, cSlider_ptr->thetaMin, cSlider_ptr->thetaMax, 0, 127);
+#if DEBUG_MAPPING
+              Serial.printf("\nDEBUG_CSLIDER:\tRadius:\t%f\tTheta:\t%f\tVal:\t%d", radius, theta, cSlider_ptr->val);
+#else
+#endif
+            };
+          };
         };
+      }
+      else {
+        csMapping[blob_ptr->UID] = NULL;
       };
     };
   };
 };
 
-// cChange_t -> ARGS[blobID, [BX,BY,BW,BH,BD], cChange, midiChannel, Val]
-void mapping_cChange(cChange_t* cChange_ptr) {
+#define CCHANGE 2
+cChange_t cChange[CCHANGE] = {
+  {NULL, BD, 44, 1, 0},  // ARGS[blobID, [BX,BY,BW,BH,BD], cChange, midiChannel, Val]
+  {NULL, BD, 44, 1, 0}   // ARGS[blobID, [BX,BY,BW,BH,BD], cChange, midiChannel, Val]
+};
+
+void mapping_cChange(void) {
   for (blob_t* blob_ptr = (blob_t*)ITERATOR_START_FROM_HEAD(&blobs); blob_ptr != NULL; blob_ptr = (blob_t*)ITERATOR_NEXT(blob_ptr)) {
-    // Test if we are within the blob limit
-    if (blob_ptr->UID == cChange_ptr->blobID) {
-      // Test if the blob is alive
-      if (blob_ptr->state) {
-        switch (cChange_ptr->mappVal) {
-          case BX:
-            if (blob_ptr->centroid.X != cChange_ptr->val) {
-              cChange_ptr->val = blob_ptr->centroid.X;
+    for (int index = 0; index < CCHANGE; index++) {
+      if (blob_ptr->UID == cChange[index].blobID) {
+        // Test if the blob is alive
+        if (blob_ptr->state) {
+          switch (cChange[index].mappVal) {
+            case BX:
+              if (blob_ptr->centroid.X != cChange[index].val) {
+                cChange[index].val = blob_ptr->centroid.X;
 #if DEBUG_MIDI_HARDWARE
-              Serial.printf("\nMIDI\tCC:%d\tVAL:%d\tCHAN:%d", blob_ptr->UID, constrain(blob_ptr->centroid.X, 0, 127), cChange_ptr->midiChannel);
+                Serial.printf("\nMIDI\tCC:%d\tVAL:%d\tCHAN:%d", blob_ptr->UID, constrain(blob_ptr->centroid.X, 0, 127), cChange[index].midiChannel);
 #else
-              //MIDI.sendControlChange(cChange_ptr->cChange, constrain(blob_ptr->centroid.X, 0, 127), cChange_ptr->midiChannel);
+                //MIDI.sendControlChange(cChange[index].cChange, constrain(blob_ptr->centroid.X, 0, 127), cChange[index].midiChannel);
 #endif
-            };
-            break;
-          case BY:
-            if (blob_ptr->centroid.Y != cChange_ptr->val) {
-              cChange_ptr->val = blob_ptr->centroid.Y;
+              };
+              break;
+            case BY:
+              if (blob_ptr->centroid.Y != cChange[index].val) {
+                cChange[index].val = blob_ptr->centroid.Y;
 #if DEBUG_MIDI_HARDWARE
-              Serial.printf("\nMIDI\tCC:%d\tVAL:%d\tCHAN:%d", blob_ptr->UID, constrain(blob_ptr->centroid.Y, 0, 127), ccParams_ptr->midiChannel);
+                Serial.printf("\nMIDI\tCC:%d\tVAL:%d\tCHAN:%d", blob_ptr->UID, constrain(blob_ptr->centroid.Y, 0, 127), ccParams_ptr->midiChannel);
 #else
-              //MIDI.sendControlChange(cChange_ptr->cChange, constrain(blob_ptr->centroid.Y, 0, 127), cChange_ptr->midiChannel);
+                //MIDI.sendControlChange(cChange[index].cChange, constrain(blob_ptr->centroid.Y, 0, 127), cChange[index].midiChannel);
 #endif
-            };
-            break;
-          case BW:
-            if (blob_ptr->box.W != cChange_ptr->val) {
-              cChange_ptr->val = blob_ptr->box.W;
+              };
+              break;
+            case BW:
+              if (blob_ptr->box.W != cChange[index].val) {
+                cChange[index].val = blob_ptr->box.W;
 #if DEBUG_MIDI_HARDWARE
-              Serial.printf("\nMIDI\tCC:%d\tVAL:%d\tCHAN:%d", blob_ptr->UID, constrain(blob_ptr->box.W, 0, 127), ccParams_ptr->midiChannel);
+                Serial.printf("\nMIDI\tCC:%d\tVAL:%d\tCHAN:%d", blob_ptr->UID, constrain(blob_ptr->box.W, 0, 127), ccParams_ptr->midiChannel);
 #else
-              //MIDI.sendControlChange(cChange_ptr->cChange, constrain(blob_ptr->box.W, 0, 127), cChange_ptr->midiChannel);
+                //MIDI.sendControlChange(cChange[index].cChange, constrain(blob_ptr->box.W, 0, 127), cChange[index].midiChannel);
 #endif
-            };
-            break;
-          case BH:
-            if (blob_ptr->box.H != cChange_ptr->val) {
-              cChange_ptr->val = blob_ptr->box.H;
+              };
+              break;
+            case BH:
+              if (blob_ptr->box.H != cChange[index].val) {
+                cChange[index].val = blob_ptr->box.H;
 #if DEBUG_MIDI_HARDWARE
-              Serial.printf("\nMIDI\tCC:%d\tVAL:%d\tCHAN:%d", blob_ptr->UID, constrain(blob_ptr->box.H, 0, 127), cChange_t->midiChannel);
+                Serial.printf("\nMIDI\tCC:%d\tVAL:%d\tCHAN:%d", blob_ptr->UID, constrain(blob_ptr->box.H, 0, 127), cChange_t->midiChannel);
 #else
-              //MIDI.sendControlChange(cChange_ptr->cChange, constrain(blob_ptr->box.H, 0, 127), cChange_ptr->midiChannel);
+                //MIDI.sendControlChange(cChange[index].cChange, constrain(blob_ptr->box.H, 0, 127), cChange[index].midiChannel);
 #endif
-            };
-            break;
-          case BD:
-            if (blob_ptr->centroid.Z != cChange_ptr->val) {
-              cChange_ptr->val = blob_ptr->centroid.Z;
+              };
+              break;
+            case BD:
+              if (blob_ptr->centroid.Z != cChange[index].val) {
+                cChange[index].val = blob_ptr->centroid.Z;
 #if DEBUG_MIDI_HARDWARE
-              Serial.printf("\nBLOB:%d\tCC:%d\tVAL:%d\tCHAN:%d", blob_ptr->UID, cChange_ptr->cChange, constrain(blob_ptr->centroid.Z, 0, 127), cChange_ptr->midiChannel);
+                Serial.printf("\nBLOB:%d\tCC:%d\tVAL:%d\tCHAN:%d", blob_ptr->UID, cChange[index].cChange, constrain(blob_ptr->centroid.Z, 0, 127), cChange[index].midiChannel);
 #else
-              //MIDI.sendControlChange(cChange_ptr->cChange, constrain(blob_ptr->centroid.Z, 0, 127), cChange_ptr->midiChannel);
+                //MIDI.sendControlChange(cChange[index].cChange, constrain(blob_ptr->centroid.Z, 0, 127), cChange[index].midiChannel);
 #endif
-            };
-            break;
+              };
+              break;
+          };
         };
       };
     };

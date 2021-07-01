@@ -67,7 +67,7 @@ void interp_matrix(void) {
           float* row_ptr_D = &coef_D[0] + rowIndex;
           for (uint8_t col = 0; col < SCALE_X; col++) {
             uint16_t index = indexA + indexB + indexC + col;
-            interpFrameArray[index] = (uint8_t)round(
+            interpFrameArray[index] = (uint8_t)lround(
                                         rawPixA * IMAGE_GET_PIXEL_FAST(row_ptr_A, col) +
                                         rawPixB * IMAGE_GET_PIXEL_FAST(row_ptr_B, col) +
                                         rawPixC * IMAGE_GET_PIXEL_FAST(row_ptr_C, col) +

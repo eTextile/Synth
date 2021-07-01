@@ -6,8 +6,8 @@
  
 ### Requirements
 - **eTextile-Synthesizer PCB** & **Teensy 4.0**
-- **Arduino IDE** : Arduino 1.8.14 or higher [DOWNLOAD](https://www.arduino.cc/en/Main/Software)
-- **Arduino IDE additional board** : Teensyduino 1.54 or higher [DOWNLOAD](https://www.pjrc.com/teensy/td_download.html)
+- **Arduino IDE** : Arduino 1.8.14 [DOWNLOAD](https://www.arduino.cc/en/Main/Software)
+- **Arduino IDE additional board** : Teensyduino 1.54 [DOWNLOAD](https://www.pjrc.com/teensy/td_download.html)
 - **Arduino IDE additional library**
   - **Included in Teensyduino**
     - **SPI**: https://github.com/PaulStoffregen/SPI
@@ -39,17 +39,32 @@ The embedded Software is implementing **image analysis algorithms** on the E256 
 - **Blob shape and movement characterisation** Blobs coordinates, size and pressure are used to play music...
 
 ### eTextile-Synthesizer / Benchmark
-  - ADC_INPUT : 610 FPS
-  - ADC_INPUT / BILINEAR_INTERPOLATION : 600 FPS
-  - ADC_INPUT / BILINEAR_INTERPOLATION / BLOB_TRACKING : 590 FPS
+  - ADC_INPUT : 2500 FPS
+  - ADC_INPUT / BILINEAR_INTERPOLATION : ...
+  - ADC_INPUT / BILINEAR_INTERPOLATION / BLOB_TRACKING : ...
   - ADC_INPUT / BILINEAR_INTERPOLATION / BLOB_TRACKING / AUDIO : ...
 
 ## Configuring the system
-  - **STANDALONE** : the eTextile-Synthesizer will act as standalone polyphonic synthesizer
-  - **MIDI_USB** : the touch coordinates are transmitted via MIDI to a host Application like Ableton live, Pure Data, MaxMsp...
-  - **MIDI_HARDWARE** : the touch coordinates are transmitted via MIDI using **miniJack TRS-A** to control external hardware synthesizers
+The Synth firmware is offering an 'config.h' to select the needed fonctionnalites. 
+ 
+### Low level config 
+- **BLOBS_POLAR_COORD** [0:1]
+- **BLOBS_VELOCITY** [0:1]
 
-## eTextile-Synthesizer / Play Audio Files
+### Mapping functionality (IN PROGRESS)
+- **MAPPING_LAYAOUT** [0:1] 
+
+### Transmit touch coordinates via [USB_MIDI / HARDWARE_MIDI / USB_SLIP_OSC]
+- **USB_MIDI_TRANSMIT** [0:1] **DO NOT FORGET:** Arduino>Touls>USB_Type>MIDI
+- **USB_SLIP_OSC_TRANSMIT** [0:1] **DO NOT FORGET:** Arduino>Touls>USB_Type>Serial
+- **HARDWARE_MIDI_TRANSMIT** [0:1] **DO NOT FORGET:** Arduino>Touls>USB_Type>Serial
+
+### Use the eTextile-Synthesizer as standalone polyphonic synthesizer
+- **SYNTH_PLAYER** [0:1] Set the eTextile-Synthesizer as STANDALONE divice
+- **GRANULAR_PLAYER** [0:1] Set the eTextile-Synthesizer as STANDALONE divice
+- **FLASH_PLAYER** [0:1] Set the eTextile-Synthesizer as STANDALONE divice
+
+## FLASH_PLAYER - prerequisite
 
     cd /Synth-master/Firmware/extras/CopyFromSerial/
     **Arduino** : CopyFromSerial.ino 

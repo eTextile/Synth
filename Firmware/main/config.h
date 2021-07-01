@@ -12,8 +12,8 @@
 #define NAME                     "ETEXTILE_SYNTHESIZER"
 #define VERSION                  "1.0.5"
 
-#define BLOBS_POLAR_COORD        1  // [0:1]
-#define BLOBS_VELOCITY           0  // [0:1]
+#define POLAR_COORD              1  // [0:1]
+#define VELOCITY                 0  // [0:1]
 #define MAPPING_LAYAOUT          1  // [0:1] 
 
 #define USB_MIDI_TRANSMIT        0  // [0:1] Set the eTextile-Synthesizer as USB MIDI divice **DO NOT FORGET: Arduino/Touls/USB_Type/MIDI**
@@ -47,11 +47,17 @@
 #define NEW_COLS                 (RAW_COLS * SCALE_X)
 #define NEW_ROWS                 (RAW_ROWS * SCALE_Y)
 #define NEW_FRAME                (NEW_COLS * NEW_ROWS)
+
+#define X_MIN                    1  // Blobs centroid X min value
+#define Y_MIN                    1  // Blobs centroid Y min value
 #define X_MAX                    58 // Blobs centroid X max value
 #define Y_MAX                    58 // Blobs centroid Y max value
+
 #define MAX_SYNTH                8  // [1:8] How many synthesizers can be played at the same time
 
-#define PI                       3.1415926535897932384626433832795
-#define PI2                      (PI+PI)
+//#define PI                     (float)3.1415926535897932384626433832795
+#define IIPi                     (float)(2 * PI)
+#define IIIPiII                  (float)(3 * PI) / 2
+#define PiII                     (float)(PI / 2)
 
 #endif /*__CONFIG_H__*/

@@ -17,9 +17,7 @@
 #define X_STRIDE            4             // Speed up the scanning X
 #define Y_STRIDE            4             // Speed up the scanning Y
 #define MIN_BLOB_PIX        4             // Set the minimum blob pixels
-#define DEBOUNCE_TIME       10            // Avioding undesired bouncing effect when taping on the sensor
-#define CENTER_X            (NEW_COLS / 2)
-#define CENTER_Y            (NEW_ROWS / 2)
+#define DEBOUNCE_TIME       15            // Avioding undesired bouncing effect when taping on the sensor
 
 uint8_t bitmapArray[NEW_FRAME] = {0};     // 1D Array to store (64*64) binary values
 xylr_t lifoArray[LIFO_NODES] = {0};       // 1D Array to store lifo nodes
@@ -220,39 +218,22 @@ void find_blobs(void) {
             break;
           }
         } // END while_A
+
         if (blob_pixels > MIN_BLOB_PIX) {
           blob_t* blob_ptr = (blob_t*)llist_pop_front(&llist_blobs_stack);
           blob_ptr->timeTag = millis();
 
-          blob_ptr->centroid.X = blob_cx / (float)blob_pixels;
-          blob_ptr->centroid.Y = blob_cy / (float)blob_pixels;
+          //Serial.printf("\nDEBUG_CSLIDER:\tblobX:\t%f\tblobY:\t%f", (float)blob_cx / blob_pixels, (float)blob_cy / blob_pixels);
+
+          blob_ptr->centroid.X = map(constrain((float)blob_cx / blob_pixels, X_MIN, X_MAX), X_MIN, X_MAX, 0., 1.);
+          blob_ptr->centroid.Y = map(constrain((float)blob_cy / blob_pixels, Y_MIN, Y_MAX), Y_MIN, Y_MAX, 0., 1.);
+
+          //Serial.printf("\nDEBUG_CSLIDER:\tblobX:\t%f\tblobY:\t%f", blob_ptr->centroid.X, blob_ptr->centroid.Y);
 
           blob_ptr->box.W = (blob_x2 - blob_x1);
           blob_ptr->box.H = blob_height;
           blob_ptr->centroid.Z = blob_depth - presets[THRESHOLD].val;
 
-#if BLOBS_POLAR_COORD
-          float posX = blob_ptr->centroid.X - (float)CENTER_X;
-          float posY = blob_ptr->centroid.Y - (float)CENTER_Y;
-          if (posX == 0 && posY == 0 ) {
-            blob_ptr->polar.r = 0;
-            blob_ptr->polar.phi = 0;
-          }
-          else {
-            blob_ptr->polar.r = sqrt(sq(posX) + sq(posY));
-            if (posX == 0 && posY > 0) {
-              blob_ptr->polar.phi = PI / 2;
-            } else if (posX == 0 && posY < 0) {
-              blob_ptr->polar.phi = PI * 3 / 2;
-            } else if (posX < 0) {
-              blob_ptr->polar.phi = atanf(posY / posX) + PI;
-            } else if (posY < 0) {
-              blob_ptr->polar.phi = atanf(posY / posX) + PI2;
-            } else {
-              blob_ptr->polar.phi = atanf(posY / posX);
-            }
-          }
-#endif
           llist_push_front(&llist_blobs_temp, blob_ptr);
         }
         posX = oldX;
@@ -367,24 +348,25 @@ void find_blobs(void) {
   llist_swap_llist(&blobs, &llist_blobs_temp);             // Swap inputBlobs with outputBlobs linked list
   llist_save_nodes(&llist_blobs_stack, &llist_blobs_temp); // Rescure all dead blobs Linked list nodes
 
-#if BLOBS_VELOCITY
+#if VELOCITY
   for (blob_t* blob_ptr = (blob_t*)ITERATOR_START_FROM_HEAD(&blobs); blob_ptr != NULL; blob_ptr = (blob_t*)ITERATOR_NEXT(blob_ptr)) {
     if (blob_ptr->UID < MAX_SYNTH) {
       if (!blob_ptr->lastState) {
         blob_ptr->velocity.timeTag = millis();
         lastCoord[blob_ptr->UID].X = blob_ptr->centroid.X;
         lastCoord[blob_ptr->UID].Y = blob_ptr->centroid.Y;
-        lastCoord[blob_ptr->UID].Z = 0;
+        lastCoord[blob_ptr->UID].Z = blob_ptr->centroid.Z;
       }
       else {
         if (millis() - blob_ptr->velocity.timeTag > 150) {
           blob_ptr->velocity.timeTag = millis();
-          float vx = blob_ptr->centroid.X - lastCoord[blob_ptr->UID].X;
-          float vy = blob_ptr->centroid.Y - lastCoord[blob_ptr->UID].Y;
+          float vx = fabs(blob_ptr->centroid.X - lastCoord[blob_ptr->UID].X);
+          float vy = fabs(blob_ptr->centroid.Y - lastCoord[blob_ptr->UID].Y);
+          blob_ptr->velocity.XY = sqrtf(vx * vx + vy * vy);
+          blob_ptr->velocity.Z = blob_ptr->centroid.Z - lastCoord[blob_ptr->UID].Z;
+
           lastCoord[blob_ptr->UID].X = blob_ptr->centroid.X;
           lastCoord[blob_ptr->UID].Y = blob_ptr->centroid.Y;
-          blob_ptr->velocity.XY = sqrt(sq(vx) + sq(vy));
-          blob_ptr->velocity.Z = blob_ptr->centroid.Z - lastCoord[blob_ptr->UID].Z;
           lastCoord[blob_ptr->UID].Z = blob_ptr->centroid.Z;
         };
       };
@@ -403,7 +385,7 @@ void find_blobs(void) {
 #endif
 #if DEBUG_BLOBS
   for (blob_t* blob_ptr = (blob_t*)ITERATOR_START_FROM_HEAD(&blobs); blob_ptr != NULL; blob_ptr = (blob_t*)ITERATOR_NEXT(blob_ptr)) {
-    Serial.printf("\nDEBUG_BLOBS:%d\tLS:%d\tS:%d\tX:%f\tY:%f\tZ:%d\tW:%d\tH:%d\tR:%f\tP:%f\tVXY:%f\tVZ:%f",
+    Serial.printf("\nDEBUG_BLOBS:%d\tLS:%d\tS:%d\tX:%f\tY:%f\tZ:%d\tW:%d\tH:%d\tVXY:%f\tVZ:%f",
                   blob_ptr->UID,
                   blob_ptr->lastState,
                   blob_ptr->state,
@@ -412,8 +394,6 @@ void find_blobs(void) {
                   blob_ptr->centroid.Z,
                   blob_ptr->box.W,
                   blob_ptr->box.H,
-                  blob_ptr->polar.r,
-                  blob_ptr->polar.phi,
                   blob_ptr->velocity.XY,
                   blob_ptr->velocity.Z
                  );

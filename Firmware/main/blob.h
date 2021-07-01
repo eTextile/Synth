@@ -101,12 +101,6 @@ struct box {
   uint8_t H; // TODO Make it as float
 };
 
-typedef struct polar polar_t;
-struct polar {
-  float r;
-  float phi;
-};
-
 typedef struct velocity velocity_t;
 struct velocity {
   unsigned long timeTag;
@@ -131,7 +125,6 @@ struct blob {
   boolean lastState;
   box_t box;
   point_t centroid;
-  polar_t polar;
   velocity_t velocity;
 };
 

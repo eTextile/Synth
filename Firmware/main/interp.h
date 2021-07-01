@@ -11,9 +11,6 @@
 #include "blob.h"
 
 typedef struct image image_t; // forward declaration
-
-#undef round
-#define round(x) lround(x)
   
 extern uint8_t interpThreshold;
 extern image_t rawFrame;

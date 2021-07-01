@@ -49,12 +49,9 @@ unsigned int fps = 0;
 //boolean loadPreset = true;
 //boolean savePreset = false;
 
-hSlider_t hSliderParam = {30, 15, 40, 5, 0};        // ARGS[posY, Xmin, Xmax, width, val]
-cChange_t ccParam = {NULL, BD, 44, 1, 0};           // ARGS[blobID, [BX,BY,BW,BH,BD], cChange, midiChannel, Val]
-
 void setup() {
 #if DEBUG_ADC || DEBUG_INTERP || DEBUG_BITMAP || DEBUG_BLOBS || DEBUG_FPS || DEBUG_ENCODER || DEBUG_BUTTONS || DEBUG_MAPPING
-  Serial.begin(BAUD_RATE); // Start Serial communication using 230400 baud
+  Serial.begin(BAUD_RATE);
   while (!Serial);
   Serial.printf("\n%s_%s", NAME, VERSION);
 #endif
@@ -89,11 +86,12 @@ void setup() {
   GRANULAR_PLAYER_SETUP();
 #endif
 #if MAPPING_LAYAOUT
-  GRID_LAYOUT_SETUP();
-  TOGGLES_SETUP();
-  TRIGGERS_SETUP();
-  VSLIDERS_SETUP();
-  HSLIDERS_SETUP();
+  //GRID_LAYOUT_SETUP();
+  //TOGGLES_SETUP();
+  //TRIGGERS_SETUP();
+  //VSLIDERS_SETUP();
+  //HSLIDERS_SETUP();
+  //CSLIDERS_SETUP();
 #endif
 
 #if SYNTH_PLAYER || GRANULAR_PLAYER || FLASH_PLAYER
@@ -130,12 +128,13 @@ void loop() {
 #endif
 
 #if MAPPING_LAYAOUT
-  mapping_gridPlay();
+  //mapping_gridPlay();
   //mapping_toggles();
   //mapping_triggers();
   //mapping_hSliders();
   //mapping_vSliders();
-  //mapping_cChange(&ccParam);
+  mapping_cSliders();
+  //mapping_cChange();
 #endif
 
 #if SYNTH_PLAYER
