@@ -14,8 +14,8 @@
 
 #define MAX_BLOBS           32            // [1:64] Set how many blobs can be tracked at the same time
 #define LIFO_NODES          512           // Set the maximum nodes number
-#define X_STRIDE            4             // Speed up the scanning X
-#define Y_STRIDE            4             // Speed up the scanning Y
+#define X_STRIDE            4             // Speed up X scanning
+#define Y_STRIDE            1             // Speed up Y scanning
 #define MIN_BLOB_PIX        4             // Set the minimum blob pixels
 #define DEBOUNCE_TIME       15            // Avioding undesired bouncing effect when taping on the sensor
 
@@ -65,10 +65,9 @@ void find_blobs(void) {
     uint8_t* bmp_row_ptr_A = &bitmapArray[0] + posY * NEW_COLS;
 
     for (uint8_t posX = (posY % X_STRIDE); posX < NEW_COLS; posX += X_STRIDE) {
-      if (
-        !IMAGE_GET_PIXEL_FAST(bmp_row_ptr_A, posX) &&
-        PIXEL_THRESHOLD(IMAGE_GET_PIXEL_FAST(row_ptr_A, posX), presets[THRESHOLD].val)
-      ) {
+      if (!IMAGE_GET_PIXEL_FAST(bmp_row_ptr_A, posX) &&
+          PIXEL_THRESHOLD(IMAGE_GET_PIXEL_FAST(row_ptr_A, posX), presets[THRESHOLD].val)
+         ) {
 
         uint8_t oldX = posX;
         uint8_t oldY = posY;
@@ -80,8 +79,8 @@ void find_blobs(void) {
         uint8_t blob_depth = 0;
 
         uint16_t blob_pixels = 0;
-        uint16_t blob_cx = 0;
-        uint16_t blob_cy = 0;
+        float blob_cx = 0;
+        float blob_cy = 0;
 
         while (1) { // while_A
           uint8_t left = posX;
@@ -90,24 +89,23 @@ void find_blobs(void) {
           uint8_t* row_ptr_B = COMPUTE_IMAGE_ROW_PTR(&interpFrame, posY);
           uint8_t* bmp_row_ptr_B = &bitmapArray[0] + posY * NEW_COLS;
 
-          while (
-            (left > 0) &&
-            !IMAGE_GET_PIXEL_FAST(bmp_row_ptr_B, left - 1) &&
-            PIXEL_THRESHOLD(IMAGE_GET_PIXEL_FAST(row_ptr_B, left - 1), presets[THRESHOLD].val)
-          ) {
+          while ((left > 0) &&
+                 !IMAGE_GET_PIXEL_FAST(bmp_row_ptr_B, left - 1) &&
+                 PIXEL_THRESHOLD(IMAGE_GET_PIXEL_FAST(row_ptr_B, left - 1), presets[THRESHOLD].val)
+                ) {
             left--;
           }
-          while (
-            right < (NEW_COLS - 1) &&
-            !IMAGE_GET_PIXEL_FAST(bmp_row_ptr_B, right + 1) &&
-            PIXEL_THRESHOLD(IMAGE_GET_PIXEL_FAST(row_ptr_B, right + 1), presets[THRESHOLD].val)
-          ) {
+          while (right < (NEW_COLS - 1) &&
+                 !IMAGE_GET_PIXEL_FAST(bmp_row_ptr_B, right + 1) &&
+                 PIXEL_THRESHOLD(IMAGE_GET_PIXEL_FAST(row_ptr_B, right + 1), presets[THRESHOLD].val)
+                ) {
             right++;
           }
 
           blob_x1 = MIN(blob_x1, left);
           blob_x2 = MAX(blob_x2, right);
-          for (uint8_t i = left; i <= right; i++) {
+
+          for (int i = left; i <= right; i++) {
             IMAGE_SET_PIXEL_FAST(bmp_row_ptr_B, i, 1);
             blob_depth = MAX(blob_depth, IMAGE_GET_PIXEL_FAST(row_ptr_B, i));
           }
@@ -130,32 +128,27 @@ void find_blobs(void) {
               row_ptr_B = COMPUTE_IMAGE_ROW_PTR(&interpFrame, posY - 1);
               bmp_row_ptr_B = &bitmapArray[0] + (posY - 1) * NEW_COLS;
 
-              boolean recurse = false;
+              boolean recurse = true;
               for (uint8_t i = top_left; i <= right; i++) {
 
                 if ((!IMAGE_GET_PIXEL_FAST(bmp_row_ptr_B, i))
                     && (PIXEL_THRESHOLD(IMAGE_GET_PIXEL_FAST(row_ptr_B, i), presets[THRESHOLD].val))) {
 
                   xylr_t* context = (xylr_t*)llist_pop_front(&llist_context_stack);
-                  //Serial.printf("\nDEBUG_LIFO / A / llist_context_stack / llist_pop_front: %p", (lnode_t*)context);
-
                   context->x = posX;
                   context->y = posY;
                   context->l = left;
                   context->r = right;
                   context->t_l = i++; // Don't test the same pixel again
                   context->b_l = bot_left;
-
                   llist_push_front(&llist_context, context);
-                  //Serial.printf("\nDEBUG_LIFO / A / llist_context / llist_push_front: %p", (lnode_t*)context);
-
                   posX = i;
                   posY--;
-                  recurse = true;
+                  recurse = false;
                   break;
                 }
               }
-              if (recurse) {
+              if (!recurse) {
                 break;
               }
             }
@@ -163,33 +156,28 @@ void find_blobs(void) {
             row_ptr_B = COMPUTE_IMAGE_ROW_PTR(&interpFrame, posY + 1);
             bmp_row_ptr_B = &bitmapArray[0] + (posY + 1) * NEW_COLS;
 
-            boolean recurse = false;
+            boolean recurse = true;
             for (uint8_t i = bot_left; i <= right; i++) {
 
               if (!IMAGE_GET_PIXEL_FAST(bmp_row_ptr_B, i) &&
                   PIXEL_THRESHOLD(IMAGE_GET_PIXEL_FAST(row_ptr_B, i), presets[THRESHOLD].val)) {
 
                 xylr_t* context = (xylr_t*)llist_pop_front(&llist_context_stack);
-                //Serial.printf("\nDEBUG_LIFO / B / llist_context_stack / llist_pop_front: %p", (lnode_t*)context);
-
                 context->x = posX;
                 context->y = posY;
                 context->l = left;
                 context->r = right;
                 context->t_l = top_left;
                 context->b_l = i++; // Don't test the same pixel again
-
                 llist_push_front(&llist_context, context);
-                //Serial.printf("\nDEBUG_LIFO / B / llist_context / llist_push_front: %p", (lnode_t*)context);
-
                 posX = i;
                 posY++;
-                recurse = true;
+                recurse = false;
                 break;
               }
             }
 
-            if (recurse) {
+            if (!recurse) {
               break;
             }
             if (llist_context.head_ptr == NULL) {
@@ -198,20 +186,14 @@ void find_blobs(void) {
             }
 
             xylr_t* context = (xylr_t*)llist_pop_front(&llist_context);
-            //Serial.printf("\nDEBUG_LIFO / C / llist_context / llist_pop_front: %p", (lnode_t*)context);
-
             posX = context->x;
             posY = context->y;
             left = context->l;
             right = context->r;
             top_left = context->t_l;
             bot_left = context->b_l;
-
             llist_push_front(&llist_context_stack, context);
-            //Serial.printf("\nDEBUG_LIFO / C / llist_context_stack / llist_push_front: %p", (lnode_t*)context);
-
             blob_height++;
-
           } // END while_B
 
           if (break_out) {
@@ -225,8 +207,8 @@ void find_blobs(void) {
 
           //Serial.printf("\nDEBUG_CSLIDER:\tblobX:\t%f\tblobY:\t%f", (float)blob_cx / blob_pixels, (float)blob_cy / blob_pixels);
 
-          blob_ptr->centroid.X = map(constrain((float)blob_cx / blob_pixels, X_MIN, X_MAX), X_MIN, X_MAX, 0., 1.);
-          blob_ptr->centroid.Y = map(constrain((float)blob_cy / blob_pixels, Y_MIN, Y_MAX), Y_MIN, Y_MAX, 0., 1.);
+          blob_ptr->centroid.X = constrain(blob_cx / blob_pixels, X_MIN, X_MAX) - X_MIN ;
+          blob_ptr->centroid.Y = constrain(blob_cy / blob_pixels, Y_MIN, Y_MAX) - Y_MIN;
 
           //Serial.printf("\nDEBUG_CSLIDER:\tblobX:\t%f\tblobY:\t%f", blob_ptr->centroid.X, blob_ptr->centroid.Y);
 

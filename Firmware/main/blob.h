@@ -32,8 +32,6 @@ extern preset_t presets[];
 extern image_t interpFrame;
 extern llist_t blobs;
 
-#define SIZEOF_FRAME    (NEW_FRAME * sizeof(uint8_t))
-
 #define COMPUTE_IMAGE_ROW_PTR(pImage, y) \
   ({ \
     __typeof__ (pImage) _pImage = (pImage); \
@@ -63,19 +61,8 @@ extern llist_t blobs;
     _pixel > _Threshold; \
   })
 
-#define MAX(a, b) \
-  ({ \
-    __typeof__ (a) _a = (a); \
-    __typeof__ (b) _b = (b); \
-    _a > _b ? _a : _b; \
-  })
-
-#define MIN(a, b) \
-  ({ \
-    __typeof__ (a) _a = (a); \
-    __typeof__ (b) _b = (b); \
-    _a < _b ? _a : _b; \
-  })
+#define MIN(a, b)({ __typeof__ (a) _a = (a); __typeof__ (b) _b = (b); _a < _b ? _a : _b; })
+#define MAX(a, b)({ __typeof__ (a) _a = (a); __typeof__ (b) _b = (b); _a > _b ? _a : _b; })
 
 typedef struct xylr xylr_t;
 struct xylr {
@@ -132,8 +119,8 @@ typedef enum params {
   BI,  // [0] Blob UID
   BS,  // [1] Blob State
   BL,  // [2] Blob Last State
-  BX,  // [3] Blob Centroid PosX
-  BY,  // [4] Blob Centroid PosY
+  BX,  // [3] Blob X centroid position
+  BY,  // [4] Blob Y centroid position
   BW,  // [5] Blob width
   BH,  // [6] Blob Height
   BD   // [7] Blob Depth

@@ -8,7 +8,7 @@
 
 #if MAPPING_LAYAOUT
 
-#define DEBOUNCE_TIME  15  // TO_REMOVE! this is done in find_blobs();
+#define DEBOUNCE_TIME 15  // TO_REMOVE! this is done in find_blobs();
 
 #define TRIGGERS   1
 rect_t triggerKeys[TRIGGERS] = {0};
@@ -252,11 +252,11 @@ void mapping_hSliders(void) {
 #define CS_TRACKS         4
 #define CS_SLIDERS        7
 
-#define CS_RADIUS         (float)0.5
-#define CS_MARGIN         (float)0.049
-#define CS_RMIN           (float)0.07
+#define CS_RADIUS         (float)(X_MAX - X_MIN) / 2
+#define CS_MARGIN         (float)0.5
+#define CS_RMIN           (float)3
 #define CS_RMAX           (float)(CS_RADIUS - CS_MARGIN)
-#define CS_TRACK_WIDTH    (float)((CS_RMAX - (CS_RMIN + CS_MARGIN)) / (CS_TRACKS - 1))
+#define CS_TRACK_WIDTH    (float)((CS_RMAX - CS_RMIN) / CS_TRACKS)
 #define CS_SCALE_FACTOR   (float)(1 / CS_TRACK_WIDTH)
 
 cTrack_t cTrack[CS_TRACKS] = {
@@ -266,7 +266,6 @@ cTrack_t cTrack[CS_TRACKS] = {
   {3, 4, 3.0}         // PARAMS[sliders, index, track-offset-rad]
 };
 
-cSlider_t* csMapping[CS_SLIDERS] = {NULL};
 cSlider_t cSliders[CS_SLIDERS] = {
   {0,    IIPi, 0},  // PARAMS[thetaMin, thetaMax, val]
   {0,    IIPi, 0},  // PARAMS[thetaMin, thetaMax, val]
@@ -277,11 +276,13 @@ cSlider_t cSliders[CS_SLIDERS] = {
   {5.30, 8, IIPi}   // PARAMS[thetaMin, thetaMax, val]
 };
 
+cSlider_t* csMapping[CS_SLIDERS] = {NULL};
+
 void CSLIDERS_SETUP(void) {
-#if DEBUG_MAPPING
-  Serial.printf("\nDEBUG_CSLIDER_SETUP\tCS_WIDTH:\t%f", CS_TRACK_WIDTH);
-  Serial.printf("\nDEBUG_CSLIDER_SETUP\tCS_SCALE_FACTOR:\t%f", CS_SCALE_FACTOR);
-#endif
+  //Serial.printf("\nDEBUG_CSLIDER_SETUP\tCS_RADIUS:\t%f", CS_RADIUS);
+  //Serial.printf("\nDEBUG_CSLIDER_SETUP\tCS_RMAX:\t%f", CS_RMAX);
+  //Serial.printf("\nDEBUG_CSLIDER_SETUP\tCS_WIDTH:\t%f", CS_TRACK_WIDTH);
+  //Serial.printf("\nDEBUG_CSLIDER_SETUP\tCS_SCALE_FACTOR:\t%f", CS_SCALE_FACTOR);
 };
 
 void mapping_cSliders(void) {
@@ -296,7 +297,7 @@ void mapping_cSliders(void) {
     if (radius > CS_RMIN && radius < CS_RMAX) {
       float theta = 0;
 
-      uint8_t track = (uint8_t)roundf(radius * CS_SCALE_FACTOR) - 1; // Compute track position
+      uint8_t track = (uint8_t)round(radius * CS_SCALE_FACTOR) - 1; // Compute track position
       //Serial.printf("\nDEBUG_CSLIDER:\tTrack:\t%d", track);
 
       // Rotation of Axes through an angle without shifting Origin
@@ -321,7 +322,7 @@ void mapping_cSliders(void) {
             if (theta > cSliders[id].thetaMin && theta < cSliders[id].thetaMax) {
               csMapping[blob_ptr->UID] = &cSliders[id]; // Record pointer to slider
 #if DEBUG_MAPPING
-              Serial.printf("\nDEBUG_CSLIDER:\tBlob:\t%d\tSlider:\t%d", blob_ptr->UID, id);
+              //Serial.printf("\nDEBUG_CSLIDER:\tBlob:\t%d\tSlider:\t%d", blob_ptr->UID, id);
 #else
 #endif
             };

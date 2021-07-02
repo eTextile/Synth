@@ -47,6 +47,7 @@
 #define NEW_COLS                 (RAW_COLS * SCALE_X)
 #define NEW_ROWS                 (RAW_ROWS * SCALE_Y)
 #define NEW_FRAME                (NEW_COLS * NEW_ROWS)
+#define SIZEOF_FRAME             (NEW_FRAME * sizeof(uint8_t))
 
 #define X_MIN                    1  // Blobs centroid X min value
 #define Y_MIN                    1  // Blobs centroid Y min value
