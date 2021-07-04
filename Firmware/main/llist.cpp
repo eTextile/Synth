@@ -6,15 +6,6 @@
 
 #include "llist.h"
 
-/* TODO Soc
-  void llist_init(llist_t* nodes_ptr, void* nodeArray_ptr, const int nodes) {
-  llist_raz(nodes_ptr);
-  for (int i = 0; i < nodes; i++) {
-    llist_push_front(nodes_ptr, &nodeArray_ptr[i]);
-  }
-  }
-*/
-
 void llist_raz(llist_t* llist_ptr) {
   llist_ptr->head_ptr = llist_ptr->tail_ptr = NULL;
 }
@@ -24,7 +15,6 @@ void* llist_pop_front(llist_t* llist_ptr) {
   if (node != NULL) {
     if (llist_ptr->head_ptr != llist_ptr->tail_ptr) {
       llist_ptr->head_ptr = llist_ptr->head_ptr->next_ptr;
-      //node->next_ptr = NULL;
       return node;
     }
     else {
@@ -60,15 +50,12 @@ void llist_extract_node(llist_t* llist_ptr, void* prevData_ptr, void* data_ptr) 
   else {
     if (nodeToExtract == llist_ptr->head_ptr) {
       llist_ptr->head_ptr = llist_ptr->head_ptr->next_ptr;
-      //nodeToExtract->next_ptr = NULL;
     }
     else if (nodeToExtract == llist_ptr->tail_ptr) {
       llist_ptr->tail_ptr = prevNode_ptr;
-      //prevNode_ptr->next_ptr = NULL;
     }
     else {
       prevNode_ptr->next_ptr = nodeToExtract->next_ptr;
-      //nodeToExtract->next_ptr = NULL;
     }
   }
 }

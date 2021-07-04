@@ -25,24 +25,31 @@ void usb_midi_llist_init(llist_t* nodes_ptr, midiNode_t* nodeArray_ptr, const in
 
 void USB_MIDI_SETUP(void) {
   usb_midi_llist_init(&midiNodes_stack, &midiInArray[0], MAX_SYNTH);
-  usbMIDI.begin();
+  usbMIDI.begin(); //'usbMIDI' was not declared in this scope !!! **SELECT**: Tools > USB Type > MIDI
   usbMIDI.setHandleControlChange(usb_midi_update_presets);
 };
 
 void usb_midi_handle_input(void) {
   usbMIDI.read();
 
-  if (currentMode == MIDI_LEARN) {
+  if (currentMode == MIDI_RAW) {
+    usb_midi_send_raw();
+  }
+  else if (currentMode == MIDI_INTERP) {
+    usb_midi_send_interp();
+  }
+  else if (currentMode == MIDI_LEARN) {
     usb_midi_learn();
   }
-  else {
+  else if (currentMode == MIDI_BLOBS) {
     usb_midi_send_blobs();
   };
 };
 
 void usb_midi_update_presets(byte channel, byte control, byte value) {
+
   switch (control) {
-    case THRESHOLD: // CONTROL 3
+    case THRESHOLD:   // CONTROL 3
       lastMode = currentMode;
       currentMode = THRESHOLD;
       presets[THRESHOLD].val = map(value, 0, 127, presets[THRESHOLD].minVal, presets[THRESHOLD].maxVal);
@@ -53,11 +60,27 @@ void usb_midi_update_presets(byte channel, byte control, byte value) {
       presets[THRESHOLD].updateLed = true;
       presets[THRESHOLD].update = true;
       break;
-    case CALIBRATE: // CONTROL 5
+    case CALIBRATE:   // CONTROL 4
       lastMode = currentMode;
       currentMode = CALIBRATE;
       presets[CALIBRATE].setLed = true;
       presets[CALIBRATE].updateLed = true;
+      break;
+    case MIDI_RAW:    // CONTROL 6
+      lastMode = currentMode;
+      currentMode = MIDI_RAW;
+      break;
+    case MIDI_INTERP: // CONTROL 7
+      lastMode = currentMode;
+      currentMode = MIDI_INTERP;
+      break;
+    case MIDI_LEARN:  // CONTROL 8
+      lastMode = currentMode;
+      currentMode = MIDI_LEARN;
+      break;
+    case MIDI_BLOBS:  // CONTROL 9
+      lastMode = currentMode;
+      currentMode = MIDI_BLOBS;
       break;
     default:
       break;
@@ -90,10 +113,10 @@ void usb_midi_learn(void) {
         usbMIDI.sendControlChange(BS, blob_ptr->lastState, blob_ptr->UID + 1);
         break;
       case BX:
-        usbMIDI.sendControlChange(BX, (uint8_t)round(map(blob_ptr->centroid.X, 0.0, X_MAX, 0, 127)), blob_ptr->UID + 1);
+        usbMIDI.sendControlChange(BX, (uint8_t)round(map(blob_ptr->centroid.X, 0.0, X_MAX - X_MIN , 0, 127)), blob_ptr->UID + 1);
         break;
       case BY:
-        usbMIDI.sendControlChange(BY, (uint8_t)round(map(blob_ptr->centroid.Y, 0.0, Y_MAX, 0, 127)), blob_ptr->UID + 1);
+        usbMIDI.sendControlChange(BY, (uint8_t)round(map(blob_ptr->centroid.Y, 0.0, X_MAX - X_MIN, 0, 127)), blob_ptr->UID + 1);
         break;
       case BW:
         usbMIDI.sendControlChange(BW, blob_ptr->box.W, blob_ptr->UID + 1);
@@ -113,22 +136,24 @@ void usb_midi_learn(void) {
 void usb_midi_send_blobs(void) {
   for (blob_t* blob_ptr = (blob_t*)ITERATOR_START_FROM_HEAD(&blobs); blob_ptr != NULL; blob_ptr = (blob_t*)ITERATOR_NEXT(blob_ptr)) {
     if (blob_ptr->state) {
-      if (!blob_ptr->lastState) usbMIDI.sendNoteOn(blob_ptr->UID + 1, 1, 0);
-      usbMIDI.sendControlChange(BX, (uint8_t)round(map(blob_ptr->centroid.X, 0.0, X_MAX, 0, 127)), blob_ptr->UID + 1); // Make it Q2
-      usbMIDI.sendControlChange(BY, (uint8_t)round(map(blob_ptr->centroid.Y, 0.0, Y_MAX, 0, 127)), blob_ptr->UID + 1);
-      usbMIDI.sendControlChange(BW, blob_ptr->box.W, blob_ptr->UID + 1);
-      usbMIDI.sendControlChange(BH, blob_ptr->box.H, blob_ptr->UID + 1);
-      usbMIDI.sendControlChange(BD, constrain(blob_ptr->centroid.Z, 0, 127), blob_ptr->UID + 1);
+      if (!blob_ptr->lastState) {
+        usbMIDI.sendNoteOn((int8_t)blob_ptr->UID + 1, 1, 0);
+      }
+      usbMIDI.sendControlChange(BX, (int8_t)round(map(blob_ptr->centroid.X, 0, X_MAX - X_MIN, 0, 127)), (int8_t)blob_ptr->UID + 1);
+      usbMIDI.sendControlChange(BY, (int8_t)round(map(blob_ptr->centroid.Y, 0, X_MAX - X_MIN, 0, 127)), (int8_t)blob_ptr->UID + 1);
+      usbMIDI.sendControlChange(BW, (int8_t)blob_ptr->box.W, (int8_t)blob_ptr->UID + 1);
+      usbMIDI.sendControlChange(BH, (int8_t)blob_ptr->box.H, (int8_t)blob_ptr->UID + 1);
+      usbMIDI.sendControlChange(BD, (int8_t)constrain(blob_ptr->centroid.Z, 0, 127), (int8_t)blob_ptr->UID + 1);
       /*
-        usbMIDI.sendAfterTouchPoly(BX, (uint8_t)round(map(blob_ptr->centroid.X, 0.0, X_MAX, 0, 127)), blob_ptr->UID + 1);
-        usbMIDI.sendAfterTouchPoly(BY, (uint8_t)round(map(blob_ptr->centroid.Y, 0.0, Y_MAX, 0, 127)), blob_ptr->UID + 1);
+        usbMIDI.sendAfterTouchPoly(BX, (int8_t)round(map(blob_ptr->centroid.X, 0.0, X_MAX, 0, 127)), blob_ptr->UID + 1);
+        usbMIDI.sendAfterTouchPoly(BY, (int8_t)round(map(blob_ptr->centroid.Y, 0.0, Y_MAX, 0, 127)), blob_ptr->UID + 1);
         usbMIDI.sendAfterTouchPoly(BW, blob_ptr->box.W, blob_ptr->UID + 1);
         usbMIDI.sendAfterTouchPoly(BH, blob_ptr->box.H, blob_ptr->UID + 1);
         usbMIDI.sendAfterTouchPoly(BD, constrain(blob_ptr->centroid.Z, 0, 127), blob_ptr->UID + 1);
       */
     }
     else {
-      usbMIDI.sendNoteOff(blob_ptr->UID + 1, 0, 0);
+      usbMIDI.sendNoteOff((int8_t)blob_ptr->UID + 1, 0, 0);
     }
   }
   while (usbMIDI.read()); // Read and discard any incoming MIDI messages

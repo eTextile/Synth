@@ -15,13 +15,17 @@
 #include <Encoder.h>                   // https://github.com/PaulStoffregen/Encoder
 //#include <EEPROM.h>                  // https://www.arduino.cc/en/Reference/EEPROM (TODO)
 
-#define LINE_OUT    0
-#define SIG_IN      1
-#define SIG_OUT     2
-#define THRESHOLD   3
-#define MIDI_LEARN  4
-#define CALIBRATE   5
-#define SAVE        6
+#define LINE_OUT        0
+#define SIG_IN          1
+#define SIG_OUT         2
+#define THRESHOLD       3
+#define CALIBRATE       4
+#define SAVE            5
+
+#define MIDI_RAW        6
+#define MIDI_INTERP     7
+#define MIDI_LEARN      8
+#define MIDI_BLOBS      9
 
 typedef struct interp interp_t;        // forward declaration
 

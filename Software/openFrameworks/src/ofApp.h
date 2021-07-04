@@ -5,7 +5,6 @@
   This work is licensed under Creative Commons Attribution-ShareAlike 4.0 International license, see the LICENSE file for details.
 */
 
-
 #pragma once
 
 #include "ofMain.h"
@@ -13,29 +12,32 @@
 #include "ofxGui.h"
 
 #define MIDI_PORT_NAME        "ETEXTILE_SYNTH"
-#define VERSION               "1.0.5"
+#define VERSION               "1.0.6"
 #define RAW_COLS              16
 #define RAW_ROWS              16
-#define DUAL_ROWS             (RAW_ROWS / 2)
-#define SCALE_X               4
-#define SCALE_Y               4
 #define RAW_FRAME             (RAW_COLS * RAW_ROWS)
-#define NEW_COLS              (RAW_COLS * SCALE_X)
-#define NEW_ROWS              (RAW_ROWS * SCALE_Y)
+#define NEW_COLS              (RAW_COLS * 4)
+#define NEW_ROWS              (RAW_ROWS * 4)
 #define NEW_FRAME             (NEW_COLS * NEW_ROWS)
 
-#define OUT_BUFFER_SIZE       1024
-#define IN_BUFFER_SIZE        65535
+#define BI 0  // [0] Blob UID
+#define BS 1  // [1] Blob State
+#define BL 2  // [2] Blob Last State
+#define BX 3  // [3] Blob X centroid position
+#define BY 4  // [4] Blob Y centroid position
+#define BW 5  // [5] Blob width
+#define BH 6  // [6] Blob Height
+#define BD 7  // [7] Blob Depth
 
-struct blob {
-  uint8_t UID;
-  uint8_t state;
-  uint8_t lastState;
-  float Xcentroid;
-  float Ycentroid;
-  uint8_t boxW;
-  uint8_t boxH;
-  uint8_t boxD;
+struct blob_t {
+  int8_t  id;         // [0] Blob UID
+  int8_t  state;      // [1] Blob State
+  int8_t  lastState;  // [2] Blob Last State
+  int8_t  cx;         // [3] Blob X centroid position
+  int8_t  cy;         // [4] Blob Y centroid position
+  int8_t  width;      // [5] Blob width
+  int8_t  height;     // [6] Blob Height
+  int8_t  depth;      // [7] Blob Depth
 };
 
 class ofApp : public ofBaseApp, public ofxMidiListener {
@@ -48,45 +50,33 @@ public:
     void                          exit();
 
     ofxPanel                      gui;
-    ofxButton                     setCalirationButton;
     ofxIntSlider                  setTresholdSlider;
+    ofxButton                     setCalirationButton;
+    ofxToggle                     getRawToggle;
+    ofxToggle                     getInterpToggle;
+    ofxToggle                     setMidiLearnToggle;
     ofxToggle                     getBlobsToggle;
-    ofxToggle                     getRawDataToggle;
-    ofxToggle                     getInterpDataToggle;
-    ofxToggle                     getBinDataToggle;
 
-    //uint8_t                       rawFrameBuffer[RAW_FRAME];
-    //uint8_t                       interpFrameBuffer[NEW_FRAME];
+    ofMutex                       midiMutex;
+	  void                          newMidiMessage(ofxMidiMessage& eventArgs);
+    ofxMidiIn                     midiIn;
+    ofxMidiOut                    midiOut;
+    std::vector<ofxMidiMessage>   midiMessages;
+    std::vector<unsigned char>    sysexMsg;
+    std::size_t maxMessages = 128;
+    std::vector<blob_t>           blobs;
 
-    //MIDI stuff
-    ofMutex                       midiMutex;     
-
-	void                          newMidiMessage(ofxMidiMessage& eventArgs);
-	ofxMidiIn                     midiIn;
-	std::vector<ofxMidiMessage>   midiMessages;
-	std::size_t maxMessages = 10; //< max number of messages to keep track of
-	ofxMidiOut                    midiOut;
-	//vector<unsigned char>         sysexMsg;
-
-    void                          E256_setCaliration();
     void                          E256_setTreshold(int & sliderValue);
+    void                          E256_setCaliration();
+    void                          E256_setMidiLearn(bool & val);
+    void                          E256_getRaw(bool & val);
+    void                          E256_getInterp(bool & val);
+    void                          E256_getBlobs(bool & val);
 
-    bool                          getRawData;
-    bool                          getInterpData;
-    bool                          getBinData;
+    bool                          getRaw;
+    bool                          getInterp;
+    bool                          midiLearn;
     bool                          getBlobs;
-
-    void                          E256_rawDataRequestStart(bool & val);
-    void                          E256_interpDataRequestStart(bool & val);
-    void                          E256_binDataRequestStart(bool & val);
-    void                          E256_blobsRequestStart(bool & val);
-
-    bool                          E256_dataRequest;
-
-    void                          E256_rawDataRequest();
-    void                          E256_interpDataRequest();
-    void                          E256_binDataRequest();
-    void                          E256_blobsRequest();
 
     ofMesh                        rawDataMesh;
     ofMesh                        interpDataMesh;

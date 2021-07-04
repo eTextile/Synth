@@ -13,7 +13,7 @@
 #define TRIGGERS   1
 rect_t triggerKeys[TRIGGERS] = {0};
 tSwitch_t triggerParams[TRIGGERS] = {
-  {40, 30, 5, false}  // ARGS[posX, posY, size, state]
+  {40, 30, 5, false}  // PARAMS[posX, posY, size, state]
 };
 
 void TRIGGERS_SETUP(void) {
@@ -29,26 +29,28 @@ tSwitch_t* mapping_triggers(void) {
   for (blob_t* blob_ptr = (blob_t*)ITERATOR_START_FROM_HEAD(&blobs); blob_ptr != NULL; blob_ptr = (blob_t*)ITERATOR_NEXT(blob_ptr)) {
     if (blob_ptr->UID < MAX_SYNTH) {                                          // Test if the blob UID is less than MAX_SYNTH
       for (uint8_t pos = 0; pos < TRIGGERS; pos++) {
-        if (blob_ptr->centroid.X > triggerKeys[pos].Xmin && blob_ptr->centroid.X < triggerKeys[pos].Xmax ) {
-          if (blob_ptr->centroid.Y > triggerKeys[pos].Ymin && blob_ptr->centroid.Y < triggerKeys[pos].Ymax) {
-            if (!blob_ptr->lastState) {
-              triggerParams[pos].state = true;
-              return &triggerParams[pos];
+        if (blob_ptr->centroid.X > triggerKeys[pos].Xmin &&
+            blob_ptr->centroid.X < triggerKeys[pos].Xmax &&
+            blob_ptr->centroid.Y > triggerKeys[pos].Ymin &&
+            blob_ptr->centroid.Y < triggerKeys[pos].Ymax) {
+          if (!blob_ptr->lastState) {
+            triggerParams[pos].state = true;
+            return &triggerParams[pos];
 #if DEBUG_MAPPING
-              //Serial.printf("\nDEBUG_TRIGGER:\tPOSX:%f\tPOSY:%f", blob_ptr->centroid.X, blob_ptr->centroid.Y);
-              Serial.printf("\nDEBUG_TRIGGER:\ttrigger_ptr:%p", &triggerParams[pos]);
+            //Serial.printf("\nDEBUG_TRIGGER:\tPOSX:%f\tPOSY:%f", blob_ptr->centroid.X, blob_ptr->centroid.Y);
+            Serial.printf("\nDEBUG_TRIGGER:\ttrigger_ptr:%p", &triggerParams[pos]);
 #endif
-            }
-            else {
-              triggerParams[pos].state = false;
-              return NULL;
-            };
+          }
+          else {
+            triggerParams[pos].state = false;
+            return NULL;
           };
         };
-      }
-    };
+      };
+    }
   };
 };
+
 
 #define TOGGLES   1
 rect_t toggleKeys[TOGGLES] = {0};
@@ -69,16 +71,17 @@ tSwitch_t* mapping_toggles(void) {
   for (blob_t* blob_ptr = (blob_t*)ITERATOR_START_FROM_HEAD(&blobs); blob_ptr != NULL; blob_ptr = (blob_t*)ITERATOR_NEXT(blob_ptr)) {
     if (blob_ptr->UID < MAX_SYNTH) {   // Test if the blob UID is less than MAX_SYNTH
       for (uint8_t pos = 0; pos < TOGGLES; pos++) {
-        if (blob_ptr->centroid.X > triggerKeys[pos].Xmin && blob_ptr->centroid.X < triggerKeys[pos].Xmax ) {
-          if (blob_ptr->centroid.Y > triggerKeys[pos].Ymin && blob_ptr->centroid.Y < triggerKeys[pos].Ymax) {
-            if (!blob_ptr->lastState) {
-              toggleParams[pos].state = !toggleParams[pos].state;
-              return &triggerParams[pos];
+        if (blob_ptr->centroid.X > triggerKeys[pos].Xmin &&
+            blob_ptr->centroid.X < triggerKeys[pos].Xmax &&
+            blob_ptr->centroid.Y > triggerKeys[pos].Ymin &&
+            blob_ptr->centroid.Y < triggerKeys[pos].Ymax) {
+          if (!blob_ptr->lastState) {
+            toggleParams[pos].state = !toggleParams[pos].state;
+            return &triggerParams[pos];
 #if DEBUG_MAPPING
-              //Serial.printf("\nDEBUG_TOGGLE:\tPOSX:%f\tPOSY:%f", blob_ptr->centroid.X, blob_ptr->centroid.Y);
-              Serial.printf("\nDEBUG_TRIGGER:\ttoggle_ptr:%p", &triggerParams[pos]);
+            //Serial.printf("\nDEBUG_TOGGLE:\tPOSX:%f\tPOSY:%f", blob_ptr->centroid.X, blob_ptr->centroid.Y);
+            Serial.printf("\nDEBUG_TRIGGER:\ttoggle_ptr:%p", &triggerParams[pos]);
 #endif
-            };
           };
         };
       };
@@ -92,8 +95,8 @@ tSwitch_t* mapping_toggles(void) {
 #define GRID_GAP               1
 #define KEY_SIZE_X             (uint8_t)((X_MAX - (GRID_GAP * (GRID_COLS + 1))) / GRID_COLS)
 #define KEY_SIZE_Y             (uint8_t)((Y_MAX - (GRID_GAP * (GRID_ROWS + 1))) / GRID_ROWS)
-#define GRID_X_SCALE_FACTOR    (float)(GRID_COLS * (1/X_MAX))
-#define GRID_Y_SCALE_FACTOR    (float)(GRID_ROWS * (1/Y_MAX))
+#define GRID_X_SCALE_FACTOR    ((float)1/X_MAX) * GRID_COLS
+#define GRID_Y_SCALE_FACTOR    ((float)1/Y_MAX) * GRID_COLS
 
 rect_t keys[GRID_KEYS] = {0};            // 1D array to store keys limits
 rect_t* lastKeyPress[MAX_SYNTH];         // 1D pointer array to store last keysPressed pointer
@@ -128,8 +131,10 @@ void mapping_gridPlay(void) {
       if (blob_ptr->state) {
         if (&keys[pos] != lastKeyPress[blob_ptr->UID]) {
           // Test if the blob is within the key limits
-          if (blob_ptr->centroid.X > keys[pos].Xmin && blob_ptr->centroid.X < keys[pos].Xmax &&
-              blob_ptr->centroid.Y > keys[pos].Ymin && blob_ptr->centroid.Y < keys[pos].Ymax) {
+          if (blob_ptr->centroid.X > keys[pos].Xmin &&
+              blob_ptr->centroid.X < keys[pos].Xmax &&
+              blob_ptr->centroid.Y > keys[pos].Ymin &&
+              blob_ptr->centroid.Y < keys[pos].Ymax) {
             if (lastKeyPress[blob_ptr->UID] != NULL) {
 #if DEBUG_MAPPING
               Serial.printf("\nGRID\tBLOB:%d\t\tKEY_OFF:%p", blob_ptr->UID, &lastKeyPress[blob_ptr->UID]);
@@ -194,19 +199,20 @@ void VSLIDERS_SETUP(void) {
 };
 
 void mapping_vSliders(void) {
-  uint8_t val = 0;
   for (blob_t* blob_ptr = (blob_t*)ITERATOR_START_FROM_HEAD(&blobs); blob_ptr != NULL; blob_ptr = (blob_t*)ITERATOR_NEXT(blob_ptr)) {
     for (uint8_t pos = 0; pos < VSLIDERS; pos++) {
-      if (blob_ptr->centroid.X > vSlider[pos].Xmin && blob_ptr->centroid.X < vSlider[pos].Xmax) {
-        if (blob_ptr->centroid.Y > vSlider[pos].Ymin && blob_ptr->centroid.Y < vSlider[pos].Ymax) {
-          val = round(map(blob_ptr->centroid.Y, vSlider[pos].Ymin, vSlider[pos].Ymax, 0, 127)); // [0:127]
-          if (val != vSliderParams[pos].val) {
-            vSliderParams[pos].val = val;
+      if (blob_ptr->centroid.X > vSlider[pos].Xmin &&
+          blob_ptr->centroid.X < vSlider[pos].Xmax &&
+          blob_ptr->centroid.Y > vSlider[pos].Ymin &&
+          blob_ptr->centroid.Y < vSlider[pos].Ymax) {
+        uint8_t val = round(map(blob_ptr->centroid.Y, vSlider[pos].Ymin, vSlider[pos].Ymax, 0, 127)); // [0:127]
+        if (val != vSliderParams[pos].val) {
+          vSliderParams[pos].val = val;
 #if DEBUG_MAPPING
-            Serial.printf("\nDEBUG_VSLIDER:\t%d", val);
+          Serial.printf("\nDEBUG_VSLIDER:\t%d", val);
 #endif
-          };
         };
+        break;
       };
     };
   };
@@ -229,19 +235,20 @@ void HSLIDERS_SETUP(void) {
 };
 
 void mapping_hSliders(void) {
-  uint8_t val = 0;
   for (blob_t* blob_ptr = (blob_t*)ITERATOR_START_FROM_HEAD(&blobs); blob_ptr != NULL; blob_ptr = (blob_t*)ITERATOR_NEXT(blob_ptr)) {
     for (uint8_t pos = 0; pos < HSLIDERS; pos++) {
-      if (blob_ptr->centroid.X > hSlider[pos].Xmin && blob_ptr->centroid.X < hSlider[pos].Xmax) {
-        if (blob_ptr->centroid.Y > hSlider[pos].Ymin && blob_ptr->centroid.Y < hSlider[pos].Ymax) {
-          val = round(map(blob_ptr->centroid.X, hSlider[pos].Xmin, hSlider[pos].Xmax, 0, 127)); // [0:127]
-          if (val != hSliderParams[pos].val) {
-            hSliderParams[pos].val = val;
+      if (blob_ptr->centroid.X > hSlider[pos].Xmin &&
+          blob_ptr->centroid.X < hSlider[pos].Xmax &&
+          blob_ptr->centroid.Y > hSlider[pos].Ymin &&
+          blob_ptr->centroid.Y < hSlider[pos].Ymax) {
+        uint8_t val = round(map(blob_ptr->centroid.X, hSlider[pos].Xmin, hSlider[pos].Xmax, 0, 127)); // [0:127]
+        if (val != hSliderParams[pos].val) {
+          hSliderParams[pos].val = val;
 #if DEBUG_MAPPING
-            Serial.printf("\nDEBUG_HSLIDER:\t%d", val);
+          Serial.printf("\nDEBUG_HSLIDER:\t%d", val);
 #endif
-          };
         };
+        break;
       };
     };
   };
@@ -251,7 +258,6 @@ void mapping_hSliders(void) {
 // CIRCULAR_SLIDERS_CONSTANTS
 #define CS_TRACKS         4
 #define CS_SLIDERS        7
-
 #define CS_RADIUS         (float)(X_MAX - X_MIN) / 2
 #define CS_MARGIN         (float)0.5
 #define CS_RMIN           (float)3
@@ -287,19 +293,12 @@ void CSLIDERS_SETUP(void) {
 
 void mapping_cSliders(void) {
   for (blob_t* blob_ptr = (blob_t*)ITERATOR_START_FROM_HEAD(&blobs); blob_ptr != NULL; blob_ptr = (blob_t*)ITERATOR_NEXT(blob_ptr)) {
-
     float x = blob_ptr->centroid.X - CS_RADIUS;
     float y = blob_ptr->centroid.Y - CS_RADIUS;
-
     float radius = sqrt(x * x + y * y);
-    //Serial.printf("\nDEBUG_CSLIDER:\tRadius:\t%f", radius);
-
     if (radius > CS_RMIN && radius < CS_RMAX) {
       float theta = 0;
-
       uint8_t track = (uint8_t)round(radius * CS_SCALE_FACTOR) - 1; // Compute track position
-      //Serial.printf("\nDEBUG_CSLIDER:\tTrack:\t%d", track);
-
       // Rotation of Axes through an angle without shifting Origin
       float posX = x * cos(cTrack[track].offset) + y * sin(cTrack[track].offset);
       float posY = -x * sin(cTrack[track].offset) + y * cos(cTrack[track].offset);
@@ -314,8 +313,9 @@ void mapping_cSliders(void) {
       } else {
         theta = atanf(posY / posX);
       }
-      //Serial.printf("\nDEBUG_CSLIDER:\tTrack:\t%d\tTheta:\t%f", track, theta);
-
+#if DEBUG_MAPPING
+      Serial.printf("\nDEBUG_CSLIDER:\tTrack:\t%d\tTheta:\t%f", track, theta);
+#endif
       if (blob_ptr->state) {
         if (!blob_ptr->lastState) {
           for (uint8_t id = cTrack[track].index; id < cTrack[track].index + cTrack[track].sliders; id++) {
@@ -334,7 +334,7 @@ void mapping_cSliders(void) {
             if (theta > cSlider_ptr->thetaMin && theta < cSlider_ptr->thetaMax) {
               cSlider_ptr->val = (int8_t)map(theta, cSlider_ptr->thetaMin, cSlider_ptr->thetaMax, 0, 127);
 #if DEBUG_MAPPING
-              Serial.printf("\nDEBUG_CSLIDER:\tRadius:\t%f\tTheta:\t%f\tVal:\t%d", radius, theta, cSlider_ptr->val);
+              //Serial.printf("\nDEBUG_CSLIDER:\tRadius:\t%f\tTheta:\t%f\tVal:\t%d", radius, theta, cSlider_ptr->val);
 #else
 #endif
             };
