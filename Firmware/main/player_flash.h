@@ -21,7 +21,7 @@
 typedef struct llist llist_t;   // Forward declaration
 typedef struct blob blob_t;     // Forward declaration
 
-extern llist_t blobs;
+extern llist_t blobs;           // Located in blob.cpp
 
 void FLASH_PLAYER_SETUP(void);
 void flash_player(void);

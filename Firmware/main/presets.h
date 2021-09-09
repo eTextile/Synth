@@ -26,6 +26,7 @@
 #define MIDI_INTERP     7
 #define MIDI_LEARN      8
 #define MIDI_BLOBS      9
+#define MIDI_OFF        10
 
 typedef struct interp interp_t;        // forward declaration
 

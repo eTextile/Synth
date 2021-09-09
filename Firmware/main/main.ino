@@ -86,12 +86,12 @@ void setup() {
   GRANULAR_PLAYER_SETUP();
 #endif
 #if MAPPING_LAYAOUT
-  //GRID_LAYOUT_SETUP();
+  GRID_LAYOUT_SETUP();
   //TOGGLES_SETUP();
   //TRIGGERS_SETUP();
   //VSLIDERS_SETUP();
   //HSLIDERS_SETUP();
-  CSLIDERS_SETUP();
+  //CSLIDERS_SETUP();
 #endif
 
 #if SYNTH_PLAYER || GRANULAR_PLAYER || FLASH_PLAYER
@@ -128,12 +128,12 @@ void loop() {
 #endif
 
 #if MAPPING_LAYAOUT
-  //mapping_gridPlay();
+  mapping_gridPlay();
   //mapping_toggles();
   //mapping_triggers();
   //mapping_hSliders();
   //mapping_vSliders();
-  mapping_cSliders();
+  //mapping_cSliders();
   //mapping_cChange();
 #endif
 

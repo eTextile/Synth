@@ -30,8 +30,7 @@ void USB_MIDI_SETUP(void) {
 };
 
 void usb_midi_handle_input(void) {
-  usbMIDI.read();
-
+  usbMIDI.read(1);
   if (currentMode == MIDI_RAW) {
     usb_midi_send_raw();
   }
@@ -44,6 +43,7 @@ void usb_midi_handle_input(void) {
   else if (currentMode == MIDI_BLOBS) {
     usb_midi_send_blobs();
   };
+  while (usbMIDI.read()); // Read and discard any incoming MIDI messages
 };
 
 void usb_midi_update_presets(byte channel, byte control, byte value) {
@@ -66,21 +66,37 @@ void usb_midi_update_presets(byte channel, byte control, byte value) {
       presets[CALIBRATE].setLed = true;
       presets[CALIBRATE].updateLed = true;
       break;
-    case MIDI_RAW:    // CONTROL 6
-      lastMode = currentMode;
-      currentMode = MIDI_RAW;
+    case MIDI_RAW:    // CONTROL
+      if (value == 1) {
+        lastMode = currentMode;
+        currentMode = MIDI_RAW;
+      } else {
+        currentMode = MIDI_OFF;
+      }
       break;
     case MIDI_INTERP: // CONTROL 7
-      lastMode = currentMode;
-      currentMode = MIDI_INTERP;
+      if (value == 1) {
+        lastMode = currentMode;
+        currentMode = MIDI_INTERP;
+      } else {
+        currentMode = MIDI_OFF;
+      }
       break;
     case MIDI_LEARN:  // CONTROL 8
-      lastMode = currentMode;
-      currentMode = MIDI_LEARN;
+      if (value == 1) {
+        lastMode = currentMode;
+        currentMode = MIDI_LEARN;
+      } else {
+        currentMode = MIDI_OFF;
+      }
       break;
     case MIDI_BLOBS:  // CONTROL 9
-      lastMode = currentMode;
-      currentMode = MIDI_BLOBS;
+      if (value == 1) {
+        lastMode = currentMode;
+        currentMode = MIDI_BLOBS;
+      } else {
+        currentMode = MIDI_OFF;
+      }
       break;
     default:
       break;
@@ -88,13 +104,13 @@ void usb_midi_update_presets(byte channel, byte control, byte value) {
 };
 
 void usb_midi_send_raw(void) {
-  usbMIDI.sendSysEx(RAW_FRAME, &rawFrame.pData[0]);
-  while (usbMIDI.read()); // Read and discard any incoming MIDI messages
+  usbMIDI.sendSysEx(RAW_FRAME, rawFrame.pData, false);
+  //usbMIDI.send_now();
 }
-
+//TO_DEBUG
 void usb_midi_send_interp(void) {
-  usbMIDI.sendSysEx(NEW_FRAME, &interpFrame.pData[0]);
-  while (usbMIDI.read()); // Read and discard any incoming MIDI messages
+  usbMIDI.sendSysEx(NEW_FRAME, interpFrame.pData, false);
+  usbMIDI.send_now(); // TEST
 }
 
 // Send blobs values using ControlChange MIDI format
@@ -128,7 +144,6 @@ void usb_midi_learn(void) {
         usbMIDI.sendControlChange(BD, constrain(blob_ptr->centroid.Z, 0, 127), blob_ptr->UID + 1);
         break;
     }
-    while (usbMIDI.read()); // Read and discard any incoming MIDI messages
   }
 }
 
@@ -156,7 +171,6 @@ void usb_midi_send_blobs(void) {
       usbMIDI.sendNoteOff((int8_t)blob_ptr->UID + 1, 0, 0);
     }
   }
-  while (usbMIDI.read()); // Read and discard any incoming MIDI messages
 }
 
 // cChange_t -> ARGS[blobID, [BX,BY,BW,BH,BD], cChange, midiChannel, Val]

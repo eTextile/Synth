@@ -15,18 +15,7 @@
 
 MIDI_CREATE_INSTANCE(HardwareSerial, Serial3, MIDI);
 
-midiNode_t midiNodesArray[MAX_SYNTH] = {0}; // 1D Array to alocate memory for incoming midi notes
-llist_t midiNodesStack;                     // Midi nodes stack
-
-void hardware_midi_llist_init(llist_t* nodes_ptr, midiNode_t* nodeArray_ptr, const int nodes) {
-  llist_raz(nodes_ptr);
-  for (int i = 0; i < nodes; i++) {
-    llist_push_front(nodes_ptr, &nodeArray_ptr[i]);
-  };
-};
-
 void HARDWARE_MIDI_SETUP(void) {
-  hardware_midi_llist_init(&midiNodesStack, &midiNodesArray[0], MAX_SYNTH);
   MIDI.begin(MIDI_CHANNEL_OMNI);
 };
 
@@ -35,8 +24,8 @@ void hardware_midi_handle_input(void) {
     byte type = MIDI.getType();        // Get the type of the MIDI message
     switch (type) {
       case midi::NoteOn:
-        midiNode_t* midiNode = (midiNode_t*)llist_pop_front(&midiNodesStack);
-        midiNode->pithch = MIDI.getData1();
+        midiNode_t* midiNode = (midiNode_t*)llist_pop_front(&midi_node_stack);
+        midiNode->pitch = MIDI.getData1();
         midiNode->velocity = MIDI.getData2();
         midiNode->channel = MIDI.getChannel();
         llist_push_front(&midiIn, midiNode);
@@ -44,9 +33,9 @@ void hardware_midi_handle_input(void) {
       case midi::NoteOff:
         midiNode_t* prevNode_ptr = NULL;
         for (midiNode_t* midiNode = (midiNode_t*)ITERATOR_START_FROM_HEAD(&midiIn); midiNode != NULL; midiNode = (midiNode_t*)ITERATOR_NEXT(midiNode)) {
-          if (midiNode->pithch == MIDI.getData1()) {
+          if (midiNode->pitch == MIDI.getData1()) {
             llist_extract_node(&midiIn, prevNode_ptr, midiNode);
-            llist_push_front(&midiNodesStack, midiNode);
+            llist_push_front(&midi_node_stack, midiNode);
             break;
           };
           prevNode_ptr = midiNode;

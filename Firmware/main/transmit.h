@@ -8,20 +8,21 @@
 #ifndef __TRANSMIT_H__
 #define __TRANSMIT_H__
 
-#include <MIDI.h>               // http://www.pjrc.com/teensy/td_midi.html
+#include <MIDI.h>                // http://www.pjrc.com/teensy/td_midi.html
 
 #include "llist.h"
 
-typedef struct llist llist_t;   // Forward declaration
+typedef struct llist llist_t;    // Forward declaration
 
-extern llist_t midi_nodes_stack;
-extern llist_t midiIn;
-extern llist_t midiOut;
+extern llist_t midi_node_stack;  // Declaration located in transmit.cpp
+extern llist_t midiIn;           // Declaration located in transmit.cpp
+extern llist_t midiOut;          // Declaration located in transmit.cpp
 
 typedef struct midiNode midiNode_t;
 struct midiNode {
   lnode_t node;
-  uint8_t pithch;
+  //boolean state;
+  uint8_t pitch;
   uint8_t velocity;
   uint8_t channel;
 };

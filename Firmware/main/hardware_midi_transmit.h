@@ -23,13 +23,14 @@ typedef struct blob blob_t;          // Forward declaration
 typedef struct midiNode midiNode_t;  // Forward declaration
 typedef struct ccPesets ccPesets_t;  // Forward declaration
 
-extern preset_t presets[];
-extern llist_t blobs;
-extern llist_t midiIn;
-extern llist_t midiOut;
+extern preset_t presets[];           // Located in ...
+extern llist_t blobs;                // Located in blob.cpp
+
+extern llist_t midi_node_stack;      // Located in transmit.cpp
+extern llist_t midiIn;               // Located in transmit.cpp
+extern llist_t midiOut;              // Located in transmit.cpp   
 
 void HARDWARE_MIDI_SETUP(void);
-void hardware_midi_llist_init(llist_t* nodes_ptr, midiNode_t nodeArray_ptr, const int nodes); // TODO: Separation of concerns (SoC)
 void hardware_midi_handle_input(void);
 void hardware_midi_send_blobs(void);
 

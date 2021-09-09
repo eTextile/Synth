@@ -28,9 +28,9 @@ struct image {
   uint8_t numRows;
 };
 
-extern preset_t presets[];
-extern image_t interpFrame;
-extern llist_t blobs;
+extern preset_t presets[];   // Located in ...
+extern image_t interpFrame;  // Located in ...
+extern llist_t blobs;        // Located in blob.cpp
 
 #define COMPUTE_IMAGE_ROW_PTR(pImage, y) \
   ({ \

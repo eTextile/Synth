@@ -10,7 +10,7 @@
 
 #define DEBOUNCE_TIME 15  // TO_REMOVE! this is done in find_blobs();
 
-#define TRIGGERS   1
+#define TRIGGERS 1
 rect_t triggerKeys[TRIGGERS] = {0};
 tSwitch_t triggerParams[TRIGGERS] = {
   {40, 30, 5, false}  // PARAMS[posX, posY, size, state]
@@ -51,8 +51,7 @@ tSwitch_t* mapping_triggers(void) {
   };
 };
 
-
-#define TOGGLES   1
+#define TOGGLES 1
 rect_t toggleKeys[TOGGLES] = {0};
 tSwitch_t toggleParams[TOGGLES] = {
   {10, 10, 5, false}  // ARGS[posX, posY, size, state]
@@ -96,74 +95,91 @@ tSwitch_t* mapping_toggles(void) {
 #define KEY_SIZE_X             (uint8_t)((X_MAX - (GRID_GAP * (GRID_COLS + 1))) / GRID_COLS)
 #define KEY_SIZE_Y             (uint8_t)((Y_MAX - (GRID_GAP * (GRID_ROWS + 1))) / GRID_ROWS)
 #define GRID_X_SCALE_FACTOR    ((float)1/X_MAX) * GRID_COLS
-#define GRID_Y_SCALE_FACTOR    ((float)1/Y_MAX) * GRID_COLS
+#define GRID_Y_SCALE_FACTOR    ((float)1/Y_MAX) * GRID_ROWS
 
-rect_t keys[GRID_KEYS] = {0};            // 1D array to store keys limits
-rect_t* lastKeyPress[MAX_SYNTH];         // 1D pointer array to store last keysPressed pointer
-midiNode_t midiLayout[GRID_KEYS] = {0};  // 1D array to mapp incoming midi notes in the grid layout
+stroke_t key[GRID_KEYS] = {0};            // 1D array to store keys limits
+stroke_t* lastKeyPress[MAX_SYNTH];        // 1D pointer array to store last keysPressed pointer
+
+midiNode_t midiLayout[GRID_KEYS] = {0};   // 1D array to mapp MIDI notes with the grid layout
 
 // Pre-compute key min & max coordinates
 void GRID_LAYOUT_SETUP(void) {
   for (uint8_t row = 0; row < GRID_ROWS; row++) {
     uint8_t rowPos = row * GRID_COLS;
     for (uint8_t col = 0; col < GRID_COLS; col++) {
-      uint8_t pos = rowPos + col;
-      keys[pos].Xmin = col * KEY_SIZE_X + (col + 1) * GRID_GAP;
-      keys[pos].Xmax = keys[pos].Xmin + KEY_SIZE_X;
-      keys[pos].Ymin = row * KEY_SIZE_Y + (row + 1) * GRID_GAP;
-      keys[pos].Ymax = keys[pos].Ymin + KEY_SIZE_Y;
+      uint8_t keyPress = rowPos + col;
+      key[keyPress].rect.Xmin = col * KEY_SIZE_X + (col + 1) * GRID_GAP;
+      key[keyPress].rect.Xmax = key[keyPress].rect.Xmin + KEY_SIZE_X;
+      key[keyPress].rect.Ymin = row * KEY_SIZE_Y + (row + 1) * GRID_GAP;
+      key[keyPress].rect.Ymax = key[keyPress].rect.Ymin + KEY_SIZE_Y;
 #if DEBUG_MAPPING
-      Serial.printf("\nGRID\tXmin:%d\tXmax:%d\tYmin:%d\tYmax:%d", keys[pos].Xmin, keys[pos].Xmax, keys[pos].Ymin, keys[pos].Ymax);
+      Serial.printf("\nGRID\tXmin:%d\tXmax:%d\tYmin:%d\tYmax:%d",
+                    key[keyPress]->rect.Xmin,
+                    key[keyPress]->rect.Xmax,
+                    key[keyPress]->rect.Ymin,
+                    key[keyPress]->rect.Ymax
+                   );
 #endif
     };
   };
 };
 
-// Compute the grid index location acording to the blobs XY (centroid) coordinates
-// Play corresponding midi **note** or **freq**
+// Compute the keyPresed position acording to the blobs XY (centroid) coordinates
+// Add corresponding keys to the output MIDI liked list
 void mapping_gridPlay(void) {
   for (blob_t* blob_ptr = (blob_t*)ITERATOR_START_FROM_HEAD(&blobs); blob_ptr != NULL; blob_ptr = (blob_t*)ITERATOR_NEXT(blob_ptr)) {
-    if (blob_ptr->UID < MAX_SYNTH) {                                    // Test if the blob UID is less than MAX_SYNTH
-      int keyPosX = round(blob_ptr->centroid.X * GRID_X_SCALE_FACTOR);  // Compute X grid position
-      int keyPosY = round(blob_ptr->centroid.Y * GRID_Y_SCALE_FACTOR);  // Compute Y grid position
-      int pos = keyPosY * GRID_COLS + keyPosX;                          // Compute 1D key index position
-      if (!blob_ptr->lastState) lastKeyPress[blob_ptr->UID] = NULL;
+    if (blob_ptr->UID < MAX_SYNTH) {                                      // Test if the blob UID is less than MAX_SYNTH
+      int keyPressX = round(blob_ptr->centroid.X * GRID_X_SCALE_FACTOR);  // Compute X grid position
+      int keyPressY = round(blob_ptr->centroid.Y * GRID_Y_SCALE_FACTOR);  // Compute Y grid position
+      int keyPress = keyPressY * GRID_COLS + keyPressX;                   // Compute 1D key index position
+      if (!blob_ptr->lastState) lastKeyPress[blob_ptr->UID] = NULL;       // RAZ lastKeyPress when new blob is detected
       if (blob_ptr->state) {
-        if (&keys[pos] != lastKeyPress[blob_ptr->UID]) {
+        if (lastKeyPress[blob_ptr->UID] != &key[keyPress]) {
           // Test if the blob is within the key limits
-          if (blob_ptr->centroid.X > keys[pos].Xmin &&
-              blob_ptr->centroid.X < keys[pos].Xmax &&
-              blob_ptr->centroid.Y > keys[pos].Ymin &&
-              blob_ptr->centroid.Y < keys[pos].Ymax) {
-            if (lastKeyPress[blob_ptr->UID] != NULL) {
+          if (blob_ptr->centroid.X > key[keyPress].rect.Xmin &&
+              blob_ptr->centroid.X < key[keyPress].rect.Xmax &&
+              blob_ptr->centroid.Y > key[keyPress].rect.Ymin &&
+              blob_ptr->centroid.Y < key[keyPress].rect.Ymax) {
+
+            if (lastKeyPress[blob_ptr->UID] != NULL) { // Test
 #if DEBUG_MAPPING
               Serial.printf("\nGRID\tBLOB:%d\t\tKEY_OFF:%p", blob_ptr->UID, &lastKeyPress[blob_ptr->UID]);
 #else
-              /*
-                //MIDI.sendNoteOff(lastKeyPress[blob_ptr->UID]->val, 0, 1);  // Send NoteOFF (CHANNEL_1)
-                midiNode_t* node = (midiNode_t*)llist_pop_front(&llist_midiNodes_stack);
-                node->pithch = 0;
-                node->velocity = 0;
-                //node->channel = blob_ptr->UID;
-                node->channel = 1;
-                llist_push_front(&midiOut, node);
-              */
+              //MIDI.sendNoteOff(lastKeyPress[blob_ptr->UID]->val, 0, 1);           // Send NoteOFF (CHANNEL_1)
+              midiNode_t* node = (midiNode_t*)llist_pop_front(&midi_node_stack);    // Get a node from the MIDI nodes stack
+              node->pitch = lastKeyPress[blob_ptr->UID]->pitch;                     // Set the pitch
+              node->velocity = 0;                                                   // Set the velocity
+              //node->channel = blob_ptr->UID;                                      // Set the channel according to the blob ID
+              node->channel = 1;                                                    // Set the channel to CHANNEL_1
+              llist_push_front(&midiOut, node);                                     // Add the node to the midiOut linked liste
 #endif
             };
 #if DEBUG_MAPPING
-            Serial.printf("\nGRID\tBLOB:%d\t\tKEY_DOWN:%p", blob_ptr->UID, &keys[pos]);
+            Serial.printf("\nGRID\tBLOB:%d\t\tKEY_DOWN:%p", blob_ptr->UID, &key[pos]);
 #else
-            //MIDI.sendNoteOn(keyPress_ptr->val, 127, 1); // Send NoteON (CHANNEL_1)
+            //MIDI.sendNoteOn(midiLayout[blob_ptr->UID]->pithch, midiLayout[keyPress].velocity, 1);
+            midiNode_t* node = (midiNode_t*)llist_pop_front(&midi_node_stack);    // Get a node from the MIDI nodes stack
+            node->pitch = midiLayout[blob_ptr->UID].pitch;                        // Set the pitch
+            node->velocity = midiLayout[keyPress].velocity;                       // Set the velocity
+            //node->channel = blob_ptr->UID;                                      // Set the channel according to the blob ID
+            node->channel = 1;                                                    // Set the channel to CHANNEL_1
+            llist_push_front(&midiOut, node);                                     // Add the node to the midiOut linked liste
 #endif
-            lastKeyPress[blob_ptr->UID] = &keys[pos];
+            lastKeyPress[blob_ptr->UID] = &key[keyPress];
           };
         };
       }
-      else {
+      else { // if !blob_ptr->state
 #if DEBUG_MAPPING
-        Serial.printf("\nGRID\tBLOB:%d\t\tKEY_UP:%p", blob_ptr->UID, &keys[pos]);
+        Serial.printf("\nGRID\tBLOB:%d\t\tKEY_UP:%p", blob_ptr->UID, &key[pos]);
 #else
-        //MIDI.sendNoteOff(lastKeyPress[blob_ptr->UID]->val, 0, 1);  // Send NoteOFF (CHANNEL_1)
+        //MIDI.sendNoteOff(lastKeyPress[blob_ptr->UID]->val, 0, 1);           // Send NoteOFF (CHANNEL_1)
+        midiNode_t* node = (midiNode_t*)llist_pop_front(&midi_node_stack);    // Get a node from the MIDI nodes stack
+        node->pitch = lastKeyPress[blob_ptr->UID]->pitch;                     // Set the pitch
+        node->velocity = 0;                                                   // Set the velocity to 0
+        //node->channel = blob_ptr->UID;                                      // Set the channel according to the blob ID
+        node->channel = 1;                                                    // Set the channel to CHANNEL_1
+        llist_push_front(&midiOut, node);                                     // Add the node to the midiOut linked liste
 #endif
       };
     };
@@ -174,7 +190,7 @@ void mapping_gridPopulate(void) {
   uint8_t key = 0;
   while (key < GRID_KEYS) {
     for (midiNode_t* node_ptr = (midiNode_t*)ITERATOR_START_FROM_HEAD(&midiIn); node_ptr != NULL; node_ptr = (midiNode_t*)ITERATOR_NEXT(node_ptr)) {
-      midiLayout[key].pithch = node_ptr->pithch;
+      midiLayout[key].pitch = node_ptr->pitch;
       midiLayout[key].velocity = node_ptr->velocity;
       midiLayout[key].channel = node_ptr->channel;
       key++;

@@ -13,13 +13,14 @@
 #include "notes.h"
 #include "transmit.h"
 
-typedef struct llist llist_t;         // Forward declaration see llist.h
-typedef struct blob blob_t;           // Forward declaration see blob.h
-typedef struct midiNode midiNode_t;   // Forward declaration see transmit.h
+typedef struct llist llist_t;        // Forward declaration see llist.h
+typedef struct blob blob_t;          // Forward declaration see blob.h
+typedef struct midiNode midiNode_t;  // Forward declaration see transmit.h
 
-extern llist_t blobs;
-extern llist_t midiIn;
-extern llist_t midiOut;
+extern llist_t blobs;                // Located in blob.cpp
+extern llist_t midi_node_stack;      // Located in transmit.cpp
+extern llist_t midiIn;               // Located in transmit.cpp
+extern llist_t midiOut;              // Located in transmit.cpp
 
 typedef struct rect rect_t;
 struct rect {
@@ -27,6 +28,13 @@ struct rect {
   uint8_t Xmax;
   uint8_t Ymin;
   uint8_t Ymax;
+};
+
+typedef struct key stroke_t;
+struct key {
+  rect_t rect;
+  uint8_t pitch;
+  //boolean state;
 };
 
 typedef struct tSwitch tSwitch_t;
