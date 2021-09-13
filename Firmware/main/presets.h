@@ -32,9 +32,12 @@
 
 typedef struct interp interp_t;        // forward declaration
 
+extern Encoder encoder;
+
 extern uint8_t interpThreshold;
 extern uint8_t currentMode;
 extern uint8_t lastMode;
+extern uint8_t currentModeState;
 
 typedef struct preset preset_t;
 struct preset {

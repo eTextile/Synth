@@ -18,10 +18,10 @@ typedef struct blob blob_t;          // Forward declaration see blob.h
 typedef struct midiMsg midiMsg_t;    // Forward declaration see transmit.h
 typedef struct midiNode midiNode_t;  // Forward declaration see transmit.h
 
-extern llist_t blobs;                // Located in blob.cpp
-extern llist_t midi_node_stack;      // Located in transmit.cpp
-extern llist_t midiIn;               // Located in transmit.cpp
-extern llist_t midiOut;              // Located in transmit.cpp
+//extern llist_t blobs;                // Located in blob.cpp
+//extern llist_t midi_node_stack;      // Located in transmit.cpp
+//extern llist_t midiIn;               // Located in transmit.cpp
+//extern llist_t midiOut;              // Located in transmit.cpp
 
 typedef struct rect rect_t;
 struct rect {

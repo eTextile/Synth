@@ -31,8 +31,9 @@ Bounce2::Button BUTTON_L = Bounce2::Button();
 //Button BUTTON_R = Button(); // DEPRECATED
 Bounce2::Button BUTTON_R = Bounce2::Button();
 
-uint8_t currentMode = CALIBRATE;   // Init currentMode with CALIBRATE (DEFAULT_MODE)
-uint8_t lastMode = LINE_OUT;       // Init lastMode with LINE_OUT (DEFAULT_MODE)
+uint8_t currentMode = CALIBRATE;              // Init currentMode with CALIBRATE (DEFAULT_MODE)
+uint8_t lastMode = LINE_OUT;                  // Init lastMode with LINE_OUT (DEFAULT_MODE)
+uint8_t currentModeState = MIDI_BLOBS_PLAY;   // Init currentModeState to MIDI_BLOBS_PLAY (DEFAULT_MODE)
 
 preset_t presets[7] = {
   {13, 31, 29, 0, false, false, false, LOW,  LOW },  // LINE_OUT   - ARGS[minVal, maxVal, val, ledVal, setLed, updateLed, update, D1, D2]

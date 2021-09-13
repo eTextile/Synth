@@ -46,14 +46,16 @@ void MIDI_TRANSMIT_SETUP(void) {
 };
 
 void read_usb_midi_input(void) {
-  usbMIDI.read(1);        // Is there a MIDI incoming messages
+  usbMIDI.read(1);        // Is there a MIDI incoming messages on channel One
   while (usbMIDI.read()); // Read and discard any incoming MIDI messages
 };
 
+#if MIDI_HARDWARE
 void read_hardware_midi_input(void) {
-  MIDI.read();            // Is there a MIDI incoming messages
+  MIDI.read(1);           // Is there a MIDI incoming messages on channel One
   while (MIDI.read());    // Read and discard any incoming MIDI messages
 };
+#endif
 
 void handle_usb_midi_input_cc(byte channel, byte control, byte value) {
   switch (control) {
@@ -90,7 +92,6 @@ void handle_usb_midi_input_cc(byte channel, byte control, byte value) {
         currentMode = MIDI_OFF;
       };
       break;
-
     case MIDI_BLOBS:  // CONTROL 8
       if (value == 1) {
         lastMode = currentMode;
@@ -99,16 +100,14 @@ void handle_usb_midi_input_cc(byte channel, byte control, byte value) {
         currentMode = MIDI_OFF;
       };
       break;
-    /*
-      case MIDI_BLOBS:  // CONTROL 9
+    case MIDI_BLOBS_LEARN:  // CONTROL 9
       if (value == 1) {
-       lastMode = currentMode;
-       currentMode = MIDI_BLOBS;
+        currentModeState = MIDI_BLOBS_LEARN;
       } else {
-       currentMode = MIDI_OFF;
+        currentModeState = MIDI_BLOBS_PLAY;
       };
       break;
-    */
+
     default:
       break;
   };
@@ -116,7 +115,7 @@ void handle_usb_midi_input_cc(byte channel, byte control, byte value) {
 
 void handle_hardware_midi_input_cc(byte channel, byte control, byte value) {
   midiNode_t* node_ptr = (midiNode_t*)llist_pop_front(&midi_node_stack);  // Get a node from the MIDI nodes stack
-  node_ptr->midiMsg.status = midi::ControlChange;
+  node_ptr->midiMsg.status = midi::ControlChange;                         //
   node_ptr->midiMsg.data1 = control;                                      // Set the MIDI control
   node_ptr->midiMsg.data2 = value;                                        // Set the MIDI value
   node_ptr->midiMsg.channel = channel;                                    // Set the MIDI channel
@@ -125,7 +124,7 @@ void handle_hardware_midi_input_cc(byte channel, byte control, byte value) {
 
 void handle_hardware_midi_input_noteOn(byte channel, byte note, byte velocity) {
   midiNode_t* node_ptr = (midiNode_t*)llist_pop_front(&midi_node_stack);  // Get a node from the MIDI nodes stack
-  node_ptr->midiMsg.status = midi::NoteOn;
+  node_ptr->midiMsg.status = midi::NoteOn;                                //
   node_ptr->midiMsg.data1 = note;                                         // Set the MIDI note
   node_ptr->midiMsg.data2 = velocity;                                     // Set the MIDI velocity
   node_ptr->midiMsg.channel = channel;                                    // Set the MIDI channel
@@ -134,7 +133,7 @@ void handle_hardware_midi_input_noteOn(byte channel, byte note, byte velocity) {
 
 void handle_hardware_midi_input_noteOff(byte channel, byte note, byte velocity) {
   midiNode_t* node_ptr = (midiNode_t*)llist_pop_front(&midi_node_stack);  // Get a node from the MIDI nodes stack
-  node_ptr->midiMsg.status = midi::NoteOff;
+  node_ptr->midiMsg.status = midi::NoteOff;                               //
   node_ptr->midiMsg.data1 = note;                                         // Set the MIDI note
   node_ptr->midiMsg.data2 = velocity;                                     // Set the MIDI velocity
   node_ptr->midiMsg.channel = channel;                                    // Set the MIDI channel
@@ -192,54 +191,56 @@ void midi_transmit(void) {
             if (blob_ptr->state) {
               if (!blob_ptr->lastState) {
                 usbMIDI.sendNoteOn((int8_t)blob_ptr->UID + 1, 1, 0);
-              };
-              usbMIDI.sendControlChange(BX, (int8_t)round(map(blob_ptr->centroid.X, 0, X_MAX - X_MIN, 0, 127)), (int8_t)blob_ptr->UID + 1);
-              usbMIDI.sendControlChange(BY, (int8_t)round(map(blob_ptr->centroid.Y, 0, X_MAX - X_MIN, 0, 127)), (int8_t)blob_ptr->UID + 1);
-              usbMIDI.sendControlChange(BW, (int8_t)blob_ptr->box.W, (int8_t)(blob_ptr->UID + 1));
-              usbMIDI.sendControlChange(BH, (int8_t)blob_ptr->box.H, (int8_t)(blob_ptr->UID + 1));
-              usbMIDI.sendControlChange(BD, (int8_t)constrain(blob_ptr->centroid.Z, 0, 127), (int8_t)blob_ptr->UID + 1);
+              }
+              else {
+                usbMIDI.sendControlChange(BX, (int8_t)round(map(blob_ptr->centroid.X, 0, X_MAX - X_MIN, 0, 127)), (int8_t)blob_ptr->UID + 1);
+                usbMIDI.sendControlChange(BY, (int8_t)round(map(blob_ptr->centroid.Y, 0, X_MAX - X_MIN, 0, 127)), (int8_t)blob_ptr->UID + 1);
+                usbMIDI.sendControlChange(BW, (int8_t)blob_ptr->box.W, (int8_t)(blob_ptr->UID + 1));
+                usbMIDI.sendControlChange(BH, (int8_t)blob_ptr->box.H, (int8_t)(blob_ptr->UID + 1));
+                usbMIDI.sendControlChange(BD, (int8_t)constrain(blob_ptr->centroid.Z, 0, 127), (int8_t)blob_ptr->UID + 1);
 
-              //MIDI.sendControlChange(BX, (uint8_t)round(map(blob_ptr->centroid.X, 0.0, X_MAX - X_MIN, 0, 127)), blob_ptr->UID + 1); // Make it Q2
-              //MIDI.sendControlChange(BY, (uint8_t)round(map(blob_ptr->centroid.Y, 0.0, X_MAX - X_MIN, 0, 127)), blob_ptr->UID + 1);
-              //MIDI.sendControlChange(BW, (int8_t)blob_ptr->box.W, (int8_t)(blob_ptr->UID + 1));
-              //MIDI.sendControlChange(BH, (int8_t)blob_ptr->box.H, (int8_t)(blob_ptr->UID + 1));
-              //MIDI.sendControlChange(BD, (int8_t)constrain(blob_ptr->centroid.Z, 0, 127), (int8_t)blob_ptr->UID + 1);
+                //MIDI.sendControlChange(BX, (uint8_t)round(map(blob_ptr->centroid.X, 0.0, X_MAX - X_MIN, 0, 127)), blob_ptr->UID + 1); // Make it Q2
+                //MIDI.sendControlChange(BY, (uint8_t)round(map(blob_ptr->centroid.Y, 0.0, X_MAX - X_MIN, 0, 127)), blob_ptr->UID + 1);
+                //MIDI.sendControlChange(BW, (int8_t)blob_ptr->box.W, (int8_t)(blob_ptr->UID + 1));
+                //MIDI.sendControlChange(BH, (int8_t)blob_ptr->box.H, (int8_t)(blob_ptr->UID + 1));
+                //MIDI.sendControlChange(BD, (int8_t)constrain(blob_ptr->centroid.Z, 0, 127), (int8_t)blob_ptr->UID + 1);
+              };
             }
             else {
               usbMIDI.sendNoteOff((int8_t)blob_ptr->UID + 1, 0, 0);
             };
           };
           break;
-      }
-    case MIDI_MAPPING:
-      for (midiNode_t* node_ptr = (midiNode_t*)ITERATOR_START_FROM_HEAD(&midiOut); node_ptr != NULL; node_ptr = (midiNode_t*)ITERATOR_NEXT(node_ptr)) {
-        switch (node_ptr->midiMsg.status) {
-          case midi::NoteOn:
+        case MIDI_MAPPING:
+          for (midiNode_t* node_ptr = (midiNode_t*)ITERATOR_START_FROM_HEAD(&midiOut); node_ptr != NULL; node_ptr = (midiNode_t*)ITERATOR_NEXT(node_ptr)) {
+            switch (node_ptr->midiMsg.status) {
+              case midi::NoteOn:
 #if MIDI_USB
-            usbMIDI.sendNoteOn(node_ptr->midiMsg.data1, node_ptr->midiMsg.data2, node_ptr->midiMsg.channel);  // Send MIDI noteOn
+                usbMIDI.sendNoteOn(node_ptr->midiMsg.data1, node_ptr->midiMsg.data2, node_ptr->midiMsg.channel);  // Send MIDI noteOn
 #endif
 #if MIDI_HARDWARE
-            MIDI.sendNoteOn(node_ptr->midiMsg.data1, node_ptr->midiMsg.data2, node_ptr->midiMsg.channel);     // Send MIDI noteOn
+                MIDI.sendNoteOn(node_ptr->midiMsg.data1, node_ptr->midiMsg.data2, node_ptr->midiMsg.channel);     // Send MIDI noteOn
 #endif
-            break;
-          case midi::NoteOff:
+                break;
+              case midi::NoteOff:
 #if MIDI_USB
-            usbMIDI.sendNoteOff(node_ptr->midiMsg.data1, node_ptr->midiMsg.data2, node_ptr->midiMsg.channel); // Send MIDI noteOff
+                usbMIDI.sendNoteOff(node_ptr->midiMsg.data1, node_ptr->midiMsg.data2, node_ptr->midiMsg.channel); // Send MIDI noteOff
 #endif
 #if MIDI_HARDWARE
-            MIDI.sendNoteOff(node_ptr->midiMsg.data1, node_ptr->midiMsg.data2, node_ptr->midiMsg.channel);    // Send MIDI noteOff
+                MIDI.sendNoteOff(node_ptr->midiMsg.data1, node_ptr->midiMsg.data2, node_ptr->midiMsg.channel);    // Send MIDI noteOff
 #endif
-            break;
-          case midi::ControlChange:
+                break;
+              case midi::ControlChange:
 #if MIDI_USB
-            usbMIDI.sendControlChange(node_ptr->midiMsg.data1, node_ptr->midiMsg.data2, node_ptr->midiMsg.channel); // Send MIDI noteOff
+                usbMIDI.sendControlChange(node_ptr->midiMsg.data1, node_ptr->midiMsg.data2, node_ptr->midiMsg.channel); // Send MIDI noteOff
 #endif
 #if MIDI_HARDWARE
-            MIDI.sendControlChange(node_ptr->midiMsg.data1, node_ptr->midiMsg.data2, node_ptr->midiMsg.channel);    // Send MIDI noteOff
+                MIDI.sendControlChange(node_ptr->midiMsg.data1, node_ptr->midiMsg.data2, node_ptr->midiMsg.channel);    // Send MIDI noteOff
 #endif
-            break;
-        };
+                break;
+            };
+          };
+          llist_save_nodes(&midi_node_stack, &midiOut); // Save all midiOut nodes to the midi_node_stack linked list
       };
-      llist_save_nodes(&midi_node_stack, &midiOut); // Save all midiOut nodes to the midi_node_stack linked list
   };
 };

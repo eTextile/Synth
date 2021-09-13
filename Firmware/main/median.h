@@ -17,7 +17,7 @@
 typedef struct llist llist_t;  // Forward declaration
 typedef struct blob blob_t;    // Forward declaration
 
-extern llist_t blobs;          // Located in blob.cpp
+//extern llist_t blobs;        // Declaration is located in blob.cpp
 
 #define MEDIAN_WINDOW 5                  // Allowed filter window size : 3, 5, 7...
 #define MEDIAN_POS ((MEDIAN_WINDOW-1)/2) // position of median in sorted list

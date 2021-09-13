@@ -8,12 +8,13 @@
 #define __INTERP_H__
 
 #include "config.h"
+#include "scan.h"
 #include "blob.h"
 
 typedef struct image image_t; // forward declaration
-  
+
 extern uint8_t interpThreshold;
-extern image_t rawFrame;
+//extern image_t rawFrame; // Declaration is located in scan.cpp
 extern image_t interpFrame;
 
 void INTERP_SETUP(void);

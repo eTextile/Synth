@@ -29,6 +29,18 @@
 #define BH 6  // [6] Blob Height
 #define BD 7  // [7] Blob Depth
 
+#define LINE_OUT        0
+#define SIG_IN          1
+#define SIG_OUT         2
+#define THRESHOLD       3
+#define CALIBRATE       4
+#define SAVE            5
+#define MIDI_RAW        6
+#define MIDI_INTERP     7
+#define MIDI_LEARN      8
+#define MIDI_BLOBS      9
+#define MIDI_OFF        10
+
 struct blob_t {
   int8_t  id;         // [0] Blob UID
   int8_t  state;      // [1] Blob State
@@ -63,8 +75,11 @@ public:
     ofxMidiOut                    midiOut;
     std::vector<ofxMidiMessage>   midiMessages;
     std::vector<unsigned char>    sysexMsg;
-    std::size_t maxMessages = 128;
+    std::size_t maxMessages = 256; //< max number of messages to keep track of
     std::vector<blob_t>           blobs;
+
+    uint8_t                       mode;
+    uint8_t                       lastMode;
 
     void                          E256_setTreshold(int & sliderValue);
     void                          E256_setCaliration();

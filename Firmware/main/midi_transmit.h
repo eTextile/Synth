@@ -15,20 +15,20 @@
 #include "mapping.h"
 #include "notes.h"
 
-typedef struct preset preset_t;     // Forward declaration
-typedef struct llist llist_t;       // Forward declaration
-typedef struct blob blob_t;         // Forward declaration
-typedef struct cChange cChange_t;   // Forward declaration
+typedef struct preset preset_t;    // Forward declaration
+typedef struct llist llist_t;      // Forward declaration
+typedef struct blob blob_t;        // Forward declaration
+typedef struct cChange cChange_t;  // Forward declaration
 
-extern Encoder encoder;
-extern image_t rawFrame;
-extern image_t interpFrame;
-extern llist_t blobs;
-extern preset_t presets[];
+//extern Encoder encoder;          // Declaration is located in presets.cpp
+//extern preset_t presets[];       // Declaration is located in presets.cpp
+//extern image_t rawFrame;         // Declaration is located in scan.cpp
+//extern image_t interpFrame;      // Declaration is located in interp.cpp
+//extern llist_t blobs;            // Declaration is located in blob.cpp
 
-extern llist_t midi_node_stack;  // Declaration is located in transmit.cpp
-extern llist_t midiIn;           // Declaration is located in transmit.cpp
-extern llist_t midiOut;          // Declaration is located in transmit.cpp
+extern llist_t midi_node_stack;    // Local declaration see midi_transmit.cpp
+extern llist_t midiIn;             // Local declaration see midi_transmit.cpp
+extern llist_t midiOut;            // Local declaration see midi_transmit.cpp
 
 typedef struct midiMsg midiMsg_t;
 struct midiMsg {

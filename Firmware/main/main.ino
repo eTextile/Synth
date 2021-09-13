@@ -19,7 +19,6 @@
 #include "mapping.h"
 #endif
 
-
 #if USB_SLIP_OSC_TRANSMIT
 #include "usb_slip_osc_transmit.h"
 #endif
