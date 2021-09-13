@@ -11,10 +11,11 @@
 #include "blob.h"
 #include "llist.h"
 #include "notes.h"
-#include "transmit.h"
+#include "midi_transmit.h"
 
 typedef struct llist llist_t;        // Forward declaration see llist.h
 typedef struct blob blob_t;          // Forward declaration see blob.h
+typedef struct midiMsg midiMsg_t;    // Forward declaration see transmit.h
 typedef struct midiNode midiNode_t;  // Forward declaration see transmit.h
 
 extern llist_t blobs;                // Located in blob.cpp
@@ -33,7 +34,7 @@ struct rect {
 typedef struct key stroke_t;
 struct key {
   rect_t rect;
-  uint8_t pitch;
+  int8_t note;
   //boolean state;
 };
 
@@ -89,7 +90,7 @@ struct cChange {
   uint8_t mappVal;
   int8_t cChange;
   int8_t midiChannel;
-  int8_t val;
+  int8_t lastVal;
 };
 
 void GRID_LAYOUT_SETUP(void);
@@ -100,8 +101,10 @@ void VSLIDERS_SETUP(void);
 void HSLIDERS_SETUP(void);
 void CCHANGE_SETUP(void);
 
-void mapping_gridPopulate(void);
-void mapping_gridPlay(void);
+void mapping_grid_populate(void);
+void mapping_grid_update(void);
+void mapping_grid_play(void); // TODO
+
 void mapping_cSliders(void);
 tSwitch_t* mapping_triggers(void);
 tSwitch_t* mapping_toggles(void);

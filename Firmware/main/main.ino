@@ -11,6 +11,7 @@
 #include "interp.h"
 #include "blob.h"
 #include "median.h"
+#include "midi_transmit.h"
 
 #include <elapsedMillis.h>  // https://github.com/pfeerick/elapsedMillis
 
@@ -18,14 +19,12 @@
 #include "mapping.h"
 #endif
 
-#if USB_MIDI_TRANSMIT
-#include "usb_midi_transmit.h"
-#endif
+
 #if USB_SLIP_OSC_TRANSMIT
 #include "usb_slip_osc_transmit.h"
 #endif
-#if HARDWARE_MIDI_TRANSMIT
-#include "hardware_midi_transmit.h"
+#if MIDI_HARDWARE || MIDI_USB
+#include "midi_transmit.h"
 #endif
 
 #if FLASH_PLAYER
@@ -62,18 +61,10 @@ void setup() {
   SCAN_SETUP();
   INTERP_SETUP();
   BLOB_SETUP();
+  MIDI_TRANSMIT_SETUP();
 
-#if USB_MIDI_TRANSMIT
-  TRANSMIT_SETUP();
-  USB_MIDI_SETUP();
-#endif
 #if USB_SLIP_OSC_TRANSMIT
-  TRANSMIT_SETUP();
   USB_SLIP_OSC_SETUP();
-#endif
-#if HARDWARE_MIDI_TRANSMIT
-  TRANSMIT_SETUP();
-  HARDWARE_MIDI_SETUP();
 #endif
 
 #if SYNTH_PLAYER
@@ -117,18 +108,18 @@ void loop() {
   find_blobs();
   //median();
 
-#if USB_MIDI_TRANSMIT
-  usb_midi_handle_input();
+#if USB_MIDI
+  read_usb_midi_input();
 #endif
-#if USB_SLIP_OSC_TRANSMIT
-  usb_slip_osc_handle_input();
+#if MIDI_HARDWARE
+  read_hardware_midi_input();
 #endif
-#if HARDWARE_MIDI_TRANSMIT
-  hardware_midi_handle_input();
+#if USB_SLIP_OSC
+  read_usb_slip_osc_input();
 #endif
 
 #if MAPPING_LAYAOUT
-  mapping_gridPlay();
+  mapping_grid_update();
   //mapping_toggles();
   //mapping_triggers();
   //mapping_hSliders();
@@ -136,6 +127,8 @@ void loop() {
   //mapping_cSliders();
   //mapping_cChange();
 #endif
+
+  midi_transmit();
 
 #if SYNTH_PLAYER
   synth_player();
