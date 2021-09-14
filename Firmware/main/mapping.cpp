@@ -147,7 +147,7 @@ void mapping_grid_update(void) {
 #else
               //MIDI.sendNoteOff(lastKeyPress[blob_ptr->UID]->val, 0, 1);             // Send NoteOFF (CHANNEL_1)
               midiNode_t* node_ptr = (midiNode_t*)llist_pop_front(&midi_node_stack);  // Get a node from the MIDI node stack
-              node_ptr->midiMsg.status = 0x81;                                        // midi::NoteOff;
+              node_ptr->midiMsg.status = MIDI_NOTE_OFF;                               // Set MIDI message status to NOTE_OFF
               node_ptr->midiMsg.data1 = lastKeyPress[blob_ptr->UID]->note;            // Set the note
               node_ptr->midiMsg.data2 = 0;                                            // Set the velocity
               //node_ptr->midiMsg.channel = blob_ptr->UID;                            // Set the channel according to the blob ID
@@ -160,7 +160,7 @@ void mapping_grid_update(void) {
 #else
             //MIDI.sendNoteOn(midiLayout[blob_ptr->UID]->pithch, midiLayout[keyPress].velocity, 1);
             midiNode_t* node_ptr = (midiNode_t*)llist_pop_front(&midi_node_stack);    // Get a node from the MIDI node stack
-            node_ptr->midiMsg.status = 0x92;                                          // midi::NoteOn;
+            node_ptr->midiMsg.status = MIDI_NOTE_ON;                                  // Set MIDI message status to NOTE_ON
             node_ptr->midiMsg.data1 = midiLayout[blob_ptr->UID].midiMsg.data1;        // Set the note
             node_ptr->midiMsg.data2 = midiLayout[keyPress].midiMsg.data2;             // Set the velocity
             //node_ptr->midiMsg.channel = blob_ptr->UID;                              // Set the channel according to the blob ID
@@ -177,7 +177,7 @@ void mapping_grid_update(void) {
 #else
         //MIDI.sendNoteOff(lastKeyPress[blob_ptr->UID]->val, 0, 1);             // Send NoteOFF (CHANNEL_1)
         midiNode_t* node_ptr = (midiNode_t*)llist_pop_front(&midi_node_stack);  // Get a node from the MIDI nodes stack
-        node_ptr->midiMsg.status = 0x81;                                        // midi::NoteOff;
+        node_ptr->midiMsg.status = MIDI_NOTE_OFF;                               // Set MIDI message status to NOTE_OFF
         node_ptr->midiMsg.data1 = lastKeyPress[blob_ptr->UID]->note;            // Set the note
         node_ptr->midiMsg.data2 = 0;                                            // Set the velocity to 0
         //node_ptr->channel = blob_ptr->UID;                                    // Set the channel according to the blob ID
@@ -285,10 +285,10 @@ void mapping_hSliders(void) {
 #define CS_SCALE_FACTOR   (float)(1 / CS_TRACK_WIDTH)
 
 cTrack_t cTrack[CS_TRACKS] = {
-  {1, 0, 0  },        // PARAMS[sliders, index, track-offset-rad]
-  {1, 1, 1  },        // PARAMS[sliders, index, track-offset-rad]
-  {2, 2, 2.4},        // PARAMS[sliders, index, track-offset-rad]
-  {3, 4, 3.0}         // PARAMS[sliders, index, track-offset-rad]
+  {1, 0, 0  },      // PARAMS[sliders, index, track-offset-rad]
+  {1, 1, 1  },      // PARAMS[sliders, index, track-offset-rad]
+  {2, 2, 2.4},      // PARAMS[sliders, index, track-offset-rad]
+  {3, 4, 3.0}       // PARAMS[sliders, index, track-offset-rad]
 };
 
 cSlider_t cSliders[CS_SLIDERS] = {
@@ -388,7 +388,7 @@ void mapping_cChange(void) {
 #else
                 //MIDI.sendControlChange(cChange[index].cChange, constrain(blob_ptr->centroid.X, 0, 127), cChange[index].midiChannel);
                 midiNode_t* node_ptr = (midiNode_t*)llist_pop_front(&midi_node_stack);    // Get a node from the MIDI node stack
-                node_ptr->midiMsg.status = 0xb4;                                          // midi::ControlChange
+                node_ptr->midiMsg.status = MIDI_CONTROL_CHANGE;                           // Set MIDI message status to CONTROL_CHANGE
                 node_ptr->midiMsg.data1 = cChange[index].cChange;                         // Set the note
                 node_ptr->midiMsg.data2 = blob_ptr->centroid.X;                           // Set the value
                 node_ptr->midiMsg.channel = cChange[index].midiChannel;                   // Set the cChange channel
@@ -404,7 +404,7 @@ void mapping_cChange(void) {
 #else
                 //MIDI.sendControlChange(cChange[index].cChange, constrain(blob_ptr->centroid.Y, 0, 127), cChange[index].midiChannel);
                 midiNode_t* node_ptr = (midiNode_t*)llist_pop_front(&midi_node_stack);    // Get a node from the MIDI node stack
-                node_ptr->midiMsg.status = 0xb4;                                          // midi::ControlChange
+                node_ptr->midiMsg.status = MIDI_CONTROL_CHANGE;                           // Set MIDI message status to CONTROL_CHANGE
                 node_ptr->midiMsg.data1 = cChange[index].cChange;                         // Set the note
                 node_ptr->midiMsg.data2 = blob_ptr->centroid.Y;                           // Set the value
                 node_ptr->midiMsg.channel = cChange[index].midiChannel;                   // Set the cChange channel
@@ -420,7 +420,7 @@ void mapping_cChange(void) {
 #else
                 //MIDI.sendControlChange(cChange[index].cChange, constrain(blob_ptr->box.W, 0, 127), cChange[index].midiChannel);  midiNode_t* node_ptr = (midiNode_t*)llist_pop_front(&midi_node_stack);    // Get a node from the MIDI node stack
                 midiNode_t* node_ptr = (midiNode_t*)llist_pop_front(&midi_node_stack);    // Get a node from the MIDI node stack
-                node_ptr->midiMsg.status = 0xb4;                                          // midi::ControlChange
+                node_ptr->midiMsg.status = MIDI_CONTROL_CHANGE;                                          // midi::ControlChange
                 node_ptr->midiMsg.data1 = cChange[index].cChange;                         // Set the note
                 node_ptr->midiMsg.data2 = blob_ptr->box.W;                                // Set the value
                 node_ptr->midiMsg.channel = cChange[index].midiChannel;                   // Set the cChange channel
@@ -437,7 +437,7 @@ void mapping_cChange(void) {
 #else
                 //MIDI.sendControlChange(cChange[index].cChange, constrain(blob_ptr->box.H, 0, 127), cChange[index].midiChannel);
                 midiNode_t* node_ptr = (midiNode_t*)llist_pop_front(&midi_node_stack);    // Get a node from the MIDI node stack
-                node_ptr->midiMsg.status = 0xb4;                                          // midi::ControlChange
+                node_ptr->midiMsg.status = MIDI_CONTROL_CHANGE;                                          // midi::ControlChange
                 node_ptr->midiMsg.data1 = cChange[index].cChange;                         // Set the note
                 node_ptr->midiMsg.data2 = blob_ptr->box.H;                                // Set the value
                 node_ptr->midiMsg.channel = cChange[index].midiChannel;                   // Set the cChange channel
@@ -453,7 +453,7 @@ void mapping_cChange(void) {
 #else
                 //MIDI.sendControlChange(cChange[index].cChange, constrain(blob_ptr->centroid.Z, 0, 127), cChange[index].midiChannel);
                 midiNode_t* node_ptr = (midiNode_t*)llist_pop_front(&midi_node_stack);    // Get a node from the MIDI node stack
-                node_ptr->midiMsg.status = 0xb4;                                          // midi::ControlChange
+                node_ptr->midiMsg.status = MIDI_CONTROL_CHANGE;                                          // midi::ControlChange
                 node_ptr->midiMsg.data1 = cChange[index].cChange;                         // Set the note
                 node_ptr->midiMsg.data2 = blob_ptr->centroid.Z;                           // Set the value
                 node_ptr->midiMsg.channel = cChange[index].midiChannel;                   // Set the cChange channel

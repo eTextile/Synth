@@ -17,10 +17,6 @@
 #include "llist.h"
 #include "presets.h"
 
-typedef struct lnode lnode_t;          // Forward declaration
-typedef struct llist llist_t;          // Forward declaration
-typedef struct preset preset_t;        // Forward declaration
-
 typedef struct image image_t;
 struct image {
   uint8_t* pData;
@@ -28,9 +24,7 @@ struct image {
   uint8_t numRows;
 };
 
-extern preset_t presets[];   // Located in ...
-extern image_t interpFrame;  // Located in ...
-extern llist_t blobs;        // Located in blob.cpp
+extern llist_t blobs;            // Exposed local declaration see blob.cpp
 
 #define COMPUTE_IMAGE_ROW_PTR(pImage, y) \
   ({ \

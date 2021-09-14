@@ -11,14 +11,11 @@
 #include "presets.h"
 #include "blob.h"
 
-typedef struct image image_t;       // Forward declaration
-typedef struct preset preset_t;     // Forward declaration
+typedef struct image image_t;   // Forward declaration
+extern image_t rawFrame;        // Exposed local declaration see scan.cpp
 
-extern image_t rawFrame;
-extern preset_t presets[];
-
-#include <SPI.h>                    // https://github.com/PaulStoffregen/SPI
-#include <ADC.h>                    // https://github.com/pedvide/ADC
+#include <SPI.h>                // https://github.com/PaulStoffregen/SPI
+#include <ADC.h>                // https://github.com/pedvide/ADC
 
 void SPI_SETUP(void);
 void ADC_SETUP(void);

@@ -37,8 +37,8 @@ ADC::Sync_result result;                 // Store ADC_0 & ADC_1
 uint8_t rawFrameArray[RAW_FRAME] = {0};  // 1D Array to store E256 ofseted analog input values
 uint8_t offsetArray[RAW_FRAME] = {0};    // 1D Array to store E256 smallest values
 
-image_t rawFrame;                        // Raw frame values
-image_t offsetFrane;                     // Offset frame values
+image_t rawFrame;                        // Memory allocation for raw frame values
+image_t offsetFrane;                     // Memory allocation for offset frame values
 
 // Array to store all parameters used to configure the two 8:1 analog multiplexeurs
 // Each byte |ENA|A|B|C|ENA|A|B|C|
@@ -145,9 +145,12 @@ void calibrate_matrix(void) {
 
           result = adc->analogSynchronizedRead(ADC0_PIN, ADC1_PIN);
           uint8_t ADC0_val = result.result_adc0;
-          if (ADC0_val > offsetArray[indexA]) offsetArray[indexA] = ADC0_val;
+          ADC0_val > offsetArray[indexA] ? offsetArray[indexA] = ADC0_val : NULL;
+          //ADC0_val > 127 ? rawFrameArray[indexA] = 127 : NULL;
           uint8_t ADC1_val = result.result_adc1;
-          if (ADC1_val > offsetArray[indexB]) offsetArray[indexB] = ADC1_val;
+          ADC1_val > offsetArray[indexB] ? offsetArray[indexB] = ADC1_val : NULL;
+          //ADC1_val > 127 ? rawFrameArray[indexB] = 127 : NULL;
+
 #if SET_ORIGIN_Y
           setRows = setRows << 1;
 #else
@@ -156,6 +159,7 @@ void calibrate_matrix(void) {
         };
       };
     };
+    currentMode = lastMode;
   };
 };
 
@@ -203,8 +207,10 @@ void scan_matrix(void) {
 
       uint8_t valA = result.result_adc0;
       valA > offsetArray[indexA] ? rawFrameArray[indexA] = valA - offsetArray[indexA] : rawFrameArray[indexA] = 0;
+      valA > 127 ? rawFrameArray[indexA] = 127 : NULL; // Add limit for MIDI message 0:127
       uint8_t valB = result.result_adc1;
       valB > offsetArray[indexB] ? rawFrameArray[indexB] = valB - offsetArray[indexB] : rawFrameArray[indexB] = 0;
+      valB > 127 ? rawFrameArray[indexB] = 127 : NULL; // Add limit for MIDI message 0:127
 
 #if SET_ORIGIN_Y
       setRows = setRows << 1;

@@ -90,23 +90,6 @@ void setup() {
 };
 
 void loop() {
-  //if (loadPreset) preset_load(); // TODO
-  //if (savePreset) preset_save(); // TODO
-
-  update_buttons();
-  update_presets();
-
-#if SYNTH_PLAYER || GRANULAR_PLAYER || FLASH_PLAYER
-  update_levels();
-#endif
-
-  update_leds();
-  calibrate_matrix();
-  scan_matrix();
-  interp_matrix();
-  find_blobs();
-  //median();
-
 #if USB_MIDI
   read_usb_midi_input();
 #endif
@@ -116,6 +99,24 @@ void loop() {
 #if USB_SLIP_OSC
   read_usb_slip_osc_input();
 #endif
+
+  //if (loadPreset) preset_load(); // TODO
+  //if (savePreset) preset_save(); // TODO
+
+  update_buttons();
+  update_presets();
+  update_leds();
+
+#if SYNTH_PLAYER || GRANULAR_PLAYER || FLASH_PLAYER
+  update_levels();
+#endif
+
+  calibrate_matrix();
+  scan_matrix();
+  interp_matrix();
+  find_blobs();
+  //median();
+
 
 #if MAPPING_LAYAOUT
   mapping_grid_update();

@@ -15,20 +15,13 @@
 #include "mapping.h"
 #include "notes.h"
 
-typedef struct preset preset_t;    // Forward declaration
-typedef struct llist llist_t;      // Forward declaration
-typedef struct blob blob_t;        // Forward declaration
-typedef struct cChange cChange_t;  // Forward declaration
+#define MIDI_NOTE_ON          0x92
+#define MIDI_NOTE_OFF         0x81
+#define MIDI_CONTROL_CHANGE   0xb4
 
-//extern Encoder encoder;          // Declaration is located in presets.cpp
-//extern preset_t presets[];       // Declaration is located in presets.cpp
-//extern image_t rawFrame;         // Declaration is located in scan.cpp
-//extern image_t interpFrame;      // Declaration is located in interp.cpp
-//extern llist_t blobs;            // Declaration is located in blob.cpp
-
-extern llist_t midi_node_stack;    // Local declaration see midi_transmit.cpp
-extern llist_t midiIn;             // Local declaration see midi_transmit.cpp
-extern llist_t midiOut;            // Local declaration see midi_transmit.cpp
+extern llist_t midi_node_stack;  // Exposed local declaration see midi_transmit.cpp
+extern llist_t midiIn;           // Exposed local declaration see midi_transmit.cpp
+extern llist_t midiOut;          // Exposed local declaration see midi_transmit.cpp
 
 typedef struct midiMsg midiMsg_t;
 struct midiMsg {
@@ -57,6 +50,5 @@ void handle_hardware_midi_input_noteOff(byte channel, byte note, byte velocity);
 void handle_usb_midi_input_cc(byte channel, byte control, byte value);
 
 void midi_transmit(void);
-void controlChange(cChange_t* cChange_t);
 
 #endif /*__MIDI_TRANSMIT_H__*/

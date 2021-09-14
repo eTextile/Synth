@@ -21,23 +21,18 @@
 #define THRESHOLD         3
 #define CALIBRATE         4
 #define SAVE              5
+#define MIDI_BLOBS_PLAY   6
+#define MIDI_BLOBS_LEARN  7
 
-#define MIDI_RAW          6
-#define MIDI_INTERP       7
-#define MIDI_BLOBS        8
-#define MIDI_BLOBS_LEARN  9
-#define MIDI_BLOBS_PLAY   10
-#define MIDI_MAPPING      11
-#define MIDI_OFF          12
+#define MIDI_RAW          8
+#define MIDI_INTERP       9
+#define MIDI_MAPPING      10
+#define MIDI_OFF          11
 
-typedef struct interp interp_t;        // forward declaration
-
-extern Encoder encoder;
-
-extern uint8_t interpThreshold;
-extern uint8_t currentMode;
-extern uint8_t lastMode;
-extern uint8_t currentModeState;
+extern Encoder encoder;           // Exposed local declaration see presets.cpp
+extern uint8_t currentMode;       // Exposed local declaration see presets.cpp
+extern uint8_t lastMode;          // Exposed local declaration see presets.cpp
+extern uint8_t blobModeState;     // Exposed local declaration see presets.cpp
 
 typedef struct preset preset_t;
 struct preset {
@@ -52,7 +47,7 @@ struct preset {
   boolean D2;
 };
 
-extern preset_t presets[];
+extern preset_t presets[];        // Exposed local declaration see presets.cpp
 
 void LEDS_SETUP(void);
 void SWITCHES_SETUP(void);

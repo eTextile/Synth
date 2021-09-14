@@ -11,11 +11,8 @@
 #include "scan.h"
 #include "blob.h"
 
-typedef struct image image_t; // forward declaration
-
-extern uint8_t interpThreshold;
-//extern image_t rawFrame; // Declaration is located in scan.cpp
-extern image_t interpFrame;
+extern uint8_t interpThreshold; // Exposed local declaration see interp.cpp
+extern image_t interpFrame;     // Exposed local declaration see interp.cpp
 
 void INTERP_SETUP(void);
 void interp_matrix(void);
