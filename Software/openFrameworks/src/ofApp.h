@@ -7,12 +7,13 @@
 
 #pragma once
 
-#include "ofMain.h"
-#include "ofxMidi.h"
-#include "ofxGui.h"
+#include "ofMain.h"  //
+#include "ofxMidi.h" // https://github.com/danomatika/ofxMidi
+#include "ofxGui.h"  //
 
-#define MIDI_PORT_NAME        "ETEXTILE_SYNTH"
-#define VERSION               "1.0.6"
+#define POROJECT_NAME         "ETEXTILE-SYNTH"
+#define MIDI_PORT_NAME        "E256"
+#define VERSION               "1.0.7"
 #define RAW_COLS              16
 #define RAW_ROWS              16
 #define RAW_FRAME             (RAW_COLS * RAW_ROWS)
@@ -20,36 +21,37 @@
 #define NEW_ROWS              (RAW_ROWS * 4)
 #define NEW_FRAME             (NEW_COLS * NEW_ROWS)
 
-#define BI 0  // [0] Blob UID
-#define BS 1  // [1] Blob State
-#define BL 2  // [2] Blob Last State
-#define BX 3  // [3] Blob X centroid position
-#define BY 4  // [4] Blob Y centroid position
-#define BW 5  // [5] Blob width
-#define BH 6  // [6] Blob Height
-#define BD 7  // [7] Blob Depth
+// MIDI_CONTROL_CHANGE
+#define BI_ 0  // [0] Blob UID
+#define BS_ 1  // [1] Blob State
+#define BL_ 2  // [2] Blob Last State
+#define BX_ 3  // [3] Blob X centroid position
+#define BY_ 4  // [4] Blob Y centroid position
+#define BW_ 5  // [5] Blob width
+#define BH_ 6  // [6] Blob Height
+#define BD_ 7  // [7] Blob Depth
 
-#define LINE_OUT        0
-#define SIG_IN          1
-#define SIG_OUT         2
-#define THRESHOLD       3
-#define CALIBRATE       4
-#define SAVE            5
-#define MIDI_RAW        6
-#define MIDI_INTERP     7
-#define MIDI_LEARN      8
-#define MIDI_BLOBS      9
-#define MIDI_OFF        10
+#define LINE_OUT          0
+#define SIG_IN            1
+#define SIG_OUT           2
+#define THRESHOLD         3
+#define CALIBRATE         4
+#define SAVE              5
+#define MIDI_BLOBS_PLAY   6
+#define MIDI_BLOBS_LEARN  7
+
+#define MIDI_RAW          8
+#define MIDI_INTERP       9
+#define MIDI_MAPPING      10
+#define MIDI_OFF          11
 
 struct blob_t {
-  int8_t  id;         // [0] Blob UID
-  int8_t  state;      // [1] Blob State
-  int8_t  lastState;  // [2] Blob Last State
-  int8_t  cx;         // [3] Blob X centroid position
-  int8_t  cy;         // [4] Blob Y centroid position
-  int8_t  width;      // [5] Blob width
-  int8_t  height;     // [6] Blob Height
-  int8_t  depth;      // [7] Blob Depth
+  uint8_t  id;   // [0] Blob ID
+  uint8_t  bx;   // [1] Blob X centroid position
+  uint8_t  by;   // [2] Blob Y centroid position
+  uint8_t  bw;   // [3] Blob width
+  uint8_t  bh;   // [4] Blob Height
+  uint8_t  bd;   // [6] Blob Depth
 };
 
 class ofApp : public ofBaseApp, public ofxMidiListener {
@@ -64,18 +66,18 @@ public:
     ofxPanel                      gui;
     ofxIntSlider                  setTresholdSlider;
     ofxButton                     setCalirationButton;
+
     ofxToggle                     getRawToggle;
     ofxToggle                     getInterpToggle;
-    ofxToggle                     setMidiLearnToggle;
     ofxToggle                     getBlobsToggle;
 
     ofMutex                       midiMutex;
 	  void                          newMidiMessage(ofxMidiMessage& eventArgs);
     ofxMidiIn                     midiIn;
     ofxMidiOut                    midiOut;
-    std::vector<ofxMidiMessage>   midiMessages;
-    std::vector<unsigned char>    sysexMsg;
-    std::size_t maxMessages = 256; //< max number of messages to keep track of
+
+    std::vector<ofxMidiMessage>   midiInput;
+    std::vector<ofxMidiMessage>   midiCopy;
     std::vector<blob_t>           blobs;
 
     uint8_t                       mode;
@@ -83,13 +85,11 @@ public:
 
     void                          E256_setTreshold(int & sliderValue);
     void                          E256_setCaliration();
-    void                          E256_setMidiLearn(bool & val);
     void                          E256_getRaw(bool & val);
-    void                          E256_getInterp(bool & val);
     void                          E256_getBlobs(bool & val);
+    void                          E256_setMidiLearn(bool & val);
 
     bool                          getRaw;
-    bool                          getInterp;
     bool                          midiLearn;
     bool                          getBlobs;
 

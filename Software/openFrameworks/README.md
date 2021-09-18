@@ -1,6 +1,5 @@
-# E256 - eTextile matrix sensor / OpenFrameworks
-
-### Transforming textiles into an intuitive way to interact with computers
+# eTextile-Synthesizer 
+### Exploring music through textile
 
 ## Requirements
 
@@ -18,16 +17,13 @@ To compile the code, you need to set the following variable in your ~/.bashrc, ~
     git submodule update
 
 The E256-openframeworks program requires the following addons:
- - ofxIO
- - ofxSerial
- - ofxOsc
  - ofxGui
+ - ofxMidi
 
 The two 1st addons don't come by default with oFx but you can install them:
 
     cd ${OF_ROOT}/addons
-    git clone -b stable https://github.com/bakercp/ofxIO # stable branche
-    git clone https://github.com/bakercp/ofxSerial       # stable branche
+    git clone https://github.com/danomatika/ofxMidi # stable branche
 
 ## Compiling E256-openframeworks
     make
