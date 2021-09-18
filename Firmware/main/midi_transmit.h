@@ -7,7 +7,6 @@
 #ifndef __MIDI_TRANSMIT_H__
 #define __MIDI_TRANSMIT_H__
 
-#include <Encoder.h>            // https://github.com/PaulStoffregen/Encoder
 #include "config.h"
 #include "presets.h"
 #include "llist.h"
@@ -15,9 +14,12 @@
 #include "mapping.h"
 #include "notes.h"
 
-#define MIDI_NOTE_ON          0x92
-#define MIDI_NOTE_OFF         0x81
-#define MIDI_CONTROL_CHANGE   0xb4
+// MIDI status bytes
+#define MIDI_NOTE_OFF           0x80
+#define MIDI_NOTE_ON            0x90
+#define MIDI_CONTROL_CHANGE     0xB0
+#define MIDI_PROGRAM_CHANGE     0xC0
+#define MIDI_SYSEX              0xF0
 
 extern llist_t midi_node_stack;  // Exposed local declaration see midi_transmit.cpp
 extern llist_t midiIn;           // Exposed local declaration see midi_transmit.cpp
@@ -47,6 +49,7 @@ void handle_hardware_midi_input_cc(byte channel, byte control, byte value);
 void handle_hardware_midi_input_noteOn(byte channel, byte note, byte velocity);
 void handle_hardware_midi_input_noteOff(byte channel, byte note, byte velocity);
 
+//void handle_usb_midi_input_pc(byte program, byte channel);
 void handle_usb_midi_input_cc(byte channel, byte control, byte value);
 
 void midi_transmit(void);

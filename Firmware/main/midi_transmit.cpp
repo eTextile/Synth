@@ -8,6 +8,9 @@
 
 #include <MIDI.h>                           // http://www.pjrc.com/teensy/td_midi.html
 
+unsigned long int transmitTimer = 0;
+#define TRANSMIT_INTERVAL 3
+
 #if MIDI_HARDWARE
 MIDI_CREATE_INSTANCE(HardwareSerial, Serial3, MIDI);
 #endif
@@ -30,7 +33,9 @@ void llist_midi_init(llist_t* llist_ptr, midiNode_t* nodeArray_ptr, const int no
 void MIDI_TRANSMIT_SETUP(void) {
 #if MIDI_USB
   usbMIDI.begin();
+  //usbMIDI.setHandleProgramChange(handle_usb_midi_input_pc);
   usbMIDI.setHandleControlChange(handle_usb_midi_input_cc);
+
   //usbMIDI.setHandleNoteOff(handle_usb_midi_input_noteOn);
   //usbMIDI.setHandleNoteOn(handle_usb_midi_input_noteOff);
 #endif
@@ -45,10 +50,12 @@ void MIDI_TRANSMIT_SETUP(void) {
   llist_raz(&midiOut);
 };
 
+#if MIDI_USB
 void read_usb_midi_input(void) {
   usbMIDI.read(1);        // Is there a MIDI incoming messages on channel One
   while (usbMIDI.read()); // Read and discard any incoming MIDI messages
 };
+#endif
 
 #if MIDI_HARDWARE
 void read_hardware_midi_input(void) {
@@ -57,9 +64,10 @@ void read_hardware_midi_input(void) {
 };
 #endif
 
-void handle_usb_midi_input_cc(byte channel, byte control, byte value) {
+//void handle_usb_midi_input_pc(byte program, byte channel) {
+void handle_usb_midi_input_cc(byte channel, byte control, byte value){
   switch (control) {
-    case THRESHOLD:   // CONTROL 3
+    case THRESHOLD:   // PROGRAM 3
       lastMode = currentMode;
       currentMode = THRESHOLD;
       presets[THRESHOLD].val = map(value, 0, 127, presets[THRESHOLD].minVal, presets[THRESHOLD].maxVal);
@@ -70,35 +78,43 @@ void handle_usb_midi_input_cc(byte channel, byte control, byte value) {
       presets[THRESHOLD].updateLed = true;
       presets[THRESHOLD].update = true;
       break;
-    case CALIBRATE:   // CONTROL 4
+    case CALIBRATE:   // PROGRAM 4
       lastMode = currentMode;
       currentMode = CALIBRATE;
       presets[CALIBRATE].setLed = true;
       presets[CALIBRATE].updateLed = true;
       break;
-    case MIDI_RAW:    // CONTROL 8
+    case MIDI_RAW:    // PROGRAM 8
       if (value == 1) {
-        lastMode = currentMode;
+        //lastMode = currentMode;
         currentMode = MIDI_RAW;
       } else {
         currentMode = MIDI_OFF;
       };
       break;
-    case MIDI_INTERP: // CONTROL 9
-      if (value == 1) {
-        lastMode = currentMode;
-        currentMode = MIDI_INTERP;
-      } else {
-        currentMode = MIDI_OFF;
-      };
+    case MIDI_INTERP: // PROGRAM 9
+      //if (value == 1) {
+      //lastMode = currentMode;
+      currentMode = MIDI_INTERP;
+      //} else {
+      //currentMode = MIDI_OFF;
+      //};
       break;
-    case MIDI_BLOBS_PLAY: // CONTROL 6
-      if (value == 1) {
-        lastMode = currentMode;
-        currentMode = MIDI_BLOBS_PLAY;
-      } else {
-        currentMode = MIDI_BLOBS_LEARN;
-      };
+    case MIDI_BLOBS_PLAY: // PROGRAM 6
+      //if (value == 1) {
+      //lastMode = currentMode;
+      currentMode = MIDI_BLOBS_PLAY;
+      //} else {
+      //
+      //};
+      break;
+    case MIDI_BLOBS_LEARN: // PROGRAM 7
+      //if (value == 1) {
+      //lastMode = currentMode;
+      currentMode = MIDI_BLOBS_LEARN;
+      //} else {
+      //
+      //};
       break;
     default:
       break;
@@ -135,32 +151,40 @@ void handle_hardware_midi_input_noteOff(byte channel, byte note, byte velocity) 
 void midi_transmit(void) {
   switch (currentMode) {
     case MIDI_RAW:
-      usbMIDI.sendSysEx(RAW_FRAME, rawFrame.pData, false);
-      usbMIDI.send_now();
+    if (millis() - transmitTimer > TRANSMIT_INTERVAL) {
+        transmitTimer = millis();
+        usbMIDI.sendSysEx(RAW_FRAME, rawFrame.pData, false, 0);
+        usbMIDI.send_now();
+      }
       break;
     case MIDI_INTERP:
-      usbMIDI.sendSysEx(NEW_FRAME, interpFrame.pData, false);
-      usbMIDI.send_now();
+      // NOT_WORKING See https://forum.pjrc.com/threads/28282-How-big-is-the-MIDI-receive-buffer
+      //usbMIDI.sendSysEx(NEW_FRAME, interpFrame.pData, false, 0);
+      //usbMIDI.send_now();
       break;
     case MIDI_BLOBS_PLAY:
       // Send all blobs values using MIDI format
       for (blob_t* blob_ptr = (blob_t*)ITERATOR_START_FROM_HEAD(&blobs); blob_ptr != NULL; blob_ptr = (blob_t*)ITERATOR_NEXT(blob_ptr)) {
         if (blob_ptr->state) {
           if (!blob_ptr->lastState) {
-            usbMIDI.sendNoteOn((int8_t)(blob_ptr->UID + 1), 1, 1); // sendNoteOn(note, velocity, channel);
+            usbMIDI.sendNoteOn(blob_ptr->UID + 1, 1, 1); // sendNoteOn(note, velocity, channel);
           }
           else {
-            // usbMIDI.sendControlChange(control, value, channel);
-            usbMIDI.sendControlChange(BX, (int8_t)round(map(blob_ptr->centroid.X, 0, X_MAX - X_MIN, 0, 127)), (int8_t)(blob_ptr->UID + 1));
-            usbMIDI.sendControlChange(BY, (int8_t)round(map(blob_ptr->centroid.Y, 0, X_MAX - X_MIN, 0, 127)), (int8_t)(blob_ptr->UID + 1));
-            usbMIDI.sendControlChange(BW, (int8_t)blob_ptr->box.W, (int8_t)(blob_ptr->UID + 1));
-            usbMIDI.sendControlChange(BH, (int8_t)blob_ptr->box.H, (int8_t)(blob_ptr->UID + 1));
-            usbMIDI.sendControlChange(BD, (int8_t)constrain(blob_ptr->centroid.Z, 0, 127), (int8_t)(blob_ptr->UID + 1));
+            if (millis() - transmitTimer > TRANSMIT_INTERVAL) {
+              transmitTimer = millis();
+              // usbMIDI.sendControlChange(control, value, channel);
+              usbMIDI.sendControlChange(BX, (uint8_t)round(map(blob_ptr->centroid.X, 0, X_MAX - X_MIN, 0, 127)), blob_ptr->UID + 1);
+              usbMIDI.sendControlChange(BY, (uint8_t)round(map(blob_ptr->centroid.Y, 0, X_MAX - X_MIN, 0, 127)), blob_ptr->UID + 1);
+              usbMIDI.sendControlChange(BW, blob_ptr->box.W, blob_ptr->UID + 1);
+              usbMIDI.sendControlChange(BH, blob_ptr->box.H, blob_ptr->UID + 1);
+              usbMIDI.sendControlChange(BD, constrain(blob_ptr->centroid.Z, 0, 127), blob_ptr->UID + 1);
+            };
           };
         }
         else {
-          usbMIDI.sendNoteOff((int8_t)(blob_ptr->UID + 1), 0, 1); // sendNoteOn(note, velocity, channel);
+          usbMIDI.sendNoteOff(blob_ptr->UID + 1, 0, 1); // sendNoteOff(note, velocity, channel);
         };
+        usbMIDI.send_now();
       };
       break;
     case MIDI_BLOBS_LEARN:
@@ -169,7 +193,7 @@ void midi_transmit(void) {
       // Select blob's values according to the encoder position to allow the auto-mapping into Max4Live...
       blob_t* blob_ptr = (blob_t*)blobs.tail_ptr;
       if (blob_ptr != NULL) {
-        switch (presets[MIDI_BLOBS_PLAY].val) {
+        switch (presets[MIDI_BLOBS_LEARN].val) {
           case BS:
             //usbMIDI.sendControlChange(BS, blob_ptr->state, blob_ptr->UID + 1);
             if (!blob_ptr->lastState) usbMIDI.sendNoteOn((int8_t)(blob_ptr->UID + 1), 1, 0);
@@ -190,8 +214,9 @@ void midi_transmit(void) {
           case BD:
             usbMIDI.sendControlChange(BD, (int8_t)constrain(blob_ptr->centroid.Z, 0, 127), blob_ptr->UID + 1);
             break;
+          default:
+            break;
         };
-        break;
       };
       break;
     case MIDI_MAPPING:
@@ -221,8 +246,13 @@ void midi_transmit(void) {
             MIDI.sendControlChange(node_ptr->midiMsg.data1, node_ptr->midiMsg.data2, node_ptr->midiMsg.channel);    // Send MIDI noteOff
 #endif
             break;
+          default:
+            break;
         };
       };
       llist_save_nodes(&midi_node_stack, &midiOut); // Save all midiOut nodes to the midi_node_stack linked list
+      break;
+    default:
+      break;
   };
 };

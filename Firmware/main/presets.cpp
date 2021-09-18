@@ -18,8 +18,8 @@
 #define LONG_HOLD                     1500
 #define MIDI_BLOBS_PLAY_LED_TIMEON    600
 #define MIDI_BLOBS_PLAY_LED_TIMEOFF   600
-#define MIDI_BLOBS_LEARN_LED_TIMEON   300
-#define MIDI_BLOBS_LEARN_LED_TIMEOFF  300
+#define MIDI_BLOBS_LEARN_LED_TIMEON   100
+#define MIDI_BLOBS_LEARN_LED_TIMEOFF  100
 #define CALIBRATE_LED_TIMEON          35
 #define CALIBRATE_LED_TIMEOFF         100
 #define CALIBRATE_LED_ITER            4
@@ -34,8 +34,7 @@ Bounce2::Button BUTTON_L = Bounce2::Button();
 Bounce2::Button BUTTON_R = Bounce2::Button();
 
 uint8_t currentMode = CALIBRATE;              // Init currentMode with CALIBRATE (DEFAULT_MODE)
-uint8_t lastMode = LINE_OUT;                  // Init lastMode with LINE_OUT (DEFAULT_MODE)
-uint8_t blobModeState = MIDI_BLOBS_PLAY;      // Init blobModeState to MIDI_BLOBS_PLAY (DEFAULT_MODE)
+uint8_t lastMode = MIDI_BLOBS_PLAY;           // Init lastMode with LINE_OUT (DEFAULT_MODE)
 
 preset_t presets[8] = {
   {13, 31, 29, 0, false, false, false, LOW,  LOW },  // LINE_OUT         - ARGS[minVal, maxVal, val, ledVal, setLed, updateLed, update, D1, D2]

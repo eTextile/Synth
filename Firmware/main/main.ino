@@ -51,7 +51,7 @@ void setup() {
 #if DEBUG_ADC || DEBUG_INTERP || DEBUG_BITMAP || DEBUG_BLOBS || DEBUG_FPS || DEBUG_ENCODER || DEBUG_BUTTONS || DEBUG_MAPPING
   Serial.begin(BAUD_RATE);
   while (!Serial);
-  Serial.printf("\n%s_%s", NAME, VERSION);
+  Serial.printf("\n%s_%s_%s", NAME, PROJECT, VERSION);
 #endif
   LEDS_SETUP();
   SWITCHES_SETUP();
@@ -90,7 +90,7 @@ void setup() {
 };
 
 void loop() {
-#if USB_MIDI
+#if MIDI_USB
   read_usb_midi_input();
 #endif
 #if MIDI_HARDWARE
@@ -129,7 +129,7 @@ void loop() {
 #endif
 
   midi_transmit();
-
+  
 #if SYNTH_PLAYER
   synth_player();
 #endif

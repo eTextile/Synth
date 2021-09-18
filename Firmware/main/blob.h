@@ -109,6 +109,16 @@ struct blob {
   velocity_t velocity;
 };
 
+#define  BI   0  // [0] Blob UID
+#define  BS   1  // [1] Blob State
+#define  BL   2  // [2] Blob Last State
+#define  BX   3  // [3] Blob X centroid position
+#define  BY   4  // [4] Blob Y centroid position
+#define  BW   5  // [5] Blob width
+#define  BH   6  // [6] Blob Height
+#define  BD   7  // [7] Blob Depth
+
+/*
 typedef enum params {
   BI,  // [0] Blob UID
   BS,  // [1] Blob State
@@ -119,6 +129,7 @@ typedef enum params {
   BH,  // [6] Blob Height
   BD   // [7] Blob Depth
 } params_t;
+*/
 
 void lifo_llist_init(llist_t *list, xylr_t* nodesArray, const int nodes); // TODO: Separation of concerns (SoC)
 void blob_llist_init(llist_t *list, blob_t* nodesArray, const int nodes); // TODO: Separation of concerns (SoC)

@@ -29,10 +29,9 @@
 #define MIDI_MAPPING      10
 #define MIDI_OFF          11
 
-extern Encoder encoder;           // Exposed local declaration see presets.cpp
-extern uint8_t currentMode;       // Exposed local declaration see presets.cpp
-extern uint8_t lastMode;          // Exposed local declaration see presets.cpp
-extern uint8_t blobModeState;     // Exposed local declaration see presets.cpp
+extern Encoder encoder;       // Exposed local declaration see presets.cpp
+extern uint8_t currentMode;   // Exposed local declaration see presets.cpp
+extern uint8_t lastMode;      // Exposed local declaration see presets.cpp
 
 typedef struct preset preset_t;
 struct preset {
