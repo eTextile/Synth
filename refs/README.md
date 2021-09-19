@@ -108,7 +108,7 @@ mance of sensors created using our method is comparable to
 off-the-shelf piezoresistive textiles. As application examples,
 we demonstrate rapid manufacturing of on-body interfaces,
 tie-dyed motion-capture clothing, and zippers that act as po-
-tentiometers.
+tentiometers.  
 _**Keywords:** eTextiles, Electro-Functionalization, In-Situ Polymerization,
 Piezoresistive Sensors, Wearables, Personal Fabrication_
 
