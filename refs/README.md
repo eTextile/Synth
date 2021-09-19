@@ -112,22 +112,9 @@ tentiometers.
 _**Keywords:** eTextiles, Electro-Functionalization, In-Situ Polymerization,
 Piezoresistive Sensors, Wearables, Personal Fabrication_
 
-### Artistic projects
-* **A:** eTextile-Synthesizer tutorial
-* **B:** Open Hardware electronic parts (Made with KiCad) 
-* **C:** eTextile-Synthesizer firmware (Compile with Arduino)
-* **D:** demos applications (PureData, MaxMSP, Max4Live, etc.)
-
 ### Project's publications
 - [NIME17](http://www.nime2017.org/) - Designing a Multi-Touch eTextile for Music Performances / [Paper](https://github.com/eTextile/Matrix/blob/teensy_matrix/docs/publications/NIME17-eTextile.pdf) - [Video](https://vimeo.com/217690743)
 - [MOCO17](http://moco17.movementcomputing.org/) - Music Skin: Fabric Interface for Expressive Music Control / [Paper](https://github.com/eTextile/Matrix/blob/teensy_matrix/docs/publications/MOCO17-MusicSkin.pdf)
 
-## Copyright
-Except as otherwise noted, all files in the **eTextile-Synthesizer** project folder
-
-    Copyright (c) 2014- Maurin Donneaud
-
-For information on usage and redistribution, and for a DISCLAIMER OF ALL WARRANTIES, see LICENSE.txt included in this folder.
-
-## Docs
+### Origins
 - [Video made at Schmiede 2014](http://www.kobakant.at/DIY/?p=4305/)
