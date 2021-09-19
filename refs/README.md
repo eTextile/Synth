@@ -116,5 +116,5 @@ Piezoresistive Sensors, Wearables, Personal Fabrication_
 - [NIME17](http://www.nime2017.org/) - Designing a Multi-Touch eTextile for Music Performances / [Paper](https://github.com/eTextile/Matrix/blob/teensy_matrix/docs/publications/NIME17-eTextile.pdf) - [Video](https://vimeo.com/217690743)
 - [MOCO17](http://moco17.movementcomputing.org/) - Music Skin: Fabric Interface for Expressive Music Control / [Paper](https://github.com/eTextile/Matrix/blob/teensy_matrix/docs/publications/MOCO17-MusicSkin.pdf)
 
-### Origins
-- [Video made at Schmiede 2014](http://www.kobakant.at/DIY/?p=4305/)
+### Experimental origins
+- [Video made at Schmiede 2014 with Kobakant](http://www.kobakant.at/DIY/?p=4305/)
