@@ -299,28 +299,28 @@ void find_blobs(void) {
   while (1) {
     boolean allDone = true;
     blob_t* prevBlob_ptr = NULL;
-    for (blob_t* blobOut = (blob_t*)ITERATOR_START_FROM_HEAD(&blobs); blobOut != NULL; blobOut = (blob_t*)ITERATOR_NEXT(blobOut)) {
+    for (blob_t* blobOut_ptr = (blob_t*)ITERATOR_START_FROM_HEAD(&blobs); blobOut_ptr != NULL; blobOut_ptr = (blob_t*)ITERATOR_NEXT(blobOut_ptr)) {
       boolean found = false;
       for (blob_t* blobIn = (blob_t*)ITERATOR_START_FROM_HEAD(&llist_blobs_temp); blobIn != NULL; blobIn = (blob_t*)ITERATOR_NEXT(blobIn)) {
-        if (blobOut->UID == blobIn->UID) {
+        if (blobOut_ptr->UID == blobIn->UID) {
           found = true;
           break;
         }
       }
       if (!found) {
         allDone = false;
-        llist_extract_node(&blobs, prevBlob_ptr, blobOut);
-        blobOut->status = NOT_FOUND;
+        llist_extract_node(&blobs, prevBlob_ptr, blobOut_ptr);
+        blobOut_ptr->status = NOT_FOUND;
         //Serial.printf("\nDEBUG_FIND_BLOBS / Blob: %p in the **outputBlobs** linked list is NOT_FOUND", (lnode_t*)blobOut);
-        if ((millis() - blobOut->timeTag) > DEBOUNCE_TIME) {
-          blobOut->state = false;
-          blobOut->status = TO_REMOVE;
+        if ((millis() - blobOut_ptr->timeTag) > DEBOUNCE_TIME) {
+          blobOut_ptr->state = false;
+          blobOut_ptr->status = TO_REMOVE;
           //Serial.printf("\nDEBUG_FIND_BLOBS / Blob: %p in the **outputBlobs** linked list taged TO_REMOVE", (lnode_t*)blobOut);
         }
-        llist_push_front(&llist_blobs_temp, blobOut);
+        llist_push_front(&llist_blobs_temp, blobOut_ptr);
         break;
       }
-      prevBlob_ptr = blobOut;
+      prevBlob_ptr = blobOut_ptr;
     }
     if (allDone) {
       break;

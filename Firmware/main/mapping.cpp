@@ -100,7 +100,7 @@ tSwitch_t* mapping_toggles(void) {
 stroke_t key[GRID_KEYS] = {0};            // 1D array to store keys limits
 stroke_t* lastKeyPress[MAX_SYNTH];        // 1D pointer array to store last keysPressed pointer
 
-midiNode_t midiLayout[GRID_KEYS] = {0};   // 1D array to mapp MIDI notes with the grid layout
+midiNode_t midiGridLayout[GRID_KEYS] = {0};   // 1D array to mapp MIDI notes with the grid layout
 
 // Pre-compute key min & max coordinates
 void GRID_LAYOUT_SETUP(void) {
@@ -145,26 +145,22 @@ void mapping_grid_update(void) {
 #if DEBUG_MAPPING
               Serial.printf("\nGRID\tBLOB:%d\t\tKEY_OFF:%p", blob_ptr->UID, &lastKeyPress[blob_ptr->UID]);
 #else
-              //MIDI.sendNoteOff(lastKeyPress[blob_ptr->UID]->val, 0, 1);             // Send NoteOFF (CHANNEL_1)
               midiNode_t* node_ptr = (midiNode_t*)llist_pop_front(&midi_node_stack);  // Get a node from the MIDI node stack
               node_ptr->midiMsg.status = MIDI_NOTE_OFF;                               // Set MIDI message status to NOTE_OFF
               node_ptr->midiMsg.data1 = lastKeyPress[blob_ptr->UID]->note;            // Set the note
               node_ptr->midiMsg.data2 = 0;                                            // Set the velocity
-              //node_ptr->midiMsg.channel = blob_ptr->UID;                            // Set the channel according to the blob ID
-              node_ptr->midiMsg.channel = 1;                                          // Set the channel to CHANNEL_1
+              node_ptr->midiMsg.channel = midiGridLayout[keyPress].channel;           // Set the channel to CHANNEL_1
               llist_push_front(&midiOut, node_ptr);                                   // Add the node to the midiOut linked liste
 #endif
             };
 #if DEBUG_MAPPING
             Serial.printf("\nGRID\tBLOB:%d\t\tKEY_DOWN:%p", blob_ptr->UID, &key[pos]);
 #else
-            //MIDI.sendNoteOn(midiLayout[blob_ptr->UID]->pithch, midiLayout[keyPress].velocity, 1);
             midiNode_t* node_ptr = (midiNode_t*)llist_pop_front(&midi_node_stack);    // Get a node from the MIDI node stack
             node_ptr->midiMsg.status = MIDI_NOTE_ON;                                  // Set MIDI message status to NOTE_ON
-            node_ptr->midiMsg.data1 = midiLayout[blob_ptr->UID].midiMsg.data1;        // Set the note
-            node_ptr->midiMsg.data2 = midiLayout[keyPress].midiMsg.data2;             // Set the velocity
-            //node_ptr->midiMsg.channel = blob_ptr->UID;                              // Set the channel according to the blob ID
-            node_ptr->midiMsg.channel = 1;                                            // Set the channel to CHANNEL_1
+            node_ptr->midiMsg.data1 = midiGridLayout[blob_ptr->UID].midiMsg.data1;    // Set the note
+            node_ptr->midiMsg.data2 = midiGridLayout[keyPress].midiMsg.data2;         // Set the velocity
+            node_ptr->midiMsg.channel = midiGridLayout[keyPress].channel;             // Set the channel to CHANNEL_1
             llist_push_front(&midiOut, node_ptr);                                     // Add the node to the midiOut linked liste
 #endif
             lastKeyPress[blob_ptr->UID] = &key[keyPress];
@@ -180,8 +176,7 @@ void mapping_grid_update(void) {
         node_ptr->midiMsg.status = MIDI_NOTE_OFF;                               // Set MIDI message status to NOTE_OFF
         node_ptr->midiMsg.data1 = lastKeyPress[blob_ptr->UID]->note;            // Set the note
         node_ptr->midiMsg.data2 = 0;                                            // Set the velocity to 0
-        //node_ptr->channel = blob_ptr->UID;                                    // Set the channel according to the blob ID
-        node_ptr->midiMsg.channel = 1;                                          // Set the channel to CHANNEL_1
+        node_ptr->midiMsg.channel = midiGridLayout[keyPress].channel;           // Set the channel to CHANNEL_1
         llist_push_front(&midiOut, node_ptr);                                   // Add the node to the midiOut linked liste
 #endif
       };
@@ -189,14 +184,44 @@ void mapping_grid_update(void) {
   };
 };
 
+// Populate the MIDI grid layaout with the incomming MIDI notes
+llist_t midiChord; // MIDI chord linked list
+
 void mapping_grid_populate(void) {
-  uint8_t key = 0;
-  while (key < GRID_KEYS) {
-    for (midiNode_t* node_ptr = (midiNode_t*)ITERATOR_START_FROM_HEAD(&midiIn); node_ptr != NULL; node_ptr = (midiNode_t*)ITERATOR_NEXT(node_ptr)) {
-      midiLayout[key].midiMsg.data1 = node_ptr->midiMsg.data1;
-      midiLayout[key].midiMsg.data2 = node_ptr->midiMsg.data2;
-      midiLayout[key].midiMsg.channel = node_ptr->midiMsg.channel;
-      key++;
+
+  unsigned int key = 0;
+  boolean toUpdate = false;
+  for (midiNode_t* inNode_ptr = (midiNode_t*)ITERATOR_START_FROM_HEAD(&midiIn); inNode_ptr != NULL; inNode_ptr = (midiNode_t*)ITERATOR_NEXT(inNode_ptr)) {
+    switch (inNode_ptr.status) {
+      case MIDI_NOTE_ON:
+        llist_push_front(&midiChord, inNode_ptr);
+        toUpdate = true;
+        break;
+      case MIDI_NOTE_OFF:
+        // Remove the MIDI node from the midiChord linked list
+        midiNode_t* prevNode_ptr = NULL;
+        for (midiNode_t* node_ptr = (midiNode_t*)ITERATOR_START_FROM_HEAD(&midiChord); node_ptr != NULL; node_ptr = (midiNode_t*)ITERATOR_NEXT(node_ptr)) {
+          if (inNode_ptr.data1 == node_ptr.data1) {
+            llist_extract_node(&midiChord, prevNode_ptr, node_ptr);
+            llist_push_front(&midi_node_stack, node_ptr);
+            toUpdate = true;
+            break;
+          };
+          prevNode_ptr = inNode_ptr;
+        };
+    };
+  };
+
+  if (toUpdate) {
+    llist_raz(&midiIn);
+    while (key < GRID_KEYS) {
+      for (midiNode_t* node_ptr = (midiNode_t*)ITERATOR_START_FROM_HEAD(&midiChord); node_ptr != NULL; node_ptr = (midiNode_t*)ITERATOR_NEXT(node_ptr)) {
+        midiLayout[key].midiMsg.data1 = node_ptr->midiMsg.data1;
+        midiLayout[key].midiMsg.data2 = node_ptr->midiMsg.data2;
+        midiLayout[key].midiMsg.channel = node_ptr->midiMsg.channel;
+        key++;
+      };
+      toUpdate = false;
     };
   };
 };

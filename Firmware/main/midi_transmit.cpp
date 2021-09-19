@@ -65,7 +65,7 @@ void read_hardware_midi_input(void) {
 #endif
 
 //void handle_usb_midi_input_pc(byte program, byte channel) {
-void handle_usb_midi_input_cc(byte channel, byte control, byte value){
+void handle_usb_midi_input_cc(byte channel, byte control, byte value) {
   switch (control) {
     case THRESHOLD:   // PROGRAM 3
       lastMode = currentMode;
@@ -151,7 +151,7 @@ void handle_hardware_midi_input_noteOff(byte channel, byte note, byte velocity) 
 void midi_transmit(void) {
   switch (currentMode) {
     case MIDI_RAW:
-    if (millis() - transmitTimer > TRANSMIT_INTERVAL) {
+      if (millis() - transmitTimer > TRANSMIT_INTERVAL) {
         transmitTimer = millis();
         usbMIDI.sendSysEx(RAW_FRAME, rawFrame.pData, false, 0);
         usbMIDI.send_now();
@@ -196,23 +196,23 @@ void midi_transmit(void) {
         switch (presets[MIDI_BLOBS_LEARN].val) {
           case BS:
             //usbMIDI.sendControlChange(BS, blob_ptr->state, blob_ptr->UID + 1);
-            if (!blob_ptr->lastState) usbMIDI.sendNoteOn((int8_t)(blob_ptr->UID + 1), 1, 0);
-            if (!blob_ptr->state) usbMIDI.sendNoteOff((int8_t)(blob_ptr->UID + 1), 0, 0);
+            if (!blob_ptr->lastState) usbMIDI.sendNoteOn(blob_ptr->UID + 1, 1, 0);
+            if (!blob_ptr->state) usbMIDI.sendNoteOff(blob_ptr->UID + 1, 0, 0);
             break;
           case BX:
-            usbMIDI.sendControlChange(BX, (int8_t)round(map(blob_ptr->centroid.X, 0.0, X_MAX - X_MIN , 0, 127)), blob_ptr->UID + 1);
+            usbMIDI.sendControlChange(BX, (uint8_t)round(map(blob_ptr->centroid.X, 0.0, X_MAX - X_MIN , 0, 127)), blob_ptr->UID + 1);
             break;
           case BY:
-            usbMIDI.sendControlChange(BY, (int8_t)round(map(blob_ptr->centroid.Y, 0.0, X_MAX - X_MIN, 0, 127)), blob_ptr->UID + 1);
+            usbMIDI.sendControlChange(BY, (uint8_t)round(map(blob_ptr->centroid.Y, 0.0, X_MAX - X_MIN, 0, 127)), blob_ptr->UID + 1);
             break;
           case BW:
-            usbMIDI.sendControlChange(BW, (int8_t)blob_ptr->box.W, blob_ptr->UID + 1);
+            usbMIDI.sendControlChange(BW, blob_ptr->box.W, blob_ptr->UID + 1);
             break;
           case BH:
-            usbMIDI.sendControlChange(BH, (int8_t)blob_ptr->box.H, blob_ptr->UID + 1);
+            usbMIDI.sendControlChange(BH, blob_ptr->box.H, blob_ptr->UID + 1);
             break;
           case BD:
-            usbMIDI.sendControlChange(BD, (int8_t)constrain(blob_ptr->centroid.Z, 0, 127), blob_ptr->UID + 1);
+            usbMIDI.sendControlChange(BD, constrain(blob_ptr->centroid.Z, 0, 127), blob_ptr->UID + 1);
             break;
           default:
             break;
