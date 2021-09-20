@@ -13,6 +13,17 @@
 #include "notes.h"
 #include "midi_transmit.h"
 
+//typedef struct midiMsg midiMsg_t;   // Forward declaration
+//typedef struct midiNode midiNode_t; // Forward declaration
+
+typedef struct key stroke_t;
+struct key {
+  uint8_t posX;
+  uint8_t posY;
+  uint8_t size;
+  uint8_t note;
+};
+
 typedef struct rect rect_t;
 struct rect {
   uint8_t Xmin;
@@ -20,19 +31,9 @@ struct rect {
   uint8_t Ymin;
   uint8_t Ymax;
 };
-
-typedef struct key stroke_t;
-struct key {
-  rect_t rect;
-  int8_t note;
-  //boolean state;
-};
-
 typedef struct tSwitch tSwitch_t;
 struct tSwitch {
-  uint8_t posX;
-  uint8_t posY;
-  uint8_t size;
+  rect_t rect;
   boolean state;
 };
 
@@ -84,6 +85,7 @@ struct cChange {
 };
 
 void GRID_LAYOUT_SETUP(void);
+
 void CSLIDERS_SETUP(void);
 void TRIGGERS_SETUP(void);
 void TOGGLES_SETUP(void);
@@ -95,11 +97,13 @@ void mapping_grid_populate(void);
 void mapping_grid_update(void);
 void mapping_grid_play(void); // TODO
 
-void mapping_cSliders(void);
-tSwitch_t* mapping_triggers(void);
-tSwitch_t* mapping_toggles(void);
-void mapping_vSliders(void);
-void mapping_hSliders(void);
+void mapping_cSlider(void);
+
+void mapping_trigger(void);
+void mapping_toggle(void);
+
+void mapping_vSlider(void);
+void mapping_hSlider(void);
 void mapping_cChange(void);
 
 #endif /*__MAPPING_H__*/

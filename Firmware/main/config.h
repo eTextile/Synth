@@ -14,10 +14,10 @@
 #define VERSION                  "1.0.7"
 
 #define VELOCITY                 0  // [0:1]
-#define MAPPING_LAYAOUT          0  // [0:1] 
+#define MAPPING_LAYAOUT          1  // [0:1] 
 
-#define MIDI_USB                 1  // [0:1] Set the eTextile-Synthesizer as USB MIDI divice **DO NOT FORGET: Arduino/Touls/USB_Type/MIDI**
-#define MIDI_HARDWARE            0  // [0:1] Set the eTextile-Synthesizer as MIDI divice **DO NOT FORGET: Arduino/Touls/USB_Type/Serial**
+#define MIDI_USB                 0  // [0:1] Set the eTextile-Synthesizer as USB MIDI divice **DO NOT FORGET: Arduino/Touls/USB_Type/MIDI**
+#define MIDI_HARDWARE            1  // [0:1] Set the eTextile-Synthesizer as MIDI divice **DO NOT FORGET: Arduino/Touls/USB_Type/Serial**
 
 #define USB_SLIP_OSC_TRANSMIT    0  // [0:1] Set the eTextile-Synthesizer as USB SLIP_OSC divice **DO NOT FORGET: Arduino/Touls/USB_Type/Serial**
 

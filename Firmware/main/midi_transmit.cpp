@@ -35,7 +35,6 @@ void MIDI_TRANSMIT_SETUP(void) {
   usbMIDI.begin();
   //usbMIDI.setHandleProgramChange(handle_usb_midi_input_pc);
   usbMIDI.setHandleControlChange(handle_usb_midi_input_cc);
-
   //usbMIDI.setHandleNoteOff(handle_usb_midi_input_noteOn);
   //usbMIDI.setHandleNoteOn(handle_usb_midi_input_noteOff);
 #endif

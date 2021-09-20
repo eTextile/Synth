@@ -10,40 +10,44 @@
 
 #define DEBOUNCE_TIME 15  // TO_REMOVE! this is done in find_blobs();
 
-#define TRIGGERS 1
-stroke_t triggerKeys[TRIGGERS] = {0};
-tSwitch_t triggerParams[TRIGGERS] = {
-  {40, 30, 5, false}  // PARAMS[posX, posY, size, state]
+#define TRIGGERS 2
+
+stroke_t triggerParam[TRIGGERS] = {
+  {40, 30, 5, 44},  // PARAMS[posX, posY, size, note]
+  {40, 30, 5, 33}   // PARAMS[posX, posY, size, note]
+};
+
+tSwitch_t triggerKey[TRIGGERS] = {
+  {{0, 0, 0, 0}, false},  // ARGS[[rect.Xmin, rect.Xmax, rect.Ymin, rect.Ymax], state]
+  {{0, 0, 0, 0}, false}   // ARGS[[rect.Xmin, rect.Xmax, rect.Ymin, rect.Ymax], state]
 };
 
 void TRIGGERS_SETUP(void) {
   for (uint8_t pos = 0; pos < TRIGGERS; pos++) {
-    triggerKeys[pos].rect.Xmin = triggerParams[pos].posX - triggerParams[pos].size;
-    triggerKeys[pos].rect.Xmax = triggerParams[pos].posX + triggerParams[pos].size;
-    triggerKeys[pos].rect.Ymin = triggerParams[pos].posY - triggerParams[pos].size;
-    triggerKeys[pos].rect.Ymax = triggerParams[pos].posY + triggerParams[pos].size;
+    triggerKey[pos].rect.Xmin = triggerParam[pos].posX - triggerParam[pos].size;
+    triggerKey[pos].rect.Xmax = triggerParam[pos].posX + triggerParam[pos].size;
+    triggerKey[pos].rect.Ymin = triggerParam[pos].posY - triggerParam[pos].size;
+    triggerKey[pos].rect.Ymax = triggerParam[pos].posY + triggerParam[pos].size;
+    triggerKey[pos].state = false;
   };
 };
 
-tSwitch_t* mapping_triggers(void) {
+void mapping_trigger(void) {
   for (blob_t* blob_ptr = (blob_t*)ITERATOR_START_FROM_HEAD(&blobs); blob_ptr != NULL; blob_ptr = (blob_t*)ITERATOR_NEXT(blob_ptr)) {
     if (blob_ptr->UID < MAX_SYNTH) {                                          // Test if the blob UID is less than MAX_SYNTH
       for (uint8_t pos = 0; pos < TRIGGERS; pos++) {
-        if (blob_ptr->centroid.X > triggerKeys[pos].rect.Xmin &&
-            blob_ptr->centroid.X < triggerKeys[pos].rect.Xmax &&
-            blob_ptr->centroid.Y > triggerKeys[pos].rect.Ymin &&
-            blob_ptr->centroid.Y < triggerKeys[pos].rect.Ymax) {
+        if (blob_ptr->centroid.X > triggerKey[pos].rect.Xmin &&
+            blob_ptr->centroid.X < triggerKey[pos].rect.Xmax &&
+            blob_ptr->centroid.Y > triggerKey[pos].rect.Ymin &&
+            blob_ptr->centroid.Y < triggerKey[pos].rect.Ymax) {
           if (!blob_ptr->lastState) {
-            triggerParams[pos].state = true;
-            return &triggerParams[pos];
+            triggerKey[pos].state = true;
 #if DEBUG_MAPPING
-            //Serial.printf("\nDEBUG_TRIGGER:\tPOSX:%f\tPOSY:%f", blob_ptr->centroid.X, blob_ptr->centroid.Y);
-            Serial.printf("\nDEBUG_TRIGGER:\ttrigger_ptr:%p", &triggerParams[pos]);
+            Serial.printf("\nDEBUG_TRIGGER:\ttrigger_ptr:%p", &triggerParam[pos]);
 #endif
           }
           else {
-            triggerParams[pos].state = false;
-            return NULL;
+            triggerKey[pos].state = false;
           };
         };
       };
@@ -51,35 +55,60 @@ tSwitch_t* mapping_triggers(void) {
   };
 };
 
-#define TOGGLES 1
-stroke_t toggleKeys[TOGGLES] = {0};
-tSwitch_t toggleParams[TOGGLES] = {
-  {10, 10, 5, false}  // ARGS[posX, posY, size, state]
+#define TOGGLES 2
+
+stroke_t toggleParam[TOGGLES] = {
+  {10, 10, 5, 64},  // ARGS[posX, posY, size, note]
+  {20, 10, 5, 65}   // ARGS[posX, posY, size, note]
+};
+
+tSwitch_t toggleKey[TOGGLES] = {
+  {{0, 0, 0, 0}, false},  // ARGS[[rect.Xmin, rect.Xmax, rect.Ymin, rect.Ymax], state]
+  {{0, 0, 0, 0}, false}   // ARGS[[rect.Xmin, rect.Xmax, rect.Ymin, rect.Ymax], state]
 };
 
 void TOGGLES_SETUP(void) {
   for (uint8_t pos = 0; pos < TOGGLES; pos++) {
-    toggleKeys[pos].rect.Xmin = toggleParams[pos].posX - toggleParams[pos].size;
-    toggleKeys[pos].rect.Xmax = toggleParams[pos].posX + toggleParams[pos].size;
-    toggleKeys[pos].rect.Ymin = toggleParams[pos].posY - toggleParams[pos].size;
-    toggleKeys[pos].rect.Ymax = toggleParams[pos].posY + toggleParams[pos].size;
+    toggleKey[pos].rect.Xmin = toggleParam[pos].posX - round(toggleParam[pos].size / 2);
+    toggleKey[pos].rect.Xmax = toggleParam[pos].posX + round(toggleParam[pos].size / 2);
+    toggleKey[pos].rect.Ymin = toggleParam[pos].posY - round(toggleParam[pos].size / 2);
+    toggleKey[pos].rect.Ymax = toggleParam[pos].posY + round(toggleParam[pos].size / 2);
+    toggleKey[pos].state = false;
   };
 };
 
-tSwitch_t* mapping_toggles(void) {
+void mapping_toggles(void) {
   for (blob_t* blob_ptr = (blob_t*)ITERATOR_START_FROM_HEAD(&blobs); blob_ptr != NULL; blob_ptr = (blob_t*)ITERATOR_NEXT(blob_ptr)) {
     if (blob_ptr->UID < MAX_SYNTH) {   // Test if the blob UID is less than MAX_SYNTH
       for (uint8_t pos = 0; pos < TOGGLES; pos++) {
-        if (blob_ptr->centroid.X > triggerKeys[pos].rect.Xmin &&
-            blob_ptr->centroid.X < triggerKeys[pos].rect.Xmax &&
-            blob_ptr->centroid.Y > triggerKeys[pos].rect.Ymin &&
-            blob_ptr->centroid.Y < triggerKeys[pos].rect.Ymax) {
-          if (!blob_ptr->lastState) {
-            toggleParams[pos].state = !toggleParams[pos].state;
-            return &triggerParams[pos];
+        if (blob_ptr->centroid.X > toggleKey[pos].rect.Xmin &&
+            blob_ptr->centroid.X < toggleKey[pos].rect.Xmax &&
+            blob_ptr->centroid.Y > toggleKey[pos].rect.Ymin &&
+            blob_ptr->centroid.Y < toggleKey[pos].rect.Ymax) {
+
+          if (!blob_ptr->lastState && toggleKey[pos].state) {
+            toggleKey[pos].state = false;
+            midiNode_t* node_ptr = (midiNode_t*)llist_pop_front(&midi_node_stack);  // Get a node from the MIDI node stack
+            node_ptr->midiMsg.status = MIDI_NOTE_ON;                                // Set MIDI message status to NOTE_OFF
+            node_ptr->midiMsg.data1 = toggleParam[pos].note;                        // Set the note
+            node_ptr->midiMsg.data2 = 127;                                          // Set the velocity
+            //node_ptr->midiMsg.data2 = blob_ptr->velocity.Z                        // Set the velocity
+            node_ptr->midiMsg.channel = 1;                                          // Set the channel to CHANNEL_1
+            llist_push_front(&midiOut, node_ptr);                                   // Add the node to the midiOut linked liste
 #if DEBUG_MAPPING
-            //Serial.printf("\nDEBUG_TOGGLE:\tPOSX:%f\tPOSY:%f", blob_ptr->centroid.X, blob_ptr->centroid.Y);
-            Serial.printf("\nDEBUG_TRIGGER:\ttoggle_ptr:%p", &triggerParams[pos]);
+            Serial.printf("\nDEBUG_TRIGGER:\tNOTE_ON : %d", toggleKey[pos].note);
+#endif
+          };
+          if (!blob_ptr->lastState && !toggleKey[pos].state) {
+            toggleKey[pos].state = true;
+            midiNode_t* node_ptr = (midiNode_t*)llist_pop_front(&midi_node_stack);  // Get a node from the MIDI node stack
+            node_ptr->midiMsg.status = MIDI_NOTE_OFF;                               // Set MIDI message status to NOTE_OFF
+            node_ptr->midiMsg.data1 = toggleParam[pos].note;                        // Set the note
+            node_ptr->midiMsg.data2 = 0;                                            // Set the velocity
+            node_ptr->midiMsg.channel = 1;                                          // Set the channel to CHANNEL_1
+            llist_push_front(&midiOut, node_ptr);                                   // Add the node to the midiOut linked liste
+#if DEBUG_MAPPING
+            Serial.printf("\nDEBUG_TRIGGER:\tNOTE_OFF : %d", toggleKey[pos].note);
 #endif
           };
         };
@@ -97,10 +126,10 @@ tSwitch_t* mapping_toggles(void) {
 #define GRID_X_SCALE_FACTOR    ((float)1/X_MAX) * GRID_COLS
 #define GRID_Y_SCALE_FACTOR    ((float)1/Y_MAX) * GRID_ROWS
 
-stroke_t key[GRID_KEYS] = {0};            // 1D array to store keys limits
-stroke_t* lastKeyPress[MAX_SYNTH];        // 1D pointer array to store last keysPressed pointer
+tSwitch_t key[GRID_KEYS] = {0};                // 1D array to store keys limits
 
-midiNode_t midiGridLayout[GRID_KEYS] = {0};   // 1D array to mapp MIDI notes with the grid layout
+midiNode_t midiGridLayout[GRID_KEYS] = {0};    // 1D array to mapp MIDI notes with the grid layout
+midiNode_t* lastKeyPress[MAX_SYNTH]= {NULL};   // 1D pointer array to store last keysPressed pointer
 
 // Pre-compute key min & max coordinates
 void GRID_LAYOUT_SETUP(void) {
@@ -134,22 +163,22 @@ void mapping_grid_update(void) {
       int keyPress = keyPressY * GRID_COLS + keyPressX;                   // Compute 1D key index position
       if (!blob_ptr->lastState) lastKeyPress[blob_ptr->UID] = NULL;       // RAZ lastKeyPress when new blob is detected
       if (blob_ptr->state) {
-        if (lastKeyPress[blob_ptr->UID] != &key[keyPress]) {
+        if (&lastKeyPress[blob_ptr->UID] != &key[keyPress]) {
           // Test if the blob is within the key limits
           if (blob_ptr->centroid.X > key[keyPress].rect.Xmin &&
               blob_ptr->centroid.X < key[keyPress].rect.Xmax &&
               blob_ptr->centroid.Y > key[keyPress].rect.Ymin &&
               blob_ptr->centroid.Y < key[keyPress].rect.Ymax) {
 
-            if (lastKeyPress[blob_ptr->UID] != NULL) { // Test
+            if (lastKeyPress[blob_ptr->UID] != NULL) {  // Test if the blob was touching another key
 #if DEBUG_MAPPING
               Serial.printf("\nGRID\tBLOB:%d\t\tKEY_OFF:%p", blob_ptr->UID, &lastKeyPress[blob_ptr->UID]);
 #else
               midiNode_t* node_ptr = (midiNode_t*)llist_pop_front(&midi_node_stack);  // Get a node from the MIDI node stack
               node_ptr->midiMsg.status = MIDI_NOTE_OFF;                               // Set MIDI message status to NOTE_OFF
-              node_ptr->midiMsg.data1 = lastKeyPress[blob_ptr->UID]->note;            // Set the note
+              node_ptr->midiMsg.data1 = lastKeyPress[blob_ptr->UID]->midiMsg.data1;   // Set the note
               node_ptr->midiMsg.data2 = 0;                                            // Set the velocity
-              node_ptr->midiMsg.channel = midiGridLayout[keyPress].channel;           // Set the channel to CHANNEL_1
+              node_ptr->midiMsg.channel = midiGridLayout[keyPress].midiMsg.channel;   // Set the channel to CHANNEL_1
               llist_push_front(&midiOut, node_ptr);                                   // Add the node to the midiOut linked liste
 #endif
             };
@@ -158,12 +187,12 @@ void mapping_grid_update(void) {
 #else
             midiNode_t* node_ptr = (midiNode_t*)llist_pop_front(&midi_node_stack);    // Get a node from the MIDI node stack
             node_ptr->midiMsg.status = MIDI_NOTE_ON;                                  // Set MIDI message status to NOTE_ON
-            node_ptr->midiMsg.data1 = midiGridLayout[blob_ptr->UID].midiMsg.data1;    // Set the note
+            node_ptr->midiMsg.data1 = midiGridLayout[keyPress].midiMsg.data1;         // Set the note
             node_ptr->midiMsg.data2 = midiGridLayout[keyPress].midiMsg.data2;         // Set the velocity
-            node_ptr->midiMsg.channel = midiGridLayout[keyPress].channel;             // Set the channel to CHANNEL_1
+            node_ptr->midiMsg.channel = midiGridLayout[keyPress].midiMsg.channel;     // Set the channel to CHANNEL_1
             llist_push_front(&midiOut, node_ptr);                                     // Add the node to the midiOut linked liste
 #endif
-            lastKeyPress[blob_ptr->UID] = &key[keyPress];
+            lastKeyPress[blob_ptr->UID] = &midiGridLayout[keyPress];
           };
         };
       }
@@ -174,9 +203,9 @@ void mapping_grid_update(void) {
         //MIDI.sendNoteOff(lastKeyPress[blob_ptr->UID]->val, 0, 1);             // Send NoteOFF (CHANNEL_1)
         midiNode_t* node_ptr = (midiNode_t*)llist_pop_front(&midi_node_stack);  // Get a node from the MIDI nodes stack
         node_ptr->midiMsg.status = MIDI_NOTE_OFF;                               // Set MIDI message status to NOTE_OFF
-        node_ptr->midiMsg.data1 = lastKeyPress[blob_ptr->UID]->note;            // Set the note
+        node_ptr->midiMsg.data1 = lastKeyPress[blob_ptr->UID]->midiMsg.data1;   // Set the note
         node_ptr->midiMsg.data2 = 0;                                            // Set the velocity to 0
-        node_ptr->midiMsg.channel = midiGridLayout[keyPress].channel;           // Set the channel to CHANNEL_1
+        node_ptr->midiMsg.channel = midiGridLayout[keyPress].midiMsg.channel;   // Set the channel to CHANNEL_1
         llist_push_front(&midiOut, node_ptr);                                   // Add the node to the midiOut linked liste
 #endif
       };
@@ -190,38 +219,37 @@ llist_t midiChord; // MIDI chord linked list
 void mapping_grid_populate(void) {
 
   unsigned int key = 0;
-  boolean toUpdate = false;
+  boolean gridLayoutUpdate = false;
   for (midiNode_t* inNode_ptr = (midiNode_t*)ITERATOR_START_FROM_HEAD(&midiIn); inNode_ptr != NULL; inNode_ptr = (midiNode_t*)ITERATOR_NEXT(inNode_ptr)) {
-    switch (inNode_ptr.status) {
+    switch (inNode_ptr->midiMsg.status) {
       case MIDI_NOTE_ON:
         llist_push_front(&midiChord, inNode_ptr);
-        toUpdate = true;
+        gridLayoutUpdate = true;
         break;
       case MIDI_NOTE_OFF:
         // Remove the MIDI node from the midiChord linked list
         midiNode_t* prevNode_ptr = NULL;
         for (midiNode_t* node_ptr = (midiNode_t*)ITERATOR_START_FROM_HEAD(&midiChord); node_ptr != NULL; node_ptr = (midiNode_t*)ITERATOR_NEXT(node_ptr)) {
-          if (inNode_ptr.data1 == node_ptr.data1) {
+          if (inNode_ptr->midiMsg.data1 == node_ptr->midiMsg.data1) {
             llist_extract_node(&midiChord, prevNode_ptr, node_ptr);
             llist_push_front(&midi_node_stack, node_ptr);
-            toUpdate = true;
+            gridLayoutUpdate = true;
             break;
           };
           prevNode_ptr = inNode_ptr;
         };
     };
   };
-
-  if (toUpdate) {
+  if (gridLayoutUpdate) {
     llist_raz(&midiIn);
     while (key < GRID_KEYS) {
       for (midiNode_t* node_ptr = (midiNode_t*)ITERATOR_START_FROM_HEAD(&midiChord); node_ptr != NULL; node_ptr = (midiNode_t*)ITERATOR_NEXT(node_ptr)) {
-        midiLayout[key].midiMsg.data1 = node_ptr->midiMsg.data1;
-        midiLayout[key].midiMsg.data2 = node_ptr->midiMsg.data2;
-        midiLayout[key].midiMsg.channel = node_ptr->midiMsg.channel;
+        midiGridLayout[key].midiMsg.data1 = node_ptr->midiMsg.data1;
+        midiGridLayout[key].midiMsg.data2 = node_ptr->midiMsg.data2;
+        midiGridLayout[key].midiMsg.channel = node_ptr->midiMsg.channel;
         key++;
       };
-      toUpdate = false;
+      gridLayoutUpdate = false;
     };
   };
 };

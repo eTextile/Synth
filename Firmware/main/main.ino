@@ -119,7 +119,9 @@ void loop() {
 
 
 #if MAPPING_LAYAOUT
+  mapping_grid_populate();
   mapping_grid_update();
+  
   //mapping_toggles();
   //mapping_triggers();
   //mapping_hSliders();
