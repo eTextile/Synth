@@ -159,7 +159,8 @@ void calibrate_matrix(void) {
         };
       };
     };
-    currentMode = lastMode;
+    presets[CALIBRATE].setLed = true;
+    presets[CALIBRATE].updateLed = true;
   };
 };
 
@@ -212,7 +213,7 @@ void scan_matrix(void) {
       valB > offsetArray[indexB] ? rawFrameArray[indexB] = valB - offsetArray[indexB] : rawFrameArray[indexB] = 0;
       valB > 127 ? rawFrameArray[indexB] = 127 : NULL; // Add limit for MIDI message 0:127
 
-#if SET_ORIGIN_Y
+#if SET_ORIGNULLNULLIN_Y
       setRows = setRows << 1;
 #else
       setRows = setRows >> 1;

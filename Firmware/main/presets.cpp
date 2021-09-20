@@ -298,7 +298,7 @@ void update_leds(void) {
             iter++;
           }
           else {
-            presets[CALIBRATE].update = true;
+            currentMode = lastMode;
           };
         };
       };

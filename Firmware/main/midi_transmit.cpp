@@ -63,57 +63,39 @@ void read_hardware_midi_input(void) {
 };
 #endif
 
-//void handle_usb_midi_input_pc(byte program, byte channel) {
 void handle_usb_midi_input_cc(byte channel, byte control, byte value) {
   switch (control) {
     case THRESHOLD:   // PROGRAM 3
-      lastMode = currentMode;
+      //lastMode = currentMode;
       currentMode = THRESHOLD;
       presets[THRESHOLD].val = map(value, 0, 127, presets[THRESHOLD].minVal, presets[THRESHOLD].maxVal);
       encoder.write(presets[THRESHOLD].val << 2);
       interpThreshold = constrain(presets[THRESHOLD].val - 5, presets[THRESHOLD].minVal, presets[THRESHOLD].maxVal);
-      presets[THRESHOLD].setLed = true;
       presets[THRESHOLD].ledVal = map(value, 0, 127, 0, 255);
+      presets[THRESHOLD].setLed = true;
       presets[THRESHOLD].updateLed = true;
       presets[THRESHOLD].update = true;
       break;
     case CALIBRATE:   // PROGRAM 4
       lastMode = currentMode;
       currentMode = CALIBRATE;
-      presets[CALIBRATE].setLed = true;
-      presets[CALIBRATE].updateLed = true;
+      presets[CALIBRATE].update = true;
       break;
     case MIDI_RAW:    // PROGRAM 8
       if (value == 1) {
-        //lastMode = currentMode;
         currentMode = MIDI_RAW;
       } else {
         currentMode = MIDI_OFF;
       };
       break;
     case MIDI_INTERP: // PROGRAM 9
-      //if (value == 1) {
-      //lastMode = currentMode;
       currentMode = MIDI_INTERP;
-      //} else {
-      //currentMode = MIDI_OFF;
-      //};
       break;
     case MIDI_BLOBS_PLAY: // PROGRAM 6
-      //if (value == 1) {
-      //lastMode = currentMode;
       currentMode = MIDI_BLOBS_PLAY;
-      //} else {
-      //
-      //};
       break;
     case MIDI_BLOBS_LEARN: // PROGRAM 7
-      //if (value == 1) {
-      //lastMode = currentMode;
       currentMode = MIDI_BLOBS_LEARN;
-      //} else {
-      //
-      //};
       break;
     default:
       break;
