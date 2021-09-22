@@ -244,11 +244,11 @@ void find_blobs(void) {
 
   // NEW BLOBS MANAGMENT
   // Look for corresponding blobs into the **inputBlobs** and **outputBlobs** linked list
-  for (blob_t* blobIn = (blob_t*)ITERATOR_START_FROM_HEAD(&llist_blobs_temp); blobIn != NULL; blobIn = (blob_t*)ITERATOR_NEXT(blobIn)) {
+  for (blob_t* blobIn_ptr = (blob_t*)ITERATOR_START_FROM_HEAD(&llist_blobs_temp); blobIn_ptr != NULL; blobIn_ptr = (blob_t*)ITERATOR_NEXT(blobIn_ptr)) {
     float minDist = 255.0f;
     blob_t* nearestBlob = NULL;
     for (blob_t* blobOut = (blob_t*)ITERATOR_START_FROM_HEAD(&blobs); blobOut != NULL; blobOut = (blob_t*)ITERATOR_NEXT(blobOut)) {
-      float dist = sqrtf(pow(blobIn->centroid.X - blobOut->centroid.X, 2) + pow(blobIn->centroid.Y - blobOut->centroid.Y, 2));
+      float dist = sqrtf(pow(blobIn_ptr->centroid.X - blobOut->centroid.X, 2) + pow(blobIn_ptr->centroid.Y - blobOut->centroid.Y, 2));
 #if DEBUG_FIND_BLOBS
       Serial.printf("\nDEBUG_FIND_BLOBS / Distance between input & output blobs positions: %f ", dist);
 #endif
@@ -263,9 +263,9 @@ void find_blobs(void) {
 #if DEBUG_FIND_BLOBS
       Serial.printf("\nDEBUG_FIND_BLOBS / Found corresponding blob: %p in the **outputBlobs** linked list", (lnode_t*)nearestBlob);
 #endif
-      blobIn->UID = nearestBlob->UID;
-      blobIn->lastState = true;
-      blobIn->state = true;
+      blobIn_ptr->UID = nearestBlob->UID;
+      blobIn_ptr->lastState = true;
+      blobIn_ptr->state = true;
     }
     // Found a new blob! We nead to give it a UID
     else {
@@ -284,9 +284,9 @@ void find_blobs(void) {
           }
         }
         if (isFree) {
-          blobIn->UID = minID;
-          blobIn->lastState = false;
-          blobIn->state = true;
+          blobIn_ptr->UID = minID;
+          blobIn_ptr->lastState = false;
+          blobIn_ptr->state = true;
           break;
         }
       } // while_end / The blob have a new ID
@@ -301,8 +301,8 @@ void find_blobs(void) {
     blob_t* prevBlob_ptr = NULL;
     for (blob_t* blobOut_ptr = (blob_t*)ITERATOR_START_FROM_HEAD(&blobs); blobOut_ptr != NULL; blobOut_ptr = (blob_t*)ITERATOR_NEXT(blobOut_ptr)) {
       boolean found = false;
-      for (blob_t* blobIn = (blob_t*)ITERATOR_START_FROM_HEAD(&llist_blobs_temp); blobIn != NULL; blobIn = (blob_t*)ITERATOR_NEXT(blobIn)) {
-        if (blobOut_ptr->UID == blobIn->UID) {
+      for (blob_t* blobIn_ptr = (blob_t*)ITERATOR_START_FROM_HEAD(&llist_blobs_temp); blobIn_ptr != NULL; blobIn_ptr = (blob_t*)ITERATOR_NEXT(blobIn_ptr)) {
+        if (blobOut_ptr->UID == blobIn_ptr->UID) {
           found = true;
           break;
         }
@@ -311,11 +311,11 @@ void find_blobs(void) {
         allDone = false;
         llist_extract_node(&blobs, prevBlob_ptr, blobOut_ptr);
         blobOut_ptr->status = NOT_FOUND;
-        //Serial.printf("\nDEBUG_FIND_BLOBS / Blob: %p in the **outputBlobs** linked list is NOT_FOUND", (lnode_t*)blobOut);
+        //Serial.printf("\nDEBUG_FIND_BLOBS / Blob: %p in the **outputBlobs** linked list is NOT_FOUND", (lnode_t*)blobOut_ptr);
         if ((millis() - blobOut_ptr->timeTag) > DEBOUNCE_TIME) {
           blobOut_ptr->state = false;
           blobOut_ptr->status = TO_REMOVE;
-          //Serial.printf("\nDEBUG_FIND_BLOBS / Blob: %p in the **outputBlobs** linked list taged TO_REMOVE", (lnode_t*)blobOut);
+          //Serial.printf("\nDEBUG_FIND_BLOBS / Blob: %p in the **outputBlobs** linked list taged TO_REMOVE", (lnode_t*)blobOut_ptr);
         }
         llist_push_front(&llist_blobs_temp, blobOut_ptr);
         break;

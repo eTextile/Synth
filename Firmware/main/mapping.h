@@ -31,8 +31,10 @@ struct rect {
   uint8_t Ymin;
   uint8_t Ymax;
 };
+
 typedef struct tSwitch tSwitch_t;
 struct tSwitch {
+  uint8_t* val_ptr;
   rect_t rect;
   boolean state;
 };
@@ -85,23 +87,19 @@ struct cChange {
 };
 
 void GRID_LAYOUT_SETUP(void);
-
-void CSLIDERS_SETUP(void);
-void TRIGGERS_SETUP(void);
-void TOGGLES_SETUP(void);
-void VSLIDERS_SETUP(void);
-void HSLIDERS_SETUP(void);
+void CSLIDER_SETUP(void);
+void TRIGGER_SETUP(void);
+void TOGGLE_SETUP(void);
+void VSLIDER_SETUP(void);
+void HSLIDER_SETUP(void);
 void CCHANGE_SETUP(void);
 
 void mapping_grid_populate(void);
 void mapping_grid_update(void);
-void mapping_grid_play(void); // TODO
-
+void mapping_grid_play(void);
 void mapping_cSlider(void);
-
 void mapping_trigger(void);
 void mapping_toggle(void);
-
 void mapping_vSlider(void);
 void mapping_hSlider(void);
 void mapping_cChange(void);

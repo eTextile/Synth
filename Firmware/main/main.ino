@@ -15,7 +15,7 @@
 
 #include <elapsedMillis.h>  // https://github.com/pfeerick/elapsedMillis
 
-#if MAPPING_LAYAOUT
+#if MAPPING_LAYOUT
 #include "mapping.h"
 #endif
 
@@ -44,8 +44,8 @@ elapsedMillis curentMillisFps;
 unsigned int fps = 0;
 #endif
 
-//boolean loadPreset = true;
-//boolean savePreset = false;
+//boolean loadPreset = true;  // TODO
+//boolean savePreset = false; // TODO
 
 void setup() {
 #if DEBUG_ADC || DEBUG_INTERP || DEBUG_BITMAP || DEBUG_BLOBS || DEBUG_FPS || DEBUG_ENCODER || DEBUG_BUTTONS || DEBUG_MAPPING
@@ -60,7 +60,10 @@ void setup() {
   SCAN_SETUP();
   INTERP_SETUP();
   BLOB_SETUP();
+
+#if MIDI_HARDWARE || MIDI_USB
   MIDI_TRANSMIT_SETUP();
+#endif
 
 #if USB_SLIP_OSC_TRANSMIT
   USB_SLIP_OSC_SETUP();
@@ -75,10 +78,10 @@ void setup() {
 #if GRANULAR_PLAYER
   GRANULAR_PLAYER_SETUP();
 #endif
-#if MAPPING_LAYAOUT
+#if MAPPING_LAYOUT
   GRID_LAYOUT_SETUP();
+  //TRIGGER_SETUP();
   //TOGGLES_SETUP();
-  //TRIGGERS_SETUP();
   //VSLIDERS_SETUP();
   //HSLIDERS_SETUP();
   //CSLIDERS_SETUP();
@@ -87,6 +90,7 @@ void setup() {
 #if SYNTH_PLAYER || GRANULAR_PLAYER || FLASH_PLAYER
   SOUND_CARD_SETUP();
 #endif
+
 };
 
 void loop() {
@@ -117,21 +121,21 @@ void loop() {
   find_blobs();
   //median();
 
-
-#if MAPPING_LAYAOUT
-  mapping_grid_populate();
+#if MAPPING_LAYOUT
+  //mapping_grid_populate(); // Use the MIDI input messages to populate the grid - If commented we use the DEFAULT mapping
   mapping_grid_update();
-  
-  //mapping_toggles();
-  //mapping_triggers();
-  //mapping_hSliders();
-  //mapping_vSliders();
-  //mapping_cSliders();
+  //mapping_trigger();
+  //mapping_toggle();
+  //mapping_hSlider();
+  //mapping_vSlider();
+  //mapping_cSlider();
   //mapping_cChange();
 #endif
 
+#if MIDI_USB || MIDI_HARDWARE
   midi_transmit();
-  
+#endif
+
 #if SYNTH_PLAYER
   synth_player();
 #endif

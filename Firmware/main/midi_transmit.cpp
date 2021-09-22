@@ -44,7 +44,7 @@ void MIDI_TRANSMIT_SETUP(void) {
   MIDI.setHandleNoteOff(handle_hardware_midi_input_noteOn);
   MIDI.setHandleNoteOn(handle_hardware_midi_input_noteOff);
 #endif
-  llist_midi_init(&midi_node_stack, &midiNodeArray[0], MAX_SYNTH); // Add X nodes to the midi_node_stack
+  llist_midi_init(&midi_node_stack, &midiNodeArray[0], MIDI_NODES); // Add X nodes to the midi_node_stack
   llist_raz(&midiIn);
   llist_raz(&midiOut);
 };
@@ -79,7 +79,7 @@ void handle_usb_midi_input_cc(byte channel, byte control, byte value) {
     case CALIBRATE:   // PROGRAM 4
       lastMode = currentMode;
       currentMode = CALIBRATE;
-      presets[CALIBRATE].update = true;
+      presets[CALIBRATE].setLed = true;
       break;
     case MIDI_RAW:    // PROGRAM 8
       if (value == 1) {
@@ -96,6 +96,9 @@ void handle_usb_midi_input_cc(byte channel, byte control, byte value) {
       break;
     case MIDI_BLOBS_LEARN: // PROGRAM 7
       currentMode = MIDI_BLOBS_LEARN;
+      break;
+    case MIDI_MAPPING: // PROGRAM 8
+      currentMode = MIDI_MAPPING;
       break;
     default:
       break;
@@ -129,6 +132,7 @@ void handle_hardware_midi_input_noteOff(byte channel, byte note, byte velocity) 
   llist_push_front(&midiIn, node_ptr);                                    // Add the node to the midiIn linked liste
 }
 
+#if MIDI_USB || MIDI_HARDWARE
 void midi_transmit(void) {
   switch (currentMode) {
     case MIDI_RAW:
@@ -231,9 +235,11 @@ void midi_transmit(void) {
             break;
         };
       };
+      usbMIDI.send_now();
       llist_save_nodes(&midi_node_stack, &midiOut); // Save all midiOut nodes to the midi_node_stack linked list
       break;
     default:
       break;
   };
 };
+#endif

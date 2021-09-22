@@ -159,8 +159,9 @@ void calibrate_matrix(void) {
         };
       };
     };
-    presets[CALIBRATE].setLed = true;
-    presets[CALIBRATE].updateLed = true;
+    currentMode = lastMode;
+    presets[currentMode].setLed = true;
+    presets[currentMode].updateLed = true;
   };
 };
 
@@ -196,7 +197,7 @@ void scan_matrix(void) {
       uint8_t indexA = row * RAW_COLS + col;              // Compute 1D array indexA
       uint8_t indexB = indexA + DUAL_COLS;                // Compute 1D array indexB
 
-      //delayMicroseconds(10);
+      delayMicroseconds(10);
       pinMode(ADC0_PIN, OUTPUT);
       pinMode(ADC1_PIN, OUTPUT);
       digitalWrite(ADC0_PIN, LOW);                        // Set the ADC0 Pin to GND to discharge
@@ -213,7 +214,7 @@ void scan_matrix(void) {
       valB > offsetArray[indexB] ? rawFrameArray[indexB] = valB - offsetArray[indexB] : rawFrameArray[indexB] = 0;
       valB > 127 ? rawFrameArray[indexB] = 127 : NULL; // Add limit for MIDI message 0:127
 
-#if SET_ORIGNULLNULLIN_Y
+#if SET_ORIGIN_Y
       setRows = setRows << 1;
 #else
       setRows = setRows >> 1;

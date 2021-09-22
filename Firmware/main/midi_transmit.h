@@ -12,7 +12,6 @@
 #include "llist.h"
 #include "blob.h"
 #include "mapping.h"
-#include "notes.h"
 
 // MIDI status bytes
 #define MIDI_NOTE_OFF           0x80
@@ -27,10 +26,10 @@ extern llist_t midiOut;          // Exposed local declaration see midi_transmit.
 
 typedef struct midiMsg midiMsg_t;
 struct midiMsg {
-  unsigned int channel;          // second nibble : MIDI channel (0-15) (channel and status are swapped, because Arduino is Little Endian)
-  unsigned int status;           // first  nibble : status message MIDI_NOTE_OFF, MIDI_NOTE_OFF, MIDI_CONTROL_CHANGE
-  uint8_t data1;                 // second byte   : first value (0-127), controller number or note number
-  uint8_t data2;                 // third  byte   : second value (0-127), controller value or velocity
+  uint8_t status;   // Status message MIDI_NOTE_OFF, MIDI_NOTE_OFF, MIDI_CONTROL_CHANGE
+  uint8_t data1;    // First value (0-127), controller number or note number
+  uint8_t data2;    // Second value (0-127), controller value or velocity
+  uint8_t channel;  // MIDI channel (0-15)
 };
 
 typedef struct midiNode midiNode_t;
