@@ -17,7 +17,7 @@
 #define MAPPING_LAYOUT           1  // [0:1] 
 
 #define MIDI_USB                 0  // [0:1] Set the eTextile-Synthesizer as USB MIDI divice **DO NOT FORGET: Arduino/Touls/USB_Type/MIDI**
-#define MIDI_HARDWARE            0  // [0:1] Set the eTextile-Synthesizer as MIDI divice **DO NOT FORGET: Arduino/Touls/USB_Type/Serial**
+#define MIDI_HARDWARE            1  // [0:1] Set the eTextile-Synthesizer as MIDI divice **DO NOT FORGET: Arduino/Touls/USB_Type/Serial**
 
 #define USB_SLIP_OSC_TRANSMIT    0  // [0:1] Set the eTextile-Synthesizer as USB SLIP_OSC divice **DO NOT FORGET: Arduino/Touls/USB_Type/Serial**
 
@@ -30,7 +30,6 @@
 #define GRID_LAYOUT_NOTES        1
 #define GRID_LAYOUT_FREQ         0
 
-
 // Arduino serial monitor
 #define DEBUG_FPS                0  // [0:1] Print Frames Per Second
 #define DEBUG_ENCODER            0  // [0:1] Print encoder value
@@ -40,7 +39,8 @@
 #define DEBUG_BITMAP             0  // [0:1] Print 64x64 binary image based on threshold
 #define DEBUG_FIND_BLOBS         0  // [0:1] Print lowlevel blobs values
 #define DEBUG_BLOBS              0  // [0:1] Print blobs values
-#define DEBUG_MAPPING            1  // [0:1] Print GUI values
+#define DEBUG_MAPPING            0  // [0:1] Print GUI values
+#define DEBUG_MIDI_TRANSMIT      1  // [0:1] Print MIDI values
 #define DEBUG_MIDI_USB           0  // [0:1] Print MIDI values
 #define DEBUG_MIDI_HARDWARE      0  // [0:1] Print MIDI values
 #define DEBUG_MIDI_SLIP_OSC      0  // [0:1] Print OSC values

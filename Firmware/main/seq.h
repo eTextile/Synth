@@ -7,19 +7,10 @@
 #ifndef __SEQ_H__
 #define __SEQ_H__
 
-#include "seq.h"
 #include "llist.h"
 #include "blob.h"
 #include "mapping.h"
-
-typedef struct llist llist_t;       // Forward declaration
-typedef struct blob blob_t;         // Forward declaration
-typedef struct midiNode midiNode_t; // Forward declaration
-typedef struct tSwitch tSwitch_t;   // Forward declaration
-typedef struct vSlider vSlider_t;   // Forward declaration
-typedef struct hSlider hSlider_t;   // Forward declaration
-typedef struct cSlider cSlider_t;   // Forward declaration
-//typedef struct grid grid_t;         // Forward declaration
+#include "midi_transmit.h"
 
 typedef struct seq seq_t;
 struct seq {

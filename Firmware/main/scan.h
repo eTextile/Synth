@@ -11,7 +11,7 @@
 #include "presets.h"
 #include "blob.h"
 
-typedef struct image image_t;   // Forward declaration
+typedef struct image image_t;   // Forward declaration located in blob.h
 extern image_t rawFrame;        // Exposed local declaration see scan.cpp
 
 #include <SPI.h>                // https://github.com/PaulStoffregen/SPI

@@ -48,7 +48,7 @@ unsigned int fps = 0;
 //boolean savePreset = false; // TODO
 
 void setup() {
-#if DEBUG_ADC || DEBUG_INTERP || DEBUG_BITMAP || DEBUG_BLOBS || DEBUG_FPS || DEBUG_ENCODER || DEBUG_BUTTONS || DEBUG_MAPPING
+#if DEBUG_ADC || DEBUG_INTERP || DEBUG_BITMAP || DEBUG_BLOBS || DEBUG_FPS || DEBUG_ENCODER || DEBUG_BUTTONS || DEBUG_MAPPING || DEBUG_MIDI_TRANSMIT
   Serial.begin(BAUD_RATE);
   while (!Serial);
   Serial.printf("\n%s_%s_%s", NAME, PROJECT, VERSION);

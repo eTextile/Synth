@@ -11,7 +11,6 @@
 #include "presets.h"
 #include "llist.h"
 #include "blob.h"
-#include "mapping.h"
 
 // MIDI status bytes
 #define MIDI_NOTE_OFF           0x80
@@ -19,6 +18,16 @@
 #define MIDI_CONTROL_CHANGE     0xB0
 #define MIDI_PROGRAM_CHANGE     0xC0
 #define MIDI_SYSEX              0xF0
+
+/*
+  typedef enum status {
+  MIDI_NOTE_OFF,
+  MIDI_NOTE_ON,
+  MIDI_CONTROL_CHANGE,
+  MIDI_PROGRAM_CHANGE,
+  MIDI_SYSEX
+  } status_t;
+*/
 
 extern llist_t midi_node_stack;  // Exposed local declaration see midi_transmit.cpp
 extern llist_t midiIn;           // Exposed local declaration see midi_transmit.cpp

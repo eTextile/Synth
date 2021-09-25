@@ -13,9 +13,6 @@
 #include "notes.h"
 #include "midi_transmit.h"
 
-//typedef struct midiMsg midiMsg_t;   // Forward declaration
-//typedef struct midiNode midiNode_t; // Forward declaration
-
 typedef struct key stroke_t;
 struct key {
   uint8_t posX;
@@ -34,8 +31,8 @@ struct rect {
 
 typedef struct tSwitch tSwitch_t;
 struct tSwitch {
-  uint8_t* val_ptr;
   rect_t rect;
+  uint8_t* val_ptr;
   boolean state;
 };
 
@@ -45,7 +42,8 @@ struct vSlider {
   uint8_t Ymin;
   uint8_t Ymax;
   uint8_t width;
-  int8_t val;
+  uint8_t cChange;
+  int8_t lastVal;
 };
 
 typedef struct hSlider hSlider_t;
@@ -54,7 +52,8 @@ struct hSlider {
   uint8_t Xmin;
   uint8_t Xmax;
   uint8_t height;
-  int8_t val;
+  uint8_t cChange;
+  int8_t lastVal;
 };
 
 typedef struct polar polar_t;
@@ -102,6 +101,6 @@ void mapping_trigger(void);
 void mapping_toggle(void);
 void mapping_vSlider(void);
 void mapping_hSlider(void);
-void mapping_cChange(void);
+void mapping_blob(void);
 
 #endif /*__MAPPING_H__*/

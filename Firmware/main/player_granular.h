@@ -17,12 +17,6 @@
 #include "llist.h"
 #include "blob.h"
 
-typedef struct lnode lnode_t;   // Forward declaration
-typedef struct llist llist_t;   // Forward declaration
-typedef struct blob blob_t;     // Forward declaration
-
-extern llist_t blobs;           // Located in blob.cpp
-
 void GRANULAR_PLAYER_SETUP(void);
 void granular_player(void);
 

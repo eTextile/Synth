@@ -65,7 +65,7 @@ void read_hardware_midi_input(void) {
 
 void handle_usb_midi_input_cc(byte channel, byte control, byte value) {
   switch (control) {
-    case THRESHOLD:   // PROGRAM 3
+    case THRESHOLD: // PROGRAM 3
       //lastMode = currentMode;
       currentMode = THRESHOLD;
       presets[THRESHOLD].val = map(value, 0, 127, presets[THRESHOLD].minVal, presets[THRESHOLD].maxVal);
@@ -76,20 +76,10 @@ void handle_usb_midi_input_cc(byte channel, byte control, byte value) {
       presets[THRESHOLD].updateLed = true;
       presets[THRESHOLD].update = true;
       break;
-    case CALIBRATE:   // PROGRAM 4
+    case CALIBRATE: // PROGRAM 4
       lastMode = currentMode;
       currentMode = CALIBRATE;
       presets[CALIBRATE].setLed = true;
-      break;
-    case MIDI_RAW:    // PROGRAM 8
-      if (value == 1) {
-        currentMode = MIDI_RAW;
-      } else {
-        currentMode = MIDI_OFF;
-      };
-      break;
-    case MIDI_INTERP: // PROGRAM 9
-      currentMode = MIDI_INTERP;
       break;
     case MIDI_BLOBS_PLAY: // PROGRAM 6
       currentMode = MIDI_BLOBS_PLAY;
@@ -99,6 +89,16 @@ void handle_usb_midi_input_cc(byte channel, byte control, byte value) {
       break;
     case MIDI_MAPPING: // PROGRAM 8
       currentMode = MIDI_MAPPING;
+      break;
+    case MIDI_RAW: // PROGRAM 9
+      if (value == 1) {
+        currentMode = MIDI_RAW;
+      } else {
+        currentMode = MIDI_OFF;
+      };
+      break;
+    case MIDI_INTERP: // PROGRAM 10
+      currentMode = MIDI_INTERP;
       break;
     default:
       break;
@@ -132,44 +132,57 @@ void handle_hardware_midi_input_noteOff(byte channel, byte note, byte velocity) 
   llist_push_front(&midiIn, node_ptr);                                    // Add the node to the midiIn linked liste
 }
 
-#if MIDI_USB || MIDI_HARDWARE
 void midi_transmit(void) {
+
   switch (currentMode) {
     case MIDI_RAW:
       if (millis() - transmitTimer > TRANSMIT_INTERVAL) {
         transmitTimer = millis();
+#if MIDI_USB
         usbMIDI.sendSysEx(RAW_FRAME, rawFrame.pData, false, 0);
         usbMIDI.send_now();
+#endif
       }
       break;
     case MIDI_INTERP:
-      // NOT_WORKING See https://forum.pjrc.com/threads/28282-How-big-is-the-MIDI-receive-buffer
-      //usbMIDI.sendSysEx(NEW_FRAME, interpFrame.pData, false, 0);
-      //usbMIDI.send_now();
+      if (millis() - transmitTimer > TRANSMIT_INTERVAL) {
+        transmitTimer = millis();
+#if MIDI_USB
+        // NOT_WORKING! See https://forum.pjrc.com/threads/28282-How-big-is-the-MIDI-receive-buffer
+        //usbMIDI.sendSysEx(NEW_FRAME, interpFrame.pData, false, 0);
+        //usbMIDI.send_now();
+#endif
+      }
       break;
     case MIDI_BLOBS_PLAY:
       // Send all blobs values using MIDI format
       for (blob_t* blob_ptr = (blob_t*)ITERATOR_START_FROM_HEAD(&blobs); blob_ptr != NULL; blob_ptr = (blob_t*)ITERATOR_NEXT(blob_ptr)) {
         if (blob_ptr->state) {
           if (!blob_ptr->lastState) {
+#if MIDI_USB
             usbMIDI.sendNoteOn(blob_ptr->UID + 1, 1, 1); // sendNoteOn(note, velocity, channel);
+#endif
           }
           else {
             if (millis() - transmitTimer > TRANSMIT_INTERVAL) {
               transmitTimer = millis();
               // usbMIDI.sendControlChange(control, value, channel);
+#if MIDI_USB
               usbMIDI.sendControlChange(BX, (uint8_t)round(map(blob_ptr->centroid.X, 0, X_MAX - X_MIN, 0, 127)), blob_ptr->UID + 1);
               usbMIDI.sendControlChange(BY, (uint8_t)round(map(blob_ptr->centroid.Y, 0, X_MAX - X_MIN, 0, 127)), blob_ptr->UID + 1);
               usbMIDI.sendControlChange(BW, blob_ptr->box.W, blob_ptr->UID + 1);
               usbMIDI.sendControlChange(BH, blob_ptr->box.H, blob_ptr->UID + 1);
               usbMIDI.sendControlChange(BD, constrain(blob_ptr->centroid.Z, 0, 127), blob_ptr->UID + 1);
+#endif
             };
           };
         }
         else {
+#if MIDI_USB
           usbMIDI.sendNoteOff(blob_ptr->UID + 1, 0, 1); // sendNoteOff(note, velocity, channel);
+#endif
         };
-        usbMIDI.send_now();
+        //usbMIDI.send_now();
       };
       break;
     case MIDI_BLOBS_LEARN:
@@ -179,8 +192,8 @@ void midi_transmit(void) {
       blob_t* blob_ptr = (blob_t*)blobs.tail_ptr;
       if (blob_ptr != NULL) {
         switch (presets[MIDI_BLOBS_LEARN].val) {
+#if MIDI_USB
           case BS:
-            //usbMIDI.sendControlChange(BS, blob_ptr->state, blob_ptr->UID + 1);
             if (!blob_ptr->lastState) usbMIDI.sendNoteOn(blob_ptr->UID + 1, 1, 0);
             if (!blob_ptr->state) usbMIDI.sendNoteOff(blob_ptr->UID + 1, 0, 0);
             break;
@@ -198,6 +211,7 @@ void midi_transmit(void) {
             break;
           case BD:
             usbMIDI.sendControlChange(BD, constrain(blob_ptr->centroid.Z, 0, 127), blob_ptr->UID + 1);
+#endif
             break;
           default:
             break;
@@ -205,41 +219,56 @@ void midi_transmit(void) {
       };
       break;
     case MIDI_MAPPING:
+      Serial.println("TRANSMIT");
       for (midiNode_t* node_ptr = (midiNode_t*)ITERATOR_START_FROM_HEAD(&midiOut); node_ptr != NULL; node_ptr = (midiNode_t*)ITERATOR_NEXT(node_ptr)) {
+        Serial.printf("\nTRANSMIT\tSTATUS:%d", node_ptr->midiMsg.status);
         switch (node_ptr->midiMsg.status) {
           case MIDI_NOTE_ON:
+#if DEBUG_MIDI_TRANSMIT
+            Serial.printf("\nTRANSMIT\tNOTE:%d\tVALUE:%d\tCHANNEL:%d", node_ptr->midiMsg.data1, node_ptr->midiMsg.data2, node_ptr->midiMsg.channel);
+#endif
 #if MIDI_USB
-            usbMIDI.sendNoteOn(node_ptr->midiMsg.data1, node_ptr->midiMsg.data2, node_ptr->midiMsg.channel);        // Send MIDI noteOn
+            usbMIDI.sendNoteOn(node_ptr->midiMsg.data1, node_ptr->midiMsg.data2, node_ptr->midiMsg.channel);        // USB send MIDI noteOn
 #endif
 #if MIDI_HARDWARE
-            MIDI.sendNoteOn(node_ptr->midiMsg.data1, node_ptr->midiMsg.data2, node_ptr->midiMsg.channel);           // Send MIDI noteOn
+            MIDI.sendNoteOn(node_ptr->midiMsg.data1, node_ptr->midiMsg.data2, node_ptr->midiMsg.channel);           // Hardware send MIDI noteOn
 #endif
             break;
           case MIDI_NOTE_OFF:
+#if DEBUG_MIDI_TRANSMIT
+            Serial.printf("\nTRANSMIT\tNOTE:%d\tVALUE:%d\tCHANNEL:%d", node_ptr->midiMsg.data1, node_ptr->midiMsg.data2, node_ptr->midiMsg.channel);
+#endif
 #if MIDI_USB
-            usbMIDI.sendNoteOff(node_ptr->midiMsg.data1, node_ptr->midiMsg.data2, node_ptr->midiMsg.channel);       // Send MIDI noteOff
+            usbMIDI.sendNoteOff(node_ptr->midiMsg.data1, node_ptr->midiMsg.data2, node_ptr->midiMsg.channel);       // USB send MIDI noteOff
 #endif
 #if MIDI_HARDWARE
-            MIDI.sendNoteOff(node_ptr->midiMsg.data1, node_ptr->midiMsg.data2, node_ptr->midiMsg.channel);          // Send MIDI noteOff
+            MIDI.sendNoteOff(node_ptr->midiMsg.data1, node_ptr->midiMsg.data2, node_ptr->midiMsg.channel);          // Hardware send MIDI noteOff
 #endif
             break;
           case MIDI_CONTROL_CHANGE:
+#if DEBUG_MIDI_TRANSMIT
+            Serial.printf("\nTRANSMIT\tNOTE:%d\tVALUE:%d\tCHANNEL:%d", node_ptr->midiMsg.data1, node_ptr->midiMsg.data2, node_ptr->midiMsg.channel);
+#endif
 #if MIDI_USB
-            usbMIDI.sendControlChange(node_ptr->midiMsg.data1, node_ptr->midiMsg.data2, node_ptr->midiMsg.channel); // Send MIDI noteOff
+            usbMIDI.sendControlChange(node_ptr->midiMsg.data1, node_ptr->midiMsg.data2, node_ptr->midiMsg.channel); // USB send MIDI control_change
 #endif
 #if MIDI_HARDWARE
-            MIDI.sendControlChange(node_ptr->midiMsg.data1, node_ptr->midiMsg.data2, node_ptr->midiMsg.channel);    // Send MIDI noteOff
+            MIDI.sendControlChange(node_ptr->midiMsg.data1, node_ptr->midiMsg.data2, node_ptr->midiMsg.channel);    // Hardware send MIDI control_change
 #endif
             break;
           default:
             break;
         };
       };
+#if MIDI_USB
       usbMIDI.send_now();
+#endif
+#if MIDI_HARDWARE
+      //MIDI.send();
+#endif
       llist_save_nodes(&midi_node_stack, &midiOut); // Save all midiOut nodes to the midi_node_stack linked list
       break;
     default:
       break;
   };
 };
-#endif

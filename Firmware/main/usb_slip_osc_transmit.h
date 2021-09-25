@@ -17,19 +17,6 @@
 #include <OSCBundle.h>              // https://github.com/CNMAT/OSC
 #include <SLIPEncodedUSBSerial.h>   // https://github.com/CNMAT/OSC
 
-typedef struct image image_t;       // Forward declaration
-typedef struct llist llist_t;       // Forward declaration
-typedef struct blob blob_t;         // Forward declaration
-typedef struct preset preset_t;     // Forward declaration
-
-extern image_t rawFrame;            // Declared in scan.cpp
-extern image_t interpFrame;         // Declared in interp.cpp
-extern llist_t blobs;               // Declared in blob.cpp
-extern Encoder encoder;             // Declared in presets.cpp
-extern preset_t presets[];          // Declared in presets.cpp
-extern uint8_t currentMode;         // Declared in presets.cpp
-extern uint8_t lastMode;            // Declared in presets.cpp
-
 void USB_SLIP_OSC_SETUP(void);
 void usb_slip_osc_handle_input(void);
 
