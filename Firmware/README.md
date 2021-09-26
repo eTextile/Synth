@@ -2,7 +2,7 @@
 ## Exploring music through textile
 
 ## Arduino Firmware
-    /Synth-master/Firmware/main/main.ino
+    /Synth/Firmware/main/main.ino
  
 ### Requirements
 - **eTextile-Synthesizer PCB** & **Teensy 4.0**
@@ -41,23 +41,27 @@ The embedded Software is implementing **image analysis algorithms** on the E256 
 ### eTextile-Synthesizer / Benchmark
   - ADC_INPUT : 2500 FPS
   - ADC_INPUT / BILINEAR_INTERPOLATION : ...
-  - ADC_INPUT / BILINEAR_INTERPOLATION / BLOB_TRACKING : ...
+  - ADC_INPUT / BILINEAR_INTERPOLATION / BLOB_TRACKING : 550 FPS
   - ADC_INPUT / BILINEAR_INTERPOLATION / BLOB_TRACKING / AUDIO : ...
 
 ## Configuring the system
 The Synth firmware is offering an 'config.h' to select the needed fonctionnalites. 
  
 ### Low level config 
-- **BLOBS_POLAR_COORD** [0:1]
-- **BLOBS_VELOCITY** [0:1]
+- **VELOCITY** [0:1]
 
 ### Mapping functionality (IN PROGRESS)
-- **MAPPING_LAYAOUT** [0:1] 
+- **MAPPING_LAYOUT** [0:1] 
+
+    #define GRID_LAYOUT_DEFAULT      0
+    #define GRID_LAYOUT_HARMONIC     1
+    #define GRID_LAYOUT_NOTES        1
+    #define GRID_LAYOUT_FREQ         0
 
 ### Transmit touch coordinates via [USB_MIDI / HARDWARE_MIDI / USB_SLIP_OSC]
-- **USB_MIDI_TRANSMIT** [0:1] **DO NOT FORGET:** Arduino>Touls>USB_Type>MIDI
+- **MIDI_USB** [0:1] **DO NOT FORGET:** Arduino>Touls>USB_Type>MIDI
+- **MIDI_HARDWARE** [0:1] **DO NOT FORGET:** Arduino>Touls>USB_Type>Serial
 - **USB_SLIP_OSC_TRANSMIT** [0:1] **DO NOT FORGET:** Arduino>Touls>USB_Type>Serial
-- **HARDWARE_MIDI_TRANSMIT** [0:1] **DO NOT FORGET:** Arduino>Touls>USB_Type>Serial
 
 ### Use the eTextile-Synthesizer as standalone polyphonic synthesizer
 - **SYNTH_PLAYER** [0:1] Set the eTextile-Synthesizer as STANDALONE divice
