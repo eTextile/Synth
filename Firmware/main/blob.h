@@ -17,14 +17,14 @@
 #include "llist.h"
 #include "presets.h"
 
+extern llist_t blobs;            // Exposed local declaration see blob.cpp
+
 typedef struct image image_t;
 struct image {
   uint8_t* pData;
   uint8_t numCols;
   uint8_t numRows;
 };
-
-extern llist_t blobs;            // Exposed local declaration see blob.cpp
 
 #define COMPUTE_IMAGE_ROW_PTR(pImage, y) \
   ({ \
@@ -119,7 +119,7 @@ struct blob {
 #define  BD   7  // [7] Blob Depth
 
 /*
-typedef enum params {
+  typedef enum params {
   BI,  // [0] Blob UID
   BS,  // [1] Blob State
   BL,  // [2] Blob Last State
@@ -128,11 +128,11 @@ typedef enum params {
   BW,  // [5] Blob width
   BH,  // [6] Blob Height
   BD   // [7] Blob Depth
-} params_t;
+  } params_t;
 */
 
-void lifo_llist_init(llist_t *list, xylr_t* nodesArray, const int nodes); // TODO: Separation of concerns (SoC)
-void blob_llist_init(llist_t *list, blob_t* nodesArray, const int nodes); // TODO: Separation of concerns (SoC)
+void llist_lifo_init(llist_t *list, xylr_t* nodesArray, const int nodes); // TODO: Separation of concerns (SoC)
+void llist_blob_init(llist_t *list, blob_t* nodesArray, const int nodes); // TODO: Separation of concerns (SoC)
 
 void BLOB_SETUP(void);
 void find_blobs(void);

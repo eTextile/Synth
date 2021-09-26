@@ -31,14 +31,14 @@ llist_t llist_blobs_stack;                // Free nodes stack
 llist_t llist_blobs_temp;                 // Intermediate blobs linked list
 llist_t blobs;                            // Output blobs linked list
 
-void lifo_llist_init(llist_t* llist_ptr, xylr_t* nodesArray_ptr, const int nodes) {
+void llist_lifo_init(llist_t* llist_ptr, xylr_t* nodesArray_ptr, const int nodes) {
   llist_raz(llist_ptr);
   for (int i = 0; i < nodes; i++) {
     llist_push_front(llist_ptr, &nodesArray_ptr[i]);
   };
 };
 
-void blob_llist_init(llist_t* llist_ptr, blob_t* nodesArray_ptr, const int nodes) {
+void llist_blob_init(llist_t* llist_ptr, blob_t* nodesArray_ptr, const int nodes) {
   llist_raz(llist_ptr);
   for (int i = 0; i < nodes; i++) {
     llist_push_front(llist_ptr, &nodesArray_ptr[i]);
@@ -46,8 +46,8 @@ void blob_llist_init(llist_t* llist_ptr, blob_t* nodesArray_ptr, const int nodes
 };
 
 void BLOB_SETUP(void) {
-  lifo_llist_init(&llist_context_stack, &lifoArray[0], LIFO_NODES); // Add X nodes to the llist_context_stack
-  blob_llist_init(&llist_blobs_stack, &blobArray[0], MAX_BLOBS);    // Add X nodes to the llist_blobs_stack
+  llist_lifo_init(&llist_context_stack, &lifoArray[0], LIFO_NODES); // Add X nodes to the llist_context_stack
+  llist_blob_init(&llist_blobs_stack, &blobArray[0], MAX_BLOBS);    // Add X nodes to the llist_blobs_stack
   llist_raz(&llist_context);
   llist_raz(&llist_blobs_temp);
   llist_raz(&blobs);

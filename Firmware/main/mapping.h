@@ -56,12 +56,6 @@ struct hSlider {
   int8_t lastVal;
 };
 
-typedef struct polar polar_t;
-struct polar {
-  float radius;
-  float theta;
-};
-
 typedef struct cTrack cTrack_t;
 struct cTrack {
   uint8_t sliders;
@@ -85,22 +79,20 @@ struct cChange {
   int8_t lastVal;
 };
 
-void GRID_LAYOUT_SETUP(void);
-void CSLIDER_SETUP(void);
 void TRIGGER_SETUP(void);
 void TOGGLE_SETUP(void);
+void GRID_LAYOUT_SETUP(void);
 void VSLIDER_SETUP(void);
 void HSLIDER_SETUP(void);
-void CCHANGE_SETUP(void);
+void CSLIDER_SETUP(void);
 
-void mapping_grid_populate(void);
-void mapping_grid_update(void);
-void mapping_grid_play(void);
-void mapping_cSlider(void);
 void mapping_trigger(void);
 void mapping_toggle(void);
+void mapping_grid_update(void);
+void mapping_grid_populate(void);
 void mapping_vSlider(void);
 void mapping_hSlider(void);
+void mapping_cSlider(void);
 void mapping_blob(void);
 
 #endif /*__MAPPING_H__*/

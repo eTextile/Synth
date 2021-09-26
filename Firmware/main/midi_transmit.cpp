@@ -135,6 +135,7 @@ void handle_hardware_midi_input_noteOff(byte channel, byte note, byte velocity) 
 void midi_transmit(void) {
 
   switch (currentMode) {
+
     case MIDI_RAW:
       if (millis() - transmitTimer > TRANSMIT_INTERVAL) {
         transmitTimer = millis();
@@ -142,8 +143,9 @@ void midi_transmit(void) {
         usbMIDI.sendSysEx(RAW_FRAME, rawFrame.pData, false, 0);
         usbMIDI.send_now();
 #endif
-      }
+      };
       break;
+
     case MIDI_INTERP:
       if (millis() - transmitTimer > TRANSMIT_INTERVAL) {
         transmitTimer = millis();
@@ -152,8 +154,9 @@ void midi_transmit(void) {
         //usbMIDI.sendSysEx(NEW_FRAME, interpFrame.pData, false, 0);
         //usbMIDI.send_now();
 #endif
-      }
+      };
       break;
+
     case MIDI_BLOBS_PLAY:
       // Send all blobs values using MIDI format
       for (blob_t* blob_ptr = (blob_t*)ITERATOR_START_FROM_HEAD(&blobs); blob_ptr != NULL; blob_ptr = (blob_t*)ITERATOR_NEXT(blob_ptr)) {
@@ -185,12 +188,12 @@ void midi_transmit(void) {
         //usbMIDI.send_now();
       };
       break;
+
     case MIDI_BLOBS_LEARN:
       // Send separate blobs values using Control Change MIDI format
       // Send only the last blob that have been added to the sensor surface
       // Select blob's values according to the encoder position to allow the auto-mapping into Max4Live...
-      blob_t* blob_ptr = (blob_t*)blobs.tail_ptr;
-      if (blob_ptr != NULL) {
+      if ((blob_t*)blobs.tail_ptr != NULL) {
         switch (presets[MIDI_BLOBS_LEARN].val) {
 #if MIDI_USB
           case BS:
@@ -211,17 +214,16 @@ void midi_transmit(void) {
             break;
           case BD:
             usbMIDI.sendControlChange(BD, constrain(blob_ptr->centroid.Z, 0, 127), blob_ptr->UID + 1);
-#endif
             break;
+#endif
           default:
             break;
         };
       };
       break;
+
     case MIDI_MAPPING:
-      Serial.println("TRANSMIT");
       for (midiNode_t* node_ptr = (midiNode_t*)ITERATOR_START_FROM_HEAD(&midiOut); node_ptr != NULL; node_ptr = (midiNode_t*)ITERATOR_NEXT(node_ptr)) {
-        Serial.printf("\nTRANSMIT\tSTATUS:%d", node_ptr->midiMsg.status);
         switch (node_ptr->midiMsg.status) {
           case MIDI_NOTE_ON:
 #if DEBUG_MIDI_TRANSMIT
@@ -268,6 +270,7 @@ void midi_transmit(void) {
 #endif
       llist_save_nodes(&midi_node_stack, &midiOut); // Save all midiOut nodes to the midi_node_stack linked list
       break;
+
     default:
       break;
   };

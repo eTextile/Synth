@@ -52,6 +52,8 @@ void setup() {
   Serial.begin(BAUD_RATE);
   while (!Serial);
   Serial.printf("\n%s_%s_%s", NAME, PROJECT, VERSION);
+  Serial.printf("\nCURRENT_MODE_:_%d", currentMode);
+
 #endif
   LEDS_SETUP();
   SWITCHES_SETUP();

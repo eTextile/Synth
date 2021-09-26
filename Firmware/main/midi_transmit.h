@@ -48,6 +48,7 @@ struct midiNode {
 };
 
 void llist_midi_init(llist_t* llist_ptr, midiNode_t* nodeArray_ptr, const int nodes);
+
 void MIDI_TRANSMIT_SETUP(void);
 
 void read_usb_midi_input(void);
