@@ -71,8 +71,15 @@ void llist_swap_llist(llist_t* llistA_ptr, llist_t* llistB_ptr) {
 
 void llist_save_nodes(llist_t* dst_ptr, llist_t* src_ptr) {
   if (src_ptr->head_ptr != NULL) {
-    dst_ptr->tail_ptr->next_ptr = src_ptr->head_ptr;
-    dst_ptr->tail_ptr = src_ptr->tail_ptr;
-    src_ptr->tail_ptr = src_ptr->head_ptr = NULL;
+    if (dst_ptr->head_ptr != NULL) {
+      dst_ptr->tail_ptr->next_ptr = src_ptr->head_ptr;
+      dst_ptr->tail_ptr = src_ptr->tail_ptr;
+      src_ptr->tail_ptr = src_ptr->head_ptr = NULL;
+    }
+    else {
+      dst_ptr->head_ptr = src_ptr->head_ptr;
+      dst_ptr->tail_ptr = src_ptr->tail_ptr;
+      src_ptr->tail_ptr = src_ptr->head_ptr = NULL;
+    };
   };
 };

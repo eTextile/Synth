@@ -14,7 +14,7 @@
 
 typedef struct seq seq_t;
 struct seq {
-  uint16_t timeInterval[];
+  uint16_t intervalTime[];
   uint8_t* seqframe;
 };
 

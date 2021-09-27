@@ -13,10 +13,10 @@
 #include "blob.h"
 
 // MIDI status bytes
-#define MIDI_NOTE_OFF           0x80
 #define MIDI_NOTE_ON            0x90
+#define MIDI_NOTE_OFF           0x80
 #define MIDI_CONTROL_CHANGE     0xB0
-#define MIDI_PROGRAM_CHANGE     0xC0
+//#define MIDI_PROGRAM_CHANGE     0xC0
 #define MIDI_SYSEX              0xF0
 
 /*
@@ -32,6 +32,7 @@
 extern llist_t midi_node_stack;  // Exposed local declaration see midi_transmit.cpp
 extern llist_t midiIn;           // Exposed local declaration see midi_transmit.cpp
 extern llist_t midiOut;          // Exposed local declaration see midi_transmit.cpp
+extern llist_t midiChord;        // MIDI chord linked list
 
 typedef struct midiMsg midiMsg_t;
 struct midiMsg {
@@ -51,16 +52,10 @@ void llist_midi_init(llist_t* llist_ptr, midiNode_t* nodeArray_ptr, const int no
 
 void MIDI_TRANSMIT_SETUP(void);
 
-void read_usb_midi_input(void);
-void read_hardware_midi_input(void);
-
-void handle_hardware_midi_input_cc(byte channel, byte control, byte value);
-void handle_hardware_midi_input_noteOn(byte channel, byte note, byte velocity);
-void handle_hardware_midi_input_noteOff(byte channel, byte note, byte velocity);
-
-//void handle_usb_midi_input_pc(byte program, byte channel);
-void handle_usb_midi_input_cc(byte channel, byte control, byte value);
-
+void read_midi_input(void);
+void handle_midi_input_cc(byte channel, byte control, byte value);
+void handle_midi_input_noteOn(byte channel, byte note, byte velocity);
+void handle_midi_input_noteOff(byte channel, byte note, byte velocity);
 void midi_transmit(void);
 
 #endif /*__MIDI_TRANSMIT_H__*/

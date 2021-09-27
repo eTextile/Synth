@@ -328,7 +328,7 @@ void find_blobs(void) {
   }
 
   llist_swap_llist(&blobs, &llist_blobs_temp);             // Swap inputBlobs with outputBlobs linked list
-  llist_save_nodes(&llist_blobs_stack, &llist_blobs_temp); // Rescure all dead blobs Linked list nodes
+  llist_save_nodes(&llist_blobs_stack, &llist_blobs_temp); // Save/rescure all dead blobs Linked list nodes
 
 #if VELOCITY
   for (blob_t* blob_ptr = (blob_t*)ITERATOR_START_FROM_HEAD(&blobs); blob_ptr != NULL; blob_ptr = (blob_t*)ITERATOR_NEXT(blob_ptr)) {

@@ -32,7 +32,7 @@ struct rect {
 typedef struct tSwitch tSwitch_t;
 struct tSwitch {
   rect_t rect;
-  uint8_t* val_ptr;
+  uint8_t* note_ptr;
   boolean state;
 };
 
@@ -67,7 +67,7 @@ typedef struct cSlider cSlider_t;
 struct cSlider {
   float thetaMin;
   float thetaMax;
-  int8_t val;
+  uint8_t lastVal;
 };
 
 typedef struct cChange cChange_t;

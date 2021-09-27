@@ -83,10 +83,10 @@ void setup() {
 #if MAPPING_LAYOUT
   GRID_LAYOUT_SETUP();
   //TRIGGER_SETUP();
-  //TOGGLES_SETUP();
-  //VSLIDERS_SETUP();
-  //HSLIDERS_SETUP();
-  //CSLIDERS_SETUP();
+  //TOGGLE_SETUP();
+  //VSLIDER_SETUP();
+  //HSLIDER_SETUP();
+  //CSLIDER_SETUP();
 #endif
 
 #if SYNTH_PLAYER || GRANULAR_PLAYER || FLASH_PLAYER
@@ -96,11 +96,9 @@ void setup() {
 };
 
 void loop() {
-#if MIDI_USB
-  read_usb_midi_input();
-#endif
-#if MIDI_HARDWARE
-  read_hardware_midi_input();
+
+#if MIDI_USB || MIDI_HARDWARE
+  read_midi_input();
 #endif
 #if USB_SLIP_OSC
   read_usb_slip_osc_input();

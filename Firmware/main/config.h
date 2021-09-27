@@ -61,7 +61,7 @@
 
 #define MAX_SYNTH                8  // [1:8] How many synthesizers can be played at the same time
 
-//#define PI                       (float)3.1415926535897932384626433832795
+//#define PI                     (float)3.1415926535897932384626433832795
 #define IIPi                     (float)(2 * PI)
 #define IIIPiII                  (float)(3 * PI) / 2
 #define PiII                     (float)(PI / 2)
