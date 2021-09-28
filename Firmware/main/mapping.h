@@ -32,7 +32,6 @@ struct rect {
 typedef struct tSwitch tSwitch_t;
 struct tSwitch {
   rect_t rect;
-  uint8_t* note_ptr;
   boolean state;
 };
 

@@ -53,11 +53,11 @@ void MIDI_TRANSMIT_SETUP(void) {
 void read_midi_input(void) {
 #if MIDI_USB
   usbMIDI.read(1);        // Is there a MIDI incoming messages on channel One
-  while (usbMIDI.read()); // Read and discard any incoming MIDI messages
+  while (usbMIDI.read(1)); // Read and discard any incoming MIDI messages
 #endif
 #if MIDI_HARDWARE
   MIDI.read(1);           // Is there a MIDI incoming messages on channel One
-  while (MIDI.read());    // Read and discard any incoming MIDI messages
+  while (MIDI.read(1));    // Read and discard any incoming MIDI messages
 #endif
 };
 
@@ -264,10 +264,10 @@ void midi_transmit(void) {
         };
       };
 #if MIDI_USB
-      usbMIDI.send_now();
+      while (usbMIDI.read());
 #endif
 #if MIDI_HARDWARE
-      //MIDI.send();
+      while (MIDI.read());
 #endif
       llist_save_nodes(&midi_node_stack, &midiOut); // Save/rescure all midiOut nodes
       break;
