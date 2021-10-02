@@ -16,7 +16,7 @@
 #define VELOCITY                 0  // [0:1]
 #define MAPPING_LAYOUT           1  // [0:1] 
 
-#define MIDI_USB                 0  // [0:1] Set the eTextile-Synthesizer as USB MIDI divice **DO NOT FORGET: Arduino/Touls/USB_Type/MIDI**
+#define MIDI_USB                 1  // [0:1] Set the eTextile-Synthesizer as USB MIDI divice **DO NOT FORGET: Arduino/Touls/USB_Type/MIDI**
 #define MIDI_HARDWARE            1  // [0:1] Set the eTextile-Synthesizer as MIDI divice **DO NOT FORGET: Arduino/Touls/USB_Type/Serial**
 #define MIDI_CHANNEL             1  // [1:X] Set the I/O MIDI channel
 
@@ -26,10 +26,11 @@
 #define GRANULAR_PLAYER          0  // [0:1] Set the eTextile-Synthesizer as STANDALONE divice
 #define FLASH_PLAYER             0  // [0:1] Set the eTextile-Synthesizer as STANDALONE divice
 
-#define GRID_LAYOUT_DEFAULT      0
-#define GRID_LAYOUT_HARMONIC     1
-#define GRID_LAYOUT_NOTES        1
-#define GRID_LAYOUT_FREQ         0
+#define GRID_LAYOUT_MIDI_IN      1  // [0:1] 
+#define GRID_LAYOUT_DEFAULT      0  // [0:1] 
+#define GRID_LAYOUT_HARMONIC     0  // [0:1] 
+#define GRID_LAYOUT_NOTES        0  // [0:1] 
+#define GRID_LAYOUT_FREQ         0  // [0:1] 
 
 // Arduino serial monitor
 #define DEBUG_FPS                0  // [0:1] Print Frames Per Second

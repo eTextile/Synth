@@ -119,7 +119,7 @@ struct blob {
 #define  BD   7  // [7] Blob Depth
 
 /*
-  typedef enum params {
+  typedef enum blobParam {
   BI,  // [0] Blob UID
   BS,  // [1] Blob State
   BL,  // [2] Blob Last State
@@ -128,7 +128,7 @@ struct blob {
   BW,  // [5] Blob width
   BH,  // [6] Blob Height
   BD   // [7] Blob Depth
-  } params_t;
+  } blobParam_t;
 */
 
 void llist_lifo_init(llist_t *list, xylr_t* nodesArray, const int nodes); // TODO: Separation of concerns (SoC)

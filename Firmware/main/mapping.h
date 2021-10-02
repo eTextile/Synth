@@ -23,10 +23,10 @@ struct key {
 
 typedef struct rect rect_t;
 struct rect {
-  uint8_t Xmin;
-  uint8_t Xmax;
-  uint8_t Ymin;
-  uint8_t Ymax;
+  float Xmin;
+  float Xmax;
+  float Ymin;
+  float Ymax;
 };
 
 typedef struct tSwitch tSwitch_t;
@@ -74,7 +74,6 @@ struct cChange {
   uint8_t blobID;
   uint8_t mappVal;
   int8_t cChange;
-  int8_t midiChannel;
   int8_t lastVal;
 };
 

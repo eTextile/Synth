@@ -355,6 +355,7 @@ void find_blobs(void) {
     };
   };
 #endif
+
 #if DEBUG_BITMAP
   for (uint8_t rowPos = 0; rowPos < NEW_ROWS; rowPos++) {
     uint8_t* rowPos_ptr = &bitmapArray[0] + rowPos * NEW_ROWS;

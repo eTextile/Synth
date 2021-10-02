@@ -121,17 +121,16 @@ void mapping_toggle(void) {
   };
 };
 
-#define GRID_COLS              14
-#define GRID_ROWS              9
-#define GRID_KEYS              (GRID_COLS * GRID_ROWS)
-#define GRID_GAP               1
-#define KEY_SIZE_X             (uint8_t)((X_MAX - (GRID_GAP * (GRID_COLS + 1))) / GRID_COLS)
-#define KEY_SIZE_Y             (uint8_t)((Y_MAX - (GRID_GAP * (GRID_ROWS + 1))) / GRID_ROWS)
+#define GRID_GAP               (float)0.4
+#define KEY_SIZE_X             (float)((X_MAX - (GRID_GAP * (GRID_COLS + 1))) / GRID_COLS)
+#define KEY_SIZE_Y             (float)((Y_MAX - (GRID_GAP * (GRID_ROWS + 1))) / GRID_ROWS)
 #define GRID_X_SCALE_FACTOR    ((float)1/X_MAX) * GRID_COLS
 #define GRID_Y_SCALE_FACTOR    ((float)1/Y_MAX) * GRID_ROWS
 
 tSwitch_t key[GRID_KEYS] = {0};           // ARGS[posX, Ymin, Ymax, width, state] : 1D array to store keys limits & state
 int8_t lastKeyPress[MAX_SYNTH] = {NULL};  // 1D array to store last keys pressed value
+
+unsigned long int lastTime[MAX_SYNTH] = {NULL};  // 1D array to store last keys pressed value
 
 // Pre-compute key min & max coordinates
 void GRID_LAYOUT_SETUP(void) {
@@ -144,7 +143,8 @@ void GRID_LAYOUT_SETUP(void) {
       key[keyPos].rect.Ymin = row * KEY_SIZE_Y + (row + 1) * GRID_GAP;
       key[keyPos].rect.Ymax = key[keyPos].rect.Ymin + KEY_SIZE_Y;
 #if DEBUG_MAPPING
-      Serial.printf("\nGRID \t_Xmin:%d \t_Xmax:%d \t_Ymin:%d \t_Ymax:%d",
+      Serial.printf("\nGRID\tkey:%d\t_Xmin:%f \t_Xmax:%f \t_Ymin:%f \t_Ymax:%f",
+                    keyPos,
                     key[keyPos].rect.Xmin,
                     key[keyPos].rect.Xmax,
                     key[keyPos].rect.Ymin,
@@ -159,54 +159,62 @@ void GRID_LAYOUT_SETUP(void) {
 // Add corresponding MIDI message to the MIDI out liked list
 void mapping_grid_update(void) {
   for (blob_t* blob_ptr = (blob_t*)ITERATOR_START_FROM_HEAD(&blobs); blob_ptr != NULL; blob_ptr = (blob_t*)ITERATOR_NEXT(blob_ptr)) {
-    if (blob_ptr->UID < MAX_SYNTH) {                                                 // Test if the blob UID is less than MAX_SYNTH
-      unsigned int keyPressX = round(blob_ptr->centroid.X * GRID_X_SCALE_FACTOR);    // Compute X grid position
-      unsigned int keyPressY = round(blob_ptr->centroid.Y * GRID_Y_SCALE_FACTOR);    // Compute Y grid position
-      unsigned int keyPress = keyPressY * GRID_COLS + keyPressX;                     // Compute 1D key index position
-      if (blob_ptr->state) {                                                         // Test if the blob is alive
-        if (gridLayout[keyPress] != lastKeyPress[blob_ptr->UID]) {                   // Test if the blob is touching a new key
-          // Test if the blob is within the key limits
-          if (blob_ptr->centroid.X > key[keyPress].rect.Xmin &&
+    if (blob_ptr->UID < MAX_SYNTH) {                                                // Test if the blob UID is less than MAX_SYNTH
+      uint8_t keyPressX = lround(blob_ptr->centroid.X * GRID_X_SCALE_FACTOR);       // Compute X grid position
+      uint8_t keyPressY = lround(blob_ptr->centroid.Y * GRID_Y_SCALE_FACTOR);       // Compute Y grid position
+      uint8_t keyPress = keyPressY * GRID_COLS + keyPressX;                         // Compute 1D key index position
+      //Serial.printf("\nGRID\tKEY:%d\tPOS_X:%d\tPOS_Y:%d", keyPress, keyPressX, keyPressY);
+      Serial.printf("\nGRID\tBLOB:%d\tBLOB_X:%f\tBLOB_Y:%f", blob_ptr->UID, blob_ptr->centroid.X, blob_ptr->centroid.X);
+
+      if (blob_ptr->state) {                                                        // Test if the blob is alive
+        if (gridLayout[keyPress] != lastKeyPress[blob_ptr->UID]) {                  // Test if the blob is touching a new key
+          /*
+            // Test if the blob is within the key limits <-- This is too slow!
+            if (blob_ptr->centroid.X > key[keyPress].rect.Xmin &&
               blob_ptr->centroid.X < key[keyPress].rect.Xmax &&
               blob_ptr->centroid.Y > key[keyPress].rect.Ymin &&
               blob_ptr->centroid.Y < key[keyPress].rect.Ymax) {
-            if (lastKeyPress[blob_ptr->UID] != -1) {                                  // Test if the blob was touching another key
-#if DEBUG_MAPPING
-              Serial.printf("\nGRID\tBLOB:%d\t\tKEY_SLIDING_OFF:%d", blob_ptr->UID, lastKeyPress[blob_ptr->UID]);
-#else
-              midiNode_t* node_ptr = (midiNode_t*)llist_pop_front(&midi_node_stack);  // Get a node from the MIDI node stack
-              node_ptr->midiMsg.status = MIDI_NOTE_OFF;                               // Set MIDI message status to NOTE_OFF
-              node_ptr->midiMsg.data1 = lastKeyPress[blob_ptr->UID];                  // Set the note
-              node_ptr->midiMsg.data2 = 0;                                            // Set the velocity
-              llist_push_front(&midiOut, node_ptr);                                   // Add the node to the midiOut linked liste
-#endif
-              lastKeyPress[blob_ptr->UID] = -1;                                       // RAZ last key pressed value
-            };
+          */
+          if (lastKeyPress[blob_ptr->UID] != -1 &&
+              millis() - lastTime[blob_ptr->UID] > 100) {                           // Test if the blob was touching another key
+            lastTime[blob_ptr->UID] = millis();
 
 #if DEBUG_MAPPING
-            Serial.printf("\nGRID\tBLOB:%d\t\tKEY_PRESS:\t%d", blob_ptr->UID, gridLayout[keyPress]);
+            Serial.printf("\nGRID\tBLOB:%d\t\tKEY_SLIDING_OFF:%d", blob_ptr->UID, lastKeyPress[blob_ptr->UID]);
 #else
-            midiNode_t* node_ptr = (midiNode_t*)llist_pop_front(&midi_node_stack);    // Get a node from the MIDI node stack
-            node_ptr->midiMsg.status = MIDI_NOTE_ON;                                  // Set MIDI message status to NOTE_ON
-            node_ptr->midiMsg.data1 = gridLayout[keyPress];                           // Set the note
-            node_ptr->midiMsg.data2 = 127;                                            // Set the velocity
-            llist_push_front(&midiOut, node_ptr);                                     // Add the node to the midiOut linked liste
+            midiNode_t* node_ptr = (midiNode_t*)llist_pop_front(&midi_node_stack);  // Get a node from the MIDI node stack
+            node_ptr->midiMsg.status = MIDI_NOTE_OFF;                               // Set MIDI message status to NOTE_OFF
+            node_ptr->midiMsg.data1 = lastKeyPress[blob_ptr->UID];                  // Set the note
+            node_ptr->midiMsg.data2 = 0;                                            // Set the velocity
+            llist_push_front(&midiOut, node_ptr);                                   // Add the node to the midiOut linked liste
 #endif
-            lastKeyPress[blob_ptr->UID] = gridLayout[keyPress];                       // Keep track of last key pressed to switch it OFF when sliding
+            lastKeyPress[blob_ptr->UID] = -1;                                       // RAZ last key pressed value
           };
+
+#if DEBUG_MAPPING
+          Serial.printf("\nGRID\tBLOB:%d\t\tKEY_PRESS:\t%d", blob_ptr->UID, gridLayout[keyPress]);
+#else
+          midiNode_t* node_ptr = (midiNode_t*)llist_pop_front(&midi_node_stack);    // Get a node from the MIDI node stack
+          node_ptr->midiMsg.status = MIDI_NOTE_ON;                                  // Set MIDI message status to NOTE_ON
+          node_ptr->midiMsg.data1 = gridLayout[keyPress];                           // Set the note
+          node_ptr->midiMsg.data2 = 127;                                            // Set the velocity
+          llist_push_front(&midiOut, node_ptr);                                     // Add the node to the midiOut linked liste
+#endif
+          lastKeyPress[blob_ptr->UID] = gridLayout[keyPress];                       // Keep track of last key pressed to switch it OFF when sliding
+          //}; // (Test if the blob is within the key limits)
         };
       }
       else { // if !blob_ptr->state
 #if DEBUG_MAPPING
         Serial.printf("\nGRID\tBLOB:%d\tKEY_UP:%d", blob_ptr->UID, lastKeyPress[blob_ptr->UID]);
 #else
-        midiNode_t* node_ptr = (midiNode_t*)llist_pop_front(&midi_node_stack);        // Get a node from the MIDI nodes stack
-        node_ptr->midiMsg.status = MIDI_NOTE_OFF;                                     // Set MIDI message status to NOTE_OFF
-        node_ptr->midiMsg.data1 = lastKeyPress[blob_ptr->UID];                        // Set the note
-        node_ptr->midiMsg.data2 = 0;                                                  // Set the velocity to 0
-        llist_push_front(&midiOut, node_ptr);                                         // Add the node to the midiOut linked liste
+        midiNode_t* node_ptr = (midiNode_t*)llist_pop_front(&midi_node_stack);      // Get a node from the MIDI nodes stack
+        node_ptr->midiMsg.status = MIDI_NOTE_OFF;                                   // Set MIDI message status to NOTE_OFF
+        node_ptr->midiMsg.data1 = lastKeyPress[blob_ptr->UID];                      // Set the note
+        node_ptr->midiMsg.data2 = 0;                                                // Set the velocity to 0
+        llist_push_front(&midiOut, node_ptr);                                       // Add the node to the midiOut linked liste
 #endif
-        lastKeyPress[blob_ptr->UID] = -1;                                             // RAZ last key pressed value
+        lastKeyPress[blob_ptr->UID] = -1;                                           // RAZ last key pressed value
       };
     };
   };
@@ -214,39 +222,50 @@ void mapping_grid_update(void) {
 
 // Populate the MIDI grid layaout with the incomming MIDI notes
 void mapping_grid_populate(void) {
-  unsigned int key = 0;
-  boolean gridLayoutUpdate = false;
-  for (midiNode_t* inNode_ptr = (midiNode_t*)ITERATOR_START_FROM_HEAD(&midiIn); inNode_ptr != NULL; inNode_ptr = (midiNode_t*)ITERATOR_NEXT(inNode_ptr)) {
-    switch (inNode_ptr->midiMsg.status) {
-      case MIDI_NOTE_ON:
-        llist_push_front(&midiChord, inNode_ptr);
-        break;
-      case MIDI_NOTE_OFF:
-        // Remove the MIDI node from the midiChord linked list
-        midiNode_t* prevNode_ptr = NULL;
-        for (midiNode_t* node_ptr = (midiNode_t*)ITERATOR_START_FROM_HEAD(&midiChord); node_ptr != NULL; node_ptr = (midiNode_t*)ITERATOR_NEXT(node_ptr)) {
-          if (inNode_ptr->midiMsg.data1 == node_ptr->midiMsg.data1) {
-            llist_extract_node(&midiChord, prevNode_ptr, node_ptr);
-            llist_push_front(&midi_node_stack, node_ptr);
-            break;
+  boolean newNote = false;
+  while (1) {
+    midiNode_t* nodeIn_ptr = (midiNode_t*)ITERATOR_START_FROM_HEAD(&midiIn);
+    if (nodeIn_ptr != NULL) {
+      switch (nodeIn_ptr->midiMsg.status) {
+        case MIDI_NOTE_ON:
+          // Move the input MIDI node to the midiChord linked list
+          //Serial.printf("\nDEBUG_GRID_POPULATE ADD: %p", nodeIn_ptr);
+          newNote = true;
+          llist_push_front(&midiChord, llist_pop_front(&midiIn));
+          break;
+        case MIDI_NOTE_OFF:
+          // Remove and save the MIDI node from the midiChord linked list
+          // Save the incoming NOTE_OFF MIDI node from the midiIn linked list
+          midiNode_t* prevNode_ptr = NULL;
+          for (midiNode_t* nodeOut_ptr = (midiNode_t*)ITERATOR_START_FROM_HEAD(&midiChord); nodeOut_ptr != NULL; nodeOut_ptr = (midiNode_t*)ITERATOR_NEXT(nodeOut_ptr)) {
+            if (nodeIn_ptr->midiMsg.data1 == nodeOut_ptr->midiMsg.data1) {
+              //Serial.printf("\nDEBUG_GRID_POPULATE REMOVE: %p", nodeOut_ptr);
+              //newNote = true;
+              llist_push_front(&midi_node_stack, llist_pop_front(&midiIn));
+              llist_extract_node(&midiChord, prevNode_ptr, nodeOut_ptr);
+              llist_push_front(&midi_node_stack, nodeOut_ptr);
+              break;
+            };
+            prevNode_ptr = nodeOut_ptr;
           };
-          prevNode_ptr = node_ptr;
-        };
-        break;
-      default:
-        break;
+          break;
+        default:
+          break;
+      };
+    }
+    else {
+      break;
     };
-    gridLayoutUpdate = true;
   };
-  if (gridLayoutUpdate) {
-    llist_raz(&midiIn);
+  if (newNote) {
+    newNote = false;
+    unsigned int key = 0;
     while (key < GRID_KEYS) {
       for (midiNode_t* node_ptr = (midiNode_t*)ITERATOR_START_FROM_HEAD(&midiChord); node_ptr != NULL; node_ptr = (midiNode_t*)ITERATOR_NEXT(node_ptr)) {
         gridLayout[key] = node_ptr->midiMsg.data1;
         key++;
       };
     };
-    gridLayoutUpdate = false;
   };
 };
 
@@ -445,8 +464,8 @@ void mapping_cSlider(void) {
 
 #define CCHANGE 2
 cChange_t cChange[CCHANGE] = {
-  {0, BD, 44, 1, 0},  // ARGS[blobID, [BX,BY,BW,BH,BD], cChange, midiChannel, lastVal]
-  {0, BD, 44, 1, 0}   // ARGS[blobID, [BX,BY,BW,BH,BD], cChange, midiChannel, lastVal]
+  {0, BD, 44, 0},  // ARGS[blobID, mappVal[BX,BY,BW,BH,BD], cChange, lastVal]
+  {0, BD, 45, 0}   // ARGS[blobID, mappVal[BX,BY,BW,BH,BD], cChange, lastVal]
 };
 
 void mapping_blob(void) {
@@ -459,13 +478,12 @@ void mapping_blob(void) {
             case BX:
               if (blob_ptr->centroid.X != cChange[index].lastVal) {
 #if DEBUG_MAPPING
-                Serial.printf("\nMIDI\tCC:%d\tVAL:%d\tCHAN:%d", blob_ptr->UID, map(blob_ptr->centroid.X, X_MIN, X_MAX, 0, 127), cChange[index].midiChannel);
+                Serial.printf("\nMIDI\tCC_BX:%d", map(blob_ptr->centroid.X, X_MIN, X_MAX, 0, 127));
 #else
                 midiNode_t* node_ptr = (midiNode_t*)llist_pop_front(&midi_node_stack);       // Get a node from the MIDI node stack
                 node_ptr->midiMsg.status = MIDI_CONTROL_CHANGE;                              // Set MIDI message status to CONTROL_CHANGE
                 node_ptr->midiMsg.data1 = cChange[index].cChange;                            // Set the note
                 node_ptr->midiMsg.data2 = map(blob_ptr->centroid.X, X_MIN, X_MAX, 0, 127);   // Set the value
-                node_ptr->midiMsg.channel = cChange[index].midiChannel;                      // Set the cChange channel
                 llist_push_front(&midiOut, node_ptr);                                        // Add the node to the midiOut linked liste
 #endif
                 cChange[index].lastVal = blob_ptr->centroid.X;
@@ -474,13 +492,12 @@ void mapping_blob(void) {
             case BY:
               if (blob_ptr->centroid.Y != cChange[index].lastVal) {
 #if DEBUG_MAPPING
-                Serial.printf("\nMIDI\tCC:%d\tVAL:%d\tCHAN:%d", blob_ptr->UID, map(blob_ptr->centroid.Y, Y_MIN, Y_MAX, 0, 127), cChange[index].midiChannel);
+                Serial.printf("\nMIDI\tCC_BY:%d", map(blob_ptr->centroid.Y, Y_MIN, Y_MAX, 0, 127));
 #else
                 midiNode_t* node_ptr = (midiNode_t*)llist_pop_front(&midi_node_stack);       // Get a node from the MIDI node stack
                 node_ptr->midiMsg.status = MIDI_CONTROL_CHANGE;                              // Set MIDI message status to CONTROL_CHANGE
                 node_ptr->midiMsg.data1 = cChange[index].cChange;                            // Set the note
                 node_ptr->midiMsg.data2 = map(blob_ptr->centroid.Y, Y_MIN, Y_MAX, 0, 127);   // Set the value
-                node_ptr->midiMsg.channel = cChange[index].midiChannel;                      // Set the cChange channel
                 llist_push_front(&midiOut, node_ptr);                                        // Add the node to the midiOut linked liste
 #endif
                 cChange[index].lastVal = blob_ptr->centroid.Y;
@@ -489,13 +506,12 @@ void mapping_blob(void) {
             case BW:
               if (blob_ptr->box.W != cChange[index].lastVal) {
 #if DEBUG_MAPPING
-                Serial.printf("\nMIDI\tCC:%d\tVAL:%d\tCHAN:%d", blob_ptr->UID, blob_ptr->box.W, cChange[index].midiChannel);
+                Serial.printf("\nMIDI\tCC_BW:%d", blob_ptr->box.W);
 #else
                 midiNode_t* node_ptr = (midiNode_t*)llist_pop_front(&midi_node_stack);       // Get a node from the MIDI node stack
                 node_ptr->midiMsg.status = MIDI_CONTROL_CHANGE;                              // Set MIDI message status to CONTROL_CHANGE
                 node_ptr->midiMsg.data1 = cChange[index].cChange;                            // Set the note
                 node_ptr->midiMsg.data2 = blob_ptr->box.W;                                   // Set the value
-                node_ptr->midiMsg.channel = cChange[index].midiChannel;                      // Set the cChange channel
                 llist_push_front(&midiOut, node_ptr);                                        // Add the node to the midiOut linked liste
 #endif
                 cChange[index].lastVal = blob_ptr->box.W;
@@ -504,13 +520,12 @@ void mapping_blob(void) {
             case BH:
               if (blob_ptr->box.H != cChange[index].lastVal) {
 #if DEBUG_MAPPING
-                Serial.printf("\nMIDI\tCC:%d\tVAL:%d\tCHAN:%d", blob_ptr->UID, blob_ptr->box.H, cChange[index].midiChannel);
+                Serial.printf("\nMIDI\tCC_BH:%d", blob_ptr->box.H);
 #else
                 midiNode_t* node_ptr = (midiNode_t*)llist_pop_front(&midi_node_stack);       // Get a node from the MIDI node stack
                 node_ptr->midiMsg.status = MIDI_CONTROL_CHANGE;                              // Set MIDI message status to CONTROL_CHANGE
                 node_ptr->midiMsg.data1 = cChange[index].cChange;                            // Set the note
                 node_ptr->midiMsg.data2 = blob_ptr->box.H;                                   // Set the value
-                node_ptr->midiMsg.channel = cChange[index].midiChannel;                      // Set the cChange channel
                 llist_push_front(&midiOut, node_ptr);                                        // Add the node to the midiOut linked liste
 #endif
                 cChange[index].lastVal = blob_ptr->box.H;
@@ -519,13 +534,12 @@ void mapping_blob(void) {
             case BD:
               if (blob_ptr->centroid.Z != cChange[index].lastVal) {
 #if DEBUG_MAPPING
-                Serial.printf("\nBLOB:%d\tCC:%d\tVAL:%d\tCHAN:%d", blob_ptr->UID, cChange[index].cChange, constrain(blob_ptr->centroid.Z, 0, 127), cChange[index].midiChannel);
+                Serial.printf("\nMIDI\tCC_BZ:%d", constrain(blob_ptr->centroid.Z, 0, 127));
 #else
                 midiNode_t* node_ptr = (midiNode_t*)llist_pop_front(&midi_node_stack);       // Get a node from the MIDI node stack
                 node_ptr->midiMsg.status = MIDI_CONTROL_CHANGE;                              // Set MIDI message status to CONTROL_CHANGE
                 node_ptr->midiMsg.data1 = cChange[index].cChange;                            // Set the note
                 node_ptr->midiMsg.data2 = constrain(blob_ptr->centroid.Z, 0, 127);           // Set the value
-                node_ptr->midiMsg.channel = cChange[index].midiChannel;                      // Set the cChange channel
                 llist_push_front(&midiOut, node_ptr);                                        // Add the node to the midiOut linked liste
 #endif
                 cChange[index].lastVal = constrain(blob_ptr->centroid.Z, 0, 127);

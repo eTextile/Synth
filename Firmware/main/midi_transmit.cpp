@@ -33,15 +33,16 @@ void llist_midi_init(llist_t* llist_ptr, midiNode_t* nodeArray_ptr, const int no
 
 void MIDI_TRANSMIT_SETUP(void) {
 #if MIDI_USB
+  //usbMIDI.begin(MIDI_CHANNEL); // Launch MIDI and listen to channel 1
   usbMIDI.begin();
-  usbMIDI.setHandleNoteOff(handle_midi_input_noteOn);
-  usbMIDI.setHandleNoteOn(handle_midi_input_noteOff);
+  usbMIDI.setHandleNoteOn(handle_midi_input_noteOn);
+  usbMIDI.setHandleNoteOff(handle_midi_input_noteOff);
   usbMIDI.setHandleControlChange(handle_midi_input_cc);
 #endif
 #if MIDI_HARDWARE
-  MIDI.begin(MIDI_CHANNEL_OMNI);
-  MIDI.setHandleNoteOff(handle_midi_input_noteOn);
-  MIDI.setHandleNoteOn(handle_midi_input_noteOff);
+  MIDI.begin(MIDI_CHANNEL); // Launch MIDI and listen to channel 1
+  MIDI.setHandleNoteOn(handle_midi_input_noteOn);
+  MIDI.setHandleNoteOff(handle_midi_input_noteOff);
   MIDI.setHandleControlChange(handle_midi_input_cc);
 #endif
   llist_midi_init(&midi_node_stack, &midiNodeArray[0], MIDI_NODES); // Add X nodes to the midi_node_stack
@@ -52,12 +53,12 @@ void MIDI_TRANSMIT_SETUP(void) {
 
 void read_midi_input(void) {
 #if MIDI_USB
-  usbMIDI.read(1);        // Is there a MIDI incoming messages on channel One
-  while (usbMIDI.read(1)); // Read and discard any incoming MIDI messages
+  usbMIDI.read(MIDI_CHANNEL); // Is there a MIDI incoming messages on channel One
+  while (usbMIDI.read());     // Read and discard any incoming MIDI messages
 #endif
 #if MIDI_HARDWARE
-  MIDI.read(1);           // Is there a MIDI incoming messages on channel One
-  while (MIDI.read(1));    // Read and discard any incoming MIDI messages
+  MIDI.read(MIDI_CHANNEL);    // Is there a MIDI incoming messages on channel One
+  while (MIDI.read());        // Read and discard any incoming MIDI messages
 #endif
 };
 
@@ -167,8 +168,8 @@ void midi_transmit(void) {
           else {
             if (millis() - transmitTimer > TRANSMIT_INTERVAL) {
               transmitTimer = millis();
-              // usbMIDI.sendControlChange(control, value, channel);
 #if MIDI_USB
+              // usbMIDI.sendControlChange(control, value, channel);
               usbMIDI.sendControlChange(BX, (uint8_t)round(map(blob_ptr->centroid.X, 0, X_MAX - X_MIN, 0, 127)), blob_ptr->UID + 1);
               usbMIDI.sendControlChange(BY, (uint8_t)round(map(blob_ptr->centroid.Y, 0, X_MAX - X_MIN, 0, 127)), blob_ptr->UID + 1);
               usbMIDI.sendControlChange(BW, blob_ptr->box.W, blob_ptr->UID + 1);
@@ -264,10 +265,10 @@ void midi_transmit(void) {
         };
       };
 #if MIDI_USB
-      while (usbMIDI.read());
+      while (usbMIDI.read(MIDI_CHANNEL));
 #endif
 #if MIDI_HARDWARE
-      while (MIDI.read());
+      while (MIDI.read(MIDI_CHANNEL));
 #endif
       llist_save_nodes(&midi_node_stack, &midiOut); // Save/rescure all midiOut nodes
       break;

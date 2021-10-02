@@ -46,6 +46,7 @@ void llist_extract_node(llist_t* llist_ptr, void* prevData_ptr, void* data_ptr) 
 
   if (llist_ptr->head_ptr == llist_ptr->tail_ptr) {
     llist_ptr->head_ptr = llist_ptr->tail_ptr = NULL;
+    //Serial.printf("\nL_LIST LAST_NODE");
   }
   else {
     if (nodeToExtract == llist_ptr->head_ptr) {
@@ -59,6 +60,7 @@ void llist_extract_node(llist_t* llist_ptr, void* prevData_ptr, void* data_ptr) 
     };
   };
 };
+
 
 void llist_swap_llist(llist_t* llistA_ptr, llist_t* llistB_ptr) {
   lnode_t* tmp_head_ptr = llistA_ptr->head_ptr;

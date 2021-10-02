@@ -53,8 +53,8 @@ void setup() {
   while (!Serial);
   Serial.printf("\n%s_%s_%s", NAME, PROJECT, VERSION);
   Serial.printf("\nCURRENT_MODE_:_%d", currentMode);
-
 #endif
+
   LEDS_SETUP();
   SWITCHES_SETUP();
   SPI_SETUP();
@@ -62,6 +62,7 @@ void setup() {
   SCAN_SETUP();
   INTERP_SETUP();
   BLOB_SETUP();
+  //RUNING_MEDIAN_SETUP();
 
 #if MIDI_HARDWARE || MIDI_USB
   MIDI_TRANSMIT_SETUP();
@@ -119,17 +120,18 @@ void loop() {
   scan_matrix();
   interp_matrix();
   find_blobs();
-  //median();
+  //runing_median();
 
 #if MAPPING_LAYOUT
-  //mapping_grid_populate(); // Use the MIDI input messages to populate the grid - If commented we use the DEFAULT mapping
+  mapping_grid_populate(); // Use the MIDI input messages to populate the grid - If commented we use the DEFAULT mapping
   mapping_grid_update();
+  //mapping_blob();
+
   //mapping_trigger();
   //mapping_toggle();
   //mapping_hSlider();
   //mapping_vSlider();
   //mapping_cSlider();
-  //mapping_cChange();
 #endif
 
 #if MIDI_USB || MIDI_HARDWARE

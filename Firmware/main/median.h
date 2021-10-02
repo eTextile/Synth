@@ -1,10 +1,7 @@
 /*
-  median filter (c) 2019 by RainerU
-  This code is under the MIT License
-  https://github.com/RainerU/medianfilter
-
-  Added multy blob filtering capability
-  Copyright (c) 2021 Maurin Donneaud <maurin@etextile.org>
+  This file is part of the eTextile-Synthesizer project - http://synth.eTextile.org
+  Copyright (c) 2014- Maurin Donneaud <maurin@etextile.org>
+  This work is licensed under Creative Commons Attribution-ShareAlike 4.0 International license, see the LICENSE file for details.
 */
 
 #ifndef __MEDIAN_H__
@@ -14,16 +11,20 @@
 #include "llist.h"
 #include "blob.h"
 
-#define MEDIAN_WINDOW 5                  // Allowed filter window size : 3, 5, 7...
-#define MEDIAN_POS ((MEDIAN_WINDOW-1)/2) // position of median in sorted list
+#define MEDIAN_WINDOW    5     // Allowed filter window size [3-5-7]
+#define M_WINDOW         (MEDIAN_WINDOW - 1)
 
 typedef struct median median_t;
 struct median {
-  float zVal[MEDIAN_WINDOW];  // Input values Array
-  float zSort[MEDIAN_WINDOW]; // Sorted values Array
-  uint8_t index;              // Ring storage current index
+  float X_rawVal[M_WINDOW];    // Blob X centroid input values
+  uint8_t X_sort[M_WINDOW];    // Sorted index Array
+  float Y_rawVal[M_WINDOW];    // Blob Y centroid input values
+  uint8_t Y_sort[M_WINDOW];    // Sorted index Array
+  uint8_t count;
+  uint8_t index;
 };
 
-void median(void);
+void RUNING_MEDIAN_SETUP(void);
+void runing_median(void);
 
 #endif /*__MEDIAN_H__*/
