@@ -2,8 +2,35 @@
 ### Exploring music through textile
 
 The eTextile-Synthesizer is designed to be used as **Standalone Audio Synthesizer** 
-and also as a **MIDI or OSC controleur** for Audio applications sucha as **Ableton Live**, **MaxMsp**, **Puredata**, etc.
-This folder is containing some demons that can be used as starting point for your own creations.
+but it can as well be used as **MIDI controler** for Audio applications such as **Ableton Live**, **MaxMsp**, **Puredata**, etc.
+
+The blobs values are transmited to the computer over USB-MIDI as below.
+
+## MIDI Specifications
+| **Feature**             | **MIDI message**                       |
+| :---------------------- | :------------------------------------- |
+| Blob State ON           | noteOn(BI[1:8], BS[1], 1);             |
+| Blob X value            | controlChange(BX[3], [0:127], BI[1:8]) |
+| Blob Y value            | controlChange(BY[4], [0:127], BI[1:8]) |
+| Blob Z value            | controlChange(BZ[5], [0:127], BI[1:8]) |
+| Blob W value            | controlChange(BW[6], [0:127], BI[1:8]) |
+| Blob H value            | controlChange(BH[7], [0:127], BI[1:8]) |
+| Blob State OFF          | noteOff(BI[1:8], BS[0], 1);                |
+
+| **code & range** |  **Description**  |
+| :--------------- | :---------------- |
+|     BI[1:8]      | Blob UID          |
+|     BS[0:1]      | Blob state        |
+|     BL[0:1]      | Blob last state   |
+|     BX[0:127]    | Blob X centroid   |
+|     BY[0:127]    | Blob Y centroid   |
+|     BZ[0:127]    | Blob Depth        |
+|     BW[0:127]    | Blob width        |
+|     BD[0:127]    | Blob Height       |
+
+
+## Software DEMOS
+This folder is containing some demos that can be used as starting point for your own creations.
 
 - [Ableton Live](https://www.ableton.com/en/live/ "Ableton-Live")
   - **SYNTH_MIDI.als**
