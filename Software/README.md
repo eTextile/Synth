@@ -3,10 +3,10 @@
 
 The eTextile-Synthesizer is designed to be used as **Standalone Audio Synthesizer** 
 but it can as well be used as **MIDI controler** for Audio applications such as **Ableton Live**, **MaxMsp**, **Puredata**, etc.
-
-The blobs values are transmited to the computer over USB-MIDI as below.
-
-## MIDI Specifications
+The blobs values are transmited to the computer over USB-MIDI.
+The below specifications descrybe how the blobs values are encoded over the MIDI standard comunication protocol.
+ 
+## Blobs MIDI Specifications
 | **Feature**             | **MIDI message**                       |
 | :---------------------- | :------------------------------------- |
 | Blob State ON           | noteOn(BI[1:8], BS[1], 1);             |
@@ -17,16 +17,15 @@ The blobs values are transmited to the computer over USB-MIDI as below.
 | Blob H value            | controlChange(BH[7], [0:127], BI[1:8]) |
 | Blob State OFF          | noteOff(BI[1:8], BS[0], 1);                |
 
-| **code & range** |  **Description**  |
-| :--------------- | :---------------- |
-|     BI[1:8]      | Blob UID          |
-|     BS[0:1]      | Blob state        |
-|     BL[0:1]      | Blob last state   |
-|     BX[0:127]    | Blob X centroid   |
-|     BY[0:127]    | Blob Y centroid   |
-|     BZ[0:127]    | Blob Depth        |
-|     BW[0:127]    | Blob width        |
-|     BD[0:127]    | Blob Height       |
+| **Blob code** |  **Description**  |
+| :------------ | :---------------- |
+|     BI[1:8]   | Blob UID          |
+|     BS[0:1]   | Blob state        |
+|     BX[3]     | Blob X centroid   |
+|     BY[4]     | Blob Y centroid   |
+|     BZ[5]     | Blob Depth        |
+|     BW[6]     | Blob width        |
+|     BD[7]     | Blob Height       |
 
 
 ## Software DEMOS
