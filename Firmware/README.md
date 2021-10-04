@@ -45,28 +45,27 @@ The embedded Software is implementing **image analysis algorithms** on the E256 
   - ADC_INPUT / BILINEAR_INTERPOLATION / BLOB_TRACKING / AUDIO : ...
 
 ## Configuring the system
-The Synth firmware is offering an 'config.h' to select the needed fonctionnalites. 
- 
-### Low level config 
-- **VELOCITY** [0:1]
+The Synth firmware is offering a **config.h** to select the needed fonctionnalites. 
+
+### Use the eTextile-Synthesizer as COMPUTER_INTERFACE
+ / HARDWARE_MIDI / USB_SLIP_OSC]
+- [0:1] #define MIDI_USB : Transmit touch coordinates via MIDI_USB **DO NOT FORGET: Arduino>Touls>USB_Type>MIDI**
+- [0:1] #define MIDI_HARDWARE : Transmit touch coordinates via MIDI_HARDWARE **DO NOT FORGET: Arduino>Touls>USB_Type>Serial**
+- [0:1] #define USB_SLIP_OSC : Transmit touch coordinates via USB_SLIP_OSC **DO NOT FORGET: Arduino>Touls>USB_Type>Serial**
+
+### Use the eTextile-Synthesizer as STANDALONE divice
+- [0:1] #define SYNTH_PLAYER : Set the eTextile-Synthesizer as polyphonic synthesizer
+- [0:1] #define GRANULAR_PLAYER : Set the eTextile-Synthesizer as
+- [0:1] #define FLASH_PLAYER : Set the eTextile-Synthesizer as 
 
 ### Mapping functionality (IN PROGRESS)
-- **MAPPING_LAYOUT** [0:1] 
+- [0:1] #define MAPPING_LAYOUT
+  - [0:1] #define GRID_LAYOUT_MIDI_IN
+  - [0:1] #define GRID_LAYOUT_DEFAULT
+  - [0:1] #define GRID_LAYOUT_HARMONIC
+  - [0:1] #define GRID_LAYOUT_NOTES
+  - [0:1] #define GRID_LAYOUT_FREQ
 
-    #define GRID_LAYOUT_DEFAULT      0
-    #define GRID_LAYOUT_HARMONIC     1
-    #define GRID_LAYOUT_NOTES        1
-    #define GRID_LAYOUT_FREQ         0
-
-### Transmit touch coordinates via [USB_MIDI / HARDWARE_MIDI / USB_SLIP_OSC]
-- **MIDI_USB** [0:1] **DO NOT FORGET:** Arduino>Touls>USB_Type>MIDI
-- **MIDI_HARDWARE** [0:1] **DO NOT FORGET:** Arduino>Touls>USB_Type>Serial
-- **USB_SLIP_OSC_TRANSMIT** [0:1] **DO NOT FORGET:** Arduino>Touls>USB_Type>Serial
-
-### Use the eTextile-Synthesizer as standalone polyphonic synthesizer
-- **SYNTH_PLAYER** [0:1] Set the eTextile-Synthesizer as STANDALONE divice
-- **GRANULAR_PLAYER** [0:1] Set the eTextile-Synthesizer as STANDALONE divice
-- **FLASH_PLAYER** [0:1] Set the eTextile-Synthesizer as STANDALONE divice
 
 ## FLASH_PLAYER - prerequisite
 
@@ -86,7 +85,7 @@ WARRANTIES, see LICENSE.txt included in the eTextile-Synthesizer project folder.
 
 ## TODO
 - Optimise interpolation method (it have been already updated with windowing method)
-- **Gesture Recognizer** could be a nice feature that fitt the eTextile-Synthesizer tactile surface.
+- **Gesture Recognizer** could be a nice feature that fit the eTextile-Synthesizer tactile surface.
 - **MIDI MPE** : MIDI in general does not have continuous control of note parameters (pitch and velocity) after the note has been played. Some companies like Roli with MPE have tried to address these limitations, but support is not as wide as standard control changes.
 - **Teensy Synthesizer** / Open source
     - [MicroDexed](https://www.parasitstudio.de/)
