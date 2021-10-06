@@ -5,17 +5,17 @@ The eTextile-Synthesizer is designed to be used as **Standalone Audio Synthesize
 but it can as well be used as **MIDI controler** for Audio applications such as **Ableton Live**, **MaxMsp**, **Puredata**, etc.
 The blobs values are transmited to the computer over USB-MIDI.
 The below specifications descrybe how the blobs values are encoded over the MIDI standard comunication protocol.
- 
+
 ## Blobs MIDI Specifications
-| **Feature**             | **MIDI message**                       |
-| :---------------------- | :------------------------------------- |
-| Blob State ON           | noteOn(BI[1:8], BS[1], 1);             |
-| Blob X value            | controlChange(BX[3], [0:127], BI[1:8]) |
-| Blob Y value            | controlChange(BY[4], [0:127], BI[1:8]) |
-| Blob Z value            | controlChange(BZ[5], [0:127], BI[1:8]) |
-| Blob W value            | controlChange(BW[6], [0:127], BI[1:8]) |
-| Blob H value            | controlChange(BH[7], [0:127], BI[1:8]) |
-| Blob State OFF          | noteOff(BI[1:8], BS[0], 1);                |
+| **Feature**             | **MIDI message**                        |
+| :---------------------- | :-------------------------------------- |
+| Blob State ON           | noteOn(BI[1:8], BS[1], 1);              |
+| Blob X value            | controlChange(BX[3], [0:127], BI[1:8]); |
+| Blob Y value            | controlChange(BY[4], [0:127], BI[1:8]); |
+| Blob Z value            | controlChange(BZ[5], [0:127], BI[1:8]); |
+| Blob W value            | controlChange(BW[6], [0:127], BI[1:8]); |
+| Blob H value            | controlChange(BH[7], [0:127], BI[1:8]); |
+| Blob State OFF          | noteOff(BI[1:8], BS[0], 1);             |
 
 | **Blob code** |  **Description**  |
 | :------------ | :---------------- |
@@ -41,10 +41,16 @@ This folder is containing some demos that can be used as starting point for your
   - **SYNTH_MPE.maxpat** TODO
 
 - [Pure Data](http://msp.ucsd.edu/ "Miller Puckette")
-  - **SYNTH_SLIP-OSC.pd** TODO
-    - This patch depends on several third party externals available through **deken plugin** (Help -> Find externals):
-	- **comport** : 
-	- **mrpeach** : OSC slipenc and slipdec
-	- **cyclone** : 
   - **SYNTH_MIDI.pd**
   - **SYNTH_MPE.pd** TODO
+  - **SYNTH_SLIP-OSC.pd**
+    - This patch depends on several third party externals available through: Help -> Find externals
+	- **comport** :
+	- **mrpeach** : OSC slipenc and slipdec
+	- **cyclone** : 
+
+- [Processing](https://processing.org/ "Processing")
+  - **SYNTH_MIDI.pde** it must use Processing 3.5.4 (Stable Releases) Do not work with Processing 4.0
+    - This patch depends on external available through: Tools -> Add externals
+	- **themidibus** : 
+

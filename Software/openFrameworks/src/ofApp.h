@@ -21,15 +21,16 @@
 #define NEW_ROWS              (RAW_ROWS * 4)
 #define NEW_FRAME             (NEW_COLS * NEW_ROWS)
 
-// MIDI_CONTROL_CHANGE
+
 #define BI_ 0  // [0] Blob UID
 #define BS_ 1  // [1] Blob State
 #define BL_ 2  // [2] Blob Last State
+// MIDI_CONTROL_CHANGE
 #define BX_ 3  // [3] Blob X centroid position
 #define BY_ 4  // [4] Blob Y centroid position
-#define BW_ 5  // [5] Blob width
-#define BH_ 6  // [6] Blob Height
-#define BD_ 7  // [7] Blob Depth
+#define BZ_ 5  // [5] Blob depth
+#define BW_ 6  // [6] Blob width
+#define BH_ 7  // [7] Blob height
 
 #define LINE_OUT          0
 #define SIG_IN            1
@@ -39,19 +40,18 @@
 #define SAVE              5
 #define MIDI_BLOBS_PLAY   6
 #define MIDI_BLOBS_LEARN  7
-
-#define MIDI_RAW          8
-#define MIDI_INTERP       9
-#define MIDI_MAPPING      10
+#define MIDI_MAPPING      8
+#define MIDI_RAW          9
+#define MIDI_INTERP       10
 #define MIDI_OFF          11
 
 struct blob_t {
   uint8_t  id;   // [0] Blob ID
   uint8_t  bx;   // [1] Blob X centroid position
   uint8_t  by;   // [2] Blob Y centroid position
-  uint8_t  bw;   // [3] Blob width
-  uint8_t  bh;   // [4] Blob Height
-  uint8_t  bd;   // [6] Blob Depth
+  uint8_t  bz;   // [3] Blob depth
+  uint8_t  bw;   // [4] Blob width
+  uint8_t  bh;   // [5] Blob Height
 };
 
 class ofApp : public ofBaseApp, public ofxMidiListener {

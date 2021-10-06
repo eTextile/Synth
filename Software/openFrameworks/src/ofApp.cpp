@@ -87,64 +87,62 @@ void ofApp::update() {
   };
   midiInput.clear();
 
-  if (midiCopy.size() > 0) {
-    for (size_t j = 0; j < midiCopy.size(); j++) {
-      ofxMidiMessage &message = midiCopy[j];
-      switch (mode) {
-        case MIDI_RAW:
-          if (message.status == MIDI_SYSEX) {
-            for (size_t k = 0; k < (256 - 1); k++) {
-              ofPoint point = rawDataMesh.getVertex(k);           // Get the point coordinates
-              point.z = (float)message.bytes[k + 1] * 2;          // Change the z-coordinates
-              rawDataMesh.setVertex(k, point);                    // Set the new coordinates
-              rawDataMesh.setColor(k, ofColor(point.z, 0, 255));  // Change vertex color
+  for (size_t j = 0; j < midiCopy.size(); j++) {
+    ofxMidiMessage &message = midiCopy[j];
+    switch (mode) {
+      case MIDI_RAW:
+        if (message.status == MIDI_SYSEX) {
+          for (size_t k = 0; k < (256 - 1); k++) {
+            ofPoint point = rawDataMesh.getVertex(k);           // Get the point coordinates
+            point.z = (float)message.bytes[k + 1] * 2;          // Change the z-coordinates
+            rawDataMesh.setVertex(k, point);                    // Set the new coordinates
+            rawDataMesh.setColor(k, ofColor(point.z, 0, 255));  // Change vertex color
+          };
+        };
+        break;
+      //case MIDI_BLOBS_PLAY || MIDI_BLOBS_LEARN:
+      case MIDI_BLOBS_PLAY:
+        if (message.status == MIDI_NOTE_ON) {
+          //ofLogNotice("ofApp::update") << "midiMessage NOTE_ON : " << message.pitch;
+          blob_t blob;
+          blob.id = message.pitch; // pitch == note
+          blobs.push_back(blob);
+        }
+        else if (message.status == MIDI_NOTE_OFF) {
+          //ofLogNotice("ofApp::update") << "midiMessage NOTE_OFF : " << message.pitch;
+          for (size_t l = 0; l < blobs.size(); l++) {
+            if (blobs[l].id == message.pitch) {
+              blobs.erase(blobs.begin() + l);
+              break;
             };
           };
-          break;
-        //case MIDI_BLOBS_PLAY || MIDI_BLOBS_LEARN:
-        case MIDI_BLOBS_PLAY:
-          if (message.status == MIDI_NOTE_ON) {
-            //ofLogNotice("ofApp::update") << "midiMessage NOTE_ON : " << message.pitch;
-            blob_t blob;
-            blob.id = message.pitch; // pitch == note
-            blobs.push_back(blob);
-          }
-          else if (message.status == MIDI_NOTE_OFF) {
-            //ofLogNotice("ofApp::update") << "midiMessage NOTE_OFF : " << message.pitch;
-            for (size_t l = 0; l < blobs.size(); l++) {
-              if (blobs[l].id == message.pitch) {
-                blobs.erase(blobs.begin() + l);
-                break;
-              };
-            };
-          }
-          else if (message.status == MIDI_CONTROL_CHANGE) {
-            //ofLogNotice("ofApp::update") << "E256 - midiMessage CONTROL_CHANGE : " << message.control;
-            switch (message.control){
-              case BX_:
-                blobs[message.channel - 1].bx = message.value;
-                break;
-              case BY_:
-                blobs[message.channel - 1].by = message.value;
-                break;
-              case BW_:
-                blobs[message.channel - 1].bw = message.value;
-                break;
-              case BH_:
-                blobs[message.channel - 1].bh = message.value;
-                break;
-              case BD_:
-                blobs[message.channel - 1].bd = message.value;
-                break;
-              default:
-                break;
-            }; // end of switch();
-          };
-          break;
-        default:
-          break;
-      }; // end of switch();
-    };
+        }
+        else if (message.status == MIDI_CONTROL_CHANGE) {
+          //ofLogNotice("ofApp::update") << "E256 - midiMessage CONTROL_CHANGE : " << message.control;
+          switch (message.control) {
+            case BX_:
+              blobs[message.channel - 1].bx = message.value;
+              break;
+            case BY_:
+              blobs[message.channel - 1].by = message.value;
+              break;
+            case BZ_:
+              blobs[message.channel - 1].bz = message.value;
+              break;
+            case BW_:
+              blobs[message.channel - 1].bw = message.value;
+              break;
+            case BH_:
+              blobs[message.channel - 1].bh = message.value;
+              break;
+            default:
+              break;
+          }; // end of switch();
+        };
+        break;
+      default:
+        break;
+    }; // end of switch();
   };
   midiMutex.unlock();
 };
@@ -187,10 +185,10 @@ void ofApp::draw() {
         ofSetColor(255);
         box.setMode(OF_PRIMITIVE_TRIANGLES);
         box.setResolution(1);
-        box.set(blob.bw * BLOB_SCALE, blob.bh * BLOB_SCALE, blob.bd);
-        box.setPosition(ofMap(blob.bx, 0, 127, 0, ofGetWidth() * 0.7), ofMap(blob.by, 0, 127, 0, ofGetWidth() * 0.7), blob.bd);
+        box.set(blob.bw * BLOB_SCALE, blob.bh * BLOB_SCALE, blob.bz);
+        box.setPosition(ofMap(blob.bx, 0, 127, 0, ofGetWidth() * 0.7), ofMap(blob.by, 0, 127, 0, ofGetWidth() * 0.7), blob.bz);
         box.drawWireframe();
-      }
+      };
       ofPopMatrix();
       break;
     default:
@@ -205,7 +203,8 @@ void ofApp::E256_setTreshold(int & tresholdValue) {
   //midiOut.sendProgramChange(THRESHOLD, (int8_t)tresholdValue);
   midiOut.sendControlChange(1, THRESHOLD, (int8_t)tresholdValue);
   mode = lastMode;
-}
+};
+
 // E256 matrix sensor - SET CALIBRATION
 void ofApp::E256_setCaliration() {
   lastMode = mode;
@@ -213,7 +212,8 @@ void ofApp::E256_setCaliration() {
   //midiOut.sendProgramChange(CALIBRATE, 0);
   midiOut.sendControlChange(1, CALIBRATE, 0);
   mode = lastMode;
-}
+};
+
 // E256 matrix sensor - get MIDI_BLOBS
 void ofApp::E256_getBlobs(bool & val) {
   if (val == true) {
@@ -228,12 +228,11 @@ void ofApp::E256_getBlobs(bool & val) {
     midiCopy.clear();
     midiInput.clear();
     mode = MIDI_BLOBS_LEARN;
-    //midiOut.sendProgramChange(MIDI_BLOBS_PLAY, 0);
-    //midiOut.sendProgramChange(MIDI_BLOBS_LEARN, 1);
     midiOut.sendControlChange(1, MIDI_BLOBS_PLAY, 0);
     midiOut.sendControlChange(1, MIDI_BLOBS_LEARN, 1);
-  }
-}
+  };
+};
+
 // E256 matrix sensor - MATRIX RAW DATA REQUEST MODE
 // 16*16 matrix row data request
 void ofApp::E256_getRaw(bool & val) {
@@ -241,14 +240,12 @@ void ofApp::E256_getRaw(bool & val) {
     midiCopy.clear();
     midiInput.clear();
     mode = MIDI_RAW;
-    //midiOut.sendProgramChange(MIDI_RAW, 1);
     midiOut.sendControlChange(1, MIDI_RAW, 1);
   } else {
     mode = MIDI_OFF;
-    //midiOut.sendProgramChange(MIDI_RAW, 0);
     midiOut.sendControlChange(1, MIDI_RAW, 0);
-  }
-}
+  };
+};
 
 void ofApp::exit() {
   midiIn.closePort();
@@ -258,15 +255,14 @@ void ofApp::exit() {
   setCalirationButton.removeListener(this, &ofApp::E256_setCaliration);
   getRawToggle.removeListener(this, &ofApp::E256_getRaw);
   getBlobsToggle.removeListener(this, &ofApp::E256_getBlobs);
-}
+};
 
 /////////////////////// MidiIN ///////////////////////
 void ofApp::newMidiMessage(ofxMidiMessage & msg) {
   midiMutex.lock();
   midiInput.push_back(msg);
-  //midiCopy.push_back(msg);
   midiMutex.unlock();
-}
+};
 
 // E256 matrix sensor - Toggle full screen mode
 void ofApp::keyPressed(int key) {
@@ -276,5 +272,5 @@ void ofApp::keyPressed(int key) {
       break;
     default:
       break;
-  }
-}
+  };
+};
