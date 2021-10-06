@@ -127,10 +127,10 @@ void mapping_toggle(void) {
 #define GRID_X_SCALE_FACTOR    ((float)1/X_MAX) * GRID_COLS
 #define GRID_Y_SCALE_FACTOR    ((float)1/Y_MAX) * GRID_ROWS
 
-tSwitch_t key[GRID_KEYS] = {0};           // ARGS[posX, Ymin, Ymax, width, state] : 1D array to store keys limits & state
-int8_t lastKeyPress[MAX_SYNTH] = {NULL};  // 1D array to store last keys pressed value
+tSwitch_t key[GRID_KEYS] = {0};               // ARGS[posX, Ymin, Ymax, width, state] : 1D array to store keys limits & state
+int8_t lastKeyPress[MAX_SYNTH] = {NULL};      // 1D array to store last keys pressed value
 
-unsigned long int lastTime[MAX_SYNTH] = {NULL};  // 1D array to store last keys pressed value
+unsigned long int lastTime[MAX_SYNTH] = {0};  // 1D array to store last keys pressed value
 
 // Pre-compute key min & max coordinates
 void GRID_LAYOUT_SETUP(void) {
@@ -175,9 +175,7 @@ void mapping_grid_update(void) {
               blob_ptr->centroid.Y > key[keyPress].rect.Ymin &&
               blob_ptr->centroid.Y < key[keyPress].rect.Ymax) {
           */
-          if (lastKeyPress[blob_ptr->UID] != -1 &&
-              millis() - lastTime[blob_ptr->UID] > 100) {                           // Test if the blob was touching another key
-            lastTime[blob_ptr->UID] = millis();
+          if (lastKeyPress[blob_ptr->UID] != -1) {                                  // Test if the blob was touching another key
 
 #if DEBUG_MAPPING
             Serial.printf("\nGRID\tBLOB:%d\t\tKEY_SLIDING_OFF:%d", blob_ptr->UID, lastKeyPress[blob_ptr->UID]);
@@ -464,8 +462,8 @@ void mapping_cSlider(void) {
 
 #define CCHANGE 2
 cChange_t cChange[CCHANGE] = {
-  {0, BD, 44, 0},  // ARGS[blobID, mappVal[BX,BY,BW,BH,BD], cChange, lastVal]
-  {0, BD, 45, 0}   // ARGS[blobID, mappVal[BX,BY,BW,BH,BD], cChange, lastVal]
+  {0, BZ, 44, 0},  // ARGS[blobID, mappVal[BX,BY,BW,BH,BD], cChange, lastVal]
+  {1, BZ, 45, 0}   // ARGS[blobID, mappVal[BX,BY,BW,BH,BD], cChange, lastVal]
 };
 
 void mapping_blob(void) {
@@ -503,6 +501,20 @@ void mapping_blob(void) {
                 cChange[index].lastVal = blob_ptr->centroid.Y;
               };
               break;
+            case BZ:
+              if (blob_ptr->centroid.Z != cChange[index].lastVal) {
+#if DEBUG_MAPPING
+                Serial.printf("\nMIDI\tCC_BZ:%d", constrain(blob_ptr->centroid.Z, 0, 127));
+#else
+                midiNode_t* node_ptr = (midiNode_t*)llist_pop_front(&midi_node_stack);       // Get a node from the MIDI node stack
+                node_ptr->midiMsg.status = MIDI_CONTROL_CHANGE;                              // Set MIDI message status to CONTROL_CHANGE
+                node_ptr->midiMsg.data1 = cChange[index].cChange;                            // Set the note
+                node_ptr->midiMsg.data2 = constrain(blob_ptr->centroid.Z, 0, 127);           // Set the value
+                llist_push_front(&midiOut, node_ptr);                                        // Add the node to the midiOut linked liste
+#endif
+                cChange[index].lastVal = constrain(blob_ptr->centroid.Z, 0, 127);
+              };
+              break;
             case BW:
               if (blob_ptr->box.W != cChange[index].lastVal) {
 #if DEBUG_MAPPING
@@ -531,19 +543,7 @@ void mapping_blob(void) {
                 cChange[index].lastVal = blob_ptr->box.H;
               };
               break;
-            case BD:
-              if (blob_ptr->centroid.Z != cChange[index].lastVal) {
-#if DEBUG_MAPPING
-                Serial.printf("\nMIDI\tCC_BZ:%d", constrain(blob_ptr->centroid.Z, 0, 127));
-#else
-                midiNode_t* node_ptr = (midiNode_t*)llist_pop_front(&midi_node_stack);       // Get a node from the MIDI node stack
-                node_ptr->midiMsg.status = MIDI_CONTROL_CHANGE;                              // Set MIDI message status to CONTROL_CHANGE
-                node_ptr->midiMsg.data1 = cChange[index].cChange;                            // Set the note
-                node_ptr->midiMsg.data2 = constrain(blob_ptr->centroid.Z, 0, 127);           // Set the value
-                llist_push_front(&midiOut, node_ptr);                                        // Add the node to the midiOut linked liste
-#endif
-                cChange[index].lastVal = constrain(blob_ptr->centroid.Z, 0, 127);
-              };
+            default:
               break;
           };
         };

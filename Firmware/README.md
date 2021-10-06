@@ -66,7 +66,6 @@ The Synth firmware is offering a **config.h** to select the needed fonctionnalit
   - [0:1] #define GRID_LAYOUT_NOTES
   - [0:1] #define GRID_LAYOUT_FREQ
 
-
 ## FLASH_PLAYER - prerequisite
 
     cd /Synth-master/Firmware/extras/CopyFromSerial/

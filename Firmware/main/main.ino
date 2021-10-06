@@ -10,7 +10,6 @@
 #include "scan.h"
 #include "interp.h"
 #include "blob.h"
-#include "median.h"
 #include "midi_transmit.h"
 
 #include <elapsedMillis.h>  // https://github.com/pfeerick/elapsedMillis
@@ -48,7 +47,7 @@ unsigned int fps = 0;
 //boolean savePreset = false; // TODO
 
 void setup() {
-#if DEBUG_ADC || DEBUG_INTERP || DEBUG_BITMAP || DEBUG_BLOBS || DEBUG_FPS || DEBUG_ENCODER || DEBUG_BUTTONS || DEBUG_MAPPING || DEBUG_MIDI_TRANSMIT
+#if DEBUG_ADC || DEBUG_INTERP || DEBUG_BITMAP || DEBUG_BLOBS || DEBUG_MEDIAN || DEBUG_FPS || DEBUG_ENCODER || DEBUG_BUTTONS || DEBUG_MAPPING || DEBUG_MIDI_TRANSMIT
   Serial.begin(BAUD_RATE);
   while (!Serial);
   Serial.printf("\n%s_%s_%s", NAME, PROJECT, VERSION);
@@ -62,7 +61,10 @@ void setup() {
   SCAN_SETUP();
   INTERP_SETUP();
   BLOB_SETUP();
-  //RUNING_MEDIAN_SETUP();
+  
+#if RUNING_MEDIAN
+  RUNING_MEDIAN_SETUP();
+#endif
 
 #if MIDI_HARDWARE || MIDI_USB
   MIDI_TRANSMIT_SETUP();
@@ -120,7 +122,6 @@ void loop() {
   scan_matrix();
   interp_matrix();
   find_blobs();
-  //runing_median();
 
 #if MAPPING_LAYOUT
   mapping_grid_populate(); // Use the MIDI input messages to populate the grid - If commented we use the DEFAULT mapping

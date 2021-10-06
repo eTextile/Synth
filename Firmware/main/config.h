@@ -14,10 +14,9 @@
 #define VERSION                  "1.0.7"
 
 #define VELOCITY                 0  // [0:1]
-#define MAPPING_LAYOUT           1  // [0:1] 
-
+#define RUNING_MEDIAN            0  // [0:1]
 #define MIDI_USB                 1  // [0:1] Set the eTextile-Synthesizer as USB MIDI divice **DO NOT FORGET: Arduino/Touls/USB_Type/MIDI**
-#define MIDI_HARDWARE            1  // [0:1] Set the eTextile-Synthesizer as MIDI divice **DO NOT FORGET: Arduino/Touls/USB_Type/Serial**
+#define MIDI_HARDWARE            0  // [0:1] Set the eTextile-Synthesizer as MIDI divice **DO NOT FORGET: Arduino/Touls/USB_Type/Serial**
 #define MIDI_CHANNEL             1  // [1:X] Set the I/O MIDI channel
 
 #define USB_SLIP_OSC_TRANSMIT    0  // [0:1] Set the eTextile-Synthesizer as USB SLIP_OSC divice **DO NOT FORGET: Arduino/Touls/USB_Type/Serial**
@@ -26,10 +25,11 @@
 #define GRANULAR_PLAYER          0  // [0:1] Set the eTextile-Synthesizer as STANDALONE divice
 #define FLASH_PLAYER             0  // [0:1] Set the eTextile-Synthesizer as STANDALONE divice
 
-#define GRID_LAYOUT_MIDI_IN      1  // [0:1] 
+#define MAPPING_LAYOUT           0  // [0:1] 
+#define GRID_LAYOUT_MIDI_IN      0  // [0:1] 
 #define GRID_LAYOUT_DEFAULT      0  // [0:1] 
-#define GRID_LAYOUT_HARMONIC     0  // [0:1] 
-#define GRID_LAYOUT_NOTES        0  // [0:1] 
+#define GRID_LAYOUT_HARMONIC     1  // [0:1] 
+#define GRID_LAYOUT_NOTES        1  // [0:1] 
 #define GRID_LAYOUT_FREQ         0  // [0:1] 
 
 // Arduino serial monitor
@@ -41,6 +41,7 @@
 #define DEBUG_BITMAP             0  // [0:1] Print 64x64 binary image based on threshold
 #define DEBUG_FIND_BLOBS         0  // [0:1] Print lowlevel blobs values
 #define DEBUG_BLOBS              0  // [0:1] Print blobs values
+#define DEBUG_MEDIAN             0  // [0:1] Print blobs values
 #define DEBUG_MAPPING            0  // [0:1] Print GUI values
 #define DEBUG_MIDI_TRANSMIT      0  // [0:1] Print MIDI values
 

@@ -16,6 +16,7 @@
 #include "config.h"
 #include "llist.h"
 #include "presets.h"
+#include "median.h"
 
 extern llist_t blobs;            // Exposed local declaration see blob.cpp
 
@@ -114,9 +115,9 @@ struct blob {
 #define  BL   2  // [2] Blob Last State
 #define  BX   3  // [3] Blob X centroid position
 #define  BY   4  // [4] Blob Y centroid position
-#define  BW   5  // [5] Blob width
-#define  BH   6  // [6] Blob Height
-#define  BD   7  // [7] Blob Depth
+#define  BZ   5  // [5] Blob Depth
+#define  BW   6  // [6] Blob width
+#define  BH   7  // [7] Blob Height
 
 /*
   typedef enum blobParam {
@@ -125,9 +126,9 @@ struct blob {
   BL,  // [2] Blob Last State
   BX,  // [3] Blob X centroid position
   BY,  // [4] Blob Y centroid position
-  BW,  // [5] Blob width
-  BH,  // [6] Blob Height
-  BD   // [7] Blob Depth
+  BZ,  // [5] Blob Depth
+  BW,  // [6] Blob width
+  BH   // [7] Blob Height
   } blobParam_t;
 */
 

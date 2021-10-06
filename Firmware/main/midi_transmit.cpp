@@ -9,7 +9,7 @@
 #include <MIDI.h>                           // http://www.pjrc.com/teensy/td_midi.html
 
 unsigned long int transmitTimer = 0;
-#define TRANSMIT_INTERVAL 3
+#define TRANSMIT_INTERVAL 2
 
 #if MIDI_HARDWARE
 MIDI_CREATE_INSTANCE(HardwareSerial, Serial3, MIDI);
@@ -54,11 +54,11 @@ void MIDI_TRANSMIT_SETUP(void) {
 void read_midi_input(void) {
 #if MIDI_USB
   usbMIDI.read(MIDI_CHANNEL); // Is there a MIDI incoming messages on channel One
-  while (usbMIDI.read());     // Read and discard any incoming MIDI messages
+  while (usbMIDI.read(MIDI_CHANNEL));     // Read and discard any incoming MIDI messages
 #endif
 #if MIDI_HARDWARE
   MIDI.read(MIDI_CHANNEL);    // Is there a MIDI incoming messages on channel One
-  while (MIDI.read());        // Read and discard any incoming MIDI messages
+  while (MIDI.read(MIDI_CHANNEL));        // Read and discard any incoming MIDI messages
 #endif
 };
 
@@ -172,9 +172,9 @@ void midi_transmit(void) {
               // usbMIDI.sendControlChange(control, value, channel);
               usbMIDI.sendControlChange(BX, (uint8_t)round(map(blob_ptr->centroid.X, 0, X_MAX - X_MIN, 0, 127)), blob_ptr->UID + 1);
               usbMIDI.sendControlChange(BY, (uint8_t)round(map(blob_ptr->centroid.Y, 0, X_MAX - X_MIN, 0, 127)), blob_ptr->UID + 1);
+              usbMIDI.sendControlChange(BZ, constrain(blob_ptr->centroid.Z, 0, 127), blob_ptr->UID + 1);
               usbMIDI.sendControlChange(BW, blob_ptr->box.W, blob_ptr->UID + 1);
               usbMIDI.sendControlChange(BH, blob_ptr->box.H, blob_ptr->UID + 1);
-              usbMIDI.sendControlChange(BD, constrain(blob_ptr->centroid.Z, 0, 127), blob_ptr->UID + 1);
 #endif
             };
           };
@@ -194,7 +194,7 @@ void midi_transmit(void) {
       // Select blob's values according to the encoder position to allow the auto-mapping into Max4Live...
       if ((blob_t*)blobs.tail_ptr != NULL) {
 
-        blob_t* blob_ptr = (blob_t*)blobs.tail_ptr; // FIXME!
+        blob_t* blob_ptr = (blob_t*)blobs.tail_ptr;
 
         switch (presets[MIDI_BLOBS_LEARN].val) {
 #if MIDI_USB
@@ -208,14 +208,14 @@ void midi_transmit(void) {
           case BY:
             usbMIDI.sendControlChange(BY, (uint8_t)round(map(blob_ptr->centroid.Y, 0.0, X_MAX - X_MIN, 0, 127)), blob_ptr->UID + 1);
             break;
+          case BZ:
+            usbMIDI.sendControlChange(BZ, constrain(blob_ptr->centroid.Z, 0, 127), blob_ptr->UID + 1);
+            break;
           case BW:
             usbMIDI.sendControlChange(BW, blob_ptr->box.W, blob_ptr->UID + 1);
             break;
           case BH:
             usbMIDI.sendControlChange(BH, blob_ptr->box.H, blob_ptr->UID + 1);
-            break;
-          case BD:
-            usbMIDI.sendControlChange(BD, constrain(blob_ptr->centroid.Z, 0, 127), blob_ptr->UID + 1);
             break;
 #endif
           default:

@@ -35,14 +35,16 @@ Bounce2::Button BUTTON_L = Bounce2::Button();
 //Button BUTTON_R = Button(); // DEPRECATED
 Bounce2::Button BUTTON_R = Bounce2::Button();
 
-uint8_t currentMode = CALIBRATE;              // Init currentMode with CALIBRATE (DEFAULT_MODE)
-uint8_t lastMode = MIDI_MAPPING;              // Init lastMode with LINE_OUT (DEFAULT_MODE)
-  
+uint8_t currentMode = CALIBRATE;     // Init currentMode with CALIBRATE (DEFAULT_MODE)
+//uint8_t lastMode = LINE_OUT;       // Init lastMode with LINE_OUT (DEFAULT_MODE)
+//uint8_t lastMode = MIDI_MAPPING;   // Init lastMode with MIDI_MAPPING (DEFAULT_MODE)
+uint8_t lastMode = MIDI_BLOBS_PLAY;  // Init lastMode with MIDI_BLOBS_PLAY (DEFAULT_MODE)
+
 preset_t presets[9] = {
   {13, 31, 29, 0, false, false, false, LOW,  LOW },  // LINE_OUT         - ARGS[minVal, maxVal, val, ledVal, setLed, updateLed, update, D1, D2]
   { 1, 50, 12, 0, false, false, false, HIGH, LOW },  // SIG_IN           - ARGS[minVal, maxVal, val, ledVal, setLed, updateLed, update, D1, D2]
   { 1, 31, 17, 0, false, false, false, LOW,  HIGH},  // SIG_OUT          - ARGS[minVal, maxVal, val, ledVal, setLed, updateLed, update, D1, D2]
-  { 5, 30, 10, 0, false, false, false, HIGH, HIGH},  // THRESHOLD        - ARGS[minVal, maxVal, val, ledVal, setLed, updateLed, update, D1, D2]
+  { 2, 30, 5, 0, false, false, false, HIGH, HIGH},   // THRESHOLD        - ARGS[minVal, maxVal, val, ledVal, setLed, updateLed, update, D1, D2]
   { 0, 0,  0,  0, true,  true,  false, HIGH, HIGH},  // CALIBRATE        - ARGS[minVal, maxVal, val, ledVal, setLed, updateLed, update, D1, D2]
   { 0, 0,  0,  0, false, false, false, NULL, NULL},  // SAVE             - ARGS[minVal, maxVal, val, ledVal, setLed, updateLed, update, D1, D2]
   { 0, 0,  0,  0, false, false, false, NULL, NULL},  // MIDI_BLOBS_PLAY  - ARGS[minVal, maxVal, val, ledVal, setLed, updateLed, update, D1, D2]
@@ -120,8 +122,8 @@ void update_buttons(void) {
     else {
       currentMode = MIDI_BLOBS_LEARN;
       encoder.write(0x1);
-      presets[MIDI_BLOBS_LEARN].setLed = true;
-      presets[MIDI_BLOBS_LEARN].updateLed = true;
+      presets[MIDI_BLOBS_PLAY].setLed = true;
+      presets[MIDI_BLOBS_PLAY].updateLed = true;
 #if DEBUG_BUTTONS
       Serial.printf("\nMIDI_BLOBS_LEARN : %d", currentMode);
 #endif
@@ -159,6 +161,12 @@ void update_presets(void) {
         interpThreshold = constrain(presets[THRESHOLD].val - 5, presets[THRESHOLD].minVal, presets[THRESHOLD].maxVal);
         presets[THRESHOLD].updateLed = true;
         presets[THRESHOLD].update = true;
+      };
+      break;
+    case MIDI_BLOBS_PLAY:
+      if (setLevel(&presets[MIDI_BLOBS_PLAY])) {
+        presets[MIDI_BLOBS_PLAY].updateLed = true;
+        presets[MIDI_BLOBS_PLAY].update = true;
       };
       break;
     case MIDI_BLOBS_LEARN:

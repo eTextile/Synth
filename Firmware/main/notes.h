@@ -9,22 +9,25 @@
 
 #include "config.h"
 
-#if GRID_LAYOUT_HARMONIC  //See: https://www.c-thru-music.com/cgi/?page=layout_octaves
-#define GRID_COLS              14
-#define GRID_ROWS              9
+// See: https://www.c-thru-music.com/cgi/?page=layout_octaves
+#if GRID_LAYOUT_HARMONIC
+#define GRID_COLS         14
+#define GRID_ROWS         9
+#define GRID_KEYS         (GRID_COLS * GRID_ROWS)
 #endif
 
-#if GRID_LAYOUT_DEFAULT  //See: https://www.c-thru-music.com/cgi/?page=layout_octaves
-#define GRID_COLS              12
-#define GRID_ROWS              11
+#if GRID_LAYOUT_DEFAULT
+#define GRID_COLS        12
+#define GRID_ROWS        11
+#define GRID_KEYS        (GRID_COLS * GRID_ROWS)
 #endif
 
 #if GRID_LAYOUT_MIDI_IN
-#define GRID_COLS              16
-#define GRID_ROWS              16
+#define GRID_COLS        8  
+#define GRID_ROWS        8
+#define GRID_KEYS        (GRID_COLS * GRID_ROWS)
 #endif
 
-#define GRID_KEYS              (GRID_COLS * GRID_ROWS)
 
 extern uint8_t gridLayout[];
 

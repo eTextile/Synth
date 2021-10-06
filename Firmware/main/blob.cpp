@@ -15,7 +15,7 @@
 #define MAX_BLOBS           32            // [1:64] Set how many blobs can be tracked at the same time
 #define LIFO_NODES          512           // Set the maximum nodes number
 #define X_STRIDE            4             // Speed up X scanning
-#define Y_STRIDE            1             // Speed up Y scanning
+#define Y_STRIDE            2             // Speed up Y scanning
 #define MIN_BLOB_PIX        4             // Set the minimum blob pixels
 #define DEBOUNCE_TIME       15            // Avioding undesired bouncing effect when taping on the sensor
 
@@ -94,13 +94,13 @@ void find_blobs(void) {
                  PIXEL_THRESHOLD(IMAGE_GET_PIXEL_FAST(row_ptr_B, left - 1), presets[THRESHOLD].val)
                 ) {
             left--;
-          }
+          };
           while (right < (NEW_COLS - 1) &&
                  !IMAGE_GET_PIXEL_FAST(bmp_row_ptr_B, right + 1) &&
                  PIXEL_THRESHOLD(IMAGE_GET_PIXEL_FAST(row_ptr_B, right + 1), presets[THRESHOLD].val)
                 ) {
             right++;
-          }
+          };
 
           blob_x1 = MIN(blob_x1, left);
           blob_x2 = MAX(blob_x2, right);
@@ -108,9 +108,9 @@ void find_blobs(void) {
           for (int i = left; i <= right; i++) {
             IMAGE_SET_PIXEL_FAST(bmp_row_ptr_B, i, 1);
             blob_depth = MAX(blob_depth, IMAGE_GET_PIXEL_FAST(row_ptr_B, i));
-          }
+          };
 
-          uint16_t sum = ((right * (right + 1)) - (left * (left - 1))) / 2;
+          float sum = ((right * (right + 1)) - (left * (left - 1))) / 2;
 
           uint8_t pixels = right - left + 1;
           blob_pixels += pixels;
@@ -146,12 +146,12 @@ void find_blobs(void) {
                   posY--;
                   recurse = false;
                   break;
-                }
-              }
+                };
+              };
               if (!recurse) {
                 break;
-              }
-            }
+              };
+            };
 
             row_ptr_B = COMPUTE_IMAGE_ROW_PTR(&interpFrame, posY + 1);
             bmp_row_ptr_B = &bitmapArray[0] + (posY + 1) * NEW_COLS;
@@ -174,16 +174,16 @@ void find_blobs(void) {
                 posY++;
                 recurse = false;
                 break;
-              }
-            }
+              };
+            };
 
             if (!recurse) {
               break;
-            }
+            };
             if (llist_context.head_ptr == NULL) {
               break_out = true;
               break;
-            }
+            };
 
             xylr_t* context = (xylr_t*)llist_pop_front(&llist_context);
             posX = context->x;
@@ -194,12 +194,12 @@ void find_blobs(void) {
             bot_left = context->b_l;
             llist_push_front(&llist_context_stack, context);
             blob_height++;
-          } // END while_B
+          }; // END while_B
 
           if (break_out) {
             break;
-          }
-        } // END while_A
+          };
+        }; // END while_A
 
         if (blob_pixels > MIN_BLOB_PIX) {
           blob_t* blob_ptr = (blob_t*)llist_pop_front(&llist_blobs_stack);
@@ -217,12 +217,12 @@ void find_blobs(void) {
           blob_ptr->centroid.Z = blob_depth - presets[THRESHOLD].val;
 
           llist_push_front(&llist_blobs_temp, blob_ptr);
-        }
+        };
         posX = oldX;
         posY = oldY;
-      }
-    }
-  }
+      };
+    };
+  };
 
   /////////////////////////////// PERSISTANT BLOB ID
 
@@ -236,27 +236,27 @@ void find_blobs(void) {
       blob_ptr->status = FREE;
       llist_push_front(&llist_blobs_stack, blob_ptr);
       //Serial.printf("\nDEBUG_FIND_BLOBS / Blob: %p removed from **outputBlobs** linked list", (lnode_t*)blob_ptr);
-    }
+    };
     if (!deadFound) {
       break;
-    }
-  }
+    };
+  };
 
   // NEW BLOBS MANAGMENT
   // Look for corresponding blobs into the **inputBlobs** and **outputBlobs** linked list
   for (blob_t* blobIn_ptr = (blob_t*)ITERATOR_START_FROM_HEAD(&llist_blobs_temp); blobIn_ptr != NULL; blobIn_ptr = (blob_t*)ITERATOR_NEXT(blobIn_ptr)) {
     float minDist = 255.0f;
     blob_t* nearestBlob = NULL;
-    for (blob_t* blobOut = (blob_t*)ITERATOR_START_FROM_HEAD(&blobs); blobOut != NULL; blobOut = (blob_t*)ITERATOR_NEXT(blobOut)) {
-      float dist = sqrtf(pow(blobIn_ptr->centroid.X - blobOut->centroid.X, 2) + pow(blobIn_ptr->centroid.Y - blobOut->centroid.Y, 2));
+    for (blob_t* blobOut_ptr = (blob_t*)ITERATOR_START_FROM_HEAD(&blobs); blobOut_ptr != NULL; blobOut_ptr = (blob_t*)ITERATOR_NEXT(blobOut_ptr)) {
+      float dist = sqrtf(pow(blobIn_ptr->centroid.X - blobOut_ptr->centroid.X, 2) + pow(blobIn_ptr->centroid.Y - blobOut_ptr->centroid.Y, 2));
 #if DEBUG_FIND_BLOBS
       Serial.printf("\nDEBUG_FIND_BLOBS / Distance between input & output blobs positions: %f ", dist);
 #endif
       if (dist < minDist) {
         minDist = dist;
-        nearestBlob = blobOut;
-      }
-    }
+        nearestBlob = blobOut_ptr;
+      };
+    };
     // If the distance between curent blob and last blob position is less than minDist:
     // Give the nearestBlob UID to the input blob.
     if (minDist < 4) {
@@ -281,17 +281,17 @@ void find_blobs(void) {
             isFree = false;
             minID++;
             break;
-          }
-        }
+          };
+        };
         if (isFree) {
           blobIn_ptr->UID = minID;
           blobIn_ptr->lastState = false;
           blobIn_ptr->state = true;
           break;
-        }
-      } // while_end / The blob have a new ID
-    }
-  }
+        };
+      }; // while_end / The blob have a new ID
+    };
+  };
 
   // DEAD BLOBS MANAGMENT
   // Look for dead blobs in the outputBlobs linked list
@@ -305,8 +305,8 @@ void find_blobs(void) {
         if (blobOut_ptr->UID == blobIn_ptr->UID) {
           found = true;
           break;
-        }
-      }
+        };
+      };
       if (!found) {
         allDone = false;
         llist_extract_node(&blobs, prevBlob_ptr, blobOut_ptr);
@@ -316,19 +316,23 @@ void find_blobs(void) {
           blobOut_ptr->state = false;
           blobOut_ptr->status = TO_REMOVE;
           //Serial.printf("\nDEBUG_FIND_BLOBS / Blob: %p in the **outputBlobs** linked list taged TO_REMOVE", (lnode_t*)blobOut_ptr);
-        }
+        };
         llist_push_front(&llist_blobs_temp, blobOut_ptr);
         break;
-      }
+      };
       prevBlob_ptr = blobOut_ptr;
-    }
+    };
     if (allDone) {
       break;
-    }
-  }
+    };
+  };
 
   llist_swap_llist(&blobs, &llist_blobs_temp);             // Swap inputBlobs with outputBlobs linked list
   llist_save_nodes(&llist_blobs_stack, &llist_blobs_temp); // Save/rescure all dead blobs Linked list nodes
+
+#if RUNING_MEDIAN
+  runing_median();
+#endif
 
 #if VELOCITY
   for (blob_t* blob_ptr = (blob_t*)ITERATOR_START_FROM_HEAD(&blobs); blob_ptr != NULL; blob_ptr = (blob_t*)ITERATOR_NEXT(blob_ptr)) {
@@ -340,13 +344,12 @@ void find_blobs(void) {
         lastCoord[blob_ptr->UID].Z = blob_ptr->centroid.Z;
       }
       else {
-        if (millis() - blob_ptr->velocity.timeTag > 150) {
+        if (millis() - blob_ptr->velocity.timeTag > 10) {
           blob_ptr->velocity.timeTag = millis();
           float vx = fabs(blob_ptr->centroid.X - lastCoord[blob_ptr->UID].X);
           float vy = fabs(blob_ptr->centroid.Y - lastCoord[blob_ptr->UID].Y);
           blob_ptr->velocity.XY = sqrtf(vx * vx + vy * vy);
           blob_ptr->velocity.Z = blob_ptr->centroid.Z - lastCoord[blob_ptr->UID].Z;
-
           lastCoord[blob_ptr->UID].X = blob_ptr->centroid.X;
           lastCoord[blob_ptr->UID].Y = blob_ptr->centroid.Y;
           lastCoord[blob_ptr->UID].Z = blob_ptr->centroid.Z;
@@ -363,7 +366,7 @@ void find_blobs(void) {
       Serial.printf("%d-", IMAGE_GET_PIXEL_FAST(rowPos_ptr, colPos);
     };
     Serial.printf("\n");
-  }
+  };
   Serial.printf("\n");
 #endif
 #if DEBUG_BLOBS
@@ -380,6 +383,6 @@ void find_blobs(void) {
                   blob_ptr->velocity.XY,
                   blob_ptr->velocity.Z
                  );
-  }
+  };
 #endif
 };
