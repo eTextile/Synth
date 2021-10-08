@@ -38,7 +38,7 @@ void mapping_trigger(void) {
             node_ptr->midiMsg.data1 = triggerParam[keyPos].note;                    // Set the note
             //node_ptr->midiMsg.data2 = blob_ptr->velocity.Z                        // Set the velocity TODO
             node_ptr->midiMsg.data2 = 127;                                          // Set the velocity
-            node_ptr->midiMsg.channel = MIDI_CHANNEL;                               // Set the channel see config.h
+            node_ptr->midiMsg.channel = MIDI_OUTPUT_CHANNEL;                        // Set the channel see config.h
             llist_push_front(&midiOut, node_ptr);                                   // Add the node to the midiOut linked liste
 #if DEBUG_MAPPING
             Serial.printf("\nDEBUG_TRIGGER:\tNOTE_ON : %d", triggerParam[keyPos].note);
@@ -49,7 +49,7 @@ void mapping_trigger(void) {
             node_ptr->midiMsg.status = MIDI_NOTE_OFF;                               // Set MIDI message status to NOTE_OFF
             node_ptr->midiMsg.data1 = triggerParam[keyPos].note;                    // Set the note
             node_ptr->midiMsg.data2 = 0;                                            // Set the velocity
-            node_ptr->midiMsg.channel = MIDI_CHANNEL;                               // Set the channel see config.h
+            node_ptr->midiMsg.channel = MIDI_OUTPUT_CHANNEL;                        // Set the channel see config.h
             llist_push_front(&midiOut, node_ptr);                                   // Add the node to the midiOut linked liste
 #if DEBUG_MAPPING
             Serial.printf("\nDEBUG_TRIGGER:\tNOTE_OFF : %d", triggerParam[keyPos].note);
@@ -100,7 +100,7 @@ void mapping_toggle(void) {
               node_ptr->midiMsg.data1 = toggleParam[keyPos].note;                     // Set the note
               //node_ptr->midiMsg.data2 = blob_ptr->velocity.Z                        // Set the velocity
               node_ptr->midiMsg.data2 = 127;                                          // Set the velocity
-              node_ptr->midiMsg.channel = MIDI_CHANNEL;                               // Set the channel see config.h
+              node_ptr->midiMsg.channel = MIDI_OUTPUT_CHANNEL;                        // Set the channel see config.h
               llist_push_front(&midiOut, node_ptr);                                   // Add the node to the midiOut linked liste
 #endif
             } else {
@@ -110,7 +110,7 @@ void mapping_toggle(void) {
               node_ptr->midiMsg.status = MIDI_NOTE_OFF;                               // Set MIDI message status to NOTE_OFF
               node_ptr->midiMsg.data1 = toggleParam[keyPos].note;                     // Set the note
               node_ptr->midiMsg.data2 = 0;                                            // Set the velocity
-              node_ptr->midiMsg.channel = MIDI_CHANNEL;                               // Set the channel see config.h
+              node_ptr->midiMsg.channel = MIDI_OUTPUT_CHANNEL;                        // Set the channel see config.h
               llist_push_front(&midiOut, node_ptr);                                   // Add the node to the midiOut linked liste
 #endif
             };
@@ -297,7 +297,7 @@ void mapping_vSliders(void) {
           node_ptr->midiMsg.status = MIDI_CONTROL_CHANGE;                           // Set MIDI message status to MIDI_CONTROL_CHANGE
           node_ptr->midiMsg.data1 = vSliderParams[index].cChange;                   // Set the note
           node_ptr->midiMsg.data2 = val;                                            // Set the velocity to 0
-          node_ptr->midiMsg.channel = MIDI_CHANNEL;                                 // Set the channel see config.h
+          node_ptr->midiMsg.channel = MIDI_OUTPUT_CHANNEL;                          // Set the channel see config.h
           llist_push_front(&midiOut, node_ptr);                                     // Add the node to the midiOut linked liste
 #if DEBUG_MAPPING
           Serial.printf("\nDEBUG_VSLIDER:\t%d", val);
@@ -339,7 +339,7 @@ void mapping_hSliders(void) {
           node_ptr->midiMsg.status = MIDI_CONTROL_CHANGE;                          // Set MIDI message status to MIDI_CONTROL_CHANGE
           node_ptr->midiMsg.data1 = vSliderParams[index].cChange;                  // Set the note
           node_ptr->midiMsg.data2 = val;                                           // Set the velocity to 0
-          node_ptr->midiMsg.channel = MIDI_CHANNEL;                                // Set the channel see config.h
+          node_ptr->midiMsg.channel = MIDI_OUTPUT_CHANNEL;                         // Set the channel see config.h
           llist_push_front(&midiOut, node_ptr);                                    // Add the node to the midiOut linked liste
 #if DEBUG_MAPPING
           Serial.printf("\nDEBUG_HSLIDER:\t%d", val);
@@ -426,7 +426,7 @@ void mapping_cSlider(void) {
               node_ptr->midiMsg.status = MIDI_CONTROL_CHANGE;                         // Set MIDI message status to MIDI_CONTROL_CHANGE
               node_ptr->midiMsg.data1 = id;                                           // Set the note
               node_ptr->midiMsg.data2 = sliderVal;                                    // Set the velocity to 0
-              node_ptr->midiMsg.channel = MIDI_CHANNEL;                               // Set the channel see config.h
+              node_ptr->midiMsg.channel = MIDI_OUTPUT_CHANNEL;                        // Set the channel see config.h
               llist_push_front(&midiOut, node_ptr);                                   // Add the node to the midiOut linked liste
 #endif
             };
@@ -443,9 +443,9 @@ void mapping_cSlider(void) {
 #else
                 midiNode_t* node_ptr = (midiNode_t*)llist_pop_front(&midi_node_stack);                               // Get a node from the MIDI nodes stack
                 node_ptr->midiMsg.status = MIDI_CONTROL_CHANGE;                                                      // Set MIDI message status to MIDI_CONTROL_CHANGE
-                //node_ptr->midiMsg.data1 = id;                                                                        // Set the note
+                //node_ptr->midiMsg.data1 = id;                                                                      // Set the note
                 node_ptr->midiMsg.data2 = (uint8_t)map(theta, cSlider_ptr->thetaMin, cSlider_ptr->thetaMax, 0, 127); // Set the velocity to 0
-                node_ptr->midiMsg.channel = MIDI_CHANNEL;                                                            // Set the channel see config.h
+                node_ptr->midiMsg.channel = MIDI_OUTPUT_CHANNEL;                                                     // Set the channel see config.h
                 llist_push_front(&midiOut, node_ptr);                                                                // Add the node to the midiOut linked liste
 #endif
               };

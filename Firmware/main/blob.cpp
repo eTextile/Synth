@@ -17,7 +17,7 @@
 #define X_STRIDE            4             // Speed up X scanning
 #define Y_STRIDE            2             // Speed up Y scanning
 #define MIN_BLOB_PIX        4             // Set the minimum blob pixels
-#define DEBOUNCE_TIME       15            // Avioding undesired bouncing effect when taping on the sensor
+#define DEBOUNCE_TIME       0             // Avioding undesired bouncing effect when taping on the sensor / FIXME!
 
 uint8_t bitmapArray[NEW_FRAME] = {0};     // 1D Array to store (64*64) binary values
 xylr_t lifoArray[LIFO_NODES] = {0};       // 1D Array to store lifo nodes
@@ -203,7 +203,7 @@ void find_blobs(void) {
 
         if (blob_pixels > MIN_BLOB_PIX) {
           blob_t* blob_ptr = (blob_t*)llist_pop_front(&llist_blobs_stack);
-          blob_ptr->timeTag = millis();
+          blob_ptr->timeTag_debounce = millis();
 
           //Serial.printf("\nDEBUG_CSLIDER:\tblobX:\t%f\tblobY:\t%f", (float)blob_cx / blob_pixels, (float)blob_cy / blob_pixels);
 
@@ -312,7 +312,7 @@ void find_blobs(void) {
         llist_extract_node(&blobs, prevBlob_ptr, blobOut_ptr);
         blobOut_ptr->status = NOT_FOUND;
         //Serial.printf("\nDEBUG_FIND_BLOBS / Blob: %p in the **outputBlobs** linked list is NOT_FOUND", (lnode_t*)blobOut_ptr);
-        if ((millis() - blobOut_ptr->timeTag) > DEBOUNCE_TIME) {
+        if ((millis() - blobOut_ptr->timeTag_debounce) > DEBOUNCE_TIME) {
           blobOut_ptr->state = false;
           blobOut_ptr->status = TO_REMOVE;
           //Serial.printf("\nDEBUG_FIND_BLOBS / Blob: %p in the **outputBlobs** linked list taged TO_REMOVE", (lnode_t*)blobOut_ptr);

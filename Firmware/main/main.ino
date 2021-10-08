@@ -61,7 +61,7 @@ void setup() {
   SCAN_SETUP();
   INTERP_SETUP();
   BLOB_SETUP();
-  
+
 #if RUNING_MEDIAN
   RUNING_MEDIAN_SETUP();
 #endif
@@ -103,15 +103,17 @@ void loop() {
 #if MIDI_USB || MIDI_HARDWARE
   read_midi_input();
 #endif
+
 #if USB_SLIP_OSC
   read_usb_slip_osc_input();
 #endif
 
   //if (loadPreset) preset_load(); // TODO
   //if (savePreset) preset_save(); // TODO
-
-  update_buttons();
-  update_presets();
+  
+  update_presets_usb();
+  update_presets_buttons();
+  update_presets_encoder();
   update_leds();
 
 #if SYNTH_PLAYER || GRANULAR_PLAYER || FLASH_PLAYER
@@ -127,7 +129,6 @@ void loop() {
   mapping_grid_populate(); // Use the MIDI input messages to populate the grid - If commented we use the DEFAULT mapping
   mapping_grid_update();
   //mapping_blob();
-
   //mapping_trigger();
   //mapping_toggle();
   //mapping_hSlider();

@@ -21,16 +21,12 @@
 #define NEW_ROWS              (RAW_ROWS * 4)
 #define NEW_FRAME             (NEW_COLS * NEW_ROWS)
 
-
-#define BI_ 0  // [0] Blob UID
-#define BS_ 1  // [1] Blob State
-#define BL_ 2  // [2] Blob Last State
 // MIDI_CONTROL_CHANGE
-#define BX_ 3  // [3] Blob X centroid position
-#define BY_ 4  // [4] Blob Y centroid position
-#define BZ_ 5  // [5] Blob depth
-#define BW_ 6  // [6] Blob width
-#define BH_ 7  // [7] Blob height
+#define BlobX 3  // [3] Blob X centroid position
+#define BlobY 4  // [4] Blob Y centroid position
+#define BlobZ 5  // [5] Blob depth
+#define BlobW 6  // [6] Blob width
+#define BlobH 7  // [7] Blob height
 
 #define LINE_OUT          0
 #define SIG_IN            1
@@ -46,12 +42,12 @@
 #define MIDI_OFF          11
 
 struct blob_t {
-  uint8_t  id;   // [0] Blob ID
-  uint8_t  bx;   // [1] Blob X centroid position
-  uint8_t  by;   // [2] Blob Y centroid position
-  uint8_t  bz;   // [3] Blob depth
-  uint8_t  bw;   // [4] Blob width
-  uint8_t  bh;   // [5] Blob Height
+  int  id;   // [0] Blob ID
+  int  bx;   // [1] Blob X centroid position
+  int  by;   // [2] Blob Y centroid position
+  int  bz;   // [3] Blob depth
+  int  bw;   // [4] Blob width
+  int  bh;   // [5] Blob Height
 };
 
 class ofApp : public ofBaseApp, public ofxMidiListener {
@@ -77,7 +73,7 @@ public:
     ofxMidiOut                    midiOut;
 
     std::vector<ofxMidiMessage>   midiInput;
-    std::vector<ofxMidiMessage>   midiCopy;
+    std::vector<ofxMidiMessage>   midiInputCopy;
     std::vector<blob_t>           blobs;
 
     uint8_t                       mode;

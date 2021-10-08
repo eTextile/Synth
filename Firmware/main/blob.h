@@ -101,7 +101,8 @@ struct blob {
   lnode_t node;
   uint8_t UID;
   status_t status;
-  unsigned long timeTag;
+  unsigned long timeTag_debounce;
+  unsigned long timeTag_transmit;
   uint16_t pixels;
   boolean state;
   boolean lastState;

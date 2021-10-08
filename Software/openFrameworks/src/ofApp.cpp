@@ -11,13 +11,14 @@ void ofApp::setup() {
   ofSetVerticalSync(true);
   ofSetWindowTitle(POROJECT_NAME);
   ofSetLogLevel(OF_LOG_VERBOSE);
-  midiIn.listInPorts(); // via instance -> comment this line when done
+  FreeSansBold.load("FreeSansBold.ttf", 18);
+  //midiIn.listInPorts(); // via instance -> comment this line when done
   //midiOut.listOutPorts(); // via instance -> comment this line when done
-  midiIn.openPort(1);
+  midiIn.openPort(1); // MIDI_CHANNEL_OMNI !?
   midiOut.openPort(1);
   //midiIn.openPort(MIDI_PORT_NAME);
   //midiOut.openPort(MIDI_PORT_NAME);
-  midiIn.ignoreTypes(false, false, false);
+  midiIn.ignoreTypes(false, true, true);
   midiIn.addListener(this);
   midiIn.setVerbose(false); // print received messages to the console
 
@@ -34,10 +35,12 @@ void ofApp::setup() {
   gui.add(getRawToggle.setup("getRawData", false));
   gui.add(getBlobsToggle.setup("Midi Blobs", true));
 
-  mode = MIDI_BLOBS_PLAY;
   lastMode = MIDI_OFF;
-
-  ofBackground(0);
+  mode = MIDI_BLOBS_PLAY;
+  mode = MIDI_BLOBS_PLAY;
+  midiInput.clear();
+  midiInputCopy.clear();
+  midiOut.sendControlChange(1, MIDI_BLOBS_PLAY, 1);
 
   // 16 * 16
   for (int y = 0; y < RAW_ROWS; y++) {
@@ -80,21 +83,19 @@ void ofApp::setup() {
 void ofApp::update() {
 
   midiMutex.lock();
-  midiCopy.clear();
-  for (size_t i = 0; i < midiInput.size(); ++i) {
-    ofxMidiMessage &message = midiInput[i];
-    midiCopy.push_back(message);
-  };
+  midiInputCopy.clear();
+  copy(midiInput.begin(), midiInput.end(), back_inserter(midiInputCopy));
   midiInput.clear();
+  midiMutex.unlock();
 
-  for (size_t j = 0; j < midiCopy.size(); j++) {
-    ofxMidiMessage &message = midiCopy[j];
+  for (size_t j = 0; j < midiInputCopy.size(); j++) {
+    ofxMidiMessage &message = midiInputCopy[j];
     switch (mode) {
       case MIDI_RAW:
         if (message.status == MIDI_SYSEX) {
-          for (size_t k = 0; k < (256 - 1); k++) {
+          for (int k = 0; k < (256 - 1); k++) {
             ofPoint point = rawDataMesh.getVertex(k);           // Get the point coordinates
-            point.z = (float)message.bytes[k + 1] * 2;          // Change the z-coordinates
+            point.z = (float)message.bytes[k + 1];              // Change the z-coordinates
             rawDataMesh.setVertex(k, point);                    // Set the new coordinates
             rawDataMesh.setColor(k, ofColor(point.z, 0, 255));  // Change vertex color
           };
@@ -105,10 +106,9 @@ void ofApp::update() {
         if (message.status == MIDI_NOTE_ON) {
           //ofLogNotice("ofApp::update") << "midiMessage NOTE_ON : " << message.pitch;
           blob_t blob;
-          blob.id = message.pitch; // pitch == note
+          blob.id = message.pitch; // pitch == blob id
           blobs.push_back(blob);
-        }
-        else if (message.status == MIDI_NOTE_OFF) {
+        } else if (message.status == MIDI_NOTE_OFF) {
           //ofLogNotice("ofApp::update") << "midiMessage NOTE_OFF : " << message.pitch;
           for (size_t l = 0; l < blobs.size(); l++) {
             if (blobs[l].id == message.pitch) {
@@ -116,24 +116,24 @@ void ofApp::update() {
               break;
             };
           };
-        }
-        else if (message.status == MIDI_CONTROL_CHANGE) {
-          //ofLogNotice("ofApp::update") << "E256 - midiMessage CONTROL_CHANGE : " << message.control;
-          switch (message.control) {
-            case BX_:
-              blobs[message.channel - 1].bx = message.value;
+        } else if (message.status == MIDI_CONTROL_CHANGE) {
+          int channel = message.channel;
+          //ofLogNotice("ofApp::update") << "E256 - midiMessage CONTROL_CHANGE_CHANNEL: " << channel;
+          switch (channel) {
+            case BlobX:
+              blobs[message.control].bx = message.value;
               break;
-            case BY_:
-              blobs[message.channel - 1].by = message.value;
+            case BlobY:
+              blobs[message.control].by = message.value;
               break;
-            case BZ_:
-              blobs[message.channel - 1].bz = message.value;
+            case BlobZ:
+              blobs[message.control].bz = message.value;
               break;
-            case BW_:
-              blobs[message.channel - 1].bw = message.value;
+            case BlobW:
+              blobs[message.control].bw = message.value;
               break;
-            case BH_:
-              blobs[message.channel - 1].bh = message.value;
+            case BlobH:
+              blobs[message.control].bh = message.value;
               break;
             default:
               break;
@@ -144,7 +144,6 @@ void ofApp::update() {
         break;
     }; // end of switch();
   };
-  midiMutex.unlock();
 };
 
 //////////////////////// DRAW ////////////////////////
@@ -164,32 +163,39 @@ void ofApp::draw() {
   const int SCALE_V = 50;
   const int BLOB_SCALE = 10;
 
-  ofPushMatrix();
   switch (mode) {
     case MIDI_RAW:
+      ofPushMatrix();
       ofSetLineWidth(1);
       ofRotateDeg(30, 1, 0, 0);
       ofTranslate(ofGetWindowWidth() / 4.2, ofGetWindowHeight() / 8);
       ofScale(SCALE_H, SCALE_V, 1);
       rawDataMesh.drawWireframe(); // draws lines
+      ofPopMatrix();
       break;
     //case MIDI_BLOBS_PLAY || MIDI_BLOBS_LEARN:
     case MIDI_BLOBS_PLAY:
+      ofPushMatrix();
       ofRotateDeg(30, 1, 0, 0);
       for (size_t i = 0; i < blobs.size(); ++i) {
         blob_t &blob = blobs[i];
-        //ofSetColor(245, 58, 135); // Pink
-        //FreeSansBold.drawString(std::to_string(blob.id), (float)((blob.cx / 127) * ofGetWindowWidth()), (float)((blob.cy / 127) * ofGetWindowHeight()));
+        ofSetColor(245, 58, 135); // Pink
+        FreeSansBold.drawString(std::to_string(blob.id),
+        (float)(blob.bx * (ofGetWindowWidth() / 127)),
+        (float)(blob.by * (ofGetWindowHeight() / 127)));
         ofBoxPrimitive box;
         ofSetLineWidth(1);
         ofSetColor(255);
         box.setMode(OF_PRIMITIVE_TRIANGLES);
         box.setResolution(1);
         box.set(blob.bw * BLOB_SCALE, blob.bh * BLOB_SCALE, blob.bz);
-        box.setPosition(ofMap(blob.bx, 0, 127, 0, ofGetWidth() * 0.7), ofMap(blob.by, 0, 127, 0, ofGetWidth() * 0.7), blob.bz);
+        box.setPosition(
+        (float)(blob.bx * ((ofGetWindowWidth() - 20) / 127)),
+        (float)(blob.by * ((ofGetWindowWidth() - 20) / 127)),
+        (float)(blob.bz));
         box.drawWireframe();
+        ofPopMatrix();
       };
-      ofPopMatrix();
       break;
     default:
       break;
@@ -200,7 +206,6 @@ void ofApp::draw() {
 void ofApp::E256_setTreshold(int & tresholdValue) {
   lastMode = mode;
   mode = THRESHOLD;
-  //midiOut.sendProgramChange(THRESHOLD, (int8_t)tresholdValue);
   midiOut.sendControlChange(1, THRESHOLD, (int8_t)tresholdValue);
   mode = lastMode;
 };
@@ -209,27 +214,22 @@ void ofApp::E256_setTreshold(int & tresholdValue) {
 void ofApp::E256_setCaliration() {
   lastMode = mode;
   mode = CALIBRATE;
-  //midiOut.sendProgramChange(CALIBRATE, 0);
-  midiOut.sendControlChange(1, CALIBRATE, 0);
+  midiOut.sendControlChange(1, CALIBRATE, 1);
   mode = lastMode;
 };
 
 // E256 matrix sensor - get MIDI_BLOBS
 void ofApp::E256_getBlobs(bool & val) {
   if (val == true) {
-    midiInput.clear();
-    midiCopy.clear();
     mode = MIDI_BLOBS_PLAY;
-    //midiOut.sendProgramChange(MIDI_BLOBS_LEARN, 0);
-    //midiOut.sendProgramChange(MIDI_BLOBS_PLAY, 1);
-    midiOut.sendControlChange(1, MIDI_BLOBS_LEARN, 0);
     midiOut.sendControlChange(1, MIDI_BLOBS_PLAY, 1);
-  } else {
-    midiCopy.clear();
     midiInput.clear();
+    midiInputCopy.clear();
+  } else {
     mode = MIDI_BLOBS_LEARN;
-    midiOut.sendControlChange(1, MIDI_BLOBS_PLAY, 0);
     midiOut.sendControlChange(1, MIDI_BLOBS_LEARN, 1);
+    midiInput.clear();
+    midiInputCopy.clear();
   };
 };
 
@@ -237,13 +237,15 @@ void ofApp::E256_getBlobs(bool & val) {
 // 16*16 matrix row data request
 void ofApp::E256_getRaw(bool & val) {
   if (val == true) {
-    midiCopy.clear();
-    midiInput.clear();
     mode = MIDI_RAW;
     midiOut.sendControlChange(1, MIDI_RAW, 1);
+    midiInput.clear();
+    midiInputCopy.clear();
   } else {
     mode = MIDI_OFF;
-    midiOut.sendControlChange(1, MIDI_RAW, 0);
+    midiOut.sendControlChange(1, MIDI_OFF, 1);
+    midiInput.clear();
+    midiInputCopy.clear();
   };
 };
 
@@ -261,6 +263,10 @@ void ofApp::exit() {
 void ofApp::newMidiMessage(ofxMidiMessage & msg) {
   midiMutex.lock();
   midiInput.push_back(msg);
+  // remove any old messages if we have too many
+  while(midiInput.size() > 255) {
+    midiInput.erase(midiInput.begin());
+  };
   midiMutex.unlock();
 };
 

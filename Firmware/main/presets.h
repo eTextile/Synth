@@ -9,6 +9,8 @@
 
 #include "config.h"
 #include "interp.h"
+#include "llist.h"
+#include "midi_transmit.h"
 
 #include <Bounce2.h>                   // https://github.com/thomasfredericks/Bounce2
 #define ENCODER_OPTIMIZE_INTERRUPTS
@@ -67,8 +69,9 @@ extern preset_t presets[];        // Exposed local declaration see presets.cpp
 void LEDS_SETUP(void);
 void SWITCHES_SETUP(void);
 
-void update_buttons(void);
-void update_presets(void);
+void update_presets_buttons(void);
+void update_presets_encoder(void);
+void update_presets_usb(void);
 void update_leds(void);
 
 boolean setLevel(preset_t* preset_ptr);

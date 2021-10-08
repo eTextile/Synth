@@ -17,7 +17,9 @@
 #define RUNING_MEDIAN            0  // [0:1]
 #define MIDI_USB                 1  // [0:1] Set the eTextile-Synthesizer as USB MIDI divice **DO NOT FORGET: Arduino/Touls/USB_Type/MIDI**
 #define MIDI_HARDWARE            0  // [0:1] Set the eTextile-Synthesizer as MIDI divice **DO NOT FORGET: Arduino/Touls/USB_Type/Serial**
-#define MIDI_CHANNEL             1  // [1:X] Set the I/O MIDI channel
+
+#define MIDI_INPUT_CHANNEL       1  // [1:16] Set the HARDWARE MIDI_INPUT channel
+#define MIDI_OUTPUT_CHANNEL      1  // [1:16] Set the HARDWARE MIDI_OUTPUT channel
 
 #define USB_SLIP_OSC_TRANSMIT    0  // [0:1] Set the eTextile-Synthesizer as USB SLIP_OSC divice **DO NOT FORGET: Arduino/Touls/USB_Type/Serial**
 

@@ -59,7 +59,7 @@ void LEDS_SETUP(void) {
 
 // Hear it should not compile if you didn't install the library (Manually!)
 // [Bounce2](https://github.com/thomasfredericks/Bounce2)
-// in your /Applications/Arduino/library
+// Install it in /Documents/Arduino/library/
 void SWITCHES_SETUP(void) {
   BUTTON_L.attach(BUTTON_PIN_L, INPUT_PULLUP);  // Attach the debouncer to a pin with INPUT_PULLUP mode
   BUTTON_R.attach(BUTTON_PIN_R, INPUT_PULLUP);  // Attach the debouncer to a pin with INPUT_PULLUP mode
@@ -67,7 +67,63 @@ void SWITCHES_SETUP(void) {
   BUTTON_R.interval(25);                        // Debounce interval of 25 millis
 };
 
-void update_buttons(void) {
+void update_presets_usb(void) {
+  for (midiNode_t* node_ptr = (midiNode_t*)ITERATOR_START_FROM_HEAD(&midiIn); node_ptr != NULL; node_ptr = (midiNode_t*)ITERATOR_NEXT(node_ptr)) {
+    switch (node_ptr->midiMsg.status) {
+      case MIDI_NOTE_ON:
+        break;
+      case MIDI_NOTE_OFF:
+        break;
+      case MIDI_CONTROL_CHANGE:
+        switch (node_ptr->midiMsg.data1) {
+          case THRESHOLD: // PROGRAM 3
+            //lastMode = currentMode;
+            currentMode = THRESHOLD;
+            presets[THRESHOLD].val = map(node_ptr->midiMsg.data2, 0, 127, presets[THRESHOLD].minVal, presets[THRESHOLD].maxVal);
+            encoder.write(presets[THRESHOLD].val << 2);
+            interpThreshold = constrain(presets[THRESHOLD].val - 5, presets[THRESHOLD].minVal, presets[THRESHOLD].maxVal);
+            presets[THRESHOLD].ledVal = map(node_ptr->midiMsg.data2, 0, 127, 0, 255);
+            presets[THRESHOLD].setLed = true;
+            presets[THRESHOLD].updateLed = true;
+            presets[THRESHOLD].update = true;
+            break;
+          case CALIBRATE: // PROGRAM 4
+            lastMode = currentMode;
+            currentMode = CALIBRATE;
+            presets[CALIBRATE].setLed = true;
+            break;
+          case MIDI_BLOBS_PLAY: // PROGRAM 6
+            if (node_ptr->midiMsg.data2) currentMode = MIDI_BLOBS_PLAY;
+            presets[MIDI_BLOBS_PLAY].setLed = true;
+            break;
+          case MIDI_BLOBS_LEARN: // PROGRAM 7
+            if (node_ptr->midiMsg.data2) currentMode = MIDI_BLOBS_LEARN;
+            presets[MIDI_BLOBS_LEARN].setLed = true;
+            break;
+          case MIDI_MAPPING: // PROGRAM 8
+            currentMode = MIDI_MAPPING;
+            break;
+          case MIDI_RAW: // PROGRAM 9
+            if (node_ptr->midiMsg.data2 == 1) currentMode = MIDI_RAW;
+            break;
+          case MIDI_INTERP: // PROGRAM 10
+            currentMode = MIDI_INTERP;
+            break;
+          case MIDI_OFF: // PROGRAM 11
+            currentMode = MIDI_OFF;
+            break;
+          default:
+            break;
+        };
+        break;
+      default:
+        break;
+    };
+  };
+  llist_save_nodes(&midi_node_stack, &midiIn); // Save/rescure all midiOut nodes
+};
+
+void update_presets_buttons(void) {
   BUTTON_L.update();
   BUTTON_R.update();
   // ACTION : BUTTON_L short press
@@ -132,7 +188,7 @@ void update_buttons(void) {
 };
 
 // Update preset of each mode with the encoder position
-void update_presets(void) {
+void update_presets_encoder(void) {
   switch (currentMode) {
     case LINE_OUT:
       if (setLevel(&presets[LINE_OUT])) {
@@ -161,12 +217,6 @@ void update_presets(void) {
         interpThreshold = constrain(presets[THRESHOLD].val - 5, presets[THRESHOLD].minVal, presets[THRESHOLD].maxVal);
         presets[THRESHOLD].updateLed = true;
         presets[THRESHOLD].update = true;
-      };
-      break;
-    case MIDI_BLOBS_PLAY:
-      if (setLevel(&presets[MIDI_BLOBS_PLAY])) {
-        presets[MIDI_BLOBS_PLAY].updateLed = true;
-        presets[MIDI_BLOBS_PLAY].update = true;
       };
       break;
     case MIDI_BLOBS_LEARN:
