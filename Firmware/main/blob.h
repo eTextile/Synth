@@ -91,7 +91,7 @@ struct velocity {
 };
 
 typedef enum status {
-  FREE,
+  ALIVE,
   NOT_FOUND,
   TO_REMOVE
 } status_t;

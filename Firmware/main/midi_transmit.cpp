@@ -9,7 +9,7 @@
 #include <MIDI.h>                           // http://www.pjrc.com/teensy/td_midi.html
 
 unsigned long int transmitTimer = 0;
-#define TRANSMIT_INTERVAL 50
+#define TRANSMIT_INTERVAL 5
 
 #if MIDI_HARDWARE
 MIDI_CREATE_INSTANCE(HardwareSerial, Serial3, MIDI);
@@ -124,14 +124,14 @@ void midi_transmit(void) {
           }
           else {
             if (millis() - blob_ptr->timeTag_transmit > TRANSMIT_INTERVAL) {
-            blob_ptr->timeTag_transmit = millis();
+              blob_ptr->timeTag_transmit = millis();
 #if MIDI_USB
-            // usbMIDI.sendControlChange(control, value, channel);
-            usbMIDI.sendControlChange(blob_ptr->UID, (uint8_t)round(map(blob_ptr->centroid.X, 0, X_MAX - X_MIN, 0, 127)), BX);
-            usbMIDI.sendControlChange(blob_ptr->UID, (uint8_t)round(map(blob_ptr->centroid.Y, 0, X_MAX - X_MIN, 0, 127)), BY);
-            usbMIDI.sendControlChange(blob_ptr->UID, constrain(blob_ptr->centroid.Z, 0, 127), BZ);
-            usbMIDI.sendControlChange(blob_ptr->UID, blob_ptr->box.W, BW);
-            usbMIDI.sendControlChange(blob_ptr->UID, blob_ptr->box.H, BH);
+              // usbMIDI.sendControlChange(control, value, channel);
+              usbMIDI.sendControlChange(blob_ptr->UID, (uint8_t)round(map(blob_ptr->centroid.X, 0, X_MAX - X_MIN, 0, 127)), BX);
+              usbMIDI.sendControlChange(blob_ptr->UID, (uint8_t)round(map(blob_ptr->centroid.Y, 0, X_MAX - X_MIN, 0, 127)), BY);
+              usbMIDI.sendControlChange(blob_ptr->UID, constrain(blob_ptr->centroid.Z, 0, 127), BZ);
+              usbMIDI.sendControlChange(blob_ptr->UID, blob_ptr->box.W, BW);
+              usbMIDI.sendControlChange(blob_ptr->UID, blob_ptr->box.H, BH);
 #endif
             };
           };
@@ -141,8 +141,10 @@ void midi_transmit(void) {
           usbMIDI.sendNoteOff(blob_ptr->UID, 0, BS); // sendNoteOff(note, velocity, channel);
 #endif
         };
+#if MIDI_USB
         usbMIDI.send_now();
         while (usbMIDI.read()); // Read and discard any incoming MIDI messages
+#endif
       };
       break;
 
