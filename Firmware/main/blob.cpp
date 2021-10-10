@@ -259,6 +259,7 @@ void find_blobs(void) {
 
   // NEW BLOBS MANAGMENT
   // Look for corresponding blobs into the **inputBlobs** and **outputBlobs** linked list
+  uint8_t minID = 0;
   for (blob_t* blobIn_ptr = (blob_t*)ITERATOR_START_FROM_HEAD(&llist_blobs_temp); blobIn_ptr != NULL; blobIn_ptr = (blob_t*)ITERATOR_NEXT(blobIn_ptr)) {
     float minDist = 255.0f;
     blob_t* nearestBlob_ptr = NULL;
@@ -271,7 +272,7 @@ void find_blobs(void) {
     };
     // If the distance between curent blob and last blob position is less than minDist:
     // Give the nearestBlob UID to the input blob.
-    if (minDist < 4) {
+    if (minDist < 3) {
 #if DEBUG_FIND_BLOBS
       //Serial.printf("\nDEBUG_FIND_BLOBS / Distance between input & output blobs positions: %f ", dist);
       //Serial.printf("\nDEBUG_FIND_BLOBS / Found corresponding blob: %p in the **outputBlobs** linked list", (lnode_t*)nearestBlob);
@@ -285,7 +286,6 @@ void find_blobs(void) {
     else {
       // Found a new blob! We nead to give it a UID
       // Find the smallest missing UID in the outputBlobs linked list
-      uint8_t minID = 0;
       while (1) {
         boolean isFree = true;
         for (blob_t* blobOut_ptr = (blob_t*)ITERATOR_START_FROM_HEAD(&blobs); blobOut_ptr != NULL; blobOut_ptr = (blob_t*)ITERATOR_NEXT(blobOut_ptr)) {

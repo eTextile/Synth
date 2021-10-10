@@ -115,47 +115,45 @@ void midi_transmit(void) {
 
     case MIDI_BLOBS_PLAY:
       // Send all blobs values using MIDI format
+#if MIDI_USB
       for (blob_t* blob_ptr = (blob_t*)ITERATOR_START_FROM_HEAD(&blobs); blob_ptr != NULL; blob_ptr = (blob_t*)ITERATOR_NEXT(blob_ptr)) {
         if (blob_ptr->state) {
           if (!blob_ptr->lastState) {
-#if MIDI_USB
             usbMIDI.sendNoteOn(blob_ptr->UID, 1, BS); // sendNoteOn(note, velocity, channel);
+#if DEBUG_MIDI_TRANSMIT
+            Serial.printf("\nMIDI_TRANSMIT\tNOTE_ON: %d", blob_ptr->UID);
 #endif
-          }
-          else {
+          } else {
             if (millis() - blob_ptr->timeTag_transmit > TRANSMIT_INTERVAL) {
               blob_ptr->timeTag_transmit = millis();
-#if MIDI_USB
               // usbMIDI.sendControlChange(control, value, channel);
               usbMIDI.sendControlChange(blob_ptr->UID, (uint8_t)round(map(blob_ptr->centroid.X, 0, X_MAX - X_MIN, 0, 127)), BX);
               usbMIDI.sendControlChange(blob_ptr->UID, (uint8_t)round(map(blob_ptr->centroid.Y, 0, X_MAX - X_MIN, 0, 127)), BY);
               usbMIDI.sendControlChange(blob_ptr->UID, constrain(blob_ptr->centroid.Z, 0, 127), BZ);
               usbMIDI.sendControlChange(blob_ptr->UID, blob_ptr->box.W, BW);
               usbMIDI.sendControlChange(blob_ptr->UID, blob_ptr->box.H, BH);
-#endif
             };
           };
-        }
-        else {
-#if MIDI_USB
+        } else {
           usbMIDI.sendNoteOff(blob_ptr->UID, 0, BS); // sendNoteOff(note, velocity, channel);
+#if DEBUG_MIDI_TRANSMIT
+          Serial.printf("\nMIDI_TRANSMIT\tNOTE_OFF: %d", blob_ptr->UID);
 #endif
         };
-#if MIDI_USB
-        usbMIDI.send_now();
-        while (usbMIDI.read()); // Read and discard any incoming MIDI messages
-#endif
+        //usbMIDI.send_now();
+        //while (usbMIDI.read()); // Read and discard any incoming MIDI messages
       };
+#endif
       break;
 
     case MIDI_BLOBS_LEARN:
       // Send separate blobs values using Control Change MIDI format
       // Send only the last blob that have been added to the sensor surface
       // Select blob's values according to the encoder position to allow the auto-mapping into Max4Live...
+#if MIDI_USB
       if ((blob_t*)blobs.tail_ptr != NULL) {
         blob_t* blob_ptr = (blob_t*)blobs.tail_ptr;
         switch (presets[MIDI_BLOBS_LEARN].val) {
-#if MIDI_USB
           case BS:
             if (!blob_ptr->lastState) usbMIDI.sendNoteOn(blob_ptr->UID + 1, 1, 0);
             if (!blob_ptr->state) usbMIDI.sendNoteOff(blob_ptr->UID + 1, 0, 0);
@@ -175,11 +173,11 @@ void midi_transmit(void) {
           case BH:
             usbMIDI.sendControlChange(BH, blob_ptr->box.H, blob_ptr->UID + 1);
             break;
-#endif
           default:
             break;
         };
       };
+#endif
       break;
 
     case MIDI_MAPPING:
@@ -187,29 +185,29 @@ void midi_transmit(void) {
         switch (node_ptr->midiMsg.status) {
           case MIDI_NOTE_ON:
 #if DEBUG_MIDI_TRANSMIT
-            Serial.printf("\nTRANSMIT\tNOTE_ON:%d\tVALUE:%d\tCHANNEL:%d", node_ptr->midiMsg.data1, node_ptr->midiMsg.data2, MIDI_CHANNEL);
+            Serial.printf("\nTRANSMIT\tNOTE_ON:%d\tVALUE:%d\tCHANNEL:%d", node_ptr->midiMsg.data1, node_ptr->midiMsg.data2, MIDI_OUTPUT_CHANNEL);
 #endif
 #if MIDI_USB
-            usbMIDI.sendNoteOn(node_ptr->midiMsg.data1, node_ptr->midiMsg.data2, MIDI_OUTPUT_CHANNEL);        // USB send MIDI noteOn
+            usbMIDI.sendNoteOn(node_ptr->midiMsg.data1, node_ptr->midiMsg.data2, MIDI_OUTPUT_CHANNEL);  // USB send MIDI noteOn
 #endif
 #if MIDI_HARDWARE
-            MIDI.sendNoteOn(node_ptr->midiMsg.data1, node_ptr->midiMsg.data2, MIDI_OUTPUT_CHANNEL);           // Hardware send MIDI noteOn
+            MIDI.sendNoteOn(node_ptr->midiMsg.data1, node_ptr->midiMsg.data2, MIDI_OUTPUT_CHANNEL);     // Hardware send MIDI noteOn
 #endif
             break;
           case MIDI_NOTE_OFF:
 #if DEBUG_MIDI_TRANSMIT
-            Serial.printf("\nTRANSMIT\tNOTE_OFF:%d\tVALUE:%d\tCHANNEL:%d", node_ptr->midiMsg.data1, node_ptr->midiMsg.data2, MIDI_CHANNEL);
+            Serial.printf("\nTRANSMIT\tNOTE_OFF:%d\tVALUE:%d\tCHANNEL:%d", node_ptr->midiMsg.data1, node_ptr->midiMsg.data2, MIDI_OUTPUT_CHANNEL);
 #endif
 #if MIDI_USB
-            usbMIDI.sendNoteOff(node_ptr->midiMsg.data1, node_ptr->midiMsg.data2, MIDI_OUTPUT_CHANNEL);       // USB send MIDI noteOff
+            usbMIDI.sendNoteOff(node_ptr->midiMsg.data1, node_ptr->midiMsg.data2, MIDI_OUTPUT_CHANNEL);  // USB send MIDI noteOff
 #endif
 #if MIDI_HARDWARE
-            MIDI.sendNoteOff(node_ptr->midiMsg.data1, node_ptr->midiMsg.data2, MIDI_OUTPUT_CHANNEL);          // Hardware send MIDI noteOff
+            MIDI.sendNoteOff(node_ptr->midiMsg.data1, node_ptr->midiMsg.data2, MIDI_OUTPUT_CHANNEL);     // Hardware send MIDI noteOff
 #endif
             break;
           case MIDI_CONTROL_CHANGE:
 #if DEBUG_MIDI_TRANSMIT
-            Serial.printf("\nTRANSMIT\tCC:%d\tVALUE:%d\tCHANNEL:%d", node_ptr->midiMsg.data1, node_ptr->midiMsg.data2, MIDI_CHANNEL);
+            Serial.printf("\nTRANSMIT\tCC:%d\tVALUE:%d\tCHANNEL:%d", node_ptr->midiMsg.data1, node_ptr->midiMsg.data2, MIDI_OUTPUT_CHANNEL);
 #endif
 #if MIDI_USB
             usbMIDI.sendControlChange(node_ptr->midiMsg.data1, node_ptr->midiMsg.data2, MIDI_OUTPUT_CHANNEL); // USB send MIDI control_change
