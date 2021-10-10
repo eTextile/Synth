@@ -4,7 +4,7 @@
  This work is licensed under Creative Commons Attribution-ShareAlike 4.0 International license, see the LICENSE file for details.
  */
 
-// Import librarys 
+// Import librarys    
 // http://www.smallbutdigital.com/projects/themidibus/
 import themidibus.*;
 import javax.sound.midi.MidiMessage;
@@ -66,11 +66,11 @@ void draw() {
   update();
   background(0);
   pushMatrix();
-  blob_t blob;
+
   for (int i = 0; i < blobs.size(); i++) {
-    blob = blobs.get(i);
+    blob_t blob = blobs.get(i);
     translate((width/127) * blob.bx, (height/127) * blob.by); 
-    rotateZ(0.5);
+    //rotateZ(0.5);
     noFill();
     box(blob.bw * 10, blob.bh * 10, blob.bz * 5);
   };
@@ -80,8 +80,12 @@ void draw() {
 void update() {
   midiInputCopy.addAll(midiInput);
   midiInput.clear();
+
   for (int msg = 0; msg < midiInputCopy.size(); msg++) {
+    //MidiMessage midiMsg = midiInputCopy.get(msg);
     ShortMessage midiMsg = (ShortMessage) midiInputCopy.get(msg);
+    int channel = midiMsg.getChannel();
+    //println("blob_Channel:" + channel);
 
     switch (mode) {
     case MIDI_BLOBS_PLAY:
@@ -95,11 +99,10 @@ void update() {
         for (int b = 0; b < blobs.size(); b++) {
           if (blobs.get(b).id == midiMsg.getData1()) {
             blobs.remove(b);
-            //break;
+            break;
           };
         };
       } else if (ShortMessage.CONTROL_CHANGE == midiMsg.getStatus()) {
-        int channel = midiMsg.getChannel(); // FIXME!
         println("blob_Channel:" + channel);
         for (int i = 0; i < blobs.size(); i++) {
           blob_t blobToUpdate = blobs.get(i);
@@ -131,6 +134,7 @@ void update() {
           };
         };
       };
+
     case MIDI_RAW:
       // TODO SYSEX
       break;
@@ -145,9 +149,9 @@ void midiMessage(MidiMessage message) {
   midiInput.add(message);
   /*
   while (midiInput.size() > 255) {
-    midiInput.remove(0);
-  };
-  */
+   midiInput.remove(0);
+   };
+   */
 };
 
 void delay(int time) {

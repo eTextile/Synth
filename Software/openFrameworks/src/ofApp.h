@@ -14,6 +14,9 @@
 #define POROJECT_NAME         "ETEXTILE-SYNTH"
 #define MIDI_PORT_NAME        "E256"
 #define VERSION               "1.0.7"
+
+#define MIDI_OUTPUT_CHANNEL   1  // [1:15] Set the MIDI_OUTPUT channel
+
 #define RAW_COLS              16
 #define RAW_ROWS              16
 #define RAW_FRAME             (RAW_COLS * RAW_ROWS)

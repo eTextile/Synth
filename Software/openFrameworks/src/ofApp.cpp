@@ -10,8 +10,8 @@
 void ofApp::setup() {
   ofSetVerticalSync(true);
   ofSetWindowTitle(POROJECT_NAME);
-  ofSetLogLevel(OF_LOG_VERBOSE);
-  FreeSansBold.load("FreeSansBold.ttf", 18);
+  //ofSetLogLevel(OF_LOG_VERBOSE);
+  FreeSansBold.load("FreeSansBold.ttf", 14);
   //midiIn.listInPorts(); // via instance -> comment this line when done
   //midiOut.listOutPorts(); // via instance -> comment this line when done
   midiIn.openPort(1); // MIDI_CHANNEL_OMNI !?
@@ -33,14 +33,13 @@ void ofApp::setup() {
   gui.add(setTresholdSlider.setup("Threshold", 10, 0, 127));
   gui.add(setCalirationButton.setup("Calibrate"));
   gui.add(getRawToggle.setup("getRawData", false));
-  gui.add(getBlobsToggle.setup("Midi Blobs", true));
+  gui.add(getBlobsToggle.setup("Midi Blobs", false));
 
   lastMode = MIDI_OFF;
   mode = MIDI_BLOBS_PLAY;
-  mode = MIDI_BLOBS_PLAY;
   midiInput.clear();
   midiInputCopy.clear();
-  midiOut.sendControlChange(1, MIDI_BLOBS_PLAY, 1);
+  midiOut.sendControlChange(MIDI_OUTPUT_CHANNEL, MIDI_BLOBS_PLAY, 1);
 
   // 16 * 16
   for (int y = 0; y < RAW_ROWS; y++) {
@@ -93,7 +92,7 @@ void ofApp::update() {
     switch (mode) {
       case MIDI_RAW:
         if (message.status == MIDI_SYSEX) {
-          for (int k = 0; k < (256 - 1); k++) {
+          for (int k = 0; k < 256; k++) {
             ofPoint point = rawDataMesh.getVertex(k);           // Get the point coordinates
             point.z = (float)message.bytes[k + 1];              // Change the z-coordinates
             rawDataMesh.setVertex(k, point);                    // Set the new coordinates
@@ -104,15 +103,15 @@ void ofApp::update() {
       //case MIDI_BLOBS_PLAY || MIDI_BLOBS_LEARN:
       case MIDI_BLOBS_PLAY:
         if (message.status == MIDI_NOTE_ON) {
-          //ofLogNotice("ofApp::update") << "midiMessage NOTE_ON : " << message.pitch;
+          ofLogNotice("ofApp::update") << "midiMessage NOTE_ON : " << message.pitch;
           blob_t blob;
-          blob.id = message.pitch; // pitch == blob id
+          blob.id = message.pitch; // pitch is also call note
           blobs.push_back(blob);
         } else if (message.status == MIDI_NOTE_OFF) {
-          //ofLogNotice("ofApp::update") << "midiMessage NOTE_OFF : " << message.pitch;
-          for (size_t l = 0; l < blobs.size(); l++) {
-            if (blobs[l].id == message.pitch) {
-              blobs.erase(blobs.begin() + l);
+          ofLogNotice("ofApp::update") << "midiMessage NOTE_OFF : " << message.pitch;
+          for (size_t m = 0; m < blobs.size(); m++) {
+            if (blobs[m].id == message.pitch) {
+              blobs.erase(blobs.begin() + m);
               break;
             };
           };
@@ -177,12 +176,13 @@ void ofApp::draw() {
     case MIDI_BLOBS_PLAY:
       ofPushMatrix();
       ofRotateDeg(30, 1, 0, 0);
+
       for (size_t i = 0; i < blobs.size(); ++i) {
         blob_t &blob = blobs[i];
         ofSetColor(245, 58, 135); // Pink
         FreeSansBold.drawString(std::to_string(blob.id),
-        (float)(blob.bx * (ofGetWindowWidth() / 127)),
-        (float)(blob.by * (ofGetWindowHeight() / 127)));
+        (float)(blob.bx * ((ofGetWindowWidth() - 20) / 127) - 100),
+        (float)(blob.by * ((ofGetWindowHeight() - 20) / 127)));
         ofBoxPrimitive box;
         ofSetLineWidth(1);
         ofSetColor(255);
@@ -191,8 +191,7 @@ void ofApp::draw() {
         box.set(blob.bw * BLOB_SCALE, blob.bh * BLOB_SCALE, blob.bz);
         box.setPosition(
         (float)(blob.bx * ((ofGetWindowWidth() - 20) / 127)),
-        (float)(blob.by * ((ofGetWindowWidth() - 20) / 127)),
-        (float)(blob.bz));
+        (float)(blob.by * ((ofGetWindowHeight() - 20) / 127)), 0);
         box.drawWireframe();
         ofPopMatrix();
       };
@@ -206,7 +205,7 @@ void ofApp::draw() {
 void ofApp::E256_setTreshold(int & tresholdValue) {
   lastMode = mode;
   mode = THRESHOLD;
-  midiOut.sendControlChange(1, THRESHOLD, (int8_t)tresholdValue);
+  midiOut.sendControlChange(MIDI_OUTPUT_CHANNEL, THRESHOLD, (int8_t)tresholdValue);
   mode = lastMode;
 };
 
@@ -214,7 +213,7 @@ void ofApp::E256_setTreshold(int & tresholdValue) {
 void ofApp::E256_setCaliration() {
   lastMode = mode;
   mode = CALIBRATE;
-  midiOut.sendControlChange(1, CALIBRATE, 1);
+  midiOut.sendControlChange(MIDI_OUTPUT_CHANNEL, CALIBRATE, 1);
   mode = lastMode;
 };
 
@@ -222,12 +221,12 @@ void ofApp::E256_setCaliration() {
 void ofApp::E256_getBlobs(bool & val) {
   if (val == true) {
     mode = MIDI_BLOBS_PLAY;
-    midiOut.sendControlChange(1, MIDI_BLOBS_PLAY, 1);
+    midiOut.sendControlChange(MIDI_OUTPUT_CHANNEL, MIDI_BLOBS_PLAY, 1);
     midiInput.clear();
     midiInputCopy.clear();
   } else {
     mode = MIDI_BLOBS_LEARN;
-    midiOut.sendControlChange(1, MIDI_BLOBS_LEARN, 1);
+    midiOut.sendControlChange(MIDI_OUTPUT_CHANNEL, MIDI_BLOBS_LEARN, 1);
     midiInput.clear();
     midiInputCopy.clear();
   };
@@ -238,12 +237,13 @@ void ofApp::E256_getBlobs(bool & val) {
 void ofApp::E256_getRaw(bool & val) {
   if (val == true) {
     mode = MIDI_RAW;
-    midiOut.sendControlChange(1, MIDI_RAW, 1);
+    midiOut.sendControlChange(MIDI_OUTPUT_CHANNEL, MIDI_RAW, 1);
+    midiOut.sendControlChange(MIDI_OUTPUT_CHANNEL, MIDI_RAW, 1);
     midiInput.clear();
     midiInputCopy.clear();
   } else {
     mode = MIDI_OFF;
-    midiOut.sendControlChange(1, MIDI_OFF, 1);
+    midiOut.sendControlChange(MIDI_OUTPUT_CHANNEL, MIDI_OFF, 1);
     midiInput.clear();
     midiInputCopy.clear();
   };
