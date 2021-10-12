@@ -25,7 +25,7 @@ void RUNING_MEDIAN_SETUP(void) {
 // or overwrites the oldest if buffer is full
 void runing_median(void) {
 
-  for (blob_t* blob_ptr = (blob_t*)ITERATOR_START_FROM_HEAD(&blobs); blob_ptr != NULL; blob_ptr = (blob_t*)ITERATOR_NEXT(blob_ptr)) {
+  for (blob_t* blob_ptr = (blob_t*)ITERATOR_START_FROM_HEAD(&llist_blobs); blob_ptr != NULL; blob_ptr = (blob_t*)ITERATOR_NEXT(blob_ptr)) {
 
     if (!blob_ptr->lastState) {
       filter[blob_ptr->UID].count = 1; // Circular buffer fill index

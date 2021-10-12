@@ -25,7 +25,7 @@ void TRIGGER_SETUP(void) {
 };
 
 void mapping_trigger(void) {
-  for (blob_t* blob_ptr = (blob_t*)ITERATOR_START_FROM_HEAD(&blobs); blob_ptr != NULL; blob_ptr = (blob_t*)ITERATOR_NEXT(blob_ptr)) {
+  for (blob_t* blob_ptr = (blob_t*)ITERATOR_START_FROM_HEAD(&llist_blobs); blob_ptr != NULL; blob_ptr = (blob_t*)ITERATOR_NEXT(blob_ptr)) {
     if (blob_ptr->UID < MAX_SYNTH) {                                          // Test if the blob UID is less than MAX_SYNTH
       for (uint8_t keyPos = 0; keyPos < TRIGGERS; keyPos++) {
         if (blob_ptr->centroid.X > triggerKey[keyPos].rect.Xmin &&
@@ -81,7 +81,7 @@ void TOGGLE_SETUP(void) {
 };
 
 void mapping_toggle(void) {
-  for (blob_t* blob_ptr = (blob_t*)ITERATOR_START_FROM_HEAD(&blobs); blob_ptr != NULL; blob_ptr = (blob_t*)ITERATOR_NEXT(blob_ptr)) {
+  for (blob_t* blob_ptr = (blob_t*)ITERATOR_START_FROM_HEAD(&llist_blobs); blob_ptr != NULL; blob_ptr = (blob_t*)ITERATOR_NEXT(blob_ptr)) {
     if (blob_ptr->UID < MAX_SYNTH) {   // Test if the blob UID is less than MAX_SYNTH
       for (uint8_t keyPos = 0; keyPos < TOGGLES; keyPos++) {
         if (blob_ptr->centroid.X > toggleKey[keyPos].rect.Xmin &&
@@ -158,7 +158,7 @@ void GRID_LAYOUT_SETUP(void) {
 // Compute the keyPresed position acording to the blobs XY (centroid) coordinates
 // Add corresponding MIDI message to the MIDI out liked list
 void mapping_grid_update(void) {
-  for (blob_t* blob_ptr = (blob_t*)ITERATOR_START_FROM_HEAD(&blobs); blob_ptr != NULL; blob_ptr = (blob_t*)ITERATOR_NEXT(blob_ptr)) {
+  for (blob_t* blob_ptr = (blob_t*)ITERATOR_START_FROM_HEAD(&llist_blobs); blob_ptr != NULL; blob_ptr = (blob_t*)ITERATOR_NEXT(blob_ptr)) {
     if (blob_ptr->UID < MAX_SYNTH) {                                                // Test if the blob UID is less than MAX_SYNTH
       uint8_t keyPressX = lround(blob_ptr->centroid.X * GRID_X_SCALE_FACTOR);       // Compute X grid position
       uint8_t keyPressY = lround(blob_ptr->centroid.Y * GRID_Y_SCALE_FACTOR);       // Compute Y grid position
@@ -284,7 +284,7 @@ void VSLIDER_SETUP(void) {
 };
 
 void mapping_vSliders(void) {
-  for (blob_t* blob_ptr = (blob_t*)ITERATOR_START_FROM_HEAD(&blobs); blob_ptr != NULL; blob_ptr = (blob_t*)ITERATOR_NEXT(blob_ptr)) {
+  for (blob_t* blob_ptr = (blob_t*)ITERATOR_START_FROM_HEAD(&llist_blobs); blob_ptr != NULL; blob_ptr = (blob_t*)ITERATOR_NEXT(blob_ptr)) {
     for (uint8_t index = 0; index < VSLIDERS; index++) {
       if (blob_ptr->centroid.X > vSlider[index].Xmin &&
           blob_ptr->centroid.X < vSlider[index].Xmax &&
@@ -326,7 +326,7 @@ void HSLIDER_SETUP(void) {
 };
 
 void mapping_hSliders(void) {
-  for (blob_t* blob_ptr = (blob_t*)ITERATOR_START_FROM_HEAD(&blobs); blob_ptr != NULL; blob_ptr = (blob_t*)ITERATOR_NEXT(blob_ptr)) {
+  for (blob_t* blob_ptr = (blob_t*)ITERATOR_START_FROM_HEAD(&llist_blobs); blob_ptr != NULL; blob_ptr = (blob_t*)ITERATOR_NEXT(blob_ptr)) {
     for (uint8_t index = 0; index < HSLIDERS; index++) {
       if (blob_ptr->centroid.X > hSlider[index].Xmin &&
           blob_ptr->centroid.X < hSlider[index].Xmax &&
@@ -389,7 +389,7 @@ void CSLIDER_SETUP(void) {
 };
 
 void mapping_cSlider(void) {
-  for (blob_t* blob_ptr = (blob_t*)ITERATOR_START_FROM_HEAD(&blobs); blob_ptr != NULL; blob_ptr = (blob_t*)ITERATOR_NEXT(blob_ptr)) {
+  for (blob_t* blob_ptr = (blob_t*)ITERATOR_START_FROM_HEAD(&llist_blobs); blob_ptr != NULL; blob_ptr = (blob_t*)ITERATOR_NEXT(blob_ptr)) {
     float x = blob_ptr->centroid.X - CS_RADIUS;
     float y = blob_ptr->centroid.Y - CS_RADIUS;
     float radius = sqrt(x * x + y * y);
@@ -467,7 +467,7 @@ cChange_t cChange[CCHANGE] = {
 };
 
 void mapping_blob(void) {
-  for (blob_t* blob_ptr = (blob_t*)ITERATOR_START_FROM_HEAD(&blobs); blob_ptr != NULL; blob_ptr = (blob_t*)ITERATOR_NEXT(blob_ptr)) {
+  for (blob_t* blob_ptr = (blob_t*)ITERATOR_START_FROM_HEAD(&llist_blobs); blob_ptr != NULL; blob_ptr = (blob_t*)ITERATOR_NEXT(blob_ptr)) {
     for (int index = 0; index < CCHANGE; index++) {
       if (blob_ptr->UID == cChange[index].blobID) {
         // Test if the blob is alive

@@ -18,7 +18,7 @@
 #include "presets.h"
 #include "median.h"
 
-extern llist_t blobs;            // Exposed local declaration see blob.cpp
+extern llist_t llist_blobs;            // Exposed local declaration see blob.cpp
 
 typedef struct image image_t;
 struct image {
@@ -91,6 +91,7 @@ struct velocity {
 };
 
 typedef enum status {
+  FREE,
   ALIVE,
   NOT_FOUND,
   TO_REMOVE
@@ -99,7 +100,7 @@ typedef enum status {
 typedef struct blob blob_t;
 struct blob {
   lnode_t node;
-  uint8_t UID;
+  int8_t UID;
   status_t status;
   unsigned long timeTag_debounce;
   unsigned long timeTag_transmit;

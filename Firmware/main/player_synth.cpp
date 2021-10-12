@@ -98,7 +98,7 @@ void SYNTH_PLAYER_SETUP(void) {
 void synth_player(void) {
   //static boolean lastState[MAX_BLOBS] = {false};
 
-  for (blob_t* blob_ptr = (blob_t *)ITERATOR_START_FROM_HEAD(&blobs); blob_ptr != NULL; blob_ptr = (blob_t *)ITERATOR_NEXT(blob_ptr)) {
+  for (blob_t* blob_ptr = (blob_t *)ITERATOR_START_FROM_HEAD(&llist_blobs); blob_ptr != NULL; blob_ptr = (blob_t *)ITERATOR_NEXT(blob_ptr)) {
 
     if (blob_ptr->UID < MAX_SYNTH) {
       AudioNoInterrupts();

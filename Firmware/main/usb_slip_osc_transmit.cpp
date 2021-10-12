@@ -63,9 +63,9 @@ void usb_slip_osc_handle_input(void) {
     }
     else if (request.fullMatch("/b")) { // Get blobs
       OSCBundle OSCbundle;
-      for (blob_t* blob_ptr = (blob_t*)ITERATOR_START_FROM_HEAD(&blobs); blob_ptr != NULL; blob_ptr = (blob_t*)ITERATOR_NEXT(blob_ptr)) {
+      for (blob_t* blob_ptr = (blob_t*)ITERATOR_START_FROM_HEAD(&llist_blobs); blob_ptr != NULL; blob_ptr = (blob_t*)ITERATOR_NEXT(blob_ptr)) {
         OSCMessage msg("/b");
-        //msg.add((uint8_t*)&blobs, 14); // FIXME
+        //msg.add((uint8_t*)&llist_blobs, 14); // FIXME
         msg.add(blob_ptr->UID);
         msg.add(blob_ptr->state);
         msg.add(blob_ptr->lastState);

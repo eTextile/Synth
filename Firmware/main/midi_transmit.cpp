@@ -116,7 +116,7 @@ void midi_transmit(void) {
     case MIDI_BLOBS_PLAY:
       // Send all blobs values using MIDI format
 #if MIDI_USB
-      for (blob_t* blob_ptr = (blob_t*)ITERATOR_START_FROM_HEAD(&blobs); blob_ptr != NULL; blob_ptr = (blob_t*)ITERATOR_NEXT(blob_ptr)) {
+      for (blob_t* blob_ptr = (blob_t*)ITERATOR_START_FROM_HEAD(&llist_blobs); blob_ptr != NULL; blob_ptr = (blob_t*)ITERATOR_NEXT(blob_ptr)) {
         if (blob_ptr->state) {
           if (!blob_ptr->lastState) {
             usbMIDI.sendNoteOn(blob_ptr->UID, 1, BS); // sendNoteOn(note, velocity, channel);
@@ -132,13 +132,18 @@ void midi_transmit(void) {
               usbMIDI.sendControlChange(blob_ptr->UID, constrain(blob_ptr->centroid.Z, 0, 127), BZ);
               usbMIDI.sendControlChange(blob_ptr->UID, blob_ptr->box.W, BW);
               usbMIDI.sendControlChange(blob_ptr->UID, blob_ptr->box.H, BH);
+#if DEBUG_MIDI_TRANSMIT
+              Serial.printf("\nMIDI_TRANSMIT\tNOTE_CONTROL_CHANGE: %d", blob_ptr->UID);
+#endif
             };
           };
         } else {
-          usbMIDI.sendNoteOff(blob_ptr->UID, 0, BS); // sendNoteOff(note, velocity, channel);
+          if (blob_ptr->lastState && blob_ptr->status != NOT_FOUND) {
+            usbMIDI.sendNoteOff(blob_ptr->UID, 0, BS); // sendNoteOff(note, velocity, channel);
 #if DEBUG_MIDI_TRANSMIT
-          Serial.printf("\nMIDI_TRANSMIT\tNOTE_OFF: %d", blob_ptr->UID);
+            Serial.printf("\nMIDI_TRANSMIT\tNOTE_OFF: %d", blob_ptr->UID);
 #endif
+          };
         };
         //usbMIDI.send_now();
         //while (usbMIDI.read()); // Read and discard any incoming MIDI messages
@@ -151,8 +156,8 @@ void midi_transmit(void) {
       // Send only the last blob that have been added to the sensor surface
       // Select blob's values according to the encoder position to allow the auto-mapping into Max4Live...
 #if MIDI_USB
-      if ((blob_t*)blobs.tail_ptr != NULL) {
-        blob_t* blob_ptr = (blob_t*)blobs.tail_ptr;
+      if ((blob_t*)llist_blobs.tail_ptr != NULL) {
+        blob_t* blob_ptr = (blob_t*)llist_blobs.tail_ptr;
         switch (presets[MIDI_BLOBS_LEARN].val) {
           case BS:
             if (!blob_ptr->lastState) usbMIDI.sendNoteOn(blob_ptr->UID + 1, 1, 0);
