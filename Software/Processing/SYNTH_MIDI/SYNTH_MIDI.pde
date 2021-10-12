@@ -6,6 +6,8 @@
 
 // Import librarys    
 // http://www.smallbutdigital.com/projects/themidibus/
+// https://docs.oracle.com/javase/7/docs/api/javax/sound/midi/MidiMessage.html
+
 import themidibus.*;
 import javax.sound.midi.MidiMessage;
 import javax.sound.midi.ShortMessage;
@@ -40,9 +42,9 @@ final byte THRESHOLD =        3;
 final byte CALIBRATE =        4;
 final byte MIDI_BLOBS_PLAY =  6;
 final byte MIDI_BLOBS_LEARN = 7;
-final byte MIDI_RAW =         8;
-final byte MIDI_INTERP =      9;
-final byte MIDI_MAPPING =     10;
+final byte MIDI_MAPPING =     8;
+final byte MIDI_RAW =         9;
+final byte MIDI_INTERP =      10;
 final byte MIDI_OFF =         11;
 
 byte mode = MIDI_BLOBS_PLAY;
@@ -50,6 +52,9 @@ byte mode = MIDI_BLOBS_PLAY;
 ArrayList<MidiMessage> midiInput = new ArrayList<MidiMessage>();
 ArrayList<MidiMessage> midiInputCopy  = new ArrayList<MidiMessage>();
 ArrayList<blob_t> blobs = new ArrayList<blob_t>();
+
+ShortMessage lastMidiMsg_ON = new ShortMessage();
+ShortMessage lastMidiMsg_OFF = new ShortMessage();
 
 void setup() {
   size(800, 800, P3D);
@@ -66,13 +71,14 @@ void draw() {
   update();
   background(0);
   pushMatrix();
-
   for (int i = 0; i < blobs.size(); i++) {
-    blob_t blob = blobs.get(i);
-    translate((width/127) * blob.bx, (height/127) * blob.by); 
+    blob_t theBlob = blobs.get(i);
+    textSize(50);
+    text(theBlob.id, (width/127) * theBlob.bx, (height/127) * theBlob.by);
+    translate((width/127) * theBlob.bx, (height/127) * theBlob.by); 
     //rotateZ(0.5);
     noFill();
-    box(blob.bw * 10, blob.bh * 10, blob.bz * 5);
+    box(theBlob.bw * 10, theBlob.bh * 10, theBlob.bz * 5);
   };
   popMatrix();
 };
@@ -80,36 +86,44 @@ void draw() {
 void update() {
   midiInputCopy.addAll(midiInput);
   midiInput.clear();
-
   for (int msg = 0; msg < midiInputCopy.size(); msg++) {
-    //MidiMessage midiMsg = midiInputCopy.get(msg);
-    ShortMessage midiMsg = (ShortMessage) midiInputCopy.get(msg);
-    int channel = midiMsg.getChannel();
-    //println("blob_Channel:" + channel);
-
     switch (mode) {
     case MIDI_BLOBS_PLAY:
-      if (ShortMessage.NOTE_ON == midiMsg.getStatus()) {
-        println("blob_ID_ON: " + midiMsg.getData1());
-        blob_t newBlob = new blob_t();
-        newBlob.id = midiMsg.getData1();
-        blobs.add(newBlob);
-      } else if (ShortMessage.NOTE_OFF == midiMsg.getStatus()) {
-        println("blob_ID_OFF: " + midiMsg.getData1());
-        for (int b = 0; b < blobs.size(); b++) {
-          if (blobs.get(b).id == midiMsg.getData1()) {
-            blobs.remove(b);
-            break;
+      ShortMessage midiMsg = (ShortMessage) midiInputCopy.get(msg);
+      int status = -1;
+      try {
+        status = midiMsg.getCommand();
+      }
+      catch (Exception e) {
+        print(e);
+      } 
+      if (status == ShortMessage.NOTE_ON) {
+        if (midiMsg.getData1() != lastMidiMsg_ON.getData1()) {
+          lastMidiMsg_ON = midiMsg;
+          println("blob_ID_ON: " + midiMsg.getData1());
+          blob_t newBlob = new blob_t();
+          newBlob.id = midiMsg.getData1();
+          blobs.add(newBlob);
+        };
+      } else if (status == ShortMessage.NOTE_OFF) {
+        if (midiMsg.getData1() != lastMidiMsg_OFF.getData1()) {
+          lastMidiMsg_OFF = midiMsg;
+          println("blob_ID_OFF: " + midiMsg.getData1());
+          for (int b = 0; b < blobs.size(); b++) {
+            if (blobs.get(b).id == midiMsg.getData1()) {
+              blobs.remove(b);
+              break;
+            };
           };
         };
-      } else if (ShortMessage.CONTROL_CHANGE == midiMsg.getStatus()) {
-        println("blob_Channel:" + channel);
+      } else if (status == ShortMessage.CONTROL_CHANGE) {
+        //println("blob_Channel:" + midiMsg.getChannel());
         for (int i = 0; i < blobs.size(); i++) {
-          blob_t blobToUpdate = blobs.get(i);
+          blob_t blobToUpdate = blobs.get(i); 
           if (midiMsg.getData1() == blobToUpdate.id) {
-            switch (channel) {
+            switch (midiMsg.getChannel() + 1) {
             case BlobX:
-              print(" X: " + midiMsg.getData2() + "_");
+              //print(" X: " + midiMsg.getData2() + "_");
               blobToUpdate.bx = midiMsg.getData2();
               break;
             case BlobY:
@@ -134,7 +148,6 @@ void update() {
           };
         };
       };
-
     case MIDI_RAW:
       // TODO SYSEX
       break;
