@@ -133,7 +133,7 @@ void midi_transmit(void) {
               usbMIDI.sendControlChange(blob_ptr->UID, blob_ptr->box.W, BW);
               usbMIDI.sendControlChange(blob_ptr->UID, blob_ptr->box.H, BH);
 #if DEBUG_MIDI_TRANSMIT
-              Serial.printf("\nMIDI_TRANSMIT\tNOTE_CONTROL_CHANGE: %d", blob_ptr->UID);
+              Serial.printf("\nMIDI_TRANSMIT\tCONTROL_CHANGE: %d", blob_ptr->UID);
 #endif
             };
           };

@@ -337,8 +337,8 @@ void find_blobs(void) {
       if (!found) {
         allDone = false;
         if ((millis() - blobOut_ptr->timeTag_debounce) < DEBOUNCE_TIME) {
-          blobOut_ptr->state = false;
-          blobOut_ptr->lastState = true; // TO_REMOVE_LATER
+          //blobOut_ptr->state = false;
+          //blobOut_ptr->lastState = true; // TO_REMOVE_LATER
           blobOut_ptr->status = NOT_FOUND;
 #if DEBUG_FIND_BLOBS
           Serial.printf("\nDEBUG_FIND_BLOBS / Blob: %p in the **llist_blobs** linked list is NOT_FOUND(%d)", (lnode_t*)blobOut_ptr, blobOut_ptr->UID);
