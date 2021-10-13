@@ -13,8 +13,10 @@
 #define PROJECT                  "ETEXTILE-SYNTHESIZER"
 #define VERSION                  "1.0.7"
 
-#define VELOCITY                 0  // [0:1]
-#define RUNING_MEDIAN            0  // [0:1]
+#define VELOCITY                 0  // [0:1] IN_PROGRESS
+#define RUNING_MEDIAN            0  // [0:1] IN_PROGRESS
+
+#define SERIAL_USB               0
 #define MIDI_USB                 1  // [0:1] Set the eTextile-Synthesizer as USB MIDI divice **DO NOT FORGET: Arduino/Touls/USB_Type/MIDI**
 #define MIDI_HARDWARE            0  // [0:1] Set the eTextile-Synthesizer as MIDI divice **DO NOT FORGET: Arduino/Touls/USB_Type/Serial**
 
@@ -41,11 +43,11 @@
 #define DEBUG_ADC                0  // [0:1] Print 16x16 Analog raw values
 #define DEBUG_INTERP             0  // [0:1] Print 64x64 interpolated values
 #define DEBUG_BITMAP             0  // [0:1] Print 64x64 binary image based on threshold
-#define DEBUG_FIND_BLOBS         0  // [0:1] Print lowlevel blobs values
-#define DEBUG_BLOBS              0  // [0:1] Print blobs values
+#define DEBUG_FIND_BLOBS         1  // [0:1] Print lowlevel blobs values
+#define DEBUG_BLOBS              1  // [0:1] Print blobs values
 #define DEBUG_MEDIAN             0  // [0:1] Print blobs values
 #define DEBUG_MAPPING            0  // [0:1] Print GUI values
-#define DEBUG_MIDI_TRANSMIT      0  // [0:1] Print MIDI values
+#define DEBUG_MIDI_TRANSMIT      1  // [0:1] Print MIDI values
 
 #define BAUD_RATE                230400
 #define RAW_COLS                 16
@@ -58,12 +60,12 @@
 #define NEW_FRAME                (NEW_COLS * NEW_ROWS)
 #define SIZEOF_FRAME             (NEW_FRAME * sizeof(uint8_t))
 
-#define X_MIN                    1  // Blobs centroid X min value
-#define Y_MIN                    1  // Blobs centroid Y min value
-#define X_MAX                    58 // Blobs centroid X max value
-#define Y_MAX                    58 // Blobs centroid Y max value
+#define X_MIN                    1  // Blob centroid X min value
+#define X_MAX                    58 // Blob centroid X max value
+#define Y_MIN                    1  // Blob centroid Y min value
+#define Y_MAX                    58 // Blob centroid Y max value
 
-#define MAX_SYNTH                8  // [1:8] How many synthesizers can be played at the same time
+#define MAX_SYNTH                8  // [0:7] How many synthesizers can be played at the same time
 
 //#define PI                     (float)3.1415926535897932384626433832795
 #define IIPi                     (float)(2 * PI)

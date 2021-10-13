@@ -35,10 +35,14 @@ Bounce2::Button BUTTON_L = Bounce2::Button();
 //Button BUTTON_R = Button(); // DEPRECATED
 Bounce2::Button BUTTON_R = Bounce2::Button();
 
-uint8_t currentMode = CALIBRATE;     // Init currentMode with CALIBRATE (DEFAULT_MODE)
-//uint8_t lastMode = LINE_OUT;       // Init lastMode with LINE_OUT (DEFAULT_MODE)
-//uint8_t lastMode = MIDI_MAPPING;   // Init lastMode with MIDI_MAPPING (DEFAULT_MODE)
-uint8_t lastMode = MIDI_BLOBS_PLAY;  // Init lastMode with MIDI_BLOBS_PLAY (DEFAULT_MODE)
+uint8_t currentMode = CALIBRATE;      // Init currentMode with CALIBRATE (SET as DEFAULT_MODE)
+//uint8_t lastMode = LINE_OUT;        // Init lastMode with LINE_OUT (SET as DEFAULT_MODE)
+//uint8_t lastMode = MIDI_MAPPING;    // Init lastMode with MIDI_MAPPING (SET as DEFAULT_MODE)
+uint8_t lastMode = MIDI_BLOBS_PLAY; // Init lastMode with MIDI_BLOBS_PLAY (SET as DEFAULT_MODE)
+
+//uint8_t lastMode = SERIAL_RAW;
+//uint8_t lastMode = SERIAL_INTERP;
+//uint8_t lastMode = SERIAL_BLOBS;
 
 preset_t presets[9] = {
   {13, 31, 29, 0, false, false, false, LOW,  LOW },  // LINE_OUT         - ARGS[minVal, maxVal, val, ledVal, setLed, updateLed, update, D1, D2]
@@ -71,8 +75,10 @@ void update_presets_usb(void) {
   for (midiNode_t* node_ptr = (midiNode_t*)ITERATOR_START_FROM_HEAD(&midiIn); node_ptr != NULL; node_ptr = (midiNode_t*)ITERATOR_NEXT(node_ptr)) {
     switch (node_ptr->midiMsg.status) {
       case MIDI_NOTE_ON:
+        // NOT_USED
         break;
       case MIDI_NOTE_OFF:
+        // NOT_USED
         break;
       case MIDI_CONTROL_CHANGE:
         switch (node_ptr->midiMsg.data1) {

@@ -33,21 +33,20 @@ void llist_push_front(llist_t* llist_ptr, void* data_ptr) {
     llist_ptr->head_ptr = node;
   }
   else {
-    llist_ptr->head_ptr = llist_ptr->tail_ptr = node;
     node->next_ptr = NULL;
+    llist_ptr->head_ptr = llist_ptr->tail_ptr = node;
   };
 };
 
 void llist_push_back(llist_t* llist_ptr, void* data_ptr) {
   lnode_t* node = (lnode_t*)data_ptr;
   node->next_ptr = NULL;
-  if (llist_ptr->tail_ptr != NULL) {
-    llist_ptr->tail_ptr->next_ptr = node ;
+  if (llist_ptr->head_ptr != NULL) {
+    llist_ptr->tail_ptr->next_ptr = node;
     llist_ptr->tail_ptr = node;
   }
   else {
     llist_ptr->head_ptr = llist_ptr->tail_ptr = node;
-    node->next_ptr = NULL;
   };
 };
 
@@ -75,12 +74,14 @@ void llist_extract_node(llist_t* llist_ptr, void* prevData_ptr, void* data_ptr) 
 };
 
 void llist_swap_llist(llist_t* llistA_ptr, llist_t* llistB_ptr) {
-  lnode_t* tmp_head_ptr = (lnode_t*)llistA_ptr->head_ptr;
-  lnode_t* tmp_tail_ptr = (lnode_t*)llistA_ptr->tail_ptr;
-  llistA_ptr->head_ptr = llistB_ptr->head_ptr;
-  llistA_ptr->tail_ptr = llistB_ptr->tail_ptr;
-  llistB_ptr->head_ptr = tmp_head_ptr;
-  llistB_ptr->tail_ptr = tmp_tail_ptr;
+  if (llistA_ptr->head_ptr != NULL || llistB_ptr->head_ptr != NULL) {
+    lnode_t* tmp_head_ptr = (lnode_t*)llistA_ptr->head_ptr;
+    lnode_t* tmp_tail_ptr = (lnode_t*)llistA_ptr->tail_ptr;
+    llistA_ptr->head_ptr = llistB_ptr->head_ptr;
+    llistA_ptr->tail_ptr = llistB_ptr->tail_ptr;
+    llistB_ptr->head_ptr = tmp_head_ptr;
+    llistB_ptr->tail_ptr = tmp_tail_ptr;
+  };
 };
 
 void llist_save_nodes(llist_t* dst_ptr, llist_t* src_ptr) {

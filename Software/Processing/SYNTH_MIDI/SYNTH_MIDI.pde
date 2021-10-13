@@ -74,8 +74,8 @@ void draw() {
   for (int i = 0; i < blobs.size(); i++) {
     blob_t theBlob = blobs.get(i);
     textSize(50);
-    text(theBlob.id, (width/127) * theBlob.bx, (height/127) * theBlob.by);
-    translate((width/127) * theBlob.bx, (height/127) * theBlob.by); 
+    text(theBlob.id, theBlob.bx * (height/127), theBlob.by * (height/127));
+    translate(theBlob.bx * (height/127), theBlob.by * (height/127)); 
     //rotateZ(0.5);
     noFill();
     box(theBlob.bw * 10, theBlob.bh * 10, theBlob.bz * 5);
@@ -98,22 +98,22 @@ void update() {
         print(e);
       } 
       if (status == ShortMessage.NOTE_ON) {
-        if (midiMsg.getData1() != lastMidiMsg_ON.getData1()) {
-          lastMidiMsg_ON = midiMsg;
+        //if (midiMsg.getData1() != lastMidiMsg_ON.getData1()) {
+          //lastMidiMsg_ON = midiMsg;
           println("blob_ID_ON: " + midiMsg.getData1());
           blob_t newBlob = new blob_t();
           newBlob.id = midiMsg.getData1();
           blobs.add(newBlob);
-        };
+        //};
       } else if (status == ShortMessage.NOTE_OFF) {
-        if (midiMsg.getData1() != lastMidiMsg_OFF.getData1()) {
-          lastMidiMsg_OFF = midiMsg;
+        //if (midiMsg.getData1() != lastMidiMsg_OFF.getData1()) {
+          //lastMidiMsg_OFF = midiMsg;
           println("blob_ID_OFF: " + midiMsg.getData1());
           for (int b = 0; b < blobs.size(); b++) {
             if (blobs.get(b).id == midiMsg.getData1()) {
               blobs.remove(b);
               break;
-            };
+            //};
           };
         };
       } else if (status == ShortMessage.CONTROL_CHANGE) {

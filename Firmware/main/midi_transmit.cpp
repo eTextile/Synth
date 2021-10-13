@@ -8,7 +8,7 @@
 
 #include <MIDI.h>                           // http://www.pjrc.com/teensy/td_midi.html
 
-unsigned long int transmitTimer = 0;
+unsigned long int transmitMidiTimer = 0;
 #define TRANSMIT_INTERVAL 5
 
 #if MIDI_HARDWARE
@@ -61,15 +61,6 @@ void read_midi_input(void) {
 #endif
 };
 
-void handle_midi_input_cc(byte channel, byte control, byte value) {
-  midiNode_t* node_ptr = (midiNode_t*)llist_pop_front(&midi_node_stack);  // Get a node from the MIDI nodes stack
-  node_ptr->midiMsg.status = MIDI_CONTROL_CHANGE;                         // Set the MIDI status
-  node_ptr->midiMsg.data1 = control;                                      // Set the MIDI control
-  node_ptr->midiMsg.data2 = value;                                        // Set the MIDI value
-  node_ptr->midiMsg.channel = channel;                                    // Set the MIDI channel
-  llist_push_front(&midiIn, node_ptr);                                    // Add the node to the midiIn linked liste
-};
-
 void handle_midi_input_noteOn(byte channel, byte note, byte velocity) {
   midiNode_t* node_ptr = (midiNode_t*)llist_pop_front(&midi_node_stack);  // Get a node from the MIDI nodes stack
   node_ptr->midiMsg.status = MIDI_NOTE_ON;                                // Set the MIDI status
@@ -88,13 +79,22 @@ void handle_midi_input_noteOff(byte channel, byte note, byte velocity) {
   llist_push_front(&midiIn, node_ptr);                                    // Add the node to the midiIn linked liste
 };
 
+void handle_midi_input_cc(byte channel, byte control, byte value) {
+  midiNode_t* node_ptr = (midiNode_t*)llist_pop_front(&midi_node_stack);  // Get a node from the MIDI nodes stack
+  node_ptr->midiMsg.status = MIDI_CONTROL_CHANGE;                         // Set the MIDI status
+  node_ptr->midiMsg.data1 = control;                                      // Set the MIDI control
+  node_ptr->midiMsg.data2 = value;                                        // Set the MIDI value
+  node_ptr->midiMsg.channel = channel;                                    // Set the MIDI channel
+  llist_push_front(&midiIn, node_ptr);                                    // Add the node to the midiIn linked liste
+};
+
 void midi_transmit(void) {
 
   switch (currentMode) {
 
     case MIDI_RAW:
-      if (millis() - transmitTimer > TRANSMIT_INTERVAL) {
-        transmitTimer = millis();
+      if (millis() - transmitMidiTimer > TRANSMIT_INTERVAL) {
+        transmitMidiTimer = millis();
 #if MIDI_USB
         usbMIDI.sendSysEx(RAW_FRAME, rawFrame.pData, false, 0);
         usbMIDI.send_now();
@@ -103,8 +103,8 @@ void midi_transmit(void) {
       break;
 
     case MIDI_INTERP:
-      if (millis() - transmitTimer > TRANSMIT_INTERVAL) {
-        transmitTimer = millis();
+      if (millis() - transmitMidiTimer > TRANSMIT_INTERVAL) {
+        transmitMidiTimer = millis();
 #if MIDI_USB
         // NOT_WORKING! See https://forum.pjrc.com/threads/28282-How-big-is-the-MIDI-receive-buffer
         //usbMIDI.sendSysEx(NEW_FRAME, interpFrame.pData, false, 0);

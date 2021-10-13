@@ -92,7 +92,7 @@ struct velocity {
 
 typedef enum status {
   FREE,
-  ALIVE,
+  TO_ADD,
   NOT_FOUND,
   TO_REMOVE
 } status_t;
@@ -100,7 +100,7 @@ typedef enum status {
 typedef struct blob blob_t;
 struct blob {
   lnode_t node;
-  int8_t UID;
+  uint8_t UID;
   status_t status;
   unsigned long timeTag_debounce;
   unsigned long timeTag_transmit;

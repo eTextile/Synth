@@ -11,6 +11,7 @@
 #include "interp.h"
 #include "blob.h"
 #include "midi_transmit.h"
+#include "serial_transmit.h"
 
 #include <elapsedMillis.h>  // https://github.com/pfeerick/elapsedMillis
 
@@ -23,6 +24,9 @@
 #endif
 #if MIDI_HARDWARE || MIDI_USB
 #include "midi_transmit.h"
+#endif
+#if SERIAL_USB
+#include "serial_transmit.h"
 #endif
 
 #if FLASH_PLAYER
@@ -47,12 +51,6 @@ unsigned int fps = 0;
 //boolean savePreset = false; // TODO
 
 void setup() {
-#if DEBUG_ADC || DEBUG_INTERP || DEBUG_BITMAP || DEBUG_BLOBS || DEBUG_MEDIAN || DEBUG_FPS || DEBUG_ENCODER || DEBUG_BUTTONS || DEBUG_MAPPING || DEBUG_MIDI_TRANSMIT
-  Serial.begin(BAUD_RATE);
-  while (!Serial);
-  Serial.printf("\n%s_%s_%s", NAME, PROJECT, VERSION);
-  Serial.printf("\nCURRENT_MODE_:_%d", currentMode);
-#endif
 
   LEDS_SETUP();
   SWITCHES_SETUP();
@@ -66,10 +64,12 @@ void setup() {
   RUNING_MEDIAN_SETUP();
 #endif
 
+#if SERIAL_USB || DEBUG_MIDI_TRANSMIT
+  SERIAL_TRANSMIT_SETUP();
+#endif
 #if MIDI_HARDWARE || MIDI_USB
   MIDI_TRANSMIT_SETUP();
 #endif
-
 #if USB_SLIP_OSC_TRANSMIT
   USB_SLIP_OSC_SETUP();
 #endif
@@ -100,6 +100,10 @@ void setup() {
 
 void loop() {
 
+#if SERIAL_USB
+  //read_serial_input(); // TODO
+#endif
+
 #if MIDI_USB || MIDI_HARDWARE
   read_midi_input();
 #endif
@@ -110,7 +114,7 @@ void loop() {
 
   //if (loadPreset) preset_load(); // TODO
   //if (savePreset) preset_save(); // TODO
-  
+
   update_presets_usb();
   update_presets_buttons();
   update_presets_encoder();
@@ -134,6 +138,10 @@ void loop() {
   //mapping_hSlider();
   //mapping_vSlider();
   //mapping_cSlider();
+#endif
+
+#if SERIAL_USB
+  serial_transmit();
 #endif
 
 #if MIDI_USB || MIDI_HARDWARE

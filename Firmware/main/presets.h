@@ -30,6 +30,10 @@
 #define MIDI_INTERP       10
 #define MIDI_OFF          11
 
+#define SERIAL_RAW        12
+#define SERIAL_INTERP     13
+#define SERIAL_BLOBS      14
+
 /*
   typedef enum synthMode {
   LINE_OUT,          // [0]

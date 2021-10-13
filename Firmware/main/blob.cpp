@@ -17,7 +17,7 @@
 #define X_STRIDE            4             // Speed up X scanning
 #define Y_STRIDE            2             // Speed up Y scanning
 #define MIN_BLOB_PIX        4             // Set the minimum blob pixels
-#define DEBOUNCE_TIME       20            // Avioding undesired bouncing effect when taping on the sensor / FIXME!
+#define DEBOUNCE_TIME       10            // Avioding undesired bouncing effect when taping on the sensor / FIXME!
 
 uint8_t bitmapArray[NEW_FRAME] = {0};     // 1D Array to store (64*64) binary values
 xylr_t lifoArray[LIFO_NODES] = {0};       // 1D Array to store lifo nodes
@@ -53,7 +53,7 @@ void BLOB_SETUP(void) {
   llist_raz(&llist_blobs_temp);
   llist_raz(&llist_blobs);
   for (blob_t* blob_ptr = (blob_t*)ITERATOR_START_FROM_HEAD(&llist_blobs_stack); blob_ptr != NULL; blob_ptr = (blob_t*)ITERATOR_NEXT(blob_ptr)) {
-    blob_ptr->UID = -1;
+    blob_ptr->UID = 255;
     blob_ptr->lastState = false;
     blob_ptr->state = false;
   };
@@ -230,7 +230,7 @@ void find_blobs(void) {
     for (blob_t* blobOut_ptr = (blob_t*)ITERATOR_START_FROM_HEAD(&llist_blobs); blobOut_ptr != NULL; blobOut_ptr = (blob_t*)ITERATOR_NEXT(blobOut_ptr)) {
       if (blobOut_ptr->status == TO_REMOVE) {
         deadFound = true;
-        blobOut_ptr->UID = -1;
+        blobOut_ptr->UID = 255;
         blobOut_ptr->status = FREE;
         blobOut_ptr->lastState = false;
         blobOut_ptr->state = false; // __TO_REMOVE_LATER__
@@ -271,9 +271,9 @@ void find_blobs(void) {
   // NEW BLOBS MANAGMENT
   // Look for corresponding blobs into the **llist_blobs_temp** and **llist_blobs**
   uint8_t minID = 0;
+  blob_t* nearestBlob_ptr = NULL;
   for (blob_t* blobIn_ptr = (blob_t*)ITERATOR_START_FROM_HEAD(&llist_blobs_temp); blobIn_ptr != NULL; blobIn_ptr = (blob_t*)ITERATOR_NEXT(blobIn_ptr)) {
     float minDist = 255.0f;
-    blob_t* nearestBlob_ptr = NULL;
     for (blob_t* blobOut_ptr = (blob_t*)ITERATOR_START_FROM_HEAD(&llist_blobs); blobOut_ptr != NULL; blobOut_ptr = (blob_t*)ITERATOR_NEXT(blobOut_ptr)) {
       float dist = sqrtf(pow(blobIn_ptr->centroid.X - blobOut_ptr->centroid.X, 2) + pow(blobIn_ptr->centroid.Y - blobOut_ptr->centroid.Y, 2));
       if (dist < minDist) {
@@ -286,7 +286,7 @@ void find_blobs(void) {
     if (minDist < 3) {
 #if DEBUG_FIND_BLOBS
       //Serial.printf("\nDEBUG_FIND_BLOBS / the minimum distance between blobs from llist_blobs_temp & llist_blobs is: %f ", minDist);
-      //Serial.printf("\nDEBUG_FIND_BLOBS / Found corresponding blob: %p in the **llist_blobs**", (lnode_t*)nearestBlob_ptr);
+      Serial.printf("\nDEBUG_FIND_BLOBS / Found corresponding blob: %p in the **llist_blobs**", (lnode_t*)nearestBlob_ptr);
 #endif
       blobIn_ptr->timeTag_debounce = millis();
       blobIn_ptr->UID = nearestBlob_ptr->UID;
@@ -302,6 +302,9 @@ void find_blobs(void) {
           if (blobOut_ptr->UID == minID) {
             isFree = false;
             minID++;
+#if DEBUG_FIND_BLOBS
+            Serial.printf("\nDEBUG_FIND_BLOBS / USED_ID: %d ", minID);
+#endif
             break;
           };
         };
@@ -309,11 +312,11 @@ void find_blobs(void) {
 #if DEBUG_FIND_BLOBS
           Serial.printf("\nDEBUG_FIND_BLOBS / Found new blob and select ID: %d", minID);
 #endif
-          blobIn_ptr->timeTag_debounce = millis();
           blobIn_ptr->UID = minID;
           blobIn_ptr->state = true;
           blobIn_ptr->lastState = false; // TO_REMOVE_LATER
-          blobIn_ptr->status = ALIVE;
+          blobIn_ptr->status = TO_ADD;
+          blobIn_ptr->timeTag_debounce = millis();
           break;
         };
       }; // while_end / The ID of the new blob is set with the smallest missing ID
@@ -337,8 +340,8 @@ void find_blobs(void) {
       if (!found) {
         allDone = false;
         if ((millis() - blobOut_ptr->timeTag_debounce) < DEBOUNCE_TIME) {
-          //blobOut_ptr->state = false;
-          //blobOut_ptr->lastState = true; // TO_REMOVE_LATER
+          blobOut_ptr->state = false;
+          blobOut_ptr->lastState = true; // TO_REMOVE_LATER
           blobOut_ptr->status = NOT_FOUND;
 #if DEBUG_FIND_BLOBS
           Serial.printf("\nDEBUG_FIND_BLOBS / Blob: %p in the **llist_blobs** linked list is NOT_FOUND(%d)", (lnode_t*)blobOut_ptr, blobOut_ptr->UID);
