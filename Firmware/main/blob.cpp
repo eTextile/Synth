@@ -283,7 +283,7 @@ void find_blobs(void) {
     };
     // If the distance between curent blob and last blob position is less than minDist:
     // Give the nearestBlob UID to the input blob.
-    if (minDist < 3.0f) {
+    if (minDist < 4.0f) {
 #if DEBUG_FIND_BLOBS
       //Serial.printf("\nDEBUG_FIND_BLOBS / the minimum distance between blobs from llist_blobs_temp & llist_blobs is: %f ", minDist);
       Serial.printf("\nDEBUG_FIND_BLOBS / Found corresponding blob: %p in the **llist_blobs**", (lnode_t*)nearestBlob_ptr);

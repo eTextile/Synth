@@ -10,7 +10,7 @@
 void ofApp::setup() {
   ofSetVerticalSync(true);
   ofSetWindowTitle(POROJECT_NAME);
-  //ofSetLogLevel(OF_LOG_VERBOSE);
+  ofSetLogLevel(OF_LOG_VERBOSE);
   FreeSansBold.load("FreeSansBold.ttf", 14);
   //midiIn.listInPorts(); // via instance -> comment this line when done
   //midiOut.listOutPorts(); // via instance -> comment this line when done
@@ -116,23 +116,22 @@ void ofApp::update() {
             };
           };
         } else if (message.status == MIDI_CONTROL_CHANGE) {
-          int channel = message.channel;
           //ofLogNotice("ofApp::update") << "E256 - midiMessage CONTROL_CHANGE_CHANNEL: " << channel;
-          switch (channel) {
+          switch (message.channel) {
             case BlobX:
-              blobs[message.control].bx = message.value;
+              blobs[message.control - 1].bx = message.value;
               break;
             case BlobY:
-              blobs[message.control].by = message.value;
+              blobs[message.control - 1].by = message.value;
               break;
             case BlobZ:
-              blobs[message.control].bz = message.value;
+              blobs[message.control - 1].bz = message.value;
               break;
             case BlobW:
-              blobs[message.control].bw = message.value;
+              blobs[message.control - 1].bw = message.value;
               break;
             case BlobH:
-              blobs[message.control].bh = message.value;
+              blobs[message.control - 1].bh = message.value;
               break;
             default:
               break;
@@ -264,7 +263,7 @@ void ofApp::newMidiMessage(ofxMidiMessage & msg) {
   midiMutex.lock();
   midiInput.push_back(msg);
   // remove any old messages if we have too many
-  while(midiInput.size() > 255) {
+  while(midiInput.size() >= 255) {
     midiInput.erase(midiInput.begin());
   };
   midiMutex.unlock();

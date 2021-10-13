@@ -99,20 +99,20 @@ void update() {
       } 
       if (status == ShortMessage.NOTE_ON) {
         //if (midiMsg.getData1() != lastMidiMsg_ON.getData1()) {
-          //lastMidiMsg_ON = midiMsg;
-          println("blob_ID_ON: " + midiMsg.getData1());
-          blob_t newBlob = new blob_t();
-          newBlob.id = midiMsg.getData1();
-          blobs.add(newBlob);
+        //lastMidiMsg_ON = midiMsg;
+        println("blob_ID_ON: " + midiMsg.getData1());
+        blob_t newBlob = new blob_t();
+        newBlob.id = midiMsg.getData1();
+        blobs.add(newBlob);
         //};
       } else if (status == ShortMessage.NOTE_OFF) {
         //if (midiMsg.getData1() != lastMidiMsg_OFF.getData1()) {
-          //lastMidiMsg_OFF = midiMsg;
-          println("blob_ID_OFF: " + midiMsg.getData1());
-          for (int b = 0; b < blobs.size(); b++) {
-            if (blobs.get(b).id == midiMsg.getData1()) {
-              blobs.remove(b);
-              break;
+        //lastMidiMsg_OFF = midiMsg;
+        println("blob_ID_OFF: " + midiMsg.getData1());
+        for (int b = 0; b < blobs.size(); b++) {
+          if (blobs.get(b).id == midiMsg.getData1()) {
+            blobs.remove(b);
+            break;
             //};
           };
         };
@@ -121,7 +121,7 @@ void update() {
         for (int i = 0; i < blobs.size(); i++) {
           blob_t blobToUpdate = blobs.get(i); 
           if (midiMsg.getData1() == blobToUpdate.id) {
-            switch (midiMsg.getChannel()) {
+            switch (midiMsg.getChannel() + 1) {
             case BlobX:
               //print(" X: " + midiMsg.getData2() + "_");
               blobToUpdate.bx = midiMsg.getData2();
