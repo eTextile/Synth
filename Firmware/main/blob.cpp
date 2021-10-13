@@ -283,7 +283,7 @@ void find_blobs(void) {
     };
     // If the distance between curent blob and last blob position is less than minDist:
     // Give the nearestBlob UID to the input blob.
-    if (minDist < 3) {
+    if (minDist < 3.0f) {
 #if DEBUG_FIND_BLOBS
       //Serial.printf("\nDEBUG_FIND_BLOBS / the minimum distance between blobs from llist_blobs_temp & llist_blobs is: %f ", minDist);
       Serial.printf("\nDEBUG_FIND_BLOBS / Found corresponding blob: %p in the **llist_blobs**", (lnode_t*)nearestBlob_ptr);
@@ -296,15 +296,16 @@ void find_blobs(void) {
     else {
       // Found a new blob! We nead to give it a UID
       // Find the smallest missing UID in the outputBlobs linked list
+      // BUG: when two blobs are arriving in the new frame they get the same ID :-(
       while (1) {
         boolean isFree = true;
         for (blob_t* blobOut_ptr = (blob_t*)ITERATOR_START_FROM_HEAD(&llist_blobs); blobOut_ptr != NULL; blobOut_ptr = (blob_t*)ITERATOR_NEXT(blobOut_ptr)) {
           if (blobOut_ptr->UID == minID) {
-            isFree = false;
-            minID++;
 #if DEBUG_FIND_BLOBS
             Serial.printf("\nDEBUG_FIND_BLOBS / USED_ID: %d ", minID);
 #endif
+            isFree = false;
+            minID++;
             break;
           };
         };
@@ -317,6 +318,7 @@ void find_blobs(void) {
           blobIn_ptr->lastState = false; // TO_REMOVE_LATER
           blobIn_ptr->status = TO_ADD;
           blobIn_ptr->timeTag_debounce = millis();
+          minID++;
           break;
         };
       }; // while_end / The ID of the new blob is set with the smallest missing ID
@@ -364,12 +366,6 @@ void find_blobs(void) {
       break;
     };
   };
-
-#if DEBUG_FIND_BLOBS
-  if ((lnode_t*)llist_blobs_temp.head_ptr != NULL) {
-    Serial.printf("\n___________DEBUG_FIND_BLOBS / END_OF_FRAME");
-  }
-#endif
 
   llist_swap_llist(&llist_blobs, &llist_blobs_temp);             // Swap outputBlobs linked list nodes with inputBlobs linked list nodes
   llist_save_nodes(&llist_blobs_stack, &llist_blobs_temp); // Save/rescure all nodes from the temporay blobs Linked list
@@ -430,4 +426,9 @@ void find_blobs(void) {
   };
 #endif
 
+#if DEBUG_FIND_BLOBS
+  if ((lnode_t*)llist_blobs_temp.head_ptr != NULL) {
+    Serial.printf("\n___________DEBUG_FIND_BLOBS / END_OF_FRAME");
+  }
+#endif
 };

@@ -121,7 +121,7 @@ void midi_transmit(void) {
           if (!blob_ptr->lastState) {
             usbMIDI.sendNoteOn(blob_ptr->UID, 1, BS); // sendNoteOn(note, velocity, channel);
 #if DEBUG_MIDI_TRANSMIT
-            Serial.printf("\nMIDI_TRANSMIT\tNOTE_ON: %d", blob_ptr->UID);
+            Serial.printf("\nDEBUG_MIDI_TRANSMIT\tNOTE_ON: %d", blob_ptr->UID);
 #endif
           } else {
             if (millis() - blob_ptr->timeTag_transmit > TRANSMIT_INTERVAL) {
@@ -133,7 +133,7 @@ void midi_transmit(void) {
               usbMIDI.sendControlChange(blob_ptr->UID, blob_ptr->box.W, BW);
               usbMIDI.sendControlChange(blob_ptr->UID, blob_ptr->box.H, BH);
 #if DEBUG_MIDI_TRANSMIT
-              Serial.printf("\nMIDI_TRANSMIT\tCONTROL_CHANGE: %d", blob_ptr->UID);
+              Serial.printf("\nDEBUG_MIDI_TRANSMIT\tCONTROL_CHANGE: %d", blob_ptr->UID);
 #endif
             };
           };
@@ -141,7 +141,7 @@ void midi_transmit(void) {
           if (blob_ptr->lastState && blob_ptr->status != NOT_FOUND) {
             usbMIDI.sendNoteOff(blob_ptr->UID, 0, BS); // sendNoteOff(note, velocity, channel);
 #if DEBUG_MIDI_TRANSMIT
-            Serial.printf("\nMIDI_TRANSMIT\tNOTE_OFF: %d", blob_ptr->UID);
+            Serial.printf("\nDEBUG_MIDI_TRANSMIT\tNOTE_OFF: %d", blob_ptr->UID);
 #endif
           };
         };
