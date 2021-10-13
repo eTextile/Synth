@@ -119,19 +119,19 @@ void midi_transmit(void) {
       for (blob_t* blob_ptr = (blob_t*)ITERATOR_START_FROM_HEAD(&llist_blobs); blob_ptr != NULL; blob_ptr = (blob_t*)ITERATOR_NEXT(blob_ptr)) {
         if (blob_ptr->state) {
           if (!blob_ptr->lastState) {
-            usbMIDI.sendNoteOn(blob_ptr->UID, 1, BS); // sendNoteOn(note, velocity, channel);
+            usbMIDI.sendNoteOn(blob_ptr->UID + 1, 1, BS); // sendNoteOn(note, velocity, channel);
 #if DEBUG_MIDI_TRANSMIT
-            Serial.printf("\nDEBUG_MIDI_TRANSMIT\tNOTE_ON: %d", blob_ptr->UID);
+            Serial.printf("\nDEBUG_MIDI_TRANSMIT\tNOTE_ON: %d", blob_ptr->UID + 1);
 #endif
           } else {
             if (millis() - blob_ptr->timeTag_transmit > TRANSMIT_INTERVAL) {
               blob_ptr->timeTag_transmit = millis();
               // usbMIDI.sendControlChange(control, value, channel);
-              usbMIDI.sendControlChange(blob_ptr->UID, (uint8_t)round(map(blob_ptr->centroid.X, 0, X_MAX - X_MIN, 0, 127)), BX);
-              usbMIDI.sendControlChange(blob_ptr->UID, (uint8_t)round(map(blob_ptr->centroid.Y, 0, X_MAX - X_MIN, 0, 127)), BY);
-              usbMIDI.sendControlChange(blob_ptr->UID, constrain(blob_ptr->centroid.Z, 0, 127), BZ);
-              usbMIDI.sendControlChange(blob_ptr->UID, blob_ptr->box.W, BW);
-              usbMIDI.sendControlChange(blob_ptr->UID, blob_ptr->box.H, BH);
+              usbMIDI.sendControlChange(blob_ptr->UID + 1, (uint8_t)round(map(blob_ptr->centroid.X, 0, X_MAX - X_MIN, 0, 127)), BX);
+              usbMIDI.sendControlChange(blob_ptr->UID + 1, (uint8_t)round(map(blob_ptr->centroid.Y, 0, X_MAX - X_MIN, 0, 127)), BY);
+              usbMIDI.sendControlChange(blob_ptr->UID + 1, constrain(blob_ptr->centroid.Z, 0, 127), BZ);
+              usbMIDI.sendControlChange(blob_ptr->UID + 1, blob_ptr->box.W, BW);
+              usbMIDI.sendControlChange(blob_ptr->UID + 1, blob_ptr->box.H, BH);
 #if DEBUG_MIDI_TRANSMIT
               Serial.printf("\nDEBUG_MIDI_TRANSMIT\tCONTROL_CHANGE: %d", blob_ptr->UID);
 #endif
@@ -139,7 +139,7 @@ void midi_transmit(void) {
           };
         } else {
           if (blob_ptr->lastState && blob_ptr->status != NOT_FOUND) {
-            usbMIDI.sendNoteOff(blob_ptr->UID, 0, BS); // sendNoteOff(note, velocity, channel);
+            usbMIDI.sendNoteOff(blob_ptr->UID + 1, 0, BS); // sendNoteOff(note, velocity, channel);
 #if DEBUG_MIDI_TRANSMIT
             Serial.printf("\nDEBUG_MIDI_TRANSMIT\tNOTE_OFF: %d", blob_ptr->UID);
 #endif
@@ -164,19 +164,19 @@ void midi_transmit(void) {
             if (!blob_ptr->state) usbMIDI.sendNoteOff(blob_ptr->UID + 1, 0, 0);
             break;
           case BX:
-            usbMIDI.sendControlChange(BX, (uint8_t)round(map(blob_ptr->centroid.X, 0.0, X_MAX - X_MIN , 0, 127)), blob_ptr->UID + 1);
+            usbMIDI.sendControlChange(blob_ptr->UID + 1, (uint8_t)round(map(blob_ptr->centroid.X, 0.0, X_MAX - X_MIN , 0, 127)), BX);
             break;
           case BY:
-            usbMIDI.sendControlChange(BY, (uint8_t)round(map(blob_ptr->centroid.Y, 0.0, X_MAX - X_MIN, 0, 127)), blob_ptr->UID + 1);
+            usbMIDI.sendControlChange(blob_ptr->UID + 1, (uint8_t)round(map(blob_ptr->centroid.Y, 0.0, X_MAX - X_MIN, 0, 127)), BY);
             break;
           case BZ:
-            usbMIDI.sendControlChange(BZ, constrain(blob_ptr->centroid.Z, 0, 127), blob_ptr->UID + 1);
+            usbMIDI.sendControlChange(blob_ptr->UID + 1, constrain(blob_ptr->centroid.Z, 0, 127), BZ);
             break;
           case BW:
-            usbMIDI.sendControlChange(BW, blob_ptr->box.W, blob_ptr->UID + 1);
+            usbMIDI.sendControlChange(blob_ptr->UID + 1, blob_ptr->box.W, BW);
             break;
           case BH:
-            usbMIDI.sendControlChange(BH, blob_ptr->box.H, blob_ptr->UID + 1);
+            usbMIDI.sendControlChange(blob_ptr->UID + 1, blob_ptr->box.H, BH);
             break;
           default:
             break;

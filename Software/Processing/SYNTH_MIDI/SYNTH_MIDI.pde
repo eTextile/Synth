@@ -121,7 +121,7 @@ void update() {
         for (int i = 0; i < blobs.size(); i++) {
           blob_t blobToUpdate = blobs.get(i); 
           if (midiMsg.getData1() == blobToUpdate.id) {
-            switch (midiMsg.getChannel() + 1) {
+            switch (midiMsg.getChannel()) {
             case BlobX:
               //print(" X: " + midiMsg.getData2() + "_");
               blobToUpdate.bx = midiMsg.getData2();
