@@ -52,7 +52,7 @@ preset_t presets[9] = {
   { 0, 0,  0,  0, true,  true,  false, HIGH, HIGH},  // CALIBRATE        - ARGS[minVal, maxVal, val, ledVal, setLed, updateLed, update, D1, D2]
   { 0, 0,  0,  0, false, false, false, NULL, NULL},  // SAVE             - ARGS[minVal, maxVal, val, ledVal, setLed, updateLed, update, D1, D2]
   { 0, 0,  0,  0, false, false, false, NULL, NULL},  // MIDI_BLOBS_PLAY  - ARGS[minVal, maxVal, val, ledVal, setLed, updateLed, update, D1, D2]
-  { 0, 0,  0,  0, false, false, false, NULL, NULL},  // MIDI_BLOBS_LEARN - ARGS[minVal, maxVal, val, ledVal, setLed, updateLed, update, D1, D2]
+  { 1, 7,  0,  0, false, false, false, NULL, NULL},  // MIDI_BLOBS_LEARN - ARGS[minVal, maxVal, val, ledVal, setLed, updateLed, update, D1, D2]
   { 0, 0,  0,  0, false, false, false, NULL, NULL}   // MIDI_MAPPING     - ARGS[minVal, maxVal, val, ledVal, setLed, updateLed, update, D1, D2]
 };
 
@@ -227,7 +227,6 @@ void update_presets_encoder(void) {
       break;
     case MIDI_BLOBS_LEARN:
       if (setLevel(&presets[MIDI_BLOBS_LEARN])) {
-        presets[MIDI_BLOBS_LEARN].updateLed = true;
         presets[MIDI_BLOBS_LEARN].update = true;
       };
       break;
