@@ -184,8 +184,8 @@ void update_presets_buttons(void) {
     else {
       currentMode = MIDI_BLOBS_LEARN;
       encoder.write(0x1);
-      presets[MIDI_BLOBS_PLAY].setLed = true;
-      presets[MIDI_BLOBS_PLAY].updateLed = true;
+      presets[MIDI_BLOBS_LEARN].setLed = true;
+      presets[MIDI_BLOBS_LEARN].updateLed = true;
 #if DEBUG_BUTTONS
       Serial.printf("\nMIDI_BLOBS_LEARN : %d", currentMode);
 #endif
