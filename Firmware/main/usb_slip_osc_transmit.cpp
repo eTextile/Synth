@@ -6,7 +6,7 @@
 
 #include "usb_slip_osc_transmit.h"
 
-#if USB_SLIP_OSC_TRANSMIT
+#if USB_SLIP_OSC
 
 SLIPEncodedUSBSerial SLIPSerial(thisBoardsSerialUSB);
 

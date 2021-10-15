@@ -19,14 +19,11 @@
 #include "mapping.h"
 #endif
 
-#if USB_SLIP_OSC_TRANSMIT
+#if USB_SLIP_OSC
 #include "usb_slip_osc_transmit.h"
 #endif
 #if MIDI_HARDWARE || MIDI_USB
 #include "midi_transmit.h"
-#endif
-#if SERIAL_USB
-#include "serial_transmit.h"
 #endif
 
 #if FLASH_PLAYER
@@ -64,13 +61,13 @@ void setup() {
   RUNING_MEDIAN_SETUP();
 #endif
 
-#if SERIAL_USB || DEBUG_MIDI_TRANSMIT
+#if SERIAL_USB
   SERIAL_TRANSMIT_SETUP();
 #endif
 #if MIDI_HARDWARE || MIDI_USB
   MIDI_TRANSMIT_SETUP();
 #endif
-#if USB_SLIP_OSC_TRANSMIT
+#if USB_SLIP_OSC
   USB_SLIP_OSC_SETUP();
 #endif
 
@@ -100,10 +97,6 @@ void setup() {
 
 void loop() {
 
-#if SERIAL_USB
-  //read_serial_input(); // TODO
-#endif
-
 #if MIDI_USB || MIDI_HARDWARE
   read_midi_input();
 #endif
@@ -115,10 +108,15 @@ void loop() {
   //if (loadPreset) preset_load(); // TODO
   //if (savePreset) preset_save(); // TODO
 
-  update_presets_usb();
+#if defined(__MK20DX256__)         // If using Teensy 3.1 & 3.2
+  update_presets_midi_usb();
+#endif
+#if defined(__IMXRT1062__)         // If using Teensy 4.0 & 4.1
+  update_presets_midi_usb();
   update_presets_buttons();
   update_presets_encoder();
   update_leds();
+#endif
 
 #if SYNTH_PLAYER || GRANULAR_PLAYER || FLASH_PLAYER
   update_levels();
@@ -138,10 +136,6 @@ void loop() {
   //mapping_hSlider();
   //mapping_vSlider();
   //mapping_cSlider();
-#endif
-
-#if SERIAL_USB
-  serial_transmit();
 #endif
 
 #if MIDI_USB || MIDI_HARDWARE

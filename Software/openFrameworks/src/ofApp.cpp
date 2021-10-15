@@ -117,7 +117,8 @@ void ofApp::update() {
           };
         } else if (message.status == MIDI_CONTROL_CHANGE) {
           //ofLogNotice("ofApp::update") << "E256 - midiMessage CONTROL_CHANGE_CHANNEL: " << channel;
-          switch (message.channel) {
+          int channel = message.channel;
+          switch (channel) {
             case BlobX:
               blobs[message.control - 1].bx = message.value;
               break;

@@ -9,7 +9,7 @@
 #include <MIDI.h>                           // http://www.pjrc.com/teensy/td_midi.html
 
 unsigned long int transmitMidiTimer = 0;
-#define TRANSMIT_INTERVAL 5
+#define TRANSMIT_INTERVAL 15
 
 #if MIDI_HARDWARE
 MIDI_CREATE_INSTANCE(HardwareSerial, Serial3, MIDI);
@@ -123,15 +123,17 @@ void midi_transmit(void) {
 #if DEBUG_MIDI_TRANSMIT
             Serial.printf("\nDEBUG_MIDI_TRANSMIT\tNOTE_ON: %d", blob_ptr->UID + 1);
 #endif
+            usbMIDI.send_now();
+            //while (usbMIDI.read()); // Read and discard any incoming MIDI messages
           } else {
             if (millis() - blob_ptr->timeTag_transmit > TRANSMIT_INTERVAL) {
               blob_ptr->timeTag_transmit = millis();
               // usbMIDI.sendControlChange(control, value, channel);
-              usbMIDI.sendControlChange(blob_ptr->UID + 1, (uint8_t)round(map(blob_ptr->centroid.X, 0, X_MAX - X_MIN, 0, 127)), BX);
-              usbMIDI.sendControlChange(blob_ptr->UID + 1, (uint8_t)round(map(blob_ptr->centroid.Y, 0, X_MAX - X_MIN, 0, 127)), BY);
-              usbMIDI.sendControlChange(blob_ptr->UID + 1, constrain(blob_ptr->centroid.Z, 0, 127), BZ);
-              usbMIDI.sendControlChange(blob_ptr->UID + 1, blob_ptr->box.W, BW);
-              usbMIDI.sendControlChange(blob_ptr->UID + 1, blob_ptr->box.H, BH);
+              usbMIDI.sendControlChange(BX, (uint8_t)round(map(blob_ptr->centroid.X, 0, X_MAX - X_MIN, 0, 127)), blob_ptr->UID + 1);
+              usbMIDI.sendControlChange(BY, (uint8_t)round(map(blob_ptr->centroid.Y, 0, X_MAX - X_MIN, 0, 127)), blob_ptr->UID + 1);
+              usbMIDI.sendControlChange(BZ, constrain(blob_ptr->centroid.Z, 0, 127), blob_ptr->UID + 1);
+              usbMIDI.sendControlChange(BW, blob_ptr->box.W, blob_ptr->UID + 1);
+              usbMIDI.sendControlChange(BH, blob_ptr->box.H, blob_ptr->UID + 1);
 #if DEBUG_MIDI_TRANSMIT
               Serial.printf("\nDEBUG_MIDI_TRANSMIT\tCONTROL_CHANGE: %d", blob_ptr->UID);
 #endif
@@ -143,10 +145,12 @@ void midi_transmit(void) {
 #if DEBUG_MIDI_TRANSMIT
             Serial.printf("\nDEBUG_MIDI_TRANSMIT\tNOTE_OFF: %d", blob_ptr->UID);
 #endif
+            usbMIDI.send_now();
+            //while (usbMIDI.read()); // Read and discard any incoming MIDI messages
           };
         };
         //usbMIDI.send_now();
-        //while (usbMIDI.read()); // Read and discard any incoming MIDI messages
+        while (usbMIDI.read()); // Read and discard any incoming MIDI messages
       };
 #endif
       break;
@@ -158,10 +162,20 @@ void midi_transmit(void) {
 #if MIDI_USB
       if ((blob_t*)llist_blobs.tail_ptr != NULL) {
         blob_t* blob_ptr = (blob_t*)llist_blobs.tail_ptr;
+        Serial.printf("\nDEBUG_MIDI_USB BLOB_VAL: %d", presets[MIDI_BLOBS_LEARN].val);
+
         switch (presets[MIDI_BLOBS_LEARN].val) {
           case BS:
-            if (!blob_ptr->lastState) usbMIDI.sendNoteOn(blob_ptr->UID + 1, 1, 0);
-            if (!blob_ptr->state) usbMIDI.sendNoteOff(blob_ptr->UID + 1, 0, 0);
+            if (blob_ptr->state) {
+              if (!blob_ptr->lastState) {
+                //usbMIDI.sendNoteOn(blob_ptr->UID + 1, 1, 0);
+                usbMIDI.sendNoteOn(blob_ptr->UID + 1, 1, BS); // sendNoteOn(note, velocity, channel);
+              };
+            }
+            else  {
+              //usbMIDI.sendNoteOff(blob_ptr->UID + 1, 0, 0);
+              usbMIDI.sendNoteOn(blob_ptr->UID + 1, 0, BS); // sendNoteOn(note, velocity, channel);
+            };
             break;
           case BX:
             usbMIDI.sendControlChange(blob_ptr->UID + 1, (uint8_t)round(map(blob_ptr->centroid.X, 0.0, X_MAX - X_MIN , 0, 127)), BX);

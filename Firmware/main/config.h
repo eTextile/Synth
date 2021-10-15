@@ -16,20 +16,18 @@
 #define VELOCITY                 0  // [0:1] IN_PROGRESS
 #define RUNING_MEDIAN            0  // [0:1] IN_PROGRESS
 
-#define SERIAL_USB               0
+#define SERIAL_USB               0  // [0:1] Enable serial communication (Mandatory for DEBUGING MODE)
 #define MIDI_USB                 1  // [0:1] Set the eTextile-Synthesizer as USB MIDI divice **DO NOT FORGET: Arduino/Touls/USB_Type/MIDI**
-#define MIDI_HARDWARE            0  // [0:1] Set the eTextile-Synthesizer as MIDI divice **DO NOT FORGET: Arduino/Touls/USB_Type/Serial**
-
+#define USB_SLIP_OSC             0  // [0:1] Set the eTextile-Synthesizer as USB SLIP_OSC divice **DO NOT FORGET: Arduino/Touls/USB_Type/Serial**
+#define MIDI_HARDWARE            0  // [0:1] Set the eTextile-Synthesizer as MIDI divice **DO NOT FORGET: Arduino/Touls/USB_Type/Serial**1
 #define MIDI_INPUT_CHANNEL       1  // [1:16] Set the HARDWARE MIDI_INPUT channel
 #define MIDI_OUTPUT_CHANNEL      1  // [1:16] Set the HARDWARE MIDI_OUTPUT channel
-
-#define USB_SLIP_OSC_TRANSMIT    0  // [0:1] Set the eTextile-Synthesizer as USB SLIP_OSC divice **DO NOT FORGET: Arduino/Touls/USB_Type/Serial**
 
 #define SYNTH_PLAYER             0  // [0:1] Set the eTextile-Synthesizer as STANDALONE divice
 #define GRANULAR_PLAYER          0  // [0:1] Set the eTextile-Synthesizer as STANDALONE divice
 #define FLASH_PLAYER             0  // [0:1] Set the eTextile-Synthesizer as STANDALONE divice
 
-#define MAPPING_LAYOUT           0  // [0:1] 
+#define MAPPING_LAYOUT           0  // [0:1] Enable MIDI mapping functionality
 #define GRID_LAYOUT_MIDI_IN      0  // [0:1] 
 #define GRID_LAYOUT_DEFAULT      0  // [0:1] 
 #define GRID_LAYOUT_HARMONIC     1  // [0:1] 
@@ -47,7 +45,7 @@
 #define DEBUG_BLOBS              0  // [0:1] Print blobs values
 #define DEBUG_MEDIAN             0  // [0:1] Print blobs values
 #define DEBUG_MAPPING            0  // [0:1] Print GUI values
-#define DEBUG_MIDI_TRANSMIT      0  // [0:1] Print MIDI values
+#define DEBUG_MIDI_TRANSMIT      0 // [0:1] Print MIDI values
 
 #define BAUD_RATE                230400
 #define RAW_COLS                 16

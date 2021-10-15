@@ -17,10 +17,10 @@
 #include <Encoder.h>                   // https://github.com/PaulStoffregen/Encoder
 //#include <EEPROM.h>                  // https://www.arduino.cc/en/Reference/EEPROM (TODO)
 
-#define LINE_OUT          0
-#define SIG_IN            1
-#define SIG_OUT           2
-#define THRESHOLD         3
+#define LINE_OUT          0 // LED | 0 | 0 |
+#define SIG_IN            1 // LED | 1 | 0 |
+#define SIG_OUT           2 // LED | 0 | 1 |
+#define THRESHOLD         3 // LED | 1 | 1 |
 #define CALIBRATE         4
 #define SAVE              5
 #define MIDI_BLOBS_PLAY   6
@@ -29,10 +29,6 @@
 #define MIDI_RAW          9
 #define MIDI_INTERP       10
 #define MIDI_OFF          11
-
-#define SERIAL_RAW        12
-#define SERIAL_INTERP     13
-#define SERIAL_BLOBS      14
 
 /*
   typedef enum synthMode {
@@ -61,9 +57,10 @@ struct preset {
   uint8_t maxVal;
   uint8_t val;
   uint8_t ledVal;
+  boolean update;
   boolean setLed;
   boolean updateLed;
-  boolean update;
+  boolean allDone;
   boolean D1;
   boolean D2;
 };
@@ -73,9 +70,9 @@ extern preset_t presets[];        // Exposed local declaration see presets.cpp
 void LEDS_SETUP(void);
 void SWITCHES_SETUP(void);
 
+void update_presets_midi_usb(void);
 void update_presets_buttons(void);
 void update_presets_encoder(void);
-void update_presets_usb(void);
 void update_leds(void);
 
 boolean setLevel(preset_t* preset_ptr);

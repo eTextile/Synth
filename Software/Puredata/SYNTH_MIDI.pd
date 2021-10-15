@@ -1,13 +1,13 @@
 #N canvas 433 148 1313 779 12;
 #X text 288 5 eTextile-Synthetizer / MIDI / Pure-Data;
-#X obj 690 0 cnv 15 40 10 empty B-1 empty 20 12 0 14 -166441 -66577
+#X obj 1070 440 cnv 15 20 60 empty B-1 empty 20 12 0 14 -262144 -66577
 0;
 #X text 273 276 Channel == Blob ID;
 #X text 676 342 Channel, f 8;
 #X obj 618 421 send;
 #X obj 664 366 change;
-#X obj 0 0 cnv 15 30 10 empty B-2 empty 20 12 0 14 -262144 -66577 0
-;
+#X obj 530 530 cnv 15 20 20 empty B-2 empty 20 12 0 14 -262144 -66577
+0;
 #X msg 664 393 symbol \$1-WIDTH;
 #X text 572 342 Value;
 #X text 164 342 Channel, f 8;
@@ -34,13 +34,13 @@
 #X msg 494 393 symbol \$1-POSY;
 #X msg 834 393 symbol \$1-HEIGHT;
 #X msg 1004 393 symbol \$1-DEPTH;
-#X obj 1040 0 cnv 15 30 20 empty B-3 empty 20 12 0 14 -166441 -66577
+#X obj 800 260 cnv 15 20 20 empty B-3 empty 20 12 0 14 -262144 -66577
 0;
-#X obj 1250 0 cnv 15 40 1 empty B-4 empty 20 12 0 14 -262144 -66577
+#X obj 1020 470 cnv 15 30 20 empty B-4 empty 20 12 0 14 -262144 -66577
 0;
-#X obj 330 0 cnv 15 60 20 empty B-6 empty 20 12 0 14 -262144 -66577
+#X obj 980 440 cnv 15 20 20 empty B-6 empty 20 12 0 14 -262144 -66577
 0;
-#X obj 580 420 cnv 15 40 50 empty B-5 empty 20 12 0 14 -262144 -66577
+#X obj 970 700 cnv 15 10 10 empty B-5 empty 20 12 0 14 -262144 -66577
 0;
 #X msg 100 532 vis 3 1;
 #X text 275 312 Blob / POSX;
@@ -51,16 +51,13 @@
 #X obj 100 566 clone blob_abs 8;
 #X obj 278 341 ctlin 3;
 #X obj 448 341 ctlin 4;
-#X obj 618 341 ctlin 5;
-#X obj 788 341 ctlin 6;
-#X obj 958 341 ctlin 7;
 #X obj 100 207 ctlout 0 0 1;
 #X msg 178 162 3;
 #X obj 100 109 t 0 f;
 #X obj 100 45 bng 30 250 50 0 empty empty Calibrate 0 -10 0 10 -4034
 -1 -1;
 #X obj 149 71 hsl 128 30 0 127 0 0 empty empty Threshold 0 -10 0 10
--257985 -1 -1 2700 1;
+-257985 -1 -1 3100 1;
 #X floatatom 146 108 5 0 0 0 - - -;
 #X obj 146 135 t f b;
 #X obj 100 341 notein;
@@ -70,9 +67,12 @@
 #X obj 100 403 f;
 #X obj 100 366 t b f;
 #X msg 60 52 6;
-#X obj 665 88 cnv 15 590 60 empty B-7 empty 20 12 0 14 -262144 -66577
+#X obj 10 20 cnv 15 20 1 empty B-7 empty 20 12 0 14 -262144 -66577
 0;
 #X text 97 312 Blob / I/O;
+#X obj 958 341 ctlin 5;
+#X obj 618 341 ctlin 6;
+#X obj 788 341 ctlin 7;
 #X connect 5 0 7 0;
 #X connect 7 0 4 1;
 #X connect 14 0 29 0;
@@ -89,25 +89,25 @@
 #X connect 44 1 14 0;
 #X connect 45 0 17 0;
 #X connect 45 1 18 0;
-#X connect 46 0 4 0;
-#X connect 46 1 5 0;
-#X connect 47 0 21 0;
-#X connect 47 1 22 0;
-#X connect 48 0 25 0;
-#X connect 48 1 26 0;
-#X connect 50 0 49 1;
-#X connect 51 0 49 0;
-#X connect 51 1 49 1;
-#X connect 52 0 57 0;
-#X connect 53 0 54 0;
-#X connect 54 0 55 0;
-#X connect 55 0 49 0;
-#X connect 55 1 50 0;
-#X connect 56 0 60 0;
-#X connect 56 1 59 1;
-#X connect 57 0 51 0;
-#X connect 58 0 61 0;
-#X connect 59 0 10 0;
-#X connect 60 0 59 0;
-#X connect 60 1 28 0;
-#X connect 61 0 51 0;
+#X connect 47 0 46 1;
+#X connect 48 0 46 0;
+#X connect 48 1 46 1;
+#X connect 49 0 54 0;
+#X connect 50 0 51 0;
+#X connect 51 0 52 0;
+#X connect 52 0 46 0;
+#X connect 52 1 47 0;
+#X connect 53 0 57 0;
+#X connect 53 1 56 1;
+#X connect 54 0 48 0;
+#X connect 55 0 58 0;
+#X connect 56 0 10 0;
+#X connect 57 0 56 0;
+#X connect 57 1 28 0;
+#X connect 58 0 48 0;
+#X connect 61 0 25 0;
+#X connect 61 1 26 0;
+#X connect 62 0 4 0;
+#X connect 62 1 5 0;
+#X connect 63 0 21 0;
+#X connect 63 1 22 0;

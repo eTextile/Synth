@@ -35,7 +35,6 @@ void runing_median(void) {
 #if DEBUG_MEDIAN
     //Serial.printf("\nCOUNT_%d\tINDEX_%d", filter[0].count, filter[0].index);
 #endif
-
     // Add the new values to the input runing buffer
     filter[blob_ptr->UID].X_rawVal[filter[blob_ptr->UID].index] = blob_ptr->centroid.X;
     //filter[blob_ptr->UID].Y_rawVal[filter[blob_ptr->UID].index] = blob_ptr->centroid.Y;

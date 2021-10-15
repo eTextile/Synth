@@ -17,7 +17,7 @@
 #define X_STRIDE            4             // Speed up X scanning
 #define Y_STRIDE            2             // Speed up Y scanning
 #define MIN_BLOB_PIX        4             // Set the minimum blob pixels
-#define DEBOUNCE_TIME       10            // Avioding undesired bouncing effect when taping on the sensor / FIXME!
+#define DEBOUNCE_TIME       20            // Avioding undesired bouncing effect when taping on the sensor / FIXME!
 
 uint8_t bitmapArray[NEW_FRAME] = {0};     // 1D Array to store (64*64) binary values
 xylr_t lifoArray[LIFO_NODES] = {0};       // 1D Array to store lifo nodes
@@ -211,9 +211,9 @@ void find_blobs(void) {
           blob_t* blob_ptr = (blob_t*)llist_pop_front(&llist_blobs_stack);
           blob_ptr->centroid.X = constrain(blob_cx / blob_pixels, X_MIN, X_MAX) - X_MIN ;
           blob_ptr->centroid.Y = constrain(blob_cy / blob_pixels, Y_MIN, Y_MAX) - Y_MIN;
+          blob_ptr->centroid.Z = blob_depth - presets[THRESHOLD].val;
           blob_ptr->box.W = (blob_x2 - blob_x1);
           blob_ptr->box.H = blob_height;
-          blob_ptr->centroid.Z = blob_depth - presets[THRESHOLD].val;
           llist_push_front(&llist_blobs_temp, blob_ptr);
         };
         posX = oldX;
@@ -224,6 +224,7 @@ void find_blobs(void) {
 
   /////////////////////////////// PERSISTANT BLOB ID
 
+  // DEAD BLOBS REMOVER
   blob_t* prevBlob_ptr = NULL;
   while (1) {
     boolean deadFound = false;
@@ -232,8 +233,8 @@ void find_blobs(void) {
         deadFound = true;
         blobOut_ptr->UID = 255;
         blobOut_ptr->status = FREE;
+        //blobOut_ptr->state = false; // __TO_REMOVE_LATER__
         blobOut_ptr->lastState = false;
-        blobOut_ptr->state = false; // __TO_REMOVE_LATER__
         llist_extract_node(&llist_blobs, prevBlob_ptr, blobOut_ptr);
         llist_push_front(&llist_blobs_stack, blobOut_ptr);
 #if DEBUG_FIND_BLOBS
@@ -247,26 +248,6 @@ void find_blobs(void) {
       break;
     };
   };
-
-  /*
-    // Suppress blobs taged TO_REMOVE from the main blobs linked list
-    while (1) {
-      boolean deadFound = false;
-      blob_t* blob_ptr = (blob_t*)ITERATOR_START_FROM_HEAD(&llist_blobs);
-
-      if (blob_ptr != NULL && blob_ptr->status == TO_REMOVE) {
-        deadFound = true;
-        blob_ptr = (blob_t*)llist_pop_front(&llist_blobs);
-        llist_push_front(&llist_blobs_stack, blob_ptr);
-    #if DEBUG_FIND_BLOBS
-        Serial.printf("\nDEBUG_FIND_BLOBS / Blob: %p removed from **llist_blobs**", (lnode_t*)blob_ptr);
-    #endif
-      };
-      if (!deadFound) {
-        break;
-      };
-    };
-  */
 
   // NEW BLOBS MANAGMENT
   // Look for corresponding blobs into the **llist_blobs_temp** and **llist_blobs**
@@ -283,7 +264,7 @@ void find_blobs(void) {
     };
     // If the distance between curent blob and last blob position is less than minDist:
     // Give the nearestBlob UID to the input blob.
-    if (minDist < 4.0f) {
+    if (minDist < 4) {
 #if DEBUG_FIND_BLOBS
       //Serial.printf("\nDEBUG_FIND_BLOBS / the minimum distance between blobs from llist_blobs_temp & llist_blobs is: %f ", minDist);
       Serial.printf("\nDEBUG_FIND_BLOBS / Found corresponding blob: %p in the **llist_blobs**", (lnode_t*)nearestBlob_ptr);
@@ -316,7 +297,7 @@ void find_blobs(void) {
           blobIn_ptr->UID = minID;
           blobIn_ptr->state = true;
           blobIn_ptr->lastState = false; // TO_REMOVE_LATER
-          blobIn_ptr->status = TO_ADD;
+          //blobIn_ptr->status = TO_ADD; // TO_REMOVE_LATER
           blobIn_ptr->timeTag_debounce = millis();
           minID++;
           break;
@@ -342,15 +323,15 @@ void find_blobs(void) {
       if (!found) {
         allDone = false;
         if ((millis() - blobOut_ptr->timeTag_debounce) < DEBOUNCE_TIME) {
-          blobOut_ptr->state = false;
-          blobOut_ptr->lastState = true; // TO_REMOVE_LATER
+          //blobOut_ptr->state = false; // TO_REMOVE_LATER
+          //blobOut_ptr->lastState = true; // TO_REMOVE_LATER
           blobOut_ptr->status = NOT_FOUND;
 #if DEBUG_FIND_BLOBS
           Serial.printf("\nDEBUG_FIND_BLOBS / Blob: %p in the **llist_blobs** linked list is NOT_FOUND(%d)", (lnode_t*)blobOut_ptr, blobOut_ptr->UID);
 #endif
         } else {
           blobOut_ptr->state = false;
-          blobOut_ptr->lastState = true; // TO_REMOVE_LATER
+          //blobOut_ptr->lastState = true; // TO_REMOVE_LATER
           blobOut_ptr->status = TO_REMOVE;
 #if DEBUG_FIND_BLOBS
           Serial.printf("\nDEBUG_FIND_BLOBS / Blob: %p in the **llist_blobs** linked list taged TO_REMOVE(%d)", (lnode_t*)blobOut_ptr, blobOut_ptr->UID);

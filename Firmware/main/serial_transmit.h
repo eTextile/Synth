@@ -8,13 +8,9 @@
 #define __SERIAL_TRANSMIT_H__
 
 #include "config.h"
-#include "llist.h"
-#include "blob.h"
 #include "presets.h"
-#include "midi_transmit.h"
 
 void SERIAL_TRANSMIT_SETUP(void);
-void read_serial_input(void);
-void serial_transmit(void);
+
 
 #endif /*__SERIAL_TRANSMIT_H__*/

@@ -38,27 +38,26 @@ Bounce2::Button BUTTON_R = Bounce2::Button();
 uint8_t currentMode = CALIBRATE;      // Init currentMode with CALIBRATE (SET as DEFAULT_MODE)
 //uint8_t lastMode = LINE_OUT;        // Init lastMode with LINE_OUT (SET as DEFAULT_MODE)
 //uint8_t lastMode = MIDI_MAPPING;    // Init lastMode with MIDI_MAPPING (SET as DEFAULT_MODE)
-uint8_t lastMode = MIDI_BLOBS_PLAY; // Init lastMode with MIDI_BLOBS_PLAY (SET as DEFAULT_MODE)
-
-//uint8_t lastMode = SERIAL_RAW;
-//uint8_t lastMode = SERIAL_INTERP;
-//uint8_t lastMode = SERIAL_BLOBS;
+uint8_t lastMode = MIDI_BLOBS_PLAY;   // Init lastMode with MIDI_BLOBS_PLAY (SET as DEFAULT_MODE)
+//uint8_t lastMode = SERIAL_RAW;      //
+//uint8_t lastMode = SERIAL_INTERP;   //
+//uint8_t lastMode = SERIAL_BLOBS;    //
 
 preset_t presets[9] = {
-  {13, 31, 29, 0, false, false, false, LOW,  LOW },  // LINE_OUT         - ARGS[minVal, maxVal, val, ledVal, setLed, updateLed, update, D1, D2]
-  { 1, 50, 12, 0, false, false, false, HIGH, LOW },  // SIG_IN           - ARGS[minVal, maxVal, val, ledVal, setLed, updateLed, update, D1, D2]
-  { 1, 31, 17, 0, false, false, false, LOW,  HIGH},  // SIG_OUT          - ARGS[minVal, maxVal, val, ledVal, setLed, updateLed, update, D1, D2]
-  { 2, 30, 5, 0, false, false, false, HIGH, HIGH},   // THRESHOLD        - ARGS[minVal, maxVal, val, ledVal, setLed, updateLed, update, D1, D2]
-  { 0, 0,  0,  0, true,  true,  false, HIGH, HIGH},  // CALIBRATE        - ARGS[minVal, maxVal, val, ledVal, setLed, updateLed, update, D1, D2]
-  { 0, 0,  0,  0, false, false, false, NULL, NULL},  // SAVE             - ARGS[minVal, maxVal, val, ledVal, setLed, updateLed, update, D1, D2]
-  { 0, 0,  0,  0, false, false, false, NULL, NULL},  // MIDI_BLOBS_PLAY  - ARGS[minVal, maxVal, val, ledVal, setLed, updateLed, update, D1, D2]
-  { 1, 7,  0,  0, false, false, false, NULL, NULL},  // MIDI_BLOBS_LEARN - ARGS[minVal, maxVal, val, ledVal, setLed, updateLed, update, D1, D2]
-  { 0, 0,  0,  0, false, false, false, NULL, NULL}   // MIDI_MAPPING     - ARGS[minVal, maxVal, val, ledVal, setLed, updateLed, update, D1, D2]
+  {13, 31, 29, 0, false, false, false, false, LOW,  LOW  },  // LINE_OUT          ARGS[minVal, maxVal, val, ledVal, update, setLed, updateLed, allDone, D1, D2]
+  { 1, 50, 12, 0, false, false, false, false, HIGH, LOW  },  // SIG_IN            ARGS[minVal, maxVal, val, ledVal, update, setLed, updateLed, allDone, D1, D2]
+  { 1, 31, 17, 0, false, false, false, false, LOW,  HIGH },  // SIG_OUT           ARGS[minVal, maxVal, val, ledVal, update, setLed, updateLed, allDone, D1, D2]
+  { 2, 60, 40, 0, false, false, false, false, HIGH, HIGH },  // THRESHOLD         ARGS[minVal, maxVal, val, ledVal, update, setLed, updateLed, allDone, D1, D2]
+  { 0, 0,  0,  0, true,  false, false, false, HIGH, HIGH },  // CALIBRATE         ARGS[minVal, maxVal, val, ledVal, update, setLed, updateLed, allDone, D1, D2]
+  { 0, 0,  0,  0, false, false, false, false, NULL, NULL },  // SAVE              ARGS[minVal, maxVal, val, ledVal, update, setLed, updateLed, allDone, D1, D2]
+  { 0, 0,  0,  0, false, false, false, false, NULL, NULL },  // MIDI_BLOBS_PLAY   ARGS[minVal, maxVal, val, ledVal, update, setLed, updateLed, allDone, D1, D2]
+  { 1, 7,  0,  0, false, false, false, false, NULL, NULL },  // MIDI_BLOBS_LEARN  ARGS[minVal, maxVal, val, ledVal, update, setLed, updateLed, allDone, D1, D2]
+  { 0, 0,  0,  0, false, false, false, false, NULL, NULL }   // MIDI_MAPPING      ARGS[minVal, maxVal, val, ledVal, update, setLed, updateLed, allDone, D1, D2]
 };
 
 void LEDS_SETUP(void) {
-  pinMode(LED_PIN_D1, OUTPUT);
-  pinMode(LED_PIN_D2, OUTPUT);
+  //pinMode(LED_PIN_D1, OUTPUT);
+  //pinMode(LED_PIN_D2, OUTPUT);
 };
 
 // Hear it should not compile if you didn't install the library (Manually!)
@@ -71,7 +70,7 @@ void SWITCHES_SETUP(void) {
   BUTTON_R.interval(25);                        // Debounce interval of 25 millis
 };
 
-void update_presets_usb(void) {
+void update_presets_midi_usb(void) {
   for (midiNode_t* node_ptr = (midiNode_t*)ITERATOR_START_FROM_HEAD(&midiIn); node_ptr != NULL; node_ptr = (midiNode_t*)ITERATOR_NEXT(node_ptr)) {
     switch (node_ptr->midiMsg.status) {
       case MIDI_NOTE_ON:
@@ -82,41 +81,58 @@ void update_presets_usb(void) {
         break;
       case MIDI_CONTROL_CHANGE:
         switch (node_ptr->midiMsg.data1) {
+          case LINE_OUT: // PROGRAM 0
+            currentMode = LINE_OUT;
+            presets[LINE_OUT].update = true;
+            break;
+          case SIG_IN: // PROGRAM 1
+            currentMode = SIG_IN;
+            presets[SIG_IN].update = true;
+            break;
+          case SIG_OUT: // PROGRAM 2
+            currentMode = SIG_OUT;
+            presets[SIG_OUT].update = true;
+            break;
           case THRESHOLD: // PROGRAM 3
-            //lastMode = currentMode;
             currentMode = THRESHOLD;
             presets[THRESHOLD].val = map(node_ptr->midiMsg.data2, 0, 127, presets[THRESHOLD].minVal, presets[THRESHOLD].maxVal);
             encoder.write(presets[THRESHOLD].val << 2);
             interpThreshold = constrain(presets[THRESHOLD].val - 5, presets[THRESHOLD].minVal, presets[THRESHOLD].maxVal);
             presets[THRESHOLD].ledVal = map(node_ptr->midiMsg.data2, 0, 127, 0, 255);
-            presets[THRESHOLD].setLed = true;
-            presets[THRESHOLD].updateLed = true;
             presets[THRESHOLD].update = true;
+            presets[THRESHOLD].setLed = true; // TEENSY 3.2 DO NOT HAVE LEDs!!!
             break;
           case CALIBRATE: // PROGRAM 4
             lastMode = currentMode;
             currentMode = CALIBRATE;
-            presets[CALIBRATE].setLed = true;
+            presets[CALIBRATE].update = true;
             break;
           case MIDI_BLOBS_PLAY: // PROGRAM 6
-            if (node_ptr->midiMsg.data2) currentMode = MIDI_BLOBS_PLAY;
+            currentMode = MIDI_BLOBS_PLAY;
+            presets[MIDI_BLOBS_PLAY].update = true;
             presets[MIDI_BLOBS_PLAY].setLed = true;
             break;
           case MIDI_BLOBS_LEARN: // PROGRAM 7
-            if (node_ptr->midiMsg.data2) currentMode = MIDI_BLOBS_LEARN;
+            currentMode = MIDI_BLOBS_LEARN;
+            presets[MIDI_BLOBS_LEARN].update = true;
             presets[MIDI_BLOBS_LEARN].setLed = true;
             break;
           case MIDI_MAPPING: // PROGRAM 8
             currentMode = MIDI_MAPPING;
+            presets[MIDI_MAPPING].update = true;
+            presets[MIDI_MAPPING].setLed = true;
             break;
           case MIDI_RAW: // PROGRAM 9
-            if (node_ptr->midiMsg.data2 == 1) currentMode = MIDI_RAW;
+            currentMode = MIDI_RAW;
+            //presets[MIDI_RAW].updat = true;
             break;
           case MIDI_INTERP: // PROGRAM 10
             currentMode = MIDI_INTERP;
+            //presets[MIDI_INTERP].update = true;
             break;
           case MIDI_OFF: // PROGRAM 11
             currentMode = MIDI_OFF;
+            //presets[MIDI_OFF].update = true;
             break;
           default:
             break;
@@ -137,8 +153,7 @@ void update_presets_buttons(void) {
   if (BUTTON_L.rose() && BUTTON_L.previousDuration() < LONG_HOLD) {
     lastMode = currentMode; // keep track of last Mode to set it back after calibration
     currentMode = CALIBRATE;
-    presets[CALIBRATE].setLed = true;
-    presets[CALIBRATE].updateLed = true;
+    presets[CALIBRATE].update = true;
 #if DEBUG_BUTTONS
     Serial.printf("\nBUTTON_L : CALIBRATE : %d", currentMode);
 #endif
@@ -148,8 +163,7 @@ void update_presets_buttons(void) {
   if (BUTTON_L.rose() && BUTTON_L.previousDuration() > LONG_HOLD) {
     lastMode = currentMode; // keep track of last Mode to set it back after saving
     currentMode = SAVE;
-    presets[SAVE].setLed = true;
-    presets[SAVE].updateLed = true;
+    presets[SAVE].update = true;
 #if DEBUG_BUTTONS
     Serial.printf("\nBUTTON_L : SAVE : %d", currentMode);
 #endif
@@ -174,18 +188,16 @@ void update_presets_buttons(void) {
   // LEDs : blink alternately, slow for playing mode and fast or learning mode
   if (BUTTON_R.rose() && BUTTON_R.previousDuration() > LONG_HOLD) {
     if (currentMode == MIDI_BLOBS_LEARN) {
-      currentMode = MIDI_BLOBS_PLAY;
-      presets[MIDI_BLOBS_PLAY].setLed = true;
-      presets[MIDI_BLOBS_PLAY].updateLed = true;
+      currentMode = MIDI_BLOBS_LEARN;
+      presets[MIDI_BLOBS_LEARN].update = true;
 #if DEBUG_BUTTONS
       Serial.printf("\nMIDI_BLOBS_PLAY : %d", currentMode);
 #endif
     }
     else {
-      currentMode = MIDI_BLOBS_LEARN;
+      currentMode = MIDI_BLOBS_PLAY;
       encoder.write(0x1);
-      presets[MIDI_BLOBS_LEARN].setLed = true;
-      presets[MIDI_BLOBS_LEARN].updateLed = true;
+      presets[MIDI_BLOBS_PLAY].update = true;
 #if DEBUG_BUTTONS
       Serial.printf("\nMIDI_BLOBS_LEARN : %d", currentMode);
 #endif
@@ -200,21 +212,18 @@ void update_presets_encoder(void) {
       if (setLevel(&presets[LINE_OUT])) {
         presets[LINE_OUT].ledVal = map(presets[LINE_OUT].val, presets[LINE_OUT].minVal, presets[LINE_OUT].maxVal, 0, 255);
         presets[LINE_OUT].updateLed = true;
-        presets[LINE_OUT].update = true;
       };
       break;
     case SIG_IN:
       if (setLevel(&presets[SIG_IN])) {
         presets[SIG_IN].ledVal = map(presets[SIG_IN].val, presets[SIG_IN].minVal, presets[SIG_IN].maxVal, 0, 255);
         presets[SIG_IN].updateLed = true;
-        presets[SIG_IN].update = true;
       };
       break;
     case SIG_OUT:
       if (setLevel(&presets[SIG_OUT])) {
         presets[SIG_OUT].ledVal = map(presets[SIG_OUT].val, presets[SIG_OUT].minVal, presets[SIG_OUT].maxVal, 0, 255);
         presets[SIG_OUT].updateLed = true;
-        presets[SIG_OUT].update = true;
       };
       break;
     case THRESHOLD:
@@ -222,13 +231,10 @@ void update_presets_encoder(void) {
         presets[THRESHOLD].ledVal = map(presets[THRESHOLD].val, presets[THRESHOLD].minVal, presets[THRESHOLD].maxVal, 0, 255);
         interpThreshold = constrain(presets[THRESHOLD].val - 5, presets[THRESHOLD].minVal, presets[THRESHOLD].maxVal);
         presets[THRESHOLD].updateLed = true;
-        presets[THRESHOLD].update = true;
       };
       break;
     case MIDI_BLOBS_LEARN:
-      if (setLevel(&presets[MIDI_BLOBS_LEARN])) {
-        presets[MIDI_BLOBS_LEARN].update = true;
-      };
+      if (setLevel(&presets[MIDI_BLOBS_LEARN]));
       break;
     default:
       break;
@@ -295,6 +301,7 @@ void update_leds(void) {
         presets[THRESHOLD].updateLed = false;
         analogWrite(LED_PIN_D1, presets[THRESHOLD].ledVal);
         analogWrite(LED_PIN_D2, abs(presets[THRESHOLD].ledVal - 255));
+        //lastMode = currentMode;
       };
       break;
     case MIDI_BLOBS_PLAY: // LEDs : blink alternately slow
@@ -344,34 +351,36 @@ void update_leds(void) {
         presets[CALIBRATE].setLed = false;
         pinMode(LED_PIN_D1, OUTPUT);
         pinMode(LED_PIN_D2, OUTPUT);
-        digitalWrite(LED_PIN_D1, presets[CALIBRATE].D1);
-        digitalWrite(LED_PIN_D2, presets[CALIBRATE].D2);
         timeStamp = millis();
         iter = 0;
       };
-      if (iter <= CALIBRATE_LED_ITER) {
-        if (millis() - timeStamp < CALIBRATE_LED_TIMEON && presets[CALIBRATE].updateLed == true) {
-          presets[CALIBRATE].updateLed = false;
-          digitalWrite(LED_PIN_D1, HIGH);
-          digitalWrite(LED_PIN_D2, HIGH);
-        }
-        else if (millis() - timeStamp > CALIBRATE_LED_TIMEON && presets[CALIBRATE].updateLed == false) {
-          presets[CALIBRATE].updateLed = true;
-          digitalWrite(LED_PIN_D1, LOW);
-          digitalWrite(LED_PIN_D2, LOW);
-        }
-        else if (millis() - timeStamp > CALIBRATE_LED_TIMEON + CALIBRATE_LED_TIMEOFF) {
-          if (iter < CALIBRATE_LED_ITER) {
-            timeStamp = millis();
-            iter++;
+      if (presets[CALIBRATE].allDone) {
+        if (iter <= CALIBRATE_LED_ITER) {
+          if (millis() - timeStamp < CALIBRATE_LED_TIMEON && presets[CALIBRATE].updateLed == true ) {
+            presets[CALIBRATE].updateLed = false;
+            digitalWrite(LED_PIN_D1, HIGH);
+            digitalWrite(LED_PIN_D2, HIGH);
           }
-          else {
-            presets[CALIBRATE].update = true;
+          else if (millis() - timeStamp > CALIBRATE_LED_TIMEON && presets[CALIBRATE].updateLed == false) {
+            presets[CALIBRATE].updateLed = true;
+            digitalWrite(LED_PIN_D1, LOW);
+            digitalWrite(LED_PIN_D2, LOW);
+          }
+          else if (millis() - timeStamp > CALIBRATE_LED_TIMEON + CALIBRATE_LED_TIMEOFF) {
+            if (iter < CALIBRATE_LED_ITER) {
+              timeStamp = millis();
+              iter++;
+            }
+            else {
+              presets[CALIBRATE].allDone = false;
+              currentMode = lastMode;
+              presets[currentMode].setLed = true;
+            };
           };
         };
       };
       break;
-    case SAVE: // LEDs : Both LEDs are blinking weary fast
+    case SAVE: // LEDs : Both LEDs are blinking very fast
       if (presets[SAVE].setLed) {
         presets[SAVE].setLed = false;
         pinMode(LED_PIN_D1, OUTPUT);

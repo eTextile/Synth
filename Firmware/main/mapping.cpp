@@ -88,7 +88,6 @@ void mapping_toggle(void) {
             blob_ptr->centroid.X < toggleKey[keyPos].rect.Xmax &&
             blob_ptr->centroid.Y > toggleKey[keyPos].rect.Ymin &&
             blob_ptr->centroid.Y < toggleKey[keyPos].rect.Ymax) {
-
           if (!blob_ptr->lastState) {
             toggleKey[keyPos].state = !toggleKey[keyPos].state;
             midiNode_t* node_ptr = (midiNode_t*)llist_pop_front(&midi_node_stack);    // Get a node from the MIDI node stack
@@ -164,7 +163,7 @@ void mapping_grid_update(void) {
       uint8_t keyPressY = lround(blob_ptr->centroid.Y * GRID_Y_SCALE_FACTOR);       // Compute Y grid position
       uint8_t keyPress = keyPressY * GRID_COLS + keyPressX;                         // Compute 1D key index position
       //Serial.printf("\nGRID\tKEY:%d\tPOS_X:%d\tPOS_Y:%d", keyPress, keyPressX, keyPressY);
-      Serial.printf("\nGRID\tBLOB:%d\tBLOB_X:%f\tBLOB_Y:%f", blob_ptr->UID, blob_ptr->centroid.X, blob_ptr->centroid.X);
+      //Serial.printf("\nGRID\tBLOB:%d\tBLOB_X:%f\tBLOB_Y:%f", blob_ptr->UID, blob_ptr->centroid.X, blob_ptr->centroid.X);
 
       if (blob_ptr->state) {                                                        // Test if the blob is alive
         if (gridLayout[keyPress] != lastKeyPress[blob_ptr->UID]) {                  // Test if the blob is touching a new key
