@@ -32,32 +32,32 @@ void read_osc_input(void) {
 };
 
 // INPUT_CONTROL
-void handle_osc_input(OSCMessage &midiMsg) {
+void handle_osc_input(OSCMessage &msg) {
   midiNode_t* node_ptr = (midiNode_t*)llist_pop_front(&midi_node_stack);  // Get a node from the MIDI nodes stack
-  switch (midiMsg.getInt(0)) {
+  switch (msg.getInt(0)) {
     case midi::NoteOn:
       node_ptr->midiMsg.status = midi::NoteOn;         // Set the MIDI status
-      node_ptr->midiMsg.data1 = midiMsg.getInt(1);     // Set the MIDI note
-      node_ptr->midiMsg.data2 = midiMsg.getInt(2);     // Set the MIDI velocity
-      node_ptr->midiMsg.channel = midiMsg.getInt(3);   // Set the MIDI channel
+      node_ptr->midiMsg.data1 = msg.getInt(1);         // Set the MIDI note
+      node_ptr->midiMsg.data2 = msg.getInt(2);         // Set the MIDI velocity
+      node_ptr->midiMsg.channel = msg.getInt(3);       // Set the MIDI channel
       llist_push_front(&midiIn, node_ptr);             // Add the node to the midiIn linked liste
       break;
     case midi::NoteOff:
       node_ptr->midiMsg.status = midi::NoteOff;        // Set the MIDI status
-      node_ptr->midiMsg.data1 = midiMsg.getInt(1);     // Set the MIDI note
-      node_ptr->midiMsg.data2 = midiMsg.getInt(2);     // Set the MIDI velocity
-      node_ptr->midiMsg.channel = midiMsg.getInt(3);   // Set the MIDI channel
+      node_ptr->midiMsg.data1 = msg.getInt(1);         // Set the MIDI note
+      node_ptr->midiMsg.data2 = msg.getInt(2);         // Set the MIDI velocity
+      node_ptr->midiMsg.channel = msg.getInt(3);       // Set the MIDI channel
       llist_push_front(&midiIn, node_ptr);             // Add the node to the midiIn linked liste
       break;
     case midi::ControlChange:
       node_ptr->midiMsg.status = midi::ControlChange;  // Set the MIDI status
-      node_ptr->midiMsg.data1 = midiMsg.getInt(1);     // Set the MIDI note
-      node_ptr->midiMsg.data2 = midiMsg.getInt(2);     // Set the MIDI velocity
-      node_ptr->midiMsg.channel = midiMsg.getInt(3);   // Set the MIDI channel
+      node_ptr->midiMsg.data1 = msg.getInt(1);         // Set the MIDI note
+      node_ptr->midiMsg.data2 = msg.getInt(2);         // Set the MIDI velocity
+      node_ptr->midiMsg.channel = msg.getInt(3);       // Set the MIDI channel
       llist_push_front(&midiIn, node_ptr);             // Add the node to the midiIn linked liste
       break;
     default:
-      llist_push_front(&midi_node_stack, node_ptr);                           // Add the node to the midi_node_stack linked liste
+      llist_push_front(&midi_node_stack, node_ptr);    // Add the node to the midi_node_stack linked liste
       break;
   };
 };
