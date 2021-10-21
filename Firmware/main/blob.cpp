@@ -17,7 +17,7 @@
 #define X_STRIDE            4             // Speed up X scanning
 #define Y_STRIDE            2             // Speed up Y scanning
 #define MIN_BLOB_PIX        4             // Set the minimum blob pixels
-#define DEBOUNCE_TIME       20            // Avioding undesired bouncing effect when taping on the sensor / FIXME!
+#define DEBOUNCE_TIME       20            // Avioding undesired bouncing effect when taping on the sensor or sliding.
 
 uint8_t bitmapArray[NEW_FRAME] = {0};     // 1D Array to store (64*64) binary values
 xylr_t lifoArray[LIFO_NODES] = {0};       // 1D Array to store lifo nodes
@@ -28,7 +28,6 @@ point_t lastCoord[MAX_SYNTH] = {0};
 llist_t llist_context_stack;              // Free nodes stack
 llist_t llist_context;                    // Used nodes
 llist_t llist_blobs_stack;                // Free nodes stack
-
 llist_t llist_blobs_temp;                 // Intermediate blobs linked list
 llist_t llist_blobs;                      // Output blobs linked list
 
@@ -269,7 +268,7 @@ void find_blobs(void) {
       //Serial.printf("\nDEBUG_FIND_BLOBS / the minimum distance between blobs from llist_blobs_temp & llist_blobs is: %f ", minDist);
       Serial.printf("\nDEBUG_FIND_BLOBS / Found corresponding blob: %p in the **llist_blobs**", (lnode_t*)nearestBlob_ptr);
 #endif
-      blobIn_ptr->timeTag_debounce = millis();
+      blobIn_ptr->debounceTimeStamp = millis();
       blobIn_ptr->UID = nearestBlob_ptr->UID;
       blobIn_ptr->state = true;
       blobIn_ptr->lastState = true;
@@ -298,7 +297,7 @@ void find_blobs(void) {
           blobIn_ptr->state = true;
           blobIn_ptr->lastState = false; // TO_REMOVE_LATER
           //blobIn_ptr->status = TO_ADD; // TO_REMOVE_LATER
-          blobIn_ptr->timeTag_debounce = millis();
+          blobIn_ptr->debounceTimeStamp = millis();
           minID++;
           break;
         };
@@ -322,7 +321,7 @@ void find_blobs(void) {
       };
       if (!found) {
         allDone = false;
-        if ((millis() - blobOut_ptr->timeTag_debounce) < DEBOUNCE_TIME) {
+        if ((millis() - blobOut_ptr->debounceTimeStamp) < DEBOUNCE_TIME) {
           //blobOut_ptr->state = false; // TO_REMOVE_LATER
           //blobOut_ptr->lastState = true; // TO_REMOVE_LATER
           blobOut_ptr->status = NOT_FOUND;
@@ -359,14 +358,14 @@ void find_blobs(void) {
   for (blob_t* blob_ptr = (blob_t*)ITERATOR_START_FROM_HEAD(&llist_blobs); blob_ptr != NULL; blob_ptr = (blob_t*)ITERATOR_NEXT(blob_ptr)) {
     if (blob_ptr->UID < MAX_SYNTH) {
       if (!blob_ptr->lastState) {
-        blob_ptr->velocity.timeTag = millis();
+        blob_ptr->velocity.TimeStamp = millis();
         lastCoord[blob_ptr->UID].X = blob_ptr->centroid.X;
         lastCoord[blob_ptr->UID].Y = blob_ptr->centroid.Y;
         lastCoord[blob_ptr->UID].Z = blob_ptr->centroid.Z;
       }
       else {
-        if (millis() - blob_ptr->velocity.timeTag > 10) {
-          blob_ptr->velocity.timeTag = millis();
+        if (millis() - blob_ptr->velocity.TimeStamp > 10) {
+          blob_ptr->velocity.timeStamp = millis();
           float vx = fabs(blob_ptr->centroid.X - lastCoord[blob_ptr->UID].X);
           float vy = fabs(blob_ptr->centroid.Y - lastCoord[blob_ptr->UID].Y);
           blob_ptr->velocity.XY = sqrtf(vx * vx + vy * vy);

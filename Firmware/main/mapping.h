@@ -73,8 +73,8 @@ typedef struct cChange cChange_t;
 struct cChange {
   uint8_t blobID;
   uint8_t mappVal;
-  int8_t cChange;
-  int8_t lastVal;
+  uint8_t cChange;
+  uint8_t lastX, lastY, lastZ, lastW, lastH;
 };
 
 void TRIGGER_SETUP(void);

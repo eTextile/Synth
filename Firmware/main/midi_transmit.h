@@ -11,11 +11,15 @@
 #include "llist.h"
 #include "blob.h"
 
+#include <MIDI.h>  // https://github.com/FortySevenEffects/arduino_midi_library > https://github.com/PaulStoffregen/MIDI
+using namespace midi;
+
 // MIDI status bytes
-#define MIDI_NOTE_ON            0x90
-#define MIDI_NOTE_OFF           0x80
-#define MIDI_CONTROL_CHANGE     0xB0
-#define MIDI_SYSEX              0xF0
+// https://github.com/PaulStoffregen/MIDI/blob/master/src/midi_Defs.h
+//#define MIDI_NOTE_ON            0x90
+//#define MIDI_NOTE_OFF           0x80
+//#define MIDI_CONTROL_CHANGE     0xB0
+//#define MIDI_SYSEX              0xF0
 
 /*
   typedef enum status {
@@ -51,9 +55,7 @@ void llist_midi_init(llist_t* llist_ptr, midiNode_t* nodeArray_ptr, const int no
 void MIDI_TRANSMIT_SETUP(void);
 
 void read_midi_input(void);
-void handle_midi_input_cc(byte channel, byte control, byte value);
-void handle_midi_input_noteOn(byte channel, byte note, byte velocity);
-void handle_midi_input_noteOff(byte channel, byte note, byte velocity);
+void handle_midi_input(const midi::Message<128u> &midiMsg);
 void midi_transmit(void);
 
 #endif /*__MIDI_TRANSMIT_H__*/

@@ -4,20 +4,19 @@
   This work is licensed under Creative Commons Attribution-ShareAlike 4.0 International license, see the LICENSE file for details.
 */
 
-#include <elapsedMillis.h>  // https://github.com/pfeerick/elapsedMillis
-
 #include "seq.h"
 
 // TODO
-void tapTempo(tSwitch_t* tSwitch_ptr, seq_t * seq_ptr) {
-  
-  
-}
+void tapTempo(void) {
+
+  for (midiNode_t* midiNode_ptr = (midiNode_t*)ITERATOR_START_FROM_HEAD(&midiOut); midiNode_ptr != NULL; midiNode_ptr = (midiNode_t*)ITERATOR_NEXT(midiNode_ptr)) {
+  };
+};
 
 // TODO
-void stepSequencer(tSwitch_t* tSwitch_ptr, seq_t * seq_ptr) {
-}
+void stepSequencer(void) {
+};
 
 // TODO
-void arpeggiator(int8_t* keyPress) {
-}
+void arpeggiator(void) {
+};

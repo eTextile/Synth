@@ -85,14 +85,14 @@ struct box {
 
 typedef struct velocity velocity_t;
 struct velocity {
-  unsigned long timeTag;
+  unsigned long timeStamp;
   float XY;
   float Z;
 };
 
 typedef enum status {
   FREE,
-  TO_ADD,
+  //TO_ADD,
   NOT_FOUND,
   TO_REMOVE
 } status_t;
@@ -102,8 +102,8 @@ struct blob {
   lnode_t node;
   uint8_t UID;
   status_t status;
-  unsigned long timeTag_debounce;
-  unsigned long timeTag_transmit;
+  unsigned long debounceTimeStamp;
+  unsigned long transmitTimeStamp;
   uint16_t pixels;
   boolean state;
   boolean lastState;

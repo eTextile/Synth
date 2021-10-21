@@ -6,10 +6,8 @@
 
 #include "midi_transmit.h"
 
-#include <MIDI.h>                           // http://www.pjrc.com/teensy/td_midi.html
-
-unsigned long int transmitMidiTimer = 0;
-#define TRANSMIT_INTERVAL 15
+#define MIDI_TRANSMIT_INTERVAL 15
+unsigned long int usbTransmitTimeStamp = 0;
 
 #if MIDI_HARDWARE
 MIDI_CREATE_INSTANCE(HardwareSerial, Serial3, MIDI);
@@ -34,15 +32,11 @@ void llist_midi_init(llist_t* llist_ptr, midiNode_t* nodeArray_ptr, const int no
 void MIDI_TRANSMIT_SETUP(void) {
 #if MIDI_USB
   usbMIDI.begin();
-  usbMIDI.setHandleNoteOn(handle_midi_input_noteOn);
-  usbMIDI.setHandleNoteOff(handle_midi_input_noteOff);
-  usbMIDI.setHandleControlChange(handle_midi_input_cc);
+  usbMIDI.setHandleMessage(handle_midi_input);
 #endif
 #if MIDI_HARDWARE
   MIDI.begin(MIDI_INPUT_CHANNEL); // Launch MIDI and listen to channel 1
-  MIDI.setHandleNoteOn(handle_midi_input_noteOn);
-  MIDI.setHandleNoteOff(handle_midi_input_noteOff);
-  MIDI.setHandleControlChange(handle_midi_input_cc);
+  MIDI.setHandleMessage(handle_midi_input);
 #endif
   llist_midi_init(&midi_node_stack, &midiNodeArray[0], MIDI_NODES); // Add X nodes to the midi_node_stack
   llist_raz(&midiIn);
@@ -61,40 +55,42 @@ void read_midi_input(void) {
 #endif
 };
 
-void handle_midi_input_noteOn(byte channel, byte note, byte velocity) {
+void handle_midi_input(const midi::Message<128u> &midiMsg) {
   midiNode_t* node_ptr = (midiNode_t*)llist_pop_front(&midi_node_stack);  // Get a node from the MIDI nodes stack
-  node_ptr->midiMsg.status = MIDI_NOTE_ON;                                // Set the MIDI status
-  node_ptr->midiMsg.data1 = note;                                         // Set the MIDI note
-  node_ptr->midiMsg.data2 = velocity;                                     // Set the MIDI velocity
-  node_ptr->midiMsg.channel = channel;                                    // Set the MIDI channel
-  llist_push_front(&midiIn, node_ptr);                                    // Add the node to the midiIn linked liste
-};
 
-void handle_midi_input_noteOff(byte channel, byte note, byte velocity) {
-  midiNode_t* node_ptr = (midiNode_t*)llist_pop_front(&midi_node_stack);  // Get a node from the MIDI nodes stack
-  node_ptr->midiMsg.status = MIDI_NOTE_OFF;                               // Set the MIDI status
-  node_ptr->midiMsg.data1 = note;                                         // Set the MIDI note
-  node_ptr->midiMsg.data2 = velocity;                                     // Set the MIDI velocity
-  node_ptr->midiMsg.channel = channel;                                    // Set the MIDI channel
-  llist_push_front(&midiIn, node_ptr);                                    // Add the node to the midiIn linked liste
-};
-
-void handle_midi_input_cc(byte channel, byte control, byte value) {
-  midiNode_t* node_ptr = (midiNode_t*)llist_pop_front(&midi_node_stack);  // Get a node from the MIDI nodes stack
-  node_ptr->midiMsg.status = MIDI_CONTROL_CHANGE;                         // Set the MIDI status
-  node_ptr->midiMsg.data1 = control;                                      // Set the MIDI control
-  node_ptr->midiMsg.data2 = value;                                        // Set the MIDI value
-  node_ptr->midiMsg.channel = channel;                                    // Set the MIDI channel
-  llist_push_front(&midiIn, node_ptr);                                    // Add the node to the midiIn linked liste
+  switch (midiMsg.type) {
+    case midi::NoteOn:
+      node_ptr->midiMsg.status = midi::NoteOn;         // Set the MIDI status
+      node_ptr->midiMsg.data1 = midiMsg.data1;         // Set the MIDI note
+      node_ptr->midiMsg.data2 = midiMsg.data2;         // Set the MIDI velocity
+      node_ptr->midiMsg.channel = midiMsg.channel;     // Set the MIDI channel
+      llist_push_front(&midiIn, node_ptr);             // Add the node to the midiIn linked liste
+      break;
+    case midi::NoteOff:
+      node_ptr->midiMsg.status = midi::NoteOff;        // Set the MIDI status
+      node_ptr->midiMsg.data1 = midiMsg.data1;         // Set the MIDI note
+      node_ptr->midiMsg.data2 = midiMsg.data2;         // Set the MIDI velocity
+      node_ptr->midiMsg.channel = midiMsg.channel;     // Set the MIDI channel
+      llist_push_front(&midiIn, node_ptr);             // Add the node to the midiIn linked liste
+      break;
+    case midi::ControlChange:
+      node_ptr->midiMsg.status = midi::ControlChange;  // Set the MIDI status
+      node_ptr->midiMsg.data1 = midiMsg.data1;         // Set the MIDI note
+      node_ptr->midiMsg.data2 = midiMsg.data2;         // Set the MIDI velocity
+      node_ptr->midiMsg.channel = midiMsg.channel;     // Set the MIDI channel
+      llist_push_front(&midiIn, node_ptr);             // Add the node to the midiIn linked liste
+      break;
+    default:
+      llist_push_front(&midi_node_stack, node_ptr);                           // Add the node to the midi_node_stack linked liste
+      break;
+  };
 };
 
 void midi_transmit(void) {
-
   switch (currentMode) {
-
-    case MIDI_RAW:
-      if (millis() - transmitMidiTimer > TRANSMIT_INTERVAL) {
-        transmitMidiTimer = millis();
+    case RAW_MATRIX:
+      if (millis() - usbTransmitTimeStamp > MIDI_TRANSMIT_INTERVAL) {
+        usbTransmitTimeStamp = millis();
 #if MIDI_USB
         usbMIDI.sendSysEx(RAW_FRAME, rawFrame.pData, false, 0);
         usbMIDI.send_now();
@@ -102,19 +98,20 @@ void midi_transmit(void) {
       };
       break;
 
-    case MIDI_INTERP:
-      if (millis() - transmitMidiTimer > TRANSMIT_INTERVAL) {
-        transmitMidiTimer = millis();
+    case INTERP_MATRIX:
+      if (millis() - usbTransmitTimeStamp > MIDI_TRANSMIT_INTERVAL) {
+        usbTransmitTimeStamp = millis();
 #if MIDI_USB
-        // NOT_WORKING! See https://forum.pjrc.com/threads/28282-How-big-is-the-MIDI-receive-buffer
+        // NOT_WORKING!
+        // See https://forum.pjrc.com/threads/28282-How-big-is-the-MIDI-receive-buffer
         //usbMIDI.sendSysEx(NEW_FRAME, interpFrame.pData, false, 0);
         //usbMIDI.send_now();
 #endif
       };
       break;
 
-    case MIDI_BLOBS_PLAY:
-      // Send all blobs values using MIDI format
+    case BLOBS_PLAY:
+      // Send all blobs values over USB using MIDI format
 #if MIDI_USB
       for (blob_t* blob_ptr = (blob_t*)ITERATOR_START_FROM_HEAD(&llist_blobs); blob_ptr != NULL; blob_ptr = (blob_t*)ITERATOR_NEXT(blob_ptr)) {
         if (blob_ptr->state) {
@@ -126,8 +123,8 @@ void midi_transmit(void) {
             usbMIDI.send_now();
             //while (usbMIDI.read()); // Read and discard any incoming MIDI messages
           } else {
-            if (millis() - blob_ptr->timeTag_transmit > TRANSMIT_INTERVAL) {
-              blob_ptr->timeTag_transmit = millis();
+            if (millis() - blob_ptr->transmitTimeStamp > MIDI_TRANSMIT_INTERVAL) {
+              blob_ptr->transmitTimeStamp = millis();
               // usbMIDI.sendControlChange(control, value, channel);
               usbMIDI.sendControlChange(BX, (uint8_t)round(map(blob_ptr->centroid.X, 0, X_MAX - X_MIN, 0, 127)), blob_ptr->UID + 1);
               usbMIDI.sendControlChange(BY, (uint8_t)round(map(blob_ptr->centroid.Y, 0, X_MAX - X_MIN, 0, 127)), blob_ptr->UID + 1);
@@ -155,16 +152,14 @@ void midi_transmit(void) {
 #endif
       break;
 
-    case MIDI_BLOBS_LEARN:
+    case BLOBS_LEARN:
       // Send separate blobs values using Control Change MIDI format
       // Send only the last blob that have been added to the sensor surface
       // Select blob's values according to the encoder position to allow the auto-mapping into Max4Live...
 #if MIDI_USB
       if ((blob_t*)llist_blobs.tail_ptr != NULL) {
         blob_t* blob_ptr = (blob_t*)llist_blobs.tail_ptr;
-        Serial.printf("\nDEBUG_MIDI_USB BLOB_VAL: %d", presets[MIDI_BLOBS_LEARN].val);
-
-        switch (presets[MIDI_BLOBS_LEARN].val) {
+        switch (presets[BLOBS_LEARN].val) {
           case BS:
             if (blob_ptr->state) {
               if (!blob_ptr->lastState) {
@@ -199,10 +194,10 @@ void midi_transmit(void) {
 #endif
       break;
 
-    case MIDI_MAPPING:
+    case BLOBS_MAPPING:
       for (midiNode_t* node_ptr = (midiNode_t*)ITERATOR_START_FROM_HEAD(&midiOut); node_ptr != NULL; node_ptr = (midiNode_t*)ITERATOR_NEXT(node_ptr)) {
         switch (node_ptr->midiMsg.status) {
-          case MIDI_NOTE_ON:
+          case midi::NoteOn:
 #if DEBUG_MIDI_TRANSMIT
             Serial.printf("\nTRANSMIT\tNOTE_ON:%d\tVALUE:%d\tCHANNEL:%d", node_ptr->midiMsg.data1, node_ptr->midiMsg.data2, MIDI_OUTPUT_CHANNEL);
 #endif
@@ -213,7 +208,7 @@ void midi_transmit(void) {
             MIDI.sendNoteOn(node_ptr->midiMsg.data1, node_ptr->midiMsg.data2, MIDI_OUTPUT_CHANNEL);     // Hardware send MIDI noteOn
 #endif
             break;
-          case MIDI_NOTE_OFF:
+          case midi::NoteOff:
 #if DEBUG_MIDI_TRANSMIT
             Serial.printf("\nTRANSMIT\tNOTE_OFF:%d\tVALUE:%d\tCHANNEL:%d", node_ptr->midiMsg.data1, node_ptr->midiMsg.data2, MIDI_OUTPUT_CHANNEL);
 #endif
@@ -224,7 +219,7 @@ void midi_transmit(void) {
             MIDI.sendNoteOff(node_ptr->midiMsg.data1, node_ptr->midiMsg.data2, MIDI_OUTPUT_CHANNEL);     // Hardware send MIDI noteOff
 #endif
             break;
-          case MIDI_CONTROL_CHANGE:
+          case midi::ControlChange:
 #if DEBUG_MIDI_TRANSMIT
             Serial.printf("\nTRANSMIT\tCC:%d\tVALUE:%d\tCHANNEL:%d", node_ptr->midiMsg.data1, node_ptr->midiMsg.data2, MIDI_OUTPUT_CHANNEL);
 #endif

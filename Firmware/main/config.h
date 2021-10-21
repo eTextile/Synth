@@ -11,21 +11,22 @@
 
 #define NAME                     "E256"
 #define PROJECT                  "ETEXTILE-SYNTHESIZER"
-#define VERSION                  "1.0.7"
+#define VERSION                  "1.0.8"
 
 #define VELOCITY                 0  // [0:1] IN_PROGRESS
 #define RUNING_MEDIAN            0  // [0:1] IN_PROGRESS
 
-#define SERIAL_USB               0  // [0:1] Enable serial communication (Mandatory for DEBUGING MODE)
-#define MIDI_USB                 1  // [0:1] Set the eTextile-Synthesizer as USB MIDI divice **DO NOT FORGET: Arduino/Touls/USB_Type/MIDI**
-#define USB_SLIP_OSC             0  // [0:1] Set the eTextile-Synthesizer as USB SLIP_OSC divice **DO NOT FORGET: Arduino/Touls/USB_Type/Serial**
-#define MIDI_HARDWARE            0  // [0:1] Set the eTextile-Synthesizer as MIDI divice **DO NOT FORGET: Arduino/Touls/USB_Type/Serial**1
+#define OSC_TRANSMIT             0  // [0:1] Set the eTextile-Synthesizer as USB SLIP_OSC divice **DO NOT FORGET: Arduino/Touls/USB_Type/Serial**
+#define MIDI_TRANSMIT            0  // [0:1] Set the eTextile-Synthesizer as USB_MIDI divice - DO NOT FORGET: Arduino/Touls/USB_Type/MIDI
+#define MIDI_HARDWARE            0  // [0:1] Set the eTextile-Synthesizer as HARDWARE_MIDI divice - DO NOT FORGET: Arduino/Touls/USB_Type/MIDI
+#define MIDI_USB                 0  // [0:1] Set the eTextile-Synthesizer as USB_MIDI divice - DO NOT FORGET: Arduino/Touls/USB_Type/MIDI
 #define MIDI_INPUT_CHANNEL       1  // [1:16] Set the HARDWARE MIDI_INPUT channel
 #define MIDI_OUTPUT_CHANNEL      1  // [1:16] Set the HARDWARE MIDI_OUTPUT channel
 
-#define SYNTH_PLAYER             0  // [0:1] Set the eTextile-Synthesizer as STANDALONE divice
-#define GRANULAR_PLAYER          0  // [0:1] Set the eTextile-Synthesizer as STANDALONE divice
-#define FLASH_PLAYER             0  // [0:1] Set the eTextile-Synthesizer as STANDALONE divice
+#define SOUND_CARD               0  // [0:1] Enable DAC (Mandatory for ALL PLAYERS)
+#define PLAYER_SYNTH             0  // [0:1] Set the eTextile-Synthesizer as STANDALONE divice
+#define PLAYER_GRANULAR          0  // [0:1] Set the eTextile-Synthesizer as STANDALONE divice
+#define PLAYER_FLASH             0  // [0:1] Set the eTextile-Synthesizer as STANDALONE divice
 
 #define MAPPING_LAYOUT           0  // [0:1] Enable MIDI mapping functionality
 #define GRID_LAYOUT_MIDI_IN      0  // [0:1] 
@@ -35,7 +36,9 @@
 #define GRID_LAYOUT_FREQ         0  // [0:1] 
 
 // Arduino serial monitor
-#define DEBUG_FPS                0  // [0:1] Print Frames Per Second
+#define SERIAL_TRANSMIT          0  // [0:1] Enable serial communication (Mandatory for DEBUGING MODE)
+
+#define DEBUG_FPS                1  // [0:1] Print Frames Per Second
 #define DEBUG_ENCODER            0  // [0:1] Print encoder value
 #define DEBUG_BUTTONS            0  // [0:1] Print buttons states
 #define DEBUG_ADC                0  // [0:1] Print 16x16 Analog raw values

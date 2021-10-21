@@ -7,9 +7,9 @@
 #ifndef __SEQ_H__
 #define __SEQ_H__
 
+#include "config.h"
 #include "llist.h"
 #include "blob.h"
-#include "mapping.h"
 #include "midi_transmit.h"
 
 typedef struct seq seq_t;
@@ -18,8 +18,8 @@ struct seq {
   uint8_t* seqframe;
 };
 
-void tapTempo(tSwitch_t* tSwitch_ptr, seq_t* seq_ptr); // TODO
-void stepSequencer(tSwitch_t* tSwitch_ptr, seq_t* seq_ptr); // TODO
-void arpeggiator(llist_t* llist_ptr); // TODO
+void tapTempo(void);      // TODO
+void stepSequencer(void); // TODO
+void arpeggiator(void);   // TODO
 
 #endif /*__SEQ_H__*/

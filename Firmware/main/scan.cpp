@@ -114,6 +114,7 @@ void calibrate_matrix(void) {
 
   if (presets[CALIBRATE].update == true) {
     presets[CALIBRATE].update = false;
+    //presets_ptr[CALIBRATE].update = false;
 
     for (uint8_t i = 0; i < CALIBRATION_CYCLES; i++) {
       for (uint8_t col = 0; col < DUAL_COLS; col++) {         // ANNALOG_PINS [0-7] with [8-15]

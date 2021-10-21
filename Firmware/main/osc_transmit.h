@@ -4,8 +4,8 @@
   This work is licensed under Creative Commons Attribution-ShareAlike 4.0 International license, see the LICENSE file for details.
 */
 
-#ifndef __USB_SLIP_OSC_TRANSMIT_H__
-#define __USB_SLIP_OSC_TRANSMIT_H__
+#ifndef __OSC_TRANSMIT_H__
+#define __OSC_TRANSMIT_H__
 
 #include "config.h"
 #include "presets.h"
@@ -17,7 +17,9 @@
 #include <OSCBundle.h>              // https://github.com/CNMAT/OSC
 #include <SLIPEncodedUSBSerial.h>   // https://github.com/CNMAT/OSC
 
-void USB_SLIP_OSC_SETUP(void);
-void usb_slip_osc_handle_input(void);
+void OSC_TRANSMIT_SETUP(void);
+void read_osc_input(void);
+void handle_osc_input(OSCMessage &msg);
+void osc_transmit(void);
 
-#endif /*__USB_SLIP_OSC_TRANSMIT_H__*/
+#endif /*__OSC_TRANSMIT_H__*/

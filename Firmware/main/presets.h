@@ -17,18 +17,18 @@
 #include <Encoder.h>                   // https://github.com/PaulStoffregen/Encoder
 //#include <EEPROM.h>                  // https://www.arduino.cc/en/Reference/EEPROM (TODO)
 
-#define LINE_OUT          0 // LED | 0 | 0 |
-#define SIG_IN            1 // LED | 1 | 0 |
-#define SIG_OUT           2 // LED | 0 | 1 |
-#define THRESHOLD         3 // LED | 1 | 1 |
-#define CALIBRATE         4
-#define SAVE              5
-#define MIDI_BLOBS_PLAY   6
-#define MIDI_BLOBS_LEARN  7
-#define MIDI_MAPPING      8
-#define MIDI_RAW          9
-#define MIDI_INTERP       10
-#define MIDI_OFF          11
+#define LINE_OUT         0 // LED | 0 | 0 |
+#define SIG_IN           1 // LED | 1 | 0 |
+#define SIG_OUT          2 // LED | 0 | 1 |
+#define THRESHOLD        3 // LED | 1 | 1 |
+#define CALIBRATE        4
+#define SAVE             5
+#define BLOBS_PLAY       6
+#define BLOBS_LEARN      7
+#define BLOBS_MAPPING    8
+#define RAW_MATRIX       9
+#define INTERP_MATRIX    10
+#define ALL_OFF          11
 
 /*
   typedef enum synthMode {

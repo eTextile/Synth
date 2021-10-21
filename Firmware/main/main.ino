@@ -10,22 +10,18 @@
 #include "scan.h"
 #include "interp.h"
 #include "blob.h"
+
+unsigned long fpsTimeStamp = 0;
+
+#if MIDI_TRANSMIT
 #include "midi_transmit.h"
-#include "serial_transmit.h"
-
-#include <elapsedMillis.h>  // https://github.com/pfeerick/elapsedMillis
-
+#endif
+#if OSC_TRANSMIT
+#include "osc_transmit.h"
+#endif
 #if MAPPING_LAYOUT
 #include "mapping.h"
 #endif
-
-#if USB_SLIP_OSC
-#include "usb_slip_osc_transmit.h"
-#endif
-#if MIDI_HARDWARE || MIDI_USB
-#include "midi_transmit.h"
-#endif
-
 #if FLASH_PLAYER
 #include "player_flash.h"
 #endif
@@ -60,17 +56,15 @@ void setup() {
 #if RUNING_MEDIAN
   RUNING_MEDIAN_SETUP();
 #endif
-
-#if SERIAL_USB
+#if SERIAL_TRANSMIT
   SERIAL_TRANSMIT_SETUP();
 #endif
-#if MIDI_HARDWARE || MIDI_USB
+#if MIDI_TRANSMIT
   MIDI_TRANSMIT_SETUP();
 #endif
-#if USB_SLIP_OSC
-  USB_SLIP_OSC_SETUP();
+#if OSC_TRANSMIT
+  OSC_TRANSMIT_SETUP();
 #endif
-
 #if SYNTH_PLAYER
   SYNTH_PLAYER_SETUP();
 #endif
@@ -89,25 +83,19 @@ void setup() {
   //CSLIDER_SETUP();
 #endif
 
-#if SYNTH_PLAYER || GRANULAR_PLAYER || FLASH_PLAYER
+#if SOUND_CARD
   SOUND_CARD_SETUP();
 #endif
 
 };
 
 void loop() {
-
-#if MIDI_USB || MIDI_HARDWARE
+#if MIDI_TRANSMIT
   read_midi_input();
 #endif
-
-#if USB_SLIP_OSC
-  read_usb_slip_osc_input();
+#if OSC_TRANSMIT
+  read_osc_input();
 #endif
-
-  //if (loadPreset) preset_load(); // TODO
-  //if (savePreset) preset_save(); // TODO
-
 #if defined(__MK20DX256__)         // If using Teensy 3.1 & 3.2
   update_presets_midi_usb();
 #endif
@@ -117,8 +105,7 @@ void loop() {
   update_presets_encoder();
   update_leds();
 #endif
-
-#if SYNTH_PLAYER || GRANULAR_PLAYER || FLASH_PLAYER
+#if SOUND_CARD
   update_levels();
 #endif
 
@@ -130,7 +117,7 @@ void loop() {
 #if MAPPING_LAYOUT
   mapping_grid_populate(); // Use the MIDI input messages to populate the grid - If commented we use the DEFAULT mapping
   mapping_grid_update();
-  //mapping_blob();
+  mapping_blob();
   //mapping_trigger();
   //mapping_toggle();
   //mapping_hSlider();
@@ -138,23 +125,28 @@ void loop() {
   //mapping_cSlider();
 #endif
 
-#if MIDI_USB || MIDI_HARDWARE
-  midi_transmit();
-#endif
-
-#if SYNTH_PLAYER
+#if PLAYER_SYNTH
   synth_player();
 #endif
-#if GRANULAR_PLAYER
+#if PLAYER_GRANULAR
   granular_player();
 #endif
-#if FLASH_PLAYER
+#if PLAYER_FLASH
   flash_player();
 #endif
+#if MIDI_TRANSMIT
+  midi_transmit();
+#endif
+#if OSC_TRANSMIT
+  osc_transmit();
+#endif
+
+  //if (loadPreset) preset_load(); // TODO
+  //if (savePreset) preset_save(); // TODO
 
 #if DEBUG_FPS
-  if (curentMillisFps >= 1000) {
-    curentMillisFps = 0;
+  if (millis() - fpsTimeStamp >= 1000) {
+    fpsTimeStamp = millis();
     Serial.printf("\nFPS:%d", fps);
     //Serial.printf("\nFPS:%d\tCPU:%f\tMEM:%f", fps, AudioProcessorUsageMax(), AudioMemoryUsageMax());
     //AudioProcessorUsageMaxReset();

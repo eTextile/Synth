@@ -7,7 +7,6 @@
 #include "player_synth.h"
 
 #if SYNTH_PLAYER
-AudioControlSGTL5000              sgtl5000;
 AudioOutputI2S                    i2s_OUT;
 AudioSynthWaveform                wf_1;
 AudioSynthWaveform                wf_2;
