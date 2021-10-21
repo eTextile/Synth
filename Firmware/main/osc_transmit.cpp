@@ -11,7 +11,7 @@
 SLIPEncodedUSBSerial SLIPSerial(thisBoardsSerialUSB);
 
 #define OSC_TRANSMIT_INTERVAL 5
-static unsigned long oscTransmitTimeStamp = 0;
+unsigned long oscTransmitTimeStamp = 0;
 
 void OSC_TRANSMIT_SETUP(void) {
   SLIPSerial.begin(BAUD_RATE);
@@ -32,13 +32,34 @@ void read_osc_input(void) {
 };
 
 // INPUT_CONTROL
-void handle_osc_input(OSCMessage &msg) {
+void handle_osc_input(OSCMessage &midiMsg) {
   midiNode_t* node_ptr = (midiNode_t*)llist_pop_front(&midi_node_stack);  // Get a node from the MIDI nodes stack
-  node_ptr->midiMsg.status = MIDI_CONTROL_CHANGE;                         // Set the MIDI status
-  node_ptr->midiMsg.data1 = msg.getInt(0);                                // Set the MIDI control
-  node_ptr->midiMsg.data2 = msg.getInt(1);                                // Set the MIDI value
-  node_ptr->midiMsg.channel = MIDI_INPUT_CHANNEL;                         // Set the MIDI channel
-  llist_push_front(&midiIn, node_ptr);                                    // Add the node to the midiIn linked liste
+  switch (midiMsg.getInt(0)) {
+    case midi::NoteOn:
+      node_ptr->midiMsg.status = midi::NoteOn;         // Set the MIDI status
+      node_ptr->midiMsg.data1 = midiMsg.getInt(1);     // Set the MIDI note
+      node_ptr->midiMsg.data2 = midiMsg.getInt(2);     // Set the MIDI velocity
+      node_ptr->midiMsg.channel = midiMsg.getInt(3);   // Set the MIDI channel
+      llist_push_front(&midiIn, node_ptr);             // Add the node to the midiIn linked liste
+      break;
+    case midi::NoteOff:
+      node_ptr->midiMsg.status = midi::NoteOff;        // Set the MIDI status
+      node_ptr->midiMsg.data1 = midiMsg.getInt(1);     // Set the MIDI note
+      node_ptr->midiMsg.data2 = midiMsg.getInt(2);     // Set the MIDI velocity
+      node_ptr->midiMsg.channel = midiMsg.getInt(3);   // Set the MIDI channel
+      llist_push_front(&midiIn, node_ptr);             // Add the node to the midiIn linked liste
+      break;
+    case midi::ControlChange:
+      node_ptr->midiMsg.status = midi::ControlChange;  // Set the MIDI status
+      node_ptr->midiMsg.data1 = midiMsg.getInt(1);     // Set the MIDI note
+      node_ptr->midiMsg.data2 = midiMsg.getInt(2);     // Set the MIDI velocity
+      node_ptr->midiMsg.channel = midiMsg.getInt(3);   // Set the MIDI channel
+      llist_push_front(&midiIn, node_ptr);             // Add the node to the midiIn linked liste
+      break;
+    default:
+      llist_push_front(&midi_node_stack, node_ptr);                           // Add the node to the midi_node_stack linked liste
+      break;
+  };
 };
 
 void osc_transmit(void) {
@@ -73,8 +94,8 @@ void osc_transmit(void) {
             Serial.printf("\nDEBUG_OSC_TRANSMIT\tNOTE_ON: % d", blob_ptr->UID);
 #endif
           } else {
-            if (millis() - blob_ptr->oscTransmitTimeStamp > OSC_TRANSMIT_INTERVAL) {
-              blob_ptr->oscTransmitTimeStamp = millis();
+            if (millis() - blob_ptr->transmitTimeStamp > OSC_TRANSMIT_INTERVAL) {
+              blob_ptr->transmitTimeStamp = millis();
               OSCMessage msg("/UPDATE");
               msg.add(blob_ptr->UID);
               msg.add(blob_ptr->centroid.X);
@@ -92,7 +113,7 @@ void osc_transmit(void) {
           };
         } else {
           if (blob_ptr->lastState && blob_ptr->status == TO_REMOVE) {
-            OSCMessage msg(" /OFF");
+            OSCMessage msg("/OFF");
             msg.add(blob_ptr->UID);
             SLIPSerial.beginPacket(); // Send SLIP header
             msg.send(SLIPSerial);     // Send the OSC bundle

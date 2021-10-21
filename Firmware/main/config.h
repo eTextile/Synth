@@ -16,7 +16,7 @@
 #define VELOCITY                 0  // [0:1] IN_PROGRESS
 #define RUNING_MEDIAN            0  // [0:1] IN_PROGRESS
 
-#define OSC_TRANSMIT             0  // [0:1] Set the eTextile-Synthesizer as USB SLIP_OSC divice **DO NOT FORGET: Arduino/Touls/USB_Type/Serial**
+#define OSC_TRANSMIT             1  // [0:1] Set the eTextile-Synthesizer as USB SLIP_OSC divice **DO NOT FORGET: Arduino/Touls/USB_Type/Serial**
 #define MIDI_TRANSMIT            0  // [0:1] Set the eTextile-Synthesizer as USB_MIDI divice - DO NOT FORGET: Arduino/Touls/USB_Type/MIDI
 #define MIDI_HARDWARE            0  // [0:1] Set the eTextile-Synthesizer as HARDWARE_MIDI divice - DO NOT FORGET: Arduino/Touls/USB_Type/MIDI
 #define MIDI_USB                 0  // [0:1] Set the eTextile-Synthesizer as USB_MIDI divice - DO NOT FORGET: Arduino/Touls/USB_Type/MIDI

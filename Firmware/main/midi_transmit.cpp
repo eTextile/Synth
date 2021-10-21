@@ -57,7 +57,6 @@ void read_midi_input(void) {
 
 void handle_midi_input(const midi::Message<128u> &midiMsg) {
   midiNode_t* node_ptr = (midiNode_t*)llist_pop_front(&midi_node_stack);  // Get a node from the MIDI nodes stack
-
   switch (midiMsg.type) {
     case midi::NoteOn:
       node_ptr->midiMsg.status = midi::NoteOn;         // Set the MIDI status
