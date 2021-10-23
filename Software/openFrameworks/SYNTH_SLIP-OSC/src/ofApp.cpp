@@ -8,7 +8,7 @@ void ofApp::setup(void) {
 
   auto devicesInfo = SerialDeviceUtils::listDevices();
   ofLogNotice("ofApp::setup") << "Connected Devices: ";
-  for (auto& SerialDevice: devicesInfo) ofLogNotice("ofApp::setup") << "\t" << SerialDevice;
+  for (auto& SerialDevice : devicesInfo) ofLogNotice("ofApp::setup") << "\t" << SerialDevice;
   if (!devicesInfo.empty()) {
     bool success = serialDevice.setup(USB_PORT, BAUD_RATE);
     if (success) {
@@ -39,51 +39,51 @@ void ofApp::setup(void) {
   ofBackground(0);
 
   // 16 * 16
-  for (int y=0; y<RAW_ROWS; y++) {
-        for (int x=0; x<RAW_COLS; x++) {
-            rawDataMesh.addVertex(ofPoint(x, y, 0));             // make a new vertex
-            rawDataMesh.addColor(ofFloatColor(255, 255, 255));   // set vertex color to white
-        };
+  for (int y = 0; y < RAW_ROWS; y++) {
+    for (int x = 0; x < RAW_COLS; x++) {
+      rawDataMesh.addVertex(ofPoint(x, y, 0));             // make a new vertex
+      rawDataMesh.addColor(ofFloatColor(255, 255, 255));   // set vertex color to white
     };
-    for (int y=0; y<RAW_ROWS-1; y++) {
-      for (int x=0; x<RAW_COLS-1; x++) {
-        int i1 = x + y * RAW_COLS;           // 0, 1, 2, 3, 4
-        int i2 = (x+1) + y * RAW_COLS;       // 1, 2, 3, 4,
-        int i3 = x + (y+1) * RAW_COLS;       // 18, 19,
-        int i4 = (x+1) + (y+1) * RAW_COLS;
-        rawDataMesh.addTriangle(i1, i2, i4);
-        rawDataMesh.addTriangle(i1, i3, i4);
+  };
+  for (int y = 0; y < RAW_ROWS - 1; y++) {
+    for (int x = 0; x < RAW_COLS - 1; x++) {
+      int i1 = x + y * RAW_COLS;           // 0, 1, 2, 3, 4
+      int i2 = (x + 1) + y * RAW_COLS;     // 1, 2, 3, 4,
+      int i3 = x + (y + 1) * RAW_COLS;     // 18, 19,
+      int i4 = (x + 1) + (y + 1) * RAW_COLS;
+      rawDataMesh.addTriangle(i1, i2, i4);
+      rawDataMesh.addTriangle(i1, i3, i4);
     };
   };
 
   // 64 * 64
-  for (int y=0; y<NEW_ROWS; y++) {
-        for (int x=0; x<NEW_COLS; x++) {
-            interpDataMesh.addVertex(ofPoint(x, y, 0));             // make a new vertex
-            interpDataMesh.addColor(ofFloatColor(255, 255, 255));   // set vertex color to white
-        };
+  for (int y = 0; y < NEW_ROWS; y++) {
+    for (int x = 0; x < NEW_COLS; x++) {
+      interpDataMesh.addVertex(ofPoint(x, y, 0));             // make a new vertex
+      interpDataMesh.addColor(ofFloatColor(255, 255, 255));   // set vertex color to white
     };
-    for (int y=0; y<NEW_COLS-1; y++) {
-      for (int x=0; x<NEW_COLS-1; x++) {
-        int i1 = x + y * NEW_ROWS;           // 0, 1, 2, 3, 4
-        int i2 = (x+1) + y * NEW_ROWS;       // 1, 2, 3, 4,
-        int i3 = x + (y+1) * NEW_ROWS;       // 18, 19,
-        int i4 = (x+1) + (y+1) * NEW_ROWS;
-        interpDataMesh.addTriangle(i1, i2, i4);
-        interpDataMesh.addTriangle(i1, i3, i4);
+  };
+  for (int y = 0; y < NEW_COLS - 1; y++) {
+    for (int x = 0; x < NEW_COLS - 1; x++) {
+      int i1 = x + y * NEW_ROWS;           // 0, 1, 2, 3, 4
+      int i2 = (x + 1) + y * NEW_ROWS;     // 1, 2, 3, 4,
+      int i3 = x + (y + 1) * NEW_ROWS;     // 18, 19,
+      int i4 = (x + 1) + (y + 1) * NEW_ROWS;
+      interpDataMesh.addTriangle(i1, i2, i4);
+      interpDataMesh.addTriangle(i1, i3, i4);
     };
   };
 };
 
 /////////////////////// SERIAL EVENT ///////////////////////
-void ofApp::onOscMessage(const ofxOscMessage& message){
+void ofApp::onOscMessage(const ofxOscMessage& message) {
   OSCMessages.push_back(message);
   while (OSCMessages.size() > 255) {
     OSCMessages.erase(OSCMessages.begin());
   };
 };
 
-void ofApp::onSerialError(const ofxIO::SerialBufferErrorEventArgs& error){
+void ofApp::onSerialError(const ofxIO::SerialBufferErrorEventArgs& error) {
   ofLogError() << "Got OSC Error: " << error.exception().displayText();
 };
 
@@ -121,8 +121,8 @@ void ofApp::update(void) {
           blob_t blob;
           blob.id = OSCmsg.getArgAsInt(0); // pitch is also call note
           blobs.push_back(blob);
-        };
-        if (OSCmsg.getAddress() == "/UPDATE") {
+        }
+        else if (OSCmsg.getAddress() == "/UPDATE") {
           //ofLogNotice("ofApp::OSCSerialDevice") << "BLOBS_PLAY_OSCmsg_UPDATE" << OSCmsg;
           for (size_t m = 0; m < blobs.size(); m++) {
             if (blobs[m].id == OSCmsg.getArgAsInt(0)) {
@@ -131,9 +131,11 @@ void ofApp::update(void) {
               blobs[m].bz = OSCmsg.getArgAsInt(3);
               blobs[m].bw = OSCmsg.getArgAsInt(4);
               blobs[m].bh = OSCmsg.getArgAsInt(5);
+              break;
+            };
           };
-        };
-        if (OSCmsg.getAddress() == "/OFF") {
+        }
+        else if (OSCmsg.getAddress() == "/OFF") {
           //ofLogNotice("ofApp::OSCSerialDevice") << "BLOBS_PLAY_OSCmsg_OFF" << OSCmsg;
           for (size_t m = 0; m < blobs.size(); m++) {
             if (blobs[m].id == OSCmsg.getArgAsInt(0)) {
@@ -143,9 +145,11 @@ void ofApp::update(void) {
           };
         };
         break;
+      default:
+        break;
     };
+    OSCMessages.clear();
   };
-  OSCMessages.clear();
 };
 
 //////////////////////// DRAW ////////////////////////
@@ -164,48 +168,49 @@ void ofApp::draw(void) {
   const int SCALE_V = 50;
   const int BLOB_SCALE = 5;
 
-  switch(mode){
-  case RAW_MATRIX:
-    ofPushMatrix();
-    ofSetLineWidth(1);
-    ofRotateDeg(30, 1, 0, 0);
-    ofTranslate(ofGetWindowWidth()/3, ofGetWindowHeight()/8);
-    ofScale(SCALE_H, SCALE_V, 1);
-    rawDataMesh.drawWireframe();
-    ofPopMatrix();
-  break;
-  case INTERP_MATRIX:
-    ofPushMatrix();
-    ofSetLineWidth(1);
-    ofRotateDeg(30, 1, 0, 0);
-    ofTranslate(ofGetWindowWidth()/3, ofGetWindowHeight()/8);
-    ofScale(SCALE_H/4, SCALE_V/4, 1);
-    interpDataMesh.drawWireframe();
-    ofPopMatrix();
-  break;
-  case BLOBS_PLAY:
-  ofPushMatrix();
-  ofRotateDeg(30, 1, 0, 0);
-  for (size_t i = 0; i < blobs.size(); ++i) {
-    blob_t &blob = blobs[i];
-    ofSetColor(245, 58, 135); // Pink
-    FreeSansBold.drawString(std::to_string(blob.id),
-    (float)(blob.bx * ((ofGetWindowWidth() - 20) / 127) - 100),
-    (float)(blob.by * ((ofGetWindowHeight() - 20) / 127)));
-    ofBoxPrimitive box;
-    ofSetLineWidth(1);
-    ofSetColor(255);
-    box.setMode(OF_PRIMITIVE_TRIANGLES);
-    box.setResolution(1);
-    box.set(blob.bw * BLOB_SCALE, blob.bh * BLOB_SCALE, blob.bz);
-    box.setPosition(
-    (float)(blob.bx * ((ofGetWindowWidth() - 20) / 127)),
-    (float)(blob.by * ((ofGetWindowHeight() - 20) / 127)), 0);
-    box.drawWireframe();
-    ofPopMatrix();
-    break;
+  switch (mode) {
+    case RAW_MATRIX:
+      ofPushMatrix();
+      ofSetLineWidth(1);
+      ofRotateDeg(30, 1, 0, 0);
+      ofTranslate(ofGetWindowWidth() / 3, ofGetWindowHeight() / 8);
+      ofScale(SCALE_H, SCALE_V, 1);
+      rawDataMesh.drawWireframe();
+      ofPopMatrix();
+      break;
+    case INTERP_MATRIX:
+      ofPushMatrix();
+      ofSetLineWidth(1);
+      ofRotateDeg(30, 1, 0, 0);
+      ofTranslate(ofGetWindowWidth() / 3, ofGetWindowHeight() / 8);
+      ofScale(SCALE_H / 4, SCALE_V / 4, 1);
+      interpDataMesh.drawWireframe();
+      ofPopMatrix();
+      break;
+    case BLOBS_PLAY:
+      ofPushMatrix();
+      ofRotateDeg(30, 1, 0, 0);
+      for (size_t i = 0; i < blobs.size(); ++i) {
+        blob_t &blob = blobs[i];
+        ofSetColor(245, 58, 135); // Pink
+        FreeSansBold.drawString(std::to_string(blob.id),
+          (float)(blob.bx * ((ofGetWindowWidth() - 20) / 127) - 100),
+          (float)(blob.by * ((ofGetWindowHeight() - 20) / 127)));
+        ofBoxPrimitive box;
+        ofSetLineWidth(1);
+        ofSetColor(255);
+        box.setMode(OF_PRIMITIVE_TRIANGLES);
+        box.setResolution(1);
+        box.set(blob.bw * BLOB_SCALE, blob.bh * BLOB_SCALE, blob.bz);
+        box.setPosition(
+          (float)(blob.bx * ((ofGetWindowWidth() - 20) / 127)),
+          (float)(blob.by * ((ofGetWindowHeight() - 20) / 127)), 0);
+        box.drawWireframe();
+      };
+      ofPopMatrix();
+      break;
     default:
-    break;
+      break;
   };
 };
 
@@ -273,12 +278,12 @@ void ofApp::E256_blobsRequest(void) {
 
 // E256 matrix sensor - Toggle full screen mode
 void ofApp::keyPressed(int key) {
-  switch(key) {
+  switch (key) {
     case 'f':
-    ofToggleFullscreen();
-    break;
+      ofToggleFullscreen();
+      break;
     default:
-    break;
+      break;
   };
 };
 
