@@ -16,7 +16,7 @@ MidiBus usbMIDI; // The MidiBus
 
 final String POROJECT_NAME = "ETEXTILE-SYNTH";
 final String MIDI_PORT_NAME = "E256";
-final String VERSION = "1.0.7";
+final String VERSION = "1.0.8";
 final String MIDI_PORT_IN = "MIDI [hw:1,0,0]";
 final String MIDI_PORT_OUT = "MIDI [hw:1,0,0]";
 

@@ -15,8 +15,6 @@
 #define MIDI_PORT_NAME        "E256"
 #define VERSION               "1.0.7"
 
-#define MIDI_OUTPUT_CHANNEL   1  // [1:15] Set the MIDI_OUTPUT channel
-
 #define RAW_COLS              16
 #define RAW_ROWS              16
 #define RAW_FRAME             (RAW_COLS * RAW_ROWS)
@@ -24,25 +22,27 @@
 #define NEW_ROWS              (RAW_ROWS * 4)
 #define NEW_FRAME             (NEW_COLS * NEW_ROWS)
 
+#define LINE_OUT              0 // LED | 0 | 0 |
+#define SIG_IN                1 // LED | 1 | 0 |
+#define SIG_OUT               2 // LED | 0 | 1 |
+#define THRESHOLD             3 // LED | 1 | 1 |
+#define CALIBRATE             4
+#define SAVE                  5
+#define BLOBS_PLAY            6
+#define BLOBS_LEARN           7
+#define BLOBS_MAPPING         8
+#define RAW_MATRIX            9
+#define INTERP_MATRIX         10
+#define ALL_OFF               11
+
+#define MIDI_OUTPUT_CHANNEL   1  // [1:15] Set the MIDI_OUTPUT channel
+
 // MIDI_CONTROL_CHANGE
 #define BlobX 3  // [3] Blob X centroid position
 #define BlobY 4  // [4] Blob Y centroid position
 #define BlobZ 5  // [5] Blob depth
 #define BlobW 6  // [6] Blob width
 #define BlobH 7  // [7] Blob height
-
-#define LINE_OUT          0
-#define SIG_IN            1
-#define SIG_OUT           2
-#define THRESHOLD         3
-#define CALIBRATE         4
-#define SAVE              5
-#define MIDI_BLOBS_PLAY   6
-#define MIDI_BLOBS_LEARN  7
-#define MIDI_MAPPING      8
-#define MIDI_RAW          9
-#define MIDI_INTERP       10
-#define MIDI_OFF          11
 
 struct blob_t {
   int  id;   // [0] Blob ID

@@ -9,8 +9,8 @@
 
 void ofApp::setup() {
   ofSetVerticalSync(true);
-  ofSetWindowTitle(POROJECT_NAME);
-  ofSetLogLevel(OF_LOG_VERBOSE);
+  ofSetWindowTitle(NAME "_" PROJECT "_" VERSION);
+  //ofSetLogLevel(OF_LOG_VERBOSE);
   FreeSansBold.load("FreeSansBold.ttf", 14);
   //midiIn.listInPorts(); // via instance -> comment this line when done
   //midiOut.listOutPorts(); // via instance -> comment this line when done
@@ -35,11 +35,12 @@ void ofApp::setup() {
   gui.add(getRawToggle.setup("getRawData", false));
   gui.add(getBlobsToggle.setup("Midi Blobs", false));
 
-  lastMode = MIDI_OFF;
-  mode = MIDI_BLOBS_PLAY;
+  lastMode = ALL_OFF;
+  mode = BLOBS_PLAY;
   midiInput.clear();
   midiInputCopy.clear();
-  midiOut.sendControlChange(MIDI_OUTPUT_CHANNEL, MIDI_BLOBS_PLAY, 1);
+
+  midiOut.sendControlChange(MIDI_OUTPUT_CHANNEL, BLOBS_PLAY, 1);
 
   // 16 * 16
   for (int y = 0; y < RAW_ROWS; y++) {
@@ -90,9 +91,9 @@ void ofApp::update() {
   for (size_t j = 0; j < midiInputCopy.size(); j++) {
     ofxMidiMessage &message = midiInputCopy[j];
     switch (mode) {
-      case MIDI_RAW:
+      case RAW_MATRIX:
         if (message.status == MIDI_SYSEX) {
-          for (int k = 0; k < 256; k++) {
+          for (int k = 0; k < RAW_FRAME; k++) {
             ofPoint point = rawDataMesh.getVertex(k);           // Get the point coordinates
             point.z = (float)message.bytes[k + 1];              // Change the z-coordinates
             rawDataMesh.setVertex(k, point);                    // Set the new coordinates
@@ -101,7 +102,7 @@ void ofApp::update() {
         };
         break;
       //case MIDI_BLOBS_PLAY || MIDI_BLOBS_LEARN:
-      case MIDI_BLOBS_PLAY:
+      case BLOBS_PLAY:
         if (message.status == MIDI_NOTE_ON) {
           ofLogNotice("ofApp::update") << "midiMessage NOTE_ON : " << message.pitch;
           blob_t blob;
@@ -163,7 +164,7 @@ void ofApp::draw() {
   const int BLOB_SCALE = 10;
 
   switch (mode) {
-    case MIDI_RAW:
+    case RAW_MATRIX:
       ofPushMatrix();
       ofSetLineWidth(1);
       ofRotateDeg(30, 1, 0, 0);
@@ -173,7 +174,7 @@ void ofApp::draw() {
       ofPopMatrix();
       break;
     //case MIDI_BLOBS_PLAY || MIDI_BLOBS_LEARN:
-    case MIDI_BLOBS_PLAY:
+    case BLOBS_PLAY:
       ofPushMatrix();
       ofRotateDeg(30, 1, 0, 0);
 
@@ -220,13 +221,13 @@ void ofApp::E256_setCaliration() {
 // E256 matrix sensor - get MIDI_BLOBS
 void ofApp::E256_getBlobs(bool & val) {
   if (val == true) {
-    mode = MIDI_BLOBS_PLAY;
-    midiOut.sendControlChange(MIDI_OUTPUT_CHANNEL, MIDI_BLOBS_PLAY, 1);
+    mode = BLOBS_PLAY;
+    midiOut.sendControlChange(MIDI_OUTPUT_CHANNEL, BLOBS_PLAY, 1);
     midiInput.clear();
     midiInputCopy.clear();
   } else {
-    mode = MIDI_BLOBS_LEARN;
-    midiOut.sendControlChange(MIDI_OUTPUT_CHANNEL, MIDI_BLOBS_LEARN, 1);
+    mode = BLOBS_LEARN;
+    midiOut.sendControlChange(MIDI_OUTPUT_CHANNEL, BLOBS_LEARN, 1);
     midiInput.clear();
     midiInputCopy.clear();
   };
@@ -236,14 +237,14 @@ void ofApp::E256_getBlobs(bool & val) {
 // 16*16 matrix row data request
 void ofApp::E256_getRaw(bool & val) {
   if (val == true) {
-    mode = MIDI_RAW;
-    midiOut.sendControlChange(MIDI_OUTPUT_CHANNEL, MIDI_RAW, 1);
-    midiOut.sendControlChange(MIDI_OUTPUT_CHANNEL, MIDI_RAW, 1);
+    mode = RAW_MATRIX;
+    midiOut.sendControlChange(MIDI_OUTPUT_CHANNEL, RAW_MATRIX, 1);
+    midiOut.sendControlChange(MIDI_OUTPUT_CHANNEL, RAW_MATRIX, 1);
     midiInput.clear();
     midiInputCopy.clear();
   } else {
-    mode = MIDI_OFF;
-    midiOut.sendControlChange(MIDI_OUTPUT_CHANNEL, MIDI_OFF, 1);
+    mode = ALL_OFF;
+    midiOut.sendControlChange(MIDI_OUTPUT_CHANNEL, ALL_OFF, 1);
     midiInput.clear();
     midiInputCopy.clear();
   };
