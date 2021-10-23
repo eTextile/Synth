@@ -13,6 +13,9 @@
 
 unsigned long fpsTimeStamp = 0;
 
+#if SERIAL_TRANSMIT
+#include "serial_transmit.h"
+#endif
 #if MIDI_TRANSMIT
 #include "midi_transmit.h"
 #endif
@@ -59,11 +62,11 @@ void setup() {
 #if SERIAL_TRANSMIT
   SERIAL_TRANSMIT_SETUP();
 #endif
-#if MIDI_TRANSMIT
-  MIDI_TRANSMIT_SETUP();
-#endif
 #if OSC_TRANSMIT
   OSC_TRANSMIT_SETUP();
+#endif
+#if MIDI_TRANSMIT
+  MIDI_TRANSMIT_SETUP();
 #endif
 #if SYNTH_PLAYER
   SYNTH_PLAYER_SETUP();
@@ -90,21 +93,23 @@ void setup() {
 };
 
 void loop() {
+#if OSC_TRANSMIT
+  //read_osc_input();
+#endif
 #if MIDI_TRANSMIT
   read_midi_input();
 #endif
-#if OSC_TRANSMIT
-  read_osc_input();
-#endif
-#if defined(__MK20DX256__)         // If using Teensy 3.1 & 3.2
+
+#if defined(__MK20DX256__)     // If using Teensy 3.1 & 3.2
   update_presets_midi_usb();
 #endif
-#if defined(__IMXRT1062__)         // If using Teensy 4.0 & 4.1
-  update_presets_midi_usb();
+#if defined(__IMXRT1062__)     // If using Teensy 4.0 & 4.1
+  update_presets_usb();
   update_presets_buttons();
   update_presets_encoder();
   update_leds();
 #endif
+
 #if SOUND_CARD
   update_levels();
 #endif

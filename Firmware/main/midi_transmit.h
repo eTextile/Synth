@@ -14,23 +14,6 @@
 #include <MIDI.h>  // https://github.com/FortySevenEffects/arduino_midi_library > https://github.com/PaulStoffregen/MIDI
 using namespace midi;
 
-// MIDI status bytes
-// https://github.com/PaulStoffregen/MIDI/blob/master/src/midi_Defs.h
-//#define MIDI_NOTE_ON            0x90
-//#define MIDI_NOTE_OFF           0x80
-//#define MIDI_CONTROL_CHANGE     0xB0
-//#define MIDI_SYSEX              0xF0
-
-/*
-  typedef enum status {
-  MIDI_NOTE_OFF,
-  MIDI_NOTE_ON,
-  MIDI_CONTROL_CHANGE,
-  MIDI_PROGRAM_CHANGE,
-  MIDI_SYSEX
-  } status_t;
-*/
-
 extern llist_t midi_node_stack;  // Exposed local declaration see midi_transmit.cpp
 extern llist_t midiIn;           // Exposed local declaration see midi_transmit.cpp
 extern llist_t midiOut;          // Exposed local declaration see midi_transmit.cpp
@@ -38,7 +21,7 @@ extern llist_t midiChord;        // MIDI chord linked list
 
 typedef struct midiMsg midiMsg_t;
 struct midiMsg {
-  uint8_t status;   // Status message MIDI_NOTE_OFF, MIDI_NOTE_OFF, MIDI_CONTROL_CHANGE
+  uint8_t status;   // For MIDI status bytes see: https://github.com/PaulStoffregen/MIDI/blob/master/src/midi_Defs.h
   uint8_t data1;    // First value (0-127), controller number or note number
   uint8_t data2;    // Second value (0-127), controller value or velocity
   uint8_t channel;  // MIDI channel (0-15)
@@ -53,7 +36,6 @@ struct midiNode {
 void llist_midi_init(llist_t* llist_ptr, midiNode_t* nodeArray_ptr, const int nodes);
 
 void MIDI_TRANSMIT_SETUP(void);
-
 void read_midi_input(void);
 void handle_midi_input(const midi::Message<128u> &midiMsg);
 void midi_transmit(void);

@@ -14,7 +14,6 @@
 
 #include <OSCBoards.h>              // https://github.com/CNMAT/OSC
 #include <OSCMessage.h>             // https://github.com/CNMAT/OSC
-#include <OSCBundle.h>              // https://github.com/CNMAT/OSC
 #include <SLIPEncodedUSBSerial.h>   // https://github.com/CNMAT/OSC
 
 void OSC_TRANSMIT_SETUP(void);

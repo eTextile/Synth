@@ -35,10 +35,10 @@ Bounce2::Button BUTTON_L = Bounce2::Button();
 //Button BUTTON_R = Button(); // DEPRECATED
 Bounce2::Button BUTTON_R = Bounce2::Button();
 
-uint8_t currentMode = CALIBRATE;        // Init currentMode with CALIBRATE (SET as DEFAULT_MODE)
-uint8_t lastMode = LINE_OUT;          // Init lastMode with LINE_OUT (SET as DEFAULT_MODE)
-//uint8_t lastMode = MIDI_MAPPING;        // Init lastMode with MIDI_MAPPING (SET as DEFAULT_MODE)
-//uint8_t lastMode = MIDI_BLOBS_PLAY;   // Init lastMode with MIDI_BLOBS_PLAY (SET as DEFAULT_MODE)
+uint8_t currentMode = CALIBRATE;      // Init currentMode with CALIBRATE (SET as DEFAULT_MODE)
+//uint8_t lastMode = LINE_OUT;        // Init lastMode with LINE_OUT (SET as DEFAULT_MODE)
+//uint8_t lastMode = BLOBS_MAPPING;   // Init lastMode with MIDI_MAPPING (SET as DEFAULT_MODE)
+uint8_t lastMode = BLOBS_PLAY;        // Init lastMode with MIDI_BLOBS_PLAY (SET as DEFAULT_MODE)
 
 preset_t presets[9] = {
   {13, 31, 29, 0, false, false, false, false, LOW,  LOW  },  // LINE_OUT          ARGS[minVal, maxVal, val, ledVal, update, setLed, updateLed, allDone, D1, D2]
@@ -53,8 +53,8 @@ preset_t presets[9] = {
 };
 
 void LEDS_SETUP(void) {
-  //pinMode(LED_PIN_D1, OUTPUT);
-  //pinMode(LED_PIN_D2, OUTPUT);
+  pinMode(LED_PIN_D1, OUTPUT);
+  pinMode(LED_PIN_D2, OUTPUT);
 };
 
 // Hear it should not compile if you didn't install the library (Manually!)
@@ -67,7 +67,7 @@ void SWITCHES_SETUP(void) {
   BUTTON_R.interval(25);                        // Debounce interval of 25 millis
 };
 
-void update_presets_midi_usb(void) {
+void update_presets_usb(void) {
   for (midiNode_t* node_ptr = (midiNode_t*)ITERATOR_START_FROM_HEAD(&midiIn); node_ptr != NULL; node_ptr = (midiNode_t*)ITERATOR_NEXT(node_ptr)) {
     switch (node_ptr->midiMsg.status) {
       case midi::NoteOn:
@@ -301,6 +301,40 @@ void update_leds(void) {
         //lastMode = currentMode;
       };
       break;
+    case CALIBRATE: // LEDs : both LED are blinking three time
+      if (presets[CALIBRATE].setLed) {
+        presets[CALIBRATE].setLed = false;
+        pinMode(LED_PIN_D1, OUTPUT);
+        pinMode(LED_PIN_D2, OUTPUT);
+        timeStamp = millis();
+        iter = 0;
+      };
+      if (presets[CALIBRATE].allDone) {
+        if (iter <= CALIBRATE_LED_ITER) {
+          if (millis() - timeStamp < CALIBRATE_LED_TIMEON && presets[CALIBRATE].updateLed == true ) {
+            presets[CALIBRATE].updateLed = false;
+            digitalWrite(LED_PIN_D1, HIGH);
+            digitalWrite(LED_PIN_D2, HIGH);
+          }
+          else if (millis() - timeStamp > CALIBRATE_LED_TIMEON && presets[CALIBRATE].updateLed == false) {
+            presets[CALIBRATE].updateLed = true;
+            digitalWrite(LED_PIN_D1, LOW);
+            digitalWrite(LED_PIN_D2, LOW);
+          }
+          else if (millis() - timeStamp > CALIBRATE_LED_TIMEON + CALIBRATE_LED_TIMEOFF) {
+            if (iter < CALIBRATE_LED_ITER) {
+              timeStamp = millis();
+              iter++;
+            }
+            else {
+              presets[CALIBRATE].allDone = false;
+              currentMode = lastMode;
+              presets[currentMode].setLed = true;
+            };
+          };
+        };
+      };
+      break;
     case BLOBS_PLAY: // LEDs : blink alternately slow
       if (presets[BLOBS_PLAY].setLed) {
         presets[BLOBS_PLAY].setLed = false;
@@ -341,40 +375,6 @@ void update_leds(void) {
       }
       else if (millis() - timeStamp > BLOBS_LEARN_LED_TIMEON + BLOBS_LEARN_LED_TIMEOFF) {
         timeStamp = millis();
-      };
-      break;
-    case CALIBRATE: // LEDs : both LED are blinking three time
-      if (presets[CALIBRATE].setLed) {
-        presets[CALIBRATE].setLed = false;
-        pinMode(LED_PIN_D1, OUTPUT);
-        pinMode(LED_PIN_D2, OUTPUT);
-        timeStamp = millis();
-        iter = 0;
-      };
-      if (presets[CALIBRATE].allDone) {
-        if (iter <= CALIBRATE_LED_ITER) {
-          if (millis() - timeStamp < CALIBRATE_LED_TIMEON && presets[CALIBRATE].updateLed == true ) {
-            presets[CALIBRATE].updateLed = false;
-            digitalWrite(LED_PIN_D1, HIGH);
-            digitalWrite(LED_PIN_D2, HIGH);
-          }
-          else if (millis() - timeStamp > CALIBRATE_LED_TIMEON && presets[CALIBRATE].updateLed == false) {
-            presets[CALIBRATE].updateLed = true;
-            digitalWrite(LED_PIN_D1, LOW);
-            digitalWrite(LED_PIN_D2, LOW);
-          }
-          else if (millis() - timeStamp > CALIBRATE_LED_TIMEON + CALIBRATE_LED_TIMEOFF) {
-            if (iter < CALIBRATE_LED_ITER) {
-              timeStamp = millis();
-              iter++;
-            }
-            else {
-              presets[CALIBRATE].allDone = false;
-              currentMode = lastMode;
-              presets[currentMode].setLed = true;
-            };
-          };
-        };
       };
       break;
     case SAVE: // LEDs : Both LEDs are blinking very fast

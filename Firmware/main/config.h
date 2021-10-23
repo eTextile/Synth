@@ -16,12 +16,13 @@
 #define VELOCITY                 0  // [0:1] IN_PROGRESS
 #define RUNING_MEDIAN            0  // [0:1] IN_PROGRESS
 
-#define OSC_TRANSMIT             1  // [0:1] Set the eTextile-Synthesizer as USB SLIP_OSC divice **DO NOT FORGET: Arduino/Touls/USB_Type/Serial**
+#define SERIAL_TRANSMIT          0  // [0:1] Set the eTextile-Synthesizer as USB_MIDI divice - DO NOT FORGET: Arduino/Touls/USB_Type/Serial
+#define OSC_TRANSMIT             1  // [0:1] Set the eTextile-Synthesizer as USB SLIP_OSC divice - DO NOT FORGET: Arduino/Touls/USB_Type/Serial
+
 #define MIDI_TRANSMIT            0  // [0:1] Set the eTextile-Synthesizer as USB_MIDI divice - DO NOT FORGET: Arduino/Touls/USB_Type/MIDI
 #define MIDI_HARDWARE            0  // [0:1] Set the eTextile-Synthesizer as HARDWARE_MIDI divice - DO NOT FORGET: Arduino/Touls/USB_Type/MIDI
-#define MIDI_USB                 0  // [0:1] Set the eTextile-Synthesizer as USB_MIDI divice - DO NOT FORGET: Arduino/Touls/USB_Type/MIDI
-#define MIDI_INPUT_CHANNEL       1  // [1:16] Set the HARDWARE MIDI_INPUT channel
-#define MIDI_OUTPUT_CHANNEL      1  // [1:16] Set the HARDWARE MIDI_OUTPUT channel
+#define MIDI_INPUT_CHANNEL       1  // [1:15] Set the HARDWARE MIDI_INPUT channel
+#define MIDI_OUTPUT_CHANNEL      1  // [1:15] Set the HARDWARE MIDI_OUTPUT channel
 
 #define SOUND_CARD               0  // [0:1] Enable DAC (Mandatory for ALL PLAYERS)
 #define PLAYER_SYNTH             0  // [0:1] Set the eTextile-Synthesizer as STANDALONE divice
@@ -35,10 +36,7 @@
 #define GRID_LAYOUT_NOTES        1  // [0:1] 
 #define GRID_LAYOUT_FREQ         0  // [0:1] 
 
-// Arduino serial monitor
-#define SERIAL_TRANSMIT          0  // [0:1] Enable serial communication (Mandatory for DEBUGING MODE)
-
-#define DEBUG_FPS                1  // [0:1] Print Frames Per Second
+#define DEBUG_FPS                0  // [0:1] Print Frames Per Second
 #define DEBUG_ENCODER            0  // [0:1] Print encoder value
 #define DEBUG_BUTTONS            0  // [0:1] Print buttons states
 #define DEBUG_ADC                0  // [0:1] Print 16x16 Analog raw values
@@ -48,7 +46,8 @@
 #define DEBUG_BLOBS              0  // [0:1] Print blobs values
 #define DEBUG_MEDIAN             0  // [0:1] Print blobs values
 #define DEBUG_MAPPING            0  // [0:1] Print GUI values
-#define DEBUG_MIDI_TRANSMIT      0 // [0:1] Print MIDI values
+#define DEBUG_MIDI_TRANSMIT      0  // [0:1] Print MIDI values
+#define DEBUG_OSC_TRANSMIT       0  // [0:1] Print OSC values
 
 #define BAUD_RATE                230400
 #define RAW_COLS                 16

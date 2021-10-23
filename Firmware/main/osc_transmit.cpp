@@ -39,21 +39,28 @@ void handle_osc_input(OSCMessage &msg) {
       node_ptr->midiMsg.status = midi::NoteOn;         // Set the MIDI status
       node_ptr->midiMsg.data1 = msg.getInt(1);         // Set the MIDI note
       node_ptr->midiMsg.data2 = msg.getInt(2);         // Set the MIDI velocity
-      node_ptr->midiMsg.channel = msg.getInt(3);       // Set the MIDI channel
+      //node_ptr->midiMsg.channel = msg.getInt(3);     // Set the MIDI channel
       llist_push_front(&midiIn, node_ptr);             // Add the node to the midiIn linked liste
       break;
     case midi::NoteOff:
       node_ptr->midiMsg.status = midi::NoteOff;        // Set the MIDI status
       node_ptr->midiMsg.data1 = msg.getInt(1);         // Set the MIDI note
       node_ptr->midiMsg.data2 = msg.getInt(2);         // Set the MIDI velocity
-      node_ptr->midiMsg.channel = msg.getInt(3);       // Set the MIDI channel
+      //node_ptr->midiMsg.channel = msg.getInt(3);     // Set the MIDI channel
       llist_push_front(&midiIn, node_ptr);             // Add the node to the midiIn linked liste
       break;
     case midi::ControlChange:
       node_ptr->midiMsg.status = midi::ControlChange;  // Set the MIDI status
       node_ptr->midiMsg.data1 = msg.getInt(1);         // Set the MIDI note
       node_ptr->midiMsg.data2 = msg.getInt(2);         // Set the MIDI velocity
-      node_ptr->midiMsg.channel = msg.getInt(3);       // Set the MIDI channel
+      //node_ptr->midiMsg.channel = msg.getInt(3);     // Set the MIDI channel
+      llist_push_front(&midiIn, node_ptr);             // Add the node to the midiIn linked liste
+      break;
+    case midi::Clock:
+      node_ptr->midiMsg.status = midi::Clock;          // Set the MIDI status
+      node_ptr->midiMsg.data1 = msg.getInt(1);         // Set the MIDI note
+      node_ptr->midiMsg.data2 = msg.getInt(2);         // Set the MIDI velocity
+      //node_ptr->midiMsg.channel = msg.getInt(3);       // Set the MIDI channel
       llist_push_front(&midiIn, node_ptr);             // Add the node to the midiIn linked liste
       break;
     default:
@@ -87,15 +94,22 @@ void osc_transmit(void) {
     case BLOBS_PLAY:
       for (blob_t* blob_ptr = (blob_t*)ITERATOR_START_FROM_HEAD(&llist_blobs); blob_ptr != NULL; blob_ptr = (blob_t*)ITERATOR_NEXT(blob_ptr)) {
         if (blob_ptr->state) {
-          if (!blob_ptr->lastState) {
+          if (!blob_ptr->lastState && blob_ptr->status == FREE) {
+#if DEBUG_OSC_TRANSMIT
+            Serial.printf("\nDEBUG_OSC_TRANSMIT: ON_%d", blob_ptr->UID);
+#else
             OSCMessage msg("/ON");
             msg.add(blob_ptr->UID);
-#if DEBUG_MIDI_TRANSMIT
-            Serial.printf("\nDEBUG_OSC_TRANSMIT\tNOTE_ON: % d", blob_ptr->UID);
+            SLIPSerial.beginPacket(); // Send SLIP header
+            msg.send(SLIPSerial);     // Send the OSC bundle
+            SLIPSerial.endPacket();   // Send the SLIP end of packet
 #endif
           } else {
             if (millis() - blob_ptr->transmitTimeStamp > OSC_TRANSMIT_INTERVAL) {
               blob_ptr->transmitTimeStamp = millis();
+#if DEBUG_OSC_TRANSMIT
+              Serial.printf("\nDEBUG_OSC_TRANSMIT: UPDATE_%d", blob_ptr->UID);
+#else
               OSCMessage msg("/UPDATE");
               msg.add(blob_ptr->UID);
               msg.add(blob_ptr->centroid.X);
@@ -106,20 +120,19 @@ void osc_transmit(void) {
               SLIPSerial.beginPacket(); // Send SLIP header
               msg.send(SLIPSerial);     // Send the OSC bundle
               SLIPSerial.endPacket();   // Send the SLIP end of packet
-#if DEBUG_MIDI_TRANSMIT
-              Serial.printf("\nDEBUG_OSC_TRANSMIT\tCONTROL: % d", blob_ptr->UID);
 #endif
             };
           };
         } else {
           if (blob_ptr->lastState && blob_ptr->status == TO_REMOVE) {
+#if DEBUG_OSC_TRANSMIT
+            Serial.printf("\nDEBUG_OSC_TRANSMIT: OFF_%d", blob_ptr->UID);
+#else
             OSCMessage msg("/OFF");
             msg.add(blob_ptr->UID);
             SLIPSerial.beginPacket(); // Send SLIP header
             msg.send(SLIPSerial);     // Send the OSC bundle
             SLIPSerial.endPacket();   // Send the SLIP end of packet
-#if DEBUG_MIDI_TRANSMIT
-            Serial.printf("\nDEBUG_OSC_TRANSMIT\tNOTE_OFF: % d", blob_ptr->UID);
 #endif
           };
         };

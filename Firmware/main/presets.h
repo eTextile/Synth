@@ -70,7 +70,7 @@ extern preset_t presets[];        // Exposed local declaration see presets.cpp
 void LEDS_SETUP(void);
 void SWITCHES_SETUP(void);
 
-void update_presets_midi_usb(void);
+void update_presets_usb(void);
 void update_presets_buttons(void);
 void update_presets_encoder(void);
 void update_leds(void);

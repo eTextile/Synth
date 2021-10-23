@@ -114,7 +114,6 @@ void calibrate_matrix(void) {
 
   if (presets[CALIBRATE].update == true) {
     presets[CALIBRATE].update = false;
-    //presets_ptr[CALIBRATE].update = false;
 
     for (uint8_t i = 0; i < CALIBRATION_CYCLES; i++) {
       for (uint8_t col = 0; col < DUAL_COLS; col++) {         // ANNALOG_PINS [0-7] with [8-15]
@@ -155,10 +154,8 @@ void calibrate_matrix(void) {
           result = adc->analogSynchronizedRead(ADC0_PIN, ADC1_PIN);
           uint8_t ADC0_val = result.result_adc0;
           ADC0_val > offsetArray[indexA] ? offsetArray[indexA] = ADC0_val : NULL;
-          //ADC0_val > 127 ? rawFrameArray[indexA] = 127 : NULL;
           uint8_t ADC1_val = result.result_adc1;
           ADC1_val > offsetArray[indexB] ? offsetArray[indexB] = ADC1_val : NULL;
-          //ADC1_val > 127 ? rawFrameArray[indexB] = 127 : NULL;
 
 #if SET_ORIGIN_Y
           setRows = setRows << 1;
@@ -168,8 +165,8 @@ void calibrate_matrix(void) {
         };
       };
     };
-    presets[CALIBRATE].allDone = true;
     presets[CALIBRATE].setLed = true;
+    presets[CALIBRATE].allDone = true;
   };
 };
 
@@ -217,10 +214,10 @@ void scan_matrix(void) {
 
       uint8_t valA = result.result_adc0;
       valA > offsetArray[indexA] ? rawFrameArray[indexA] = valA - offsetArray[indexA] : rawFrameArray[indexA] = 0;
-      valA > 127 ? rawFrameArray[indexA] = 127 : NULL; // Add limit for MIDI message 0:127
+      //valA > 127 ? rawFrameArray[indexA] = 127 : NULL; // Add limit for MIDI message 0:127
       uint8_t valB = result.result_adc1;
       valB > offsetArray[indexB] ? rawFrameArray[indexB] = valB - offsetArray[indexB] : rawFrameArray[indexB] = 0;
-      valB > 127 ? rawFrameArray[indexB] = 127 : NULL; // Add limit for MIDI message 0:127
+      //valB > 127 ? rawFrameArray[indexB] = 127 : NULL; // Add limit for MIDI message 0:127
 
 #if SET_ORIGIN_Y
       setRows = setRows << 1;

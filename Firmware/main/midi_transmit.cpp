@@ -62,25 +62,32 @@ void handle_midi_input(const midi::Message<128u> &midiMsg) {
       node_ptr->midiMsg.status = midi::NoteOn;         // Set the MIDI status
       node_ptr->midiMsg.data1 = midiMsg.data1;         // Set the MIDI note
       node_ptr->midiMsg.data2 = midiMsg.data2;         // Set the MIDI velocity
-      node_ptr->midiMsg.channel = midiMsg.channel;     // Set the MIDI channel
+      //node_ptr->midiMsg.channel = midiMsg.channel;   // Set the MIDI channel
       llist_push_front(&midiIn, node_ptr);             // Add the node to the midiIn linked liste
       break;
     case midi::NoteOff:
       node_ptr->midiMsg.status = midi::NoteOff;        // Set the MIDI status
       node_ptr->midiMsg.data1 = midiMsg.data1;         // Set the MIDI note
       node_ptr->midiMsg.data2 = midiMsg.data2;         // Set the MIDI velocity
-      node_ptr->midiMsg.channel = midiMsg.channel;     // Set the MIDI channel
+      //node_ptr->midiMsg.channel = midiMsg.channel;   // Set the MIDI channel
       llist_push_front(&midiIn, node_ptr);             // Add the node to the midiIn linked liste
       break;
     case midi::ControlChange:
       node_ptr->midiMsg.status = midi::ControlChange;  // Set the MIDI status
       node_ptr->midiMsg.data1 = midiMsg.data1;         // Set the MIDI note
       node_ptr->midiMsg.data2 = midiMsg.data2;         // Set the MIDI velocity
-      node_ptr->midiMsg.channel = midiMsg.channel;     // Set the MIDI channel
+      //node_ptr->midiMsg.channel = midiMsg.channel;   // Set the MIDI channel
+      llist_push_front(&midiIn, node_ptr);             // Add the node to the midiIn linked liste
+      break;
+    case midi::Clock:
+      node_ptr->midiMsg.status = midi::Clock;          // Set the MIDI status
+      //node_ptr->midiMsg.data1 = midiMsg.data1;       // Set the MIDI note
+      //node_ptr->midiMsg.data2 = midiMsg.data2;       // Set the MIDI velocity
+      //node_ptr->midiMsg.channel = midiMsg.channel;   // Set the MIDI channel
       llist_push_front(&midiIn, node_ptr);             // Add the node to the midiIn linked liste
       break;
     default:
-      llist_push_front(&midi_node_stack, node_ptr);                           // Add the node to the midi_node_stack linked liste
+      llist_push_front(&midi_node_stack, node_ptr);    // Add the node to the midi_node_stack linked liste
       break;
   };
 };
@@ -96,19 +103,17 @@ void midi_transmit(void) {
 #endif
       };
       break;
-
     case INTERP_MATRIX:
       if (millis() - usbTransmitTimeStamp > MIDI_TRANSMIT_INTERVAL) {
         usbTransmitTimeStamp = millis();
 #if MIDI_USB
-        // NOT_WORKING!
+        // NOT_WORKING > You can use OSC insted of MIDI!
         // See https://forum.pjrc.com/threads/28282-How-big-is-the-MIDI-receive-buffer
         //usbMIDI.sendSysEx(NEW_FRAME, interpFrame.pData, false, 0);
         //usbMIDI.send_now();
 #endif
       };
       break;
-
     case BLOBS_PLAY:
       // Send all blobs values over USB using MIDI format
 #if MIDI_USB
@@ -150,7 +155,6 @@ void midi_transmit(void) {
       };
 #endif
       break;
-
     case BLOBS_LEARN:
       // Send separate blobs values using Control Change MIDI format
       // Send only the last blob that have been added to the sensor surface
@@ -192,7 +196,6 @@ void midi_transmit(void) {
       };
 #endif
       break;
-
     case BLOBS_MAPPING:
       for (midiNode_t* node_ptr = (midiNode_t*)ITERATOR_START_FROM_HEAD(&midiOut); node_ptr != NULL; node_ptr = (midiNode_t*)ITERATOR_NEXT(node_ptr)) {
         switch (node_ptr->midiMsg.status) {
