@@ -2,6 +2,7 @@
   This file is part of the eTextile-Synthesizer project - http://synth.eTextile.org
   Copyright (c) 2014- Maurin Donneaud <maurin@etextile.org>
   This work is licensed under Creative Commons Attribution-ShareAlike 4.0 International license, see the LICENSE file for details.
+  TODO: Lufa_lib...
 */
 
 #include "osc_transmit.h"
@@ -15,24 +16,30 @@ unsigned long oscTransmitTimeStamp = 0;
 
 void OSC_TRANSMIT_SETUP(void) {
   SLIPSerial.begin(BAUD_RATE);
-}
+  //while (!Serial);
+};
 
 void read_osc_input(void) {
-  OSCMessage request;
+  OSCMessage bundleIN;
   int size;
-  while (!SLIPSerial.endofPacket()) {
-    if ((size = SLIPSerial.available()) > 0) {
-      while (size--)
-        request.fill(SLIPSerial.read());
+  if (SLIPSerial.available()) {
+    while (!SLIPSerial.endofPacket()) {
+      if (size = SLIPSerial.available()) {
+        while (size--)
+          bundleIN.fill(SLIPSerial.read());
+      };
     };
   };
-  if (!request.hasError()) {
-    request.dispatch("/CONTROL", handle_osc_input);
+  if (!bundleIN.hasError()) {
+    //if (bundleIN.fullMatch("/C")) { // Calibrate
+      //bundleIN.dispatch("/C", handle_osc_input);
+      bundleIN.route("/C", handle_osc_input);
+    //};
   };
 };
 
 // INPUT_CONTROL
-void handle_osc_input(OSCMessage &msg) {
+void handle_osc_input(OSCMessage & msg) {
   midiNode_t* node_ptr = (midiNode_t*)llist_pop_front(&midi_node_stack);  // Get a node from the MIDI nodes stack
   switch (msg.getInt(0)) {
     case midi::NoteOn:

@@ -13,7 +13,6 @@
     - **SPI**: https://github.com/PaulStoffregen/SPI
     - **ADC**: https://github.com/pedvide/ADC
     - **Encoder** : https://github.com/PaulStoffregen/Encoder 
-    - **elapsedMillis** : https://github.com/pfeerick/elapsedMillis
     - **Audio** : https://github.com/PaulStoffregen/Audio
     - **MIDI** : https://github.com/PaulStoffregen/MIDI
   - **To install with Arduino library manager**

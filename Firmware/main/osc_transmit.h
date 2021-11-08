@@ -12,8 +12,13 @@
 #include "llist.h"
 #include "blob.h"
 
+//#define CONTROL_CHANGE        176 // 0xB0
+//#define NOTE_ON               144 // 0x90
+//#define NOTE_OFF              128 // 0x80
+
 #include <OSCBoards.h>              // https://github.com/CNMAT/OSC
 #include <OSCMessage.h>             // https://github.com/CNMAT/OSC
+#include <OSCBundle.h>              // https://github.com/CNMAT/OSC
 #include <SLIPEncodedUSBSerial.h>   // https://github.com/CNMAT/OSC
 
 void OSC_TRANSMIT_SETUP(void);

@@ -94,7 +94,7 @@ void setup() {
 
 void loop() {
 #if OSC_TRANSMIT
-  //read_osc_input();
+  read_osc_input();
 #endif
 #if MIDI_TRANSMIT
   read_midi_input();
@@ -120,9 +120,9 @@ void loop() {
   find_blobs();
 
 #if MAPPING_LAYOUT
-  mapping_grid_populate(); // Use the MIDI input messages to populate the grid - If commented we use the DEFAULT mapping
+  //mapping_grid_populate(); // Use the MIDI input messages to populate the grid - If commented we use the DEFAULT mapping
   mapping_grid_update();
-  mapping_blob();
+  //mapping_blob();
   //mapping_trigger();
   //mapping_toggle();
   //mapping_hSlider();

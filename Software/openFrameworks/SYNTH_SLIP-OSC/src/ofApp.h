@@ -33,9 +33,9 @@
 #define INTERP_MATRIX         10
 #define ALL_OFF               11
 
-#define CONTROL_CHANGE        176 //0xB0
-#define NOTE_ON               144 //0x90
-#define NOTE_OFF              128 //0x80
+#define CONTROL_CHANGE        176 // 0xB0
+#define NOTE_ON               144 // 0x90
+#define NOTE_OFF              128 // 0x80
 
 #define HOST                  "localhost"
 //#define HOST                "192.168.0.101"
@@ -54,12 +54,11 @@ using namespace ofxIO;
 
 class ofApp: public ofBaseApp {
 
-public:
+  public:
     void                          setup(void);
     void                          update(void);
     void                          draw(void);
     void                          exit(void);
-
 
     void                          onOscMessage(const ofxOscMessage& message);
     void                          onSerialError(const ofxIO::SerialBufferErrorEventArgs& error);
@@ -68,34 +67,28 @@ public:
     std::vector<ofxOscMessage>    OSCMessages;
     std::vector<blob_t>           blobs;
     //std::vector<ofboxPrimitive> boxe;
+    uint8_t                       rawValues[RAW_FRAME];    // 1D array (16*16)
+    uint8_t                       interpValues[NEW_FRAME]; // 1D array (64*64)
 
     ofxPanel                      gui;
-    ofxButton                     setCalirationButton; // Button to calibrate E256
-    ofxIntSlider                  setTresholdSlider; // Set E256 threshold value
+    ofxButton                     setCalirationButton;     // Button to calibrate E256
+    ofxIntSlider                  setTresholdSlider;       // Set E256 threshold value
     ofxToggle                     getRawDataToggle;
     ofxToggle                     getInterpDataToggle;
     ofxToggle                     getBlobsToggle;
+
     uint8_t                       mode;
+    uint8_t                       lastMode;
 
     void                          E256_setCaliration(void);
-    void                          E256_setTreshold(int & sliderValue);
-
-    bool                          getRawData;
-    bool                          getInterpData;
-    bool                          getBlobs;
-
-    void                          E256_rawDataRequestStart(bool & val);
-    void                          E256_interpDataRequestStart(bool & val);
-    void                          E256_blobsRequestStart(bool & val);
-
-    void                          E256_rawDataRequest(void);
-    void                          E256_interpDataRequest(void);
-    void                          E256_blobsRequest(void);
+    void                          E256_setTreshold(int & val);
+    void                          E256_rawDataRequest(bool & val);
+    void                          E256_interpDataRequest(bool & val);
+    void                          E256_blobsRequest(bool & val);
 
     ofMesh                        rawDataMesh;
     ofMesh                        interpDataMesh;
-    ofTrueTypeFont	              FreeSansBold;
+    ofTrueTypeFont                FreeSansBold;
 
     void                          keyPressed(int key);
-
-  };
+};

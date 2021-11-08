@@ -17,12 +17,12 @@ using namespace midi;
 extern llist_t midi_node_stack;  // Exposed local declaration see midi_transmit.cpp
 extern llist_t midiIn;           // Exposed local declaration see midi_transmit.cpp
 extern llist_t midiOut;          // Exposed local declaration see midi_transmit.cpp
-extern llist_t midiChord;        // MIDI chord linked list
+extern llist_t midiChord;        // Exposed local declaration see midi_transmit.cpp
 
 typedef struct midiMsg midiMsg_t;
 struct midiMsg {
   uint8_t status;   // For MIDI status bytes see: https://github.com/PaulStoffregen/MIDI/blob/master/src/midi_Defs.h
-  uint8_t data1;    // First value (0-127), controller number or note number
+  uint8_t data1;    // First value  (0-127), controller number or note number
   uint8_t data2;    // Second value (0-127), controller value or velocity
   uint8_t channel;  // MIDI channel (0-15)
 };

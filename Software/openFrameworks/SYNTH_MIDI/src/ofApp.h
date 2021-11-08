@@ -11,9 +11,9 @@
 #include "ofxMidi.h" // https://github.com/danomatika/ofxMidi
 #include "ofxGui.h"  //
 
-#define POROJECT_NAME         "ETEXTILE-SYNTH"
-#define MIDI_PORT_NAME        "E256"
-#define VERSION               "1.0.7"
+#define NAME                     "E256"
+#define PROJECT                  "ETEXTILE-SYNTHESIZER"
+#define VERSION                  "1.0.8"
 
 #define RAW_COLS              16
 #define RAW_ROWS              16

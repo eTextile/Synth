@@ -15,19 +15,19 @@
 #define ENCODER_PIN_B           9
 
 // SOFTWARE CONSTANTES **DO NOT CHANGE**
-#define LONG_HOLD                     1500
-#define BLOBS_PLAY_LED_TIMEON    600
-#define BLOBS_PLAY_LED_TIMEOFF   600
-#define BLOBS_LEARN_LED_TIMEON   100
-#define BLOBS_LEARN_LED_TIMEOFF    100
-#define BLOBS_MAPPING_LED_TIMEON   1000
-#define BLOBS_MAPPING_LED_TIMEOFF      100
-#define CALIBRATE_LED_TIMEON          35
-#define CALIBRATE_LED_TIMEOFF         100
-#define CALIBRATE_LED_ITER            5
-#define SAVE_LED_TIMEON               20
-#define SAVE_LED_TIMEOFF              50
-#define SAVE_LED_ITER                 10
+#define LONG_HOLD                   1500
+#define BLOBS_PLAY_LED_TIMEON       600
+#define BLOBS_PLAY_LED_TIMEOFF      600
+#define BLOBS_LEARN_LED_TIMEON      100
+#define BLOBS_LEARN_LED_TIMEOFF     100
+#define BLOBS_MAPPING_LED_TIMEON    1000
+#define BLOBS_MAPPING_LED_TIMEOFF   100
+#define CALIBRATE_LED_TIMEON        35
+#define CALIBRATE_LED_TIMEOFF       100
+#define CALIBRATE_LED_ITER          5
+#define SAVE_LED_TIMEON             20
+#define SAVE_LED_TIMEOFF            50
+#define SAVE_LED_ITER               10
 
 Encoder encoder(ENCODER_PIN_A, ENCODER_PIN_B);
 //Button BUTTON_L = Button(); // DEPRECATED
@@ -37,8 +37,8 @@ Bounce2::Button BUTTON_R = Bounce2::Button();
 
 uint8_t currentMode = CALIBRATE;      // Init currentMode with CALIBRATE (SET as DEFAULT_MODE)
 //uint8_t lastMode = LINE_OUT;        // Init lastMode with LINE_OUT (SET as DEFAULT_MODE)
-//uint8_t lastMode = BLOBS_MAPPING;   // Init lastMode with MIDI_MAPPING (SET as DEFAULT_MODE)
-uint8_t lastMode = BLOBS_PLAY;        // Init lastMode with MIDI_BLOBS_PLAY (SET as DEFAULT_MODE)
+uint8_t lastMode = BLOBS_MAPPING;     // Init lastMode with MIDI_MAPPING (SET as DEFAULT_MODE)
+//uint8_t lastMode = BLOBS_PLAY;      // Init lastMode with MIDI_BLOBS_PLAY (SET as DEFAULT_MODE)
 
 preset_t presets[9] = {
   {13, 31, 29, 0, false, false, false, false, LOW,  LOW  },  // LINE_OUT          ARGS[minVal, maxVal, val, ledVal, update, setLed, updateLed, allDone, D1, D2]

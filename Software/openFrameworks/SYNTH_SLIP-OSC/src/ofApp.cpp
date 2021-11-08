@@ -25,18 +25,16 @@ void ofApp::setup(void) {
 
   setCalirationButton.addListener(this, &ofApp::E256_setCaliration);
   setTresholdSlider.addListener(this, &ofApp::E256_setTreshold);
-  getRawDataToggle.addListener(this, &ofApp::E256_rawDataRequestStart);
-  getInterpDataToggle.addListener(this, &ofApp::E256_interpDataRequestStart);
-  getBlobsToggle.addListener(this, &ofApp::E256_blobsRequestStart);
+  getRawDataToggle.addListener(this, &ofApp::E256_rawDataRequest);
+  getInterpDataToggle.addListener(this, &ofApp::E256_interpDataRequest);
+  getBlobsToggle.addListener(this, &ofApp::E256_blobsRequest);
 
   gui.setup("E256 - Parameters");
   gui.add(setCalirationButton.setup("Calibrate"));
   gui.add(setTresholdSlider.setup("Threshold", 20, 0, 100));
-  gui.add(getRawDataToggle.setup("getRawData", true));
+  gui.add(getRawDataToggle.setup("getRawData", false));
   gui.add(getInterpDataToggle.setup("getInterpData", false));
-  gui.add(getBlobsToggle.setup("getBlobs", false));
-
-  ofBackground(0);
+  gui.add(getBlobsToggle.setup("getBlobs", true));
 
   // 16 * 16
   for (int y = 0; y < RAW_ROWS; y++) {
@@ -78,9 +76,11 @@ void ofApp::setup(void) {
 /////////////////////// SERIAL EVENT ///////////////////////
 void ofApp::onOscMessage(const ofxOscMessage& message) {
   OSCMessages.push_back(message);
+  /*
   while (OSCMessages.size() > 255) {
     OSCMessages.erase(OSCMessages.begin());
   };
+  */
 };
 
 void ofApp::onSerialError(const ofxIO::SerialBufferErrorEventArgs& error) {
@@ -89,29 +89,28 @@ void ofApp::onSerialError(const ofxIO::SerialBufferErrorEventArgs& error) {
 
 /////////////////////// UPDATE ///////////////////////
 void ofApp::update(void) {
-
   for (size_t i = 0; i < OSCMessages.size(); i++) {
     ofxOscMessage OSCmsg = OSCMessages[i];
     switch (mode) {
       case RAW_MATRIX:
         if (OSCmsg.getAddress() == "/RAW") {
-          ofLogNotice("ofApp::OSCSerialDevice") << "RAW_MATRIX_OSCmsg" << OSCmsg;
+          ofLogNotice("ofApp::OSCSerialDevice") << "RAW_MATRIX_OSCmsg" << OSCmsg.getArgAsBlob(0);
           for (int k = 0; k < RAW_FRAME; k++) {
-            ofPoint point = rawDataMesh.getVertex(k);           // Get the point coordinates
-            point.z = (float)OSCmsg.getArgAsInt(k);             // Change the z-coordinates
-            rawDataMesh.setVertex(k, point);                    // Set the new coordinates
-            rawDataMesh.setColor(k, ofColor(point.z, 0, 255));  // Change vertex color
+            //ofPoint point = rawDataMesh.getVertex(k);           // Get the point coordinates
+            //point.z = (float)OSCmsg.getArgAsInt(k);             // Change the z-coordinates
+            //rawDataMesh.setVertex(k, point);                    // Set the new coordinates
+            //rawDataMesh.setColor(k, ofColor(point.z, 0, 255));  // Change vertex color
           };
         };
         break;
       case INTERP_MATRIX:
         if (OSCmsg.getAddress() == "/INTERP") {
-          ofLogNotice("ofApp::OSCSerialDevice") << "INTERP_MATRIX_OSCmsg" << OSCmsg;
+          ofLogNotice("ofApp::OSCSerialDevice") << "INTERP_MATRIX_OSCmsg" << OSCmsg.getArgAsBlob(0);
           for (int k = 0; k < NEW_FRAME; k++) {
-            ofPoint point = rawDataMesh.getVertex(k);           // Get the point coordinates
-            point.z = (float)OSCmsg.getArgAsInt(k);             // Change the z-coordinates
-            interpDataMesh.setVertex(k, point);                    // Set the new coordinates
-            interpDataMesh.setColor(k, ofColor(point.z, 0, 255));  // Change vertex color
+            //ofPoint point = rawDataMesh.getVertex(k);              // Get the point coordinates
+            //point.z = (float)OSCmsg.getArgAsInt(k);              // Change the z-coordinates
+            //interpDataMesh.setVertex(k, point);                    // Set the new coordinates
+            //interpDataMesh.setColor(k, ofColor(point.z, 0, 255));  // Change vertex color
           };
         };
         break;
@@ -137,9 +136,9 @@ void ofApp::update(void) {
         }
         else if (OSCmsg.getAddress() == "/OFF") {
           //ofLogNotice("ofApp::OSCSerialDevice") << "BLOBS_PLAY_OSCmsg_OFF" << OSCmsg;
-          for (size_t m = 0; m < blobs.size(); m++) {
-            if (blobs[m].id == OSCmsg.getArgAsInt(0)) {
-              blobs.erase(blobs.begin() + m);
+          for (size_t n = 0; n < blobs.size(); n++) {
+            if (blobs[n].id == OSCmsg.getArgAsInt(0)) {
+              blobs.erase(blobs.begin() + n);
               break;
             };
           };
@@ -148,20 +147,19 @@ void ofApp::update(void) {
       default:
         break;
     };
-    OSCMessages.clear();
   };
+  OSCMessages.clear();
 };
 
 //////////////////////// DRAW ////////////////////////
 void ofApp::draw(void) {
-
   ofBackground(0);
   gui.draw();
   std::stringstream dashboard;
-  //dashboard << "     Connected to : " << serialDevice.port() << std::endl;
-  //dashboard << "SLIP-OSC-OUT port : " << UDP_OUTPUT_PORT << std::endl;
-  //dashboard << " SLIP-OSC-IN port : " << UDP_INPUT_PORT << std::endl;
-  dashboard << "              FPS : " << (int)ofGetFrameRate() << std::endl;
+  //dashboard << "Connected to : " << serialDevice.port() << std::endl;
+  //dashboard << " OSC-OUT port: " << UDP_OUTPUT_PORT << std::endl;
+  //dashboard << "  OSC-IN port: " << UDP_INPUT_PORT << std::endl;
+  dashboard << "           FPS : " << (int)ofGetFrameRate() << std::endl;
   ofDrawBitmapString(dashboard.str(), ofVec2f(20, 200)); // Draw the GUI menu
 
   const int SCALE_H = 50;
@@ -194,8 +192,9 @@ void ofApp::draw(void) {
         blob_t &blob = blobs[i];
         ofSetColor(245, 58, 135); // Pink
         FreeSansBold.drawString(std::to_string(blob.id),
-          (float)(blob.bx * ((ofGetWindowWidth() - 20) / 127) - 100),
-          (float)(blob.by * ((ofGetWindowHeight() - 20) / 127)));
+          (float)((ofGetWindowWidth() / 64) * blob.bx),
+          (float)((ofGetWindowHeight() / 64) * blob.by)
+        );
         ofBoxPrimitive box;
         ofSetLineWidth(1);
         ofSetColor(255);
@@ -203,8 +202,9 @@ void ofApp::draw(void) {
         box.setResolution(1);
         box.set(blob.bw * BLOB_SCALE, blob.bh * BLOB_SCALE, blob.bz);
         box.setPosition(
-          (float)(blob.bx * ((ofGetWindowWidth() - 20) / 127)),
-          (float)(blob.by * ((ofGetWindowHeight() - 20) / 127)), 0);
+          (float)((ofGetWindowWidth() / 64) * blob.bx),
+          (float)((ofGetWindowHeight() / 64) * blob.by), 0
+        );
         box.drawWireframe();
       };
       ofPopMatrix();
@@ -214,66 +214,60 @@ void ofApp::draw(void) {
   };
 };
 
-// E256 matrix sensor - MATRIX RAW DATA REQUEST START
-// 16*16 matrix row data request
-void ofApp::E256_rawDataRequestStart(bool & val) {
-  mode = RAW_MATRIX;
-};
-// E256 matrix sensor - INTERPOLATED DATA REQUEST START
-void ofApp::E256_interpDataRequestStart(bool & val) {
-  mode = INTERP_MATRIX;
-};
-// E256 matrix sensor - BLOBS REQUEST START
-void ofApp::E256_blobsRequestStart(bool & val) {
-  mode = BLOBS_PLAY;
-};
-
 // E256 matrix sensor - SET CALIBRATION
 void ofApp::E256_setCaliration(void) {
+  lastMode = mode;
+  mode = CALIBRATE;
   ofxOscMessage OSCmsg;
-  OSCmsg.setAddress("/CONTROL");
+  OSCmsg.setAddress("/C");
   OSCmsg.addIntArg(CONTROL_CHANGE);
   OSCmsg.addIntArg(CALIBRATE);
   serialDevice.send(OSCmsg);
+  mode = lastMode;
 };
-
 // E256 matrix sensor - SET THRESHOLD
-void ofApp::E256_setTreshold(int & tresholdValue) {
+void ofApp::E256_setTreshold(int & val) {
+  lastMode = mode;
+  mode = THRESHOLD;
   ofxOscMessage OSCmsg;
-  OSCmsg.setAddress("/CONTROL");
+  OSCmsg.setAddress("/C");
   OSCmsg.addIntArg(CONTROL_CHANGE);
   OSCmsg.addIntArg(THRESHOLD);
-  OSCmsg.addIntArg((int32_t)tresholdValue);
+  OSCmsg.addIntArg(val);
   serialDevice.send(OSCmsg);
+  mode = lastMode;
 };
-
 // E256 matrix sensor - MATRIX DATA REQUEST
 // 16*16 matrix row data request
-void ofApp::E256_rawDataRequest(void) {
+void ofApp::E256_rawDataRequest(bool & val) {
+  mode = ALL_OFF;
   ofxOscMessage OSCmsg;
-  OSCmsg.setAddress("/CONTROL");
+  OSCmsg.setAddress("/C");
   OSCmsg.addIntArg(CONTROL_CHANGE);
   OSCmsg.addIntArg(RAW_MATRIX);
   serialDevice.send(OSCmsg);
+  mode = RAW_MATRIX;
 };
-
 // E256 matrix sensor - MATRIX DATA REQUEST
 // 64*64 matrix interpolated data request
-void ofApp::E256_interpDataRequest(void) {
+void ofApp::E256_interpDataRequest(bool & val) {
+  mode = ALL_OFF;
   ofxOscMessage OSCmsg;
-  OSCmsg.setAddress("/CONTROL");
+  OSCmsg.setAddress("/C");
   OSCmsg.addIntArg(CONTROL_CHANGE);
   OSCmsg.addIntArg(INTERP_MATRIX);
   serialDevice.send(OSCmsg);
+  mode = INTERP_MATRIX;
 };
-
 // E256 matrix sensor - BLOBS REQUEST
-void ofApp::E256_blobsRequest(void) {
+void ofApp::E256_blobsRequest(bool & val) {
+  mode = ALL_OFF;
   ofxOscMessage OSCmsg;
-  OSCmsg.setAddress("/CONTROL");
+  OSCmsg.setAddress("/C");
   OSCmsg.addIntArg(CONTROL_CHANGE);
   OSCmsg.addIntArg(BLOBS_PLAY);
   serialDevice.send(OSCmsg);
+  mode = BLOBS_PLAY;
 };
 
 // E256 matrix sensor - Toggle full screen mode
@@ -290,8 +284,8 @@ void ofApp::keyPressed(int key) {
 void ofApp::exit(void) {
   setCalirationButton.removeListener(this, &ofApp::E256_setCaliration);
   setTresholdSlider.removeListener(this, &ofApp::E256_setTreshold);
-  getRawDataToggle.removeListener(this, &ofApp::E256_rawDataRequestStart);
-  getInterpDataToggle.removeListener(this, &ofApp::E256_interpDataRequestStart);
-  getBlobsToggle.removeListener(this, &ofApp::E256_blobsRequestStart);
+  getRawDataToggle.removeListener(this, &ofApp::E256_rawDataRequest);
+  getInterpDataToggle.removeListener(this, &ofApp::E256_interpDataRequest);
+  getBlobsToggle.removeListener(this, &ofApp::E256_blobsRequest);
   serialDevice.unregisterAllEvents(this);
 };
