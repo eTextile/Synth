@@ -6,9 +6,6 @@
 
 #include "midi_transmit.h"
 
-#define MIDI_INPUT_CHANNEL  1
-#define MIDI_OUTPUT_CHANNEL 1
-
 #define MIDI_TRANSMIT_INTERVAL 15
 unsigned long int usbTransmitTimeStamp = 0;
 

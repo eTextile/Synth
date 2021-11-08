@@ -9,6 +9,9 @@
 
 #include <Arduino.h>
 
+#define MIDI_INPUT_CHANNEL  1
+#define MIDI_OUTPUT_CHANNEL 1
+
 #define BAUD_RATE                230400
 #define RAW_COLS                 16
 #define RAW_ROWS                 16
