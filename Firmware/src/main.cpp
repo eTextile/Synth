@@ -13,13 +13,13 @@
 
 unsigned long fpsTimeStamp = 0;
 
-#if SERIAL_TRANSMIT
+#if USB_SERIAL_TRANSMIT
 #include "serial_transmit.h"
 #endif
-#if MIDI_TRANSMIT
+#if USB_MIDI_TRANSMIT
 #include "midi_transmit.h"
 #endif
-#if OSC_TRANSMIT
+#if USB_OSC_TRANSMIT
 #include "osc_transmit.h"
 #endif
 #if MAPPING_LAYOUT
