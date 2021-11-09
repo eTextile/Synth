@@ -26,7 +26,7 @@ struct synth {
   AudioMixer4* mix;
 };
 
-void SYNTH_PLAYER_SETUP(void);
-void synth_player(void);
+void PLAYER_SYNTH_SETUP(void);
+void player_synth(void);
 
 #endif /*__PLAYER_SYNTH_H__*/

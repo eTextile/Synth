@@ -38,6 +38,7 @@ void llist_midi_init(llist_t* llist_ptr, midiNode_t* nodeArray_ptr, const int no
 void MIDI_TRANSMIT_SETUP(void);
 void read_midi_input(void);
 void handle_midi_input(const midi::Message<128u> &midiMsg);
+void handle_midi_cc(byte channel, byte control, byte value);
 void midi_transmit(void);
 
 #endif /*__MIDI_TRANSMIT_H__*/

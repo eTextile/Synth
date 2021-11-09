@@ -6,7 +6,7 @@
 
 #include "player_flash.h"
 
-#if defined(FLASH_PLAYER)
+#if defined(PLAYER_FLASH)
 #define MEM_MOSI   11  // Teensy4.0 hardware SPI
 #define MEM_MISO   12  // Teensy4.0 hardware SPI
 #define MEM_SCK    13  // Teensy4.0 hardware SPI
@@ -17,11 +17,11 @@ AudioPlaySerialflashRaw   playFlashRaw;
 AudioConnection           patchCord1(playFlashRaw, 0, i2s_OUT, 0);
 AudioConnection           patchCord2(playFlashRaw, 0, i2s_OUT, 1);
 
-void FLASH_PLAYER_SETUP(void) {
+void PLAYER_FLASH_SETUP(void) {
   while (!SerialFlash.begin(6));
 }
 
-void flash_player(void) {
+void player_flash(void) {
   blob_t* blob_ptr = (blob_t*)llist_ptr->tail_ptr;
   if (blob_ptr != NULL) {
     //AudioNoInterrupts();

@@ -6,7 +6,7 @@
 
 #include "player_granular.h"
 
-#if defined(GRANULAR_PLAYER)
+#if defined(PLAYER_GRANULAR)
 AudioInputI2S           i2s_IN;
 AudioOutputI2S          i2s_OUT;
 AudioEffectGranular     granular;
@@ -17,11 +17,11 @@ AudioConnection         patchCord3(granular, 0, i2s_OUT, 1);
 #define GRANULAR_MEMORY_SIZE 12800  // Enough for 290 ms at 44.1 kHz
 int16_t granularMemory[GRANULAR_MEMORY_SIZE] = {0};
 
-void GRANULAR_PLAYER_SETUP(void) {
+void PLAYER_GRANULAR_SETUP(void) {
   granular.begin(&granularMemory[0], GRANULAR_MEMORY_SIZE);  // [ARGS](buffer_ptr, buffer_size)
 };
 
-void granular_player(void) {
+void player_granular(void) {
 
   blob_t* blob_ptr = (blob_t*)blobs.tail_ptr;
   if (blob_ptr != NULL) {

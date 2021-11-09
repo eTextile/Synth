@@ -43,7 +43,7 @@ preset_t presets[9] = {
   {13, 31, 29, 0, false, false, false, false, LOW,  LOW  },  // LINE_OUT          ARGS[minVal, maxVal, val, ledVal, update, setLed, updateLed, allDone, D1, D2]
   { 1, 50, 12, 0, false, false, false, false, HIGH, LOW  },  // SIG_IN            ARGS[minVal, maxVal, val, ledVal, update, setLed, updateLed, allDone, D1, D2]
   { 1, 31, 17, 0, false, false, false, false, LOW,  HIGH },  // SIG_OUT           ARGS[minVal, maxVal, val, ledVal, update, setLed, updateLed, allDone, D1, D2]
-  { 2, 60, 20, 0, false, false, false, false, HIGH, HIGH },  // THRESHOLD         ARGS[minVal, maxVal, val, ledVal, update, setLed, updateLed, allDone, D1, D2]
+  { 2, 60, 3, 0, false, false, false, false, HIGH, HIGH },   // THRESHOLD         ARGS[minVal, maxVal, val, ledVal, update, setLed, updateLed, allDone, D1, D2]
   { 0, 0,  0,  0, true,  false, false, false, HIGH, HIGH },  // CALIBRATE         ARGS[minVal, maxVal, val, ledVal, update, setLed, updateLed, allDone, D1, D2]
   { 0, 0,  0,  0, false, false, false, false, NULL, NULL },  // SAVE              ARGS[minVal, maxVal, val, ledVal, update, setLed, updateLed, allDone, D1, D2]
   { 0, 0,  0,  0, false, false, false, false, NULL, NULL },  // MIDI_BLOBS_PLAY   ARGS[minVal, maxVal, val, ledVal, update, setLed, updateLed, allDone, D1, D2]
@@ -97,8 +97,9 @@ void update_presets_usb(void) {
             encoder.write(presets[THRESHOLD].val << 2);
             interpThreshold = constrain(presets[THRESHOLD].val - 5, presets[THRESHOLD].minVal, presets[THRESHOLD].maxVal);
             presets[THRESHOLD].ledVal = map(node_ptr->midiMsg.data2, 0, 127, 0, 255);
-            presets[THRESHOLD].update = true;
+            //presets[THRESHOLD].update = true;
             presets[THRESHOLD].setLed = true; // TEENSY 3.2 DO NOT HAVE LEDs!!!
+            presets[THRESHOLD].updateLed = true;
             break;
           case CALIBRATE: // PROGRAM 4
             lastMode = currentMode;
@@ -185,7 +186,7 @@ void update_presets_buttons(void) {
   // FONCTION_B : MIDI_BLOBS_LEARN (send blob values separately for Max4Live MIDI_LEARN)
   // LEDs : blink alternately, slow for playing mode and fast or learning mode
   if (BUTTON_R.rose() && BUTTON_R.previousDuration() > LONG_HOLD) {
-    if (currentMode == BLOBS_LEARN) {
+    if (currentMode == BLOBS_PLAY) {
       currentMode = BLOBS_LEARN;
       presets[BLOBS_LEARN].update = true;
 #if defined(DEBUG_BUTTONS)

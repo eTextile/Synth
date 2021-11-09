@@ -6,7 +6,7 @@
 
 #include "player_synth.h"
 
-#if defined(SYNTH_PLAYER)
+#if defined(PLAYER_SYNTH)
 AudioOutputI2S                    i2s_OUT;
 AudioSynthWaveform                wf_1;
 AudioSynthWaveform                wf_2;
@@ -75,13 +75,13 @@ synth_t allSynth[MAX_SYNTH] = {
   {&wf_8, &fm_8, &fade_8, &mix_2}
 };
 
-void SYNTH_PLAYER_SETUP(void) {
+void PLAYER_SYNTH_SETUP(void) {
   for (int i = 0; i < MAX_SYNTH; i++) {
     allSynth[i].fade->fadeOut(0);
     allSynth[i].wf->begin(WAVEFORM_SINE);
     allSynth[i].wf->amplitude(0.9);
     allSynth[i].fm->amplitude(0.9);
-  }
+  };
   allSynth[0].mix->gain(0, 0.25);
   allSynth[0].mix->gain(1, 0.25);
   allSynth[0].mix->gain(2, 0.25);
@@ -91,20 +91,18 @@ void SYNTH_PLAYER_SETUP(void) {
   allSynth[4].mix->gain(1, 0.25);
   allSynth[4].mix->gain(2, 0.25);
   allSynth[4].mix->gain(3, 0.25);
-}
+};
 
 /////////////////////////// MAKE NOISE FONCTION !
-void synth_player(void) {
+void player_synth(void) {
   //static boolean lastState[MAX_BLOBS] = {false};
-
   for (blob_t* blob_ptr = (blob_t *)ITERATOR_START_FROM_HEAD(&llist_blobs); blob_ptr != NULL; blob_ptr = (blob_t *)ITERATOR_NEXT(blob_ptr)) {
-
     if (blob_ptr->UID < MAX_SYNTH) {
       AudioNoInterrupts();
       if (blob_ptr->state) {
         if (!blob_ptr->lastState) {
           allSynth[blob_ptr->UID].wf->phase(0);
-          allSynth[blob_ptr->UID].fade->fadeIn(3);
+          allSynth[blob_ptr->UID].fade->fadeIn(1);
         }
         else {
           allSynth[blob_ptr->UID].wf->frequency(blob_ptr->centroid.X * 3);
@@ -119,13 +117,13 @@ void synth_player(void) {
             allSynth[blob_ptr->UID].fm->frequency(blob_ptr->centroid.Y * 4 + 50);
             }
           */
-        }
+        };
       }
       else {
-        allSynth[blob_ptr->UID].fade->fadeOut(500);
-      }
+        allSynth[blob_ptr->UID].fade->fadeOut(50);
+      };
       AudioInterrupts();
-    }
-  }
-}
+    };
+  };
+};
 #endif

@@ -23,16 +23,16 @@
 #if defined(MAPPING_LAYOUT)
 #include "mapping.h"
 #endif
-#if defined(FLASH_PLAYER)
+#if defined(PLAYER_FLASH)
 #include "player_flash.h"
 #endif
-#if defined(SYNTH_PLAYER)
+#if defined(PLAYER_SYNTH)
 #include "player_synth.h"
 #endif
-#if defined(GRANULAR_PLAYER)
+#if defined(PLAYER_GRANULAR)
 #include "player_granular.h"
 #endif
-#if defined(FLASH_PLAYER) || (SYNTH_PLAYER) || (GRANULAR_PLAYER)
+#if defined(PLAYER_FLASH) || (PLAYER_SYNTH) || (PLAYER_GRANULAR)
 #include "soundCard.h"
 #endif
 
@@ -64,14 +64,14 @@ void setup() {
 #if defined(USB_MIDI) || (USB_MIDI_SERIAL)
   MIDI_TRANSMIT_SETUP();
 #endif
-#if defined(SYNTH_PLAYER)
-  SYNTH_PLAYER_SETUP();
+#if defined(PLAYER_SYNTH)
+  PLAYER_SYNTH_SETUP();
 #endif
-#if defined(FLASH_PLAYER)
-  FLASH_PLAYER_SETUP();
+#if defined(PLAYER_FLASH)
+  PLAYER_FLASH_SETUP();
 #endif
-#if defined(GRANULAR_PLAYER)
-  GRANULAR_PLAYER_SETUP();
+#if defined(PLAYER_GRANULAR)
+  PLAYER_GRANULAR_SETUP();
 #endif
 #if defined(MAPPING_LAYOUT)
   GRID_LAYOUT_SETUP();
@@ -126,13 +126,13 @@ void loop() {
 #endif
 
 #if defined(PLAYER_SYNTH)
-  synth_player();
+  player_synth();
 #endif
 #if defined(PLAYER_GRANULAR)
-  granular_player();
+  player_granular();
 #endif
 #if defined(PLAYER_FLASH)
-  flash_player();
+  player_flash();
 #endif
 #if defined(USB_MIDI) || (USB_MIDI_SERIAL)
   midi_transmit();

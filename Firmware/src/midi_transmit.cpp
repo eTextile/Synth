@@ -33,6 +33,7 @@ void MIDI_TRANSMIT_SETUP(void) {
 #if defined(USB_MIDI) || (USB_MIDI_SERIAL)
   usbMIDI.begin();
   //usbMIDI.setHandleMessage(handle_midi_input); // TODO
+  usbMIDI.setHandleControlChange(handle_midi_cc);
 #endif
 #if defined(HARDWARE_MIDI)
   MIDI.begin(MIDI_INPUT_CHANNEL); // Launch MIDI and listen to channel 1
@@ -45,7 +46,7 @@ void MIDI_TRANSMIT_SETUP(void) {
 };
 
 void read_midi_input(void) {
-#if defined(USB_MIDI)
+#if defined(USB_MIDI) || (USB_MIDI_SERIAL)
   usbMIDI.read(MIDI_INPUT_CHANNEL);         // Is there a MIDI incoming messages on channel One
   while (usbMIDI.read(MIDI_INPUT_CHANNEL)); // Read and discard any incoming MIDI messages
 #endif
@@ -53,6 +54,15 @@ void read_midi_input(void) {
   MIDI.read(MIDI_INPUT_CHANNEL);            // Is there a MIDI incoming messages on channel One
   while (MIDI.read(MIDI_INPUT_CHANNEL));    // Read and discard any incoming MIDI messages
 #endif
+};
+
+void handle_midi_cc(byte channel, byte control, byte value){
+  midiNode_t* node_ptr = (midiNode_t*)llist_pop_front(&midi_node_stack);  // Get a node from the MIDI nodes stack
+  node_ptr->midiMsg.status = midi::ControlChange;  // Set the MIDI status
+  node_ptr->midiMsg.data1 = control;               // Set the MIDI control
+  node_ptr->midiMsg.data2 = value;                 // Set the MIDI value
+  //node_ptr->midiMsg.channel = channel;           // Set the MIDI channel
+  llist_push_front(&midiIn, node_ptr);             // Add the node to the midiIn linked liste
 };
 
 void handle_midi_input(const midi::Message<128u> &midiMsg) {
@@ -74,8 +84,8 @@ void handle_midi_input(const midi::Message<128u> &midiMsg) {
       break;
     case midi::ControlChange:
       node_ptr->midiMsg.status = midi::ControlChange;  // Set the MIDI status
-      node_ptr->midiMsg.data1 = midiMsg.data1;         // Set the MIDI note
-      node_ptr->midiMsg.data2 = midiMsg.data2;         // Set the MIDI velocity
+      node_ptr->midiMsg.data1 = midiMsg.data1;         // Set the MIDI control
+      node_ptr->midiMsg.data2 = midiMsg.data2;         // Set the MIDI value
       //node_ptr->midiMsg.channel = midiMsg.channel;   // Set the MIDI channel
       llist_push_front(&midiIn, node_ptr);             // Add the node to the midiIn linked liste
       break;

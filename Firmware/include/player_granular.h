@@ -17,7 +17,7 @@
 #include "llist.h"
 #include "blob.h"
 
-void GRANULAR_PLAYER_SETUP(void);
-void granular_player(void);
+void PLAYER_GRANULAR_SETUP(void);
+void player_granular(void);
 
 #endif /*__PLAYER_GRANULAR_H__*/

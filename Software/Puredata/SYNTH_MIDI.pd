@@ -1,12 +1,12 @@
-#N canvas 433 148 1313 779 12;
+#N canvas 331 164 1339 792 12;
 #X text 288 5 eTextile-Synthetizer / MIDI / Pure-Data;
-#X obj 1070 440 cnv 15 20 60 empty B-1 empty 20 12 0 14 -262144 -66577
+#X obj 0 320 cnv 15 20 10 empty B-1 empty 20 12 0 14 #fcfcfc #404040
 0;
 #X text 273 276 Channel == Blob ID;
 #X text 676 342 Channel, f 8;
 #X obj 618 421 send;
 #X obj 664 366 change;
-#X obj 530 530 cnv 15 20 20 empty B-2 empty 20 12 0 14 -262144 -66577
+#X obj 380 430 cnv 15 40 10 empty B-2 empty 20 12 0 14 #fcfcfc #404040
 0;
 #X msg 664 393 symbol \$1-WIDTH;
 #X text 572 342 Value;
@@ -34,13 +34,13 @@
 #X msg 494 393 symbol \$1-POSY;
 #X msg 834 393 symbol \$1-HEIGHT;
 #X msg 1004 393 symbol \$1-DEPTH;
-#X obj 800 260 cnv 15 20 20 empty B-3 empty 20 12 0 14 -262144 -66577
+#X obj 970 720 cnv 15 10 10 empty B-3 empty 20 12 0 14 #fcfcfc #404040
 0;
-#X obj 1020 470 cnv 15 30 20 empty B-4 empty 20 12 0 14 -262144 -66577
+#X obj 970 0 cnv 15 10 1 empty B-4 empty 20 12 0 14 #fcfcfc #404040
 0;
-#X obj 980 440 cnv 15 20 20 empty B-6 empty 20 12 0 14 -262144 -66577
+#X obj 980 440 cnv 15 20 20 empty B-6 empty 20 12 0 14 #fcfcfc #404040
 0;
-#X obj 970 700 cnv 15 10 10 empty B-5 empty 20 12 0 14 -262144 -66577
+#X obj 970 700 cnv 15 10 10 empty B-5 empty 20 12 0 14 #fcfcfc #404040
 0;
 #X msg 100 532 vis 3 1;
 #X text 275 312 Blob / POSX;
@@ -54,20 +54,20 @@
 #X obj 100 207 ctlout 0 0 1;
 #X msg 178 162 3;
 #X obj 100 109 t 0 f;
-#X obj 100 45 bng 30 250 50 0 empty empty Calibrate 0 -10 0 10 -4034
--1 -1;
+#X obj 100 45 bng 30 250 50 0 empty empty Calibrate 0 -10 0 10 #00fc04
+#000000 #000000;
 #X obj 149 71 hsl 128 30 0 127 0 0 empty empty Threshold 0 -10 0 10
--257985 -1 -1 3100 1;
-#X floatatom 146 108 5 0 0 0 - - -;
+#f8fc00 #000000 #000000 0 1;
+#X floatatom 146 108 5 0 0 0 - - - 0;
 #X obj 146 135 t f b;
 #X obj 100 341 notein;
 #X msg 100 82 4;
-#X obj 60 15 bng 30 250 50 0 empty empty Get_blobs 0 -10 0 10 -4034
--1 -1;
+#X obj 60 15 bng 30 250 50 0 empty empty Get_blobs 0 -10 0 10 #00fc04
+#000000 #000000;
 #X obj 100 403 f;
 #X obj 100 366 t b f;
 #X msg 60 52 6;
-#X obj 10 20 cnv 15 20 1 empty B-7 empty 20 12 0 14 -262144 -66577
+#X obj 10 20 cnv 15 20 1 empty B-7 empty 20 12 0 14 #fcfcfc #404040
 0;
 #X text 97 312 Blob / I/O;
 #X obj 958 341 ctlin 5;

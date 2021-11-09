@@ -18,7 +18,7 @@
 #include "blob.h"
 #include "mapping.h"
 
-void FLASH_PLAYER_SETUP(void);
-void flash_player(void);
+void PLAYER_FLASH_SETUP(void);
+void player_flash(void);
 
 #endif /*__PLAYER_FLASH__*/
