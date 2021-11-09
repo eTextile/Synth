@@ -66,7 +66,7 @@ typedef struct cSlider cSlider_t;
 struct cSlider {
   float thetaMin;
   float thetaMax;
-  uint8_t lastVal;
+  float lastVal;
 };
 
 typedef struct cChange cChange_t;

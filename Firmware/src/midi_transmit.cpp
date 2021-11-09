@@ -6,7 +6,7 @@
 
 #include "midi_transmit.h"
 
-#define MIDI_TRANSMIT_INTERVAL 15
+#define MIDI_TRANSMIT_INTERVAL 5
 unsigned long int usbTransmitTimeStamp = 0;
 
 #if defined(HARDWARE_MIDI)
@@ -30,9 +30,9 @@ void llist_midi_init(llist_t* llist_ptr, midiNode_t* nodeArray_ptr, const int no
 };
 
 void MIDI_TRANSMIT_SETUP(void) {
-#if defined(USB_MIDI)
+#if defined(USB_MIDI) || (USB_MIDI_SERIAL)
   usbMIDI.begin();
-  //usbMIDI.setHandleMessage(handle_midi_input);
+  //usbMIDI.setHandleMessage(handle_midi_input); // TODO
 #endif
 #if defined(HARDWARE_MIDI)
   MIDI.begin(MIDI_INPUT_CHANNEL); // Launch MIDI and listen to channel 1
@@ -97,7 +97,7 @@ void midi_transmit(void) {
     case RAW_MATRIX:
       if (millis() - usbTransmitTimeStamp > MIDI_TRANSMIT_INTERVAL) {
         usbTransmitTimeStamp = millis();
-#if defined(USB_MIDI)
+#if defined(USB_MIDI) || (USB_MIDI_SERIAL)
         usbMIDI.sendSysEx(RAW_FRAME, rawFrame.pData, false, 0);
         usbMIDI.send_now();
 #endif
@@ -106,7 +106,7 @@ void midi_transmit(void) {
     case INTERP_MATRIX:
       if (millis() - usbTransmitTimeStamp > MIDI_TRANSMIT_INTERVAL) {
         usbTransmitTimeStamp = millis();
-#if defined(USB_MIDI)
+#if defined(USB_MIDI) || (USB_MIDI_SERIAL)
         // NOT_WORKING > You can use OSC insted of MIDI!
         // See https://forum.pjrc.com/threads/28282-How-big-is-the-MIDI-receive-buffer
         //usbMIDI.sendSysEx(NEW_FRAME, interpFrame.pData, false, 0);
@@ -116,7 +116,7 @@ void midi_transmit(void) {
       break;
     case BLOBS_PLAY:
       // Send all blobs values over USB using MIDI format
-#if defined(USB_MIDI)
+#if defined(USB_MIDI) || (USB_MIDI_SERIAL)
       for (blob_t* blob_ptr = (blob_t*)ITERATOR_START_FROM_HEAD(&llist_blobs); blob_ptr != NULL; blob_ptr = (blob_t*)ITERATOR_NEXT(blob_ptr)) {
         if (blob_ptr->state) {
           if (!blob_ptr->lastState) {
@@ -159,7 +159,7 @@ void midi_transmit(void) {
       // Send separate blobs values using Control Change MIDI format
       // Send only the last blob that have been added to the sensor surface
       // Select blob's values according to the encoder position to allow the auto-mapping into Max4Live...
-#if defined(USB_MIDI)
+#if defined(USB_MIDI) || (USB_MIDI_SERIAL)
       if ((blob_t*)llist_blobs.tail_ptr != NULL) {
         blob_t* blob_ptr = (blob_t*)llist_blobs.tail_ptr;
         switch (presets[BLOBS_LEARN].val) {
@@ -201,7 +201,7 @@ void midi_transmit(void) {
 #if defined(DEBUG_MIDI_TRANSMIT)
             Serial.printf("\nDEBUG_MIDI_TRANSMIT\tNOTE_ON:%d\tVALUE:%d\tCHANNEL:%d", node_ptr->midiMsg.data1, node_ptr->midiMsg.data2, MIDI_OUTPUT_CHANNEL);
 #endif
-#if defined(USB_MIDI)
+#if defined(USB_MIDI) || (USB_MIDI_SERIAL)
             usbMIDI.sendNoteOn(node_ptr->midiMsg.data1, node_ptr->midiMsg.data2, MIDI_OUTPUT_CHANNEL);  // USB send MIDI noteOn
 #endif
 #if defined(HARDWARE_MIDI)
@@ -212,7 +212,7 @@ void midi_transmit(void) {
 #if defined(DEBUG_MIDI_TRANSMIT)
             Serial.printf("\nDEBUG_MIDI_TRANSMIT\tNOTE_OFF:%d\tVALUE:%d\tCHANNEL:%d", node_ptr->midiMsg.data1, node_ptr->midiMsg.data2, MIDI_OUTPUT_CHANNEL);
 #endif
-#if defined(USB_MIDI)
+#if defined(USB_MIDI) || (USB_MIDI_SERIAL)
             usbMIDI.sendNoteOff(node_ptr->midiMsg.data1, node_ptr->midiMsg.data2, MIDI_OUTPUT_CHANNEL);  // USB send MIDI noteOff
 #endif
 #if defined(HARDWARE_MIDI)
@@ -223,7 +223,7 @@ void midi_transmit(void) {
 #if defined(DEBUG_MIDI_TRANSMIT)
             Serial.printf("\nDEBUG_MIDI_TRANSMIT\tCC:%d\tVALUE:%d\tCHANNEL:%d", node_ptr->midiMsg.data1, node_ptr->midiMsg.data2, MIDI_OUTPUT_CHANNEL);
 #endif
-#if defined(USB_MIDI)
+#if defined(USB_MIDI) || (USB_MIDI_SERIAL)
             usbMIDI.sendControlChange(node_ptr->midiMsg.data1, node_ptr->midiMsg.data2, MIDI_OUTPUT_CHANNEL); // USB send MIDI control_change
 #endif
 #if defined(HARDWARE_MIDI)

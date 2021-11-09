@@ -6,7 +6,7 @@
 
 #include "player_granular.h"
 
-#if GRANULAR_PLAYER
+#if defined(GRANULAR_PLAYER)
 AudioInputI2S           i2s_IN;
 AudioOutputI2S          i2s_OUT;
 AudioEffectGranular     granular;

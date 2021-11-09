@@ -9,6 +9,10 @@
 
 #include <Arduino.h>
 
+#define NAME                     "256"
+#define PROJECT                  "ETEXTILE-SYNTHESIZER"
+#define VERSION                  "1.0.9"
+
 #define BAUD_RATE                230400
 #define RAW_COLS                 16
 #define RAW_ROWS                 16

@@ -11,7 +11,7 @@
 #include "interp.h"
 #include "blob.h"
 
-#if defined(USB_SERIAL)
+#if defined(USB_SERIAL) || (USB_MIDI_SERIAL)
 #include "serial_transmit.h"
 #endif
 #if defined(USB_MIDI)
@@ -37,6 +37,7 @@
 #endif
 
 unsigned long fpsTimeStamp = 0;
+uint16_t fps = 0;
 
 //boolean loadPreset = true;  // TODO
 //boolean savePreset = false; // TODO
@@ -54,13 +55,13 @@ void setup() {
 #if defined(RUNING_MEDIAN)
   RUNING_MEDIAN_SETUP();
 #endif
-#if defined(USB_SERIAL)
+#if defined(USB_SERIAL) || (USB_MIDI_SERIAL)
   SERIAL_TRANSMIT_SETUP();
 #endif
 #if defined(USB_OSC)
   OSC_TRANSMIT_SETUP();
 #endif
-#if defined(USB_MIDI)
+#if defined(USB_MIDI) || (USB_MIDI_SERIAL)
   MIDI_TRANSMIT_SETUP();
 #endif
 #if defined(SYNTH_PLAYER)
@@ -84,14 +85,13 @@ void setup() {
 #if defined(SOUND_CARD)
   SOUND_CARD_SETUP();
 #endif
-
 };
 
 void loop() {
 #if defined(USB_OSC)
   read_osc_input();
 #endif
-#if defined(USB_MIDI)
+#if defined(USB_MIDI) || (USB_MIDI_SERIAL)
   read_midi_input();
 #endif
 
@@ -134,7 +134,7 @@ void loop() {
 #if defined(PLAYER_FLASH)
   flash_player();
 #endif
-#if defined(USB_MIDI)
+#if defined(USB_MIDI) || (USB_MIDI_SERIAL)
   midi_transmit();
 #endif
 #if defined(USB_OSC)

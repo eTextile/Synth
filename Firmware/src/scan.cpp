@@ -31,13 +31,13 @@ ADC::Sync_result result;                 // Store ADC_0 & ADC_1
 #define DUAL_COLS         (RAW_COLS / 2)
 
 #if defined(__MK20DX256__)               // If using Teensy 3.1 & 3.2
-//#define SET_ORIGIN_X                   // [0:1] X-axis origine positioning FIXME!
-//#define SET_ORIGIN_Y                   // [0:1] Y-axis origine positioning
+//#define SET_ORIGIN_X                   // X-axis origine positioning
+//#define SET_ORIGIN_Y                   // Y-axis origine positioning
 #endif
 
 #if defined(__IMXRT1062__)               // If using Teensy 4.0 & 4.1
-#define SET_ORIGIN_X                     // [0:1] X-axis origine positioning FIXME!
-#define SET_ORIGIN_Y                     // [0:1] Y-axis origine positioning
+#define SET_ORIGIN_X                     // X-axis origine positioning
+#define SET_ORIGIN_Y                     // Y-axis origine positioning
 #endif
 
 #define CALIBRATION_CYCLES  10           // 

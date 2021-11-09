@@ -8,7 +8,7 @@
 
 void SERIAL_TRANSMIT_SETUP(void) {
   Serial.begin(BAUD_RATE);
-  while (!Serial);
-  //Serial.printf("\n%s_%s_%s", NAME, PROJECT, VERSION);
+  //while (!Serial);
+  Serial.printf("\n%s_%s_%s", NAME, PROJECT, VERSION);
   Serial.printf("\nCURRENT_MODE:\t%d", currentMode);
 };

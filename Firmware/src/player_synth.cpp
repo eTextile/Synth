@@ -6,7 +6,7 @@
 
 #include "player_synth.h"
 
-#if SYNTH_PLAYER
+#if defined(SYNTH_PLAYER)
 AudioOutputI2S                    i2s_OUT;
 AudioSynthWaveform                wf_1;
 AudioSynthWaveform                wf_2;

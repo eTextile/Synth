@@ -6,7 +6,7 @@
 
 #include "player_flash.h"
 
-#if FLASH_PLAYER
+#if defined(FLASH_PLAYER)
 #define MEM_MOSI   11  // Teensy4.0 hardware SPI
 #define MEM_MISO   12  // Teensy4.0 hardware SPI
 #define MEM_SCK    13  // Teensy4.0 hardware SPI

@@ -405,7 +405,6 @@ void find_blobs(void) {
                  );
   };
 #endif
-
 #if defined(DEBUG_FIND_BLOBS)
   if ((lnode_t*)llist_blobs_temp.head_ptr != NULL) {
     Serial.printf("\n___________DEBUG_FIND_BLOBS / END_OF_FRAME");

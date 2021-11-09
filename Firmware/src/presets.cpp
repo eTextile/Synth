@@ -36,8 +36,8 @@ Bounce BUTTON_R = Bounce();
 
 uint8_t currentMode = CALIBRATE;      // Init currentMode with CALIBRATE (SET as DEFAULT_MODE)
 //uint8_t lastMode = LINE_OUT;        // Init lastMode with LINE_OUT (SET as DEFAULT_MODE)
-uint8_t lastMode = BLOBS_MAPPING;     // Init lastMode with MIDI_MAPPING (SET as DEFAULT_MODE)
-//uint8_t lastMode = BLOBS_PLAY;      // Init lastMode with MIDI_BLOBS_PLAY (SET as DEFAULT_MODE)
+//uint8_t lastMode = BLOBS_MAPPING;     // Init lastMode with MIDI_MAPPING (SET as DEFAULT_MODE)
+uint8_t lastMode = BLOBS_PLAY;      // Init lastMode with MIDI_BLOBS_PLAY (SET as DEFAULT_MODE)
 
 preset_t presets[9] = {
   {13, 31, 29, 0, false, false, false, false, LOW,  LOW  },  // LINE_OUT          ARGS[minVal, maxVal, val, ledVal, update, setLed, updateLed, allDone, D1, D2]
@@ -54,6 +54,8 @@ preset_t presets[9] = {
 void LEDS_SETUP(void) {
   pinMode(LED_PIN_D1, OUTPUT);
   pinMode(LED_PIN_D2, OUTPUT);
+  digitalWrite(LED_PIN_D1, LOW);
+  digitalWrite(LED_PIN_D2, LOW);
 };
 
 // Hear it should not compile if you didn't install the library (Manually!)
@@ -458,6 +460,7 @@ boolean setLevel(preset_t* preset_ptr) {
 void preset_load(void) {
   for (int i = 0; i < 4; i++) {
     // EEPROM.read(i, preset[i].val); // uint8_t
+    // Read from external Flash chip !
   };
 };
 
@@ -465,5 +468,6 @@ void preset_load(void) {
 void save_presets(void) {
   for (int i = 0; i < 4; i++) {
     //EEPROM.write(i, preset[i].val); // uint8_t
+    // Write to external Flash chip !
   };
 };
