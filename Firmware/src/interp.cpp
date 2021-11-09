@@ -78,7 +78,7 @@ void interp_matrix(void) {
       };
     };
   };
-#if DEBUG_INTERP
+#if defined(DEBUG_INTERP)
   for (uint8_t rowPos = 0; rowPos < NEW_ROWS; rowPos++) {
     uint8_t* rowPos_ptr = &interpFrameArray[0] + rowPos * NEW_ROWS;
     for (int colPos = 0; colPos < NEW_COLS; colPos++) {

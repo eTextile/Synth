@@ -9,9 +9,6 @@
 
 #include <Arduino.h>
 
-#define MIDI_INPUT_CHANNEL       1
-#define MIDI_OUTPUT_CHANNEL      1
-
 #define BAUD_RATE                230400
 #define RAW_COLS                 16
 #define RAW_ROWS                 16
@@ -34,5 +31,8 @@
 #define IIPi                     (float)(2 * PI)
 #define IIIPiII                  (float)(3 * PI) / 2
 #define PiII                     (float)(PI / 2)
+
+#define MIDI_INPUT_CHANNEL       1  // [1:15] Set the HARDWARE MIDI_INPUT channel
+#define MIDI_OUTPUT_CHANNEL      1  // [1:15] Set the HARDWARE MIDI_OUTPUT channel
 
 #endif /*__CONFIG_H__*/

@@ -6,7 +6,7 @@
 
 #include "notes.h"
 
-#if GRID_LAYOUT_NOTES
+#if defined(GRID_LAYOUT_NOTES)
 #define  Cm1   0         // 8.18 Hz
 #define  Cdm1  1         // 8.66 Hz
 #define  Dm1   2         // 9.18 Hz
@@ -137,7 +137,7 @@
 #define  G9    127       // 12543.85
 #endif
 
-#if GRID_LAYOUT_FREQ
+#if defined(GRID_LAYOUT_FREQ)
 #define  Cm1   8.18      // note[0]
 #define  Cdm1  8.66      // note[1]
 #define  Dm1   9.18      // note[2]
@@ -268,17 +268,17 @@
 #define  G9    12543.85  // note[127]
 #endif
 
-#if GRID_LAYOUT_MIDI_IN
+#if defined(GRID_LAYOUT_MIDI_IN)
 uint8_t gridLayout[GRID_KEYS] = {0};
 #endif
 
-#if GRID_LAYOUT_DEFAULT
+#if defined(GRID_LAYOUT_DEFAULT)
 
-#if GRID_LAYOUT_NOTES
+#if defined(GRID_LAYOUT_NOTES)
 uint8_t gridLayout[GRID_KEYS] = {
 #endif
 
-#if GRID_LAYOUT_FREQ
+#if defined(GRID_LAYOUT_FREQ)
   const float gridLayout[GRID_KEYS] = {
 #endif
 
@@ -297,13 +297,13 @@ uint8_t gridLayout[GRID_KEYS] = {
 #endif
 
 
-#if GRID_LAYOUT_HARMONIC  //See: https://www.c-thru-music.com/cgi/?page=layout_octaves
+#if defined(GRID_LAYOUT_HARMONIC)  //See: https://www.c-thru-music.com/cgi/?page=layout_octaves
 
-#if GRID_LAYOUT_NOTES
+#if defined(GRID_LAYOUT_NOTES)
   uint8_t gridLayout[GRID_KEYS] = {
 #endif
 
-#if GRID_LAYOUT_FREQ
+#if defined(GRID_LAYOUT_FREQ)
     const float gridLayout[GRID_KEYS] = {
 #endif
 

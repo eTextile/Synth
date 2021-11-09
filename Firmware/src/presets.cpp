@@ -30,10 +30,9 @@
 #define SAVE_LED_ITER               10
 
 Encoder encoder(ENCODER_PIN_A, ENCODER_PIN_B);
-//Button BUTTON_L = Button(); // DEPRECATED
-Bounce2::Button BUTTON_L = Bounce2::Button();
-//Button BUTTON_R = Button(); // DEPRECATED
-Bounce2::Button BUTTON_R = Bounce2::Button();
+
+Bounce BUTTON_L = Bounce();
+Bounce BUTTON_R = Bounce();
 
 uint8_t currentMode = CALIBRATE;      // Init currentMode with CALIBRATE (SET as DEFAULT_MODE)
 //uint8_t lastMode = LINE_OUT;        // Init lastMode with LINE_OUT (SET as DEFAULT_MODE)
@@ -151,7 +150,7 @@ void update_presets_buttons(void) {
     lastMode = currentMode; // keep track of last Mode to set it back after calibration
     currentMode = CALIBRATE;
     presets[CALIBRATE].update = true;
-#if DEBUG_BUTTONS
+#if defined(DEBUG_BUTTONS)
     Serial.printf("\nBUTTON_L : CALIBRATE : %d", currentMode);
 #endif
   };
@@ -161,7 +160,7 @@ void update_presets_buttons(void) {
     lastMode = currentMode; // keep track of last Mode to set it back after saving
     currentMode = SAVE;
     presets[SAVE].update = true;
-#if DEBUG_BUTTONS
+#if defined(DEBUG_BUTTONS)
     Serial.printf("\nBUTTON_L : SAVE : %d", currentMode);
 #endif
   };
@@ -175,7 +174,7 @@ void update_presets_buttons(void) {
     currentMode = (currentMode + 1) % 4;   // Loop into the modes
     encoder.write(presets[currentMode].val << 2);
     presets[currentMode].setLed = true;
-#if DEBUG_BUTTONS
+#if defined(DEBUG_BUTTONS)
     Serial.printf("\nBUTTON_R : SELECT_MODE : %d", currentMode);
 #endif
   };
@@ -187,7 +186,7 @@ void update_presets_buttons(void) {
     if (currentMode == BLOBS_LEARN) {
       currentMode = BLOBS_LEARN;
       presets[BLOBS_LEARN].update = true;
-#if DEBUG_BUTTONS
+#if defined(DEBUG_BUTTONS)
       Serial.printf("\nMIDI_BLOBS_PLAY : %d", currentMode);
 #endif
     }
@@ -195,7 +194,7 @@ void update_presets_buttons(void) {
       currentMode = BLOBS_PLAY;
       encoder.write(0x1);
       presets[BLOBS_PLAY].update = true;
-#if DEBUG_BUTTONS
+#if defined(DEBUG_BUTTONS)
       Serial.printf("\nMIDI_BLOBS_LEARN : %d", currentMode);
 #endif
     };

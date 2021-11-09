@@ -7,7 +7,7 @@
 
 #include "osc_transmit.h"
 
-#if OSC_TRANSMIT
+#if defined(USB_OSC)
 
 SLIPEncodedUSBSerial SLIPSerial(thisBoardsSerialUSB);
 
@@ -102,7 +102,7 @@ void osc_transmit(void) {
       for (blob_t* blob_ptr = (blob_t*)ITERATOR_START_FROM_HEAD(&llist_blobs); blob_ptr != NULL; blob_ptr = (blob_t*)ITERATOR_NEXT(blob_ptr)) {
         if (blob_ptr->state) {
           if (!blob_ptr->lastState && blob_ptr->status == FREE) {
-#if DEBUG_OSC_TRANSMIT
+#if defined(DEBUG_OSC_TRANSMIT)
             Serial.printf("\nDEBUG_OSC_TRANSMIT: ON_%d", blob_ptr->UID);
 #else
             OSCMessage msg("/ON");
@@ -114,7 +114,7 @@ void osc_transmit(void) {
           } else {
             if (millis() - blob_ptr->transmitTimeStamp > OSC_TRANSMIT_INTERVAL) {
               blob_ptr->transmitTimeStamp = millis();
-#if DEBUG_OSC_TRANSMIT
+#if defined(DEBUG_OSC_TRANSMIT)
               Serial.printf("\nDEBUG_OSC_TRANSMIT: UPDATE_%d", blob_ptr->UID);
 #else
               OSCMessage msg("/UPDATE");
@@ -132,7 +132,7 @@ void osc_transmit(void) {
           };
         } else {
           if (blob_ptr->lastState && blob_ptr->status == TO_REMOVE) {
-#if DEBUG_OSC_TRANSMIT
+#if defined(DEBUG_OSC_TRANSMIT)
             Serial.printf("\nDEBUG_OSC_TRANSMIT: OFF_%d", blob_ptr->UID);
 #else
             OSCMessage msg("/OFF");

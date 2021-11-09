@@ -31,13 +31,13 @@ ADC::Sync_result result;                 // Store ADC_0 & ADC_1
 #define DUAL_COLS         (RAW_COLS / 2)
 
 #if defined(__MK20DX256__)               // If using Teensy 3.1 & 3.2
-#define SET_ORIGIN_X      0              // [0:1] X-axis origine positioning FIXME!
-#define SET_ORIGIN_Y      0              // [0:1] Y-axis origine positioning
+//#define SET_ORIGIN_X                   // [0:1] X-axis origine positioning FIXME!
+//#define SET_ORIGIN_Y                   // [0:1] Y-axis origine positioning
 #endif
 
 #if defined(__IMXRT1062__)               // If using Teensy 4.0 & 4.1
-#define SET_ORIGIN_X      1              // [0:1] X-axis origine positioning FIXME!
-#define SET_ORIGIN_Y      1              // [0:1] Y-axis origine positioning
+#define SET_ORIGIN_X                     // [0:1] X-axis origine positioning FIXME!
+#define SET_ORIGIN_Y                     // [0:1] Y-axis origine positioning
 #endif
 
 #define CALIBRATION_CYCLES  10           // 
@@ -51,7 +51,7 @@ image_t offsetFrane;                     // Memory allocation for offset frame v
 // Array to store all parameters used to configure the two 8:1 analog multiplexeurs
 // Each byte |ENA|A|B|C|ENA|A|B|C|
 uint8_t setDualCols[DUAL_COLS] = {
-#if SET_ORIGIN_X
+#if defined(SET_ORIGIN_X)
   0x33, 0x00, 0x11, 0x22, 0x44, 0x66, 0x77, 0x55
 #else
   0x55, 0x77, 0x66, 0x44, 0x22, 0x11, 0x00, 0x33
@@ -118,7 +118,7 @@ void calibrate_matrix(void) {
     for (uint8_t i = 0; i < CALIBRATION_CYCLES; i++) {
       for (uint8_t col = 0; col < DUAL_COLS; col++) {         // ANNALOG_PINS [0-7] with [8-15]
 
-#if SET_ORIGIN_Y
+#if defined(SET_ORIGIN_Y)
         uint16_t setRows = 0x1;                               // Reset to [0000 0000 0000 0001]
 #else
         uint16_t setRows = 0x8000;                            // Reset to [1000 0000 0000 0000]
@@ -153,11 +153,11 @@ void calibrate_matrix(void) {
 
           result = adc->analogSynchronizedRead(ADC0_PIN, ADC1_PIN);
           uint8_t ADC0_val = result.result_adc0;
-          ADC0_val > offsetArray[indexA] ? offsetArray[indexA] = ADC0_val : NULL;
+          if (ADC0_val > offsetArray[indexA]) offsetArray[indexA] = ADC0_val;
           uint8_t ADC1_val = result.result_adc1;
-          ADC1_val > offsetArray[indexB] ? offsetArray[indexB] = ADC1_val : NULL;
+          if (ADC1_val > offsetArray[indexB]) offsetArray[indexB] = ADC1_val;
 
-#if SET_ORIGIN_Y
+#if defined(SET_ORIGIN_Y)
           setRows = setRows << 1;
 #else
           setRows = setRows >> 1;
@@ -176,7 +176,7 @@ void scan_matrix(void) {
 
   for (uint8_t col = 0; col < DUAL_COLS; col++) {         // ANNALOG_PINS [0-7] with [8-15]
 
-#if SET_ORIGIN_Y
+#if defined(SET_ORIGIN_Y)
     uint16_t setRows = 0x1;                               // Reset to [0000 0000 0000 0001]
 #else
     uint16_t setRows = 0x8000;                            // Reset to [1000 0000 0000 0000]
@@ -219,7 +219,7 @@ void scan_matrix(void) {
       valB > offsetArray[indexB] ? rawFrameArray[indexB] = valB - offsetArray[indexB] : rawFrameArray[indexB] = 0;
       //valB > 127 ? rawFrameArray[indexB] = 127 : NULL; // Add limit for MIDI message 0:127
 
-#if SET_ORIGIN_Y
+#if defined(SET_ORIGIN_Y)
       setRows = setRows << 1;
 #else
       setRows = setRows >> 1;
@@ -227,7 +227,7 @@ void scan_matrix(void) {
     };
   };
 
-#if DEBUG_ADC
+#if defined(DEBUG_ADC)
   for (uint8_t posY = 0; posY < RAW_ROWS; posY++) {
     uint8_t* row_ptr = COMPUTE_IMAGE_ROW_PTR(&rawFrame, posY);
     for (uint8_t posX = 0; posX < RAW_COLS; posX++) {

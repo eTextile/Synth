@@ -11,37 +11,32 @@
 #include "interp.h"
 #include "blob.h"
 
-unsigned long fpsTimeStamp = 0;
-
-#if USB_SERIAL_TRANSMIT
+#if defined(USB_SERIAL)
 #include "serial_transmit.h"
 #endif
-#if USB_MIDI_TRANSMIT
+#if defined(USB_MIDI)
 #include "midi_transmit.h"
 #endif
-#if USB_OSC_TRANSMIT
+#if defined(USB_OSC)
 #include "osc_transmit.h"
 #endif
-#if MAPPING_LAYOUT
+#if defined(MAPPING_LAYOUT)
 #include "mapping.h"
 #endif
-#if FLASH_PLAYER
+#if defined(FLASH_PLAYER)
 #include "player_flash.h"
 #endif
-#if SYNTH_PLAYER
+#if defined(SYNTH_PLAYER)
 #include "player_synth.h"
 #endif
-#if GRANULAR_PLAYER
+#if defined(GRANULAR_PLAYER)
 #include "player_granular.h"
 #endif
-#if FLASH_PLAYER || SYNTH_PLAYER || GRANULAR_PLAYER
+#if defined(FLASH_PLAYER) || (SYNTH_PLAYER) || (GRANULAR_PLAYER)
 #include "soundCard.h"
 #endif
 
-#if DEBUG_FPS
-elapsedMillis curentMillisFps;
-unsigned int fps = 0;
-#endif
+unsigned long fpsTimeStamp = 0;
 
 //boolean loadPreset = true;  // TODO
 //boolean savePreset = false; // TODO
@@ -56,28 +51,28 @@ void setup() {
   INTERP_SETUP();
   BLOB_SETUP();
 
-#if RUNING_MEDIAN
+#if defined(RUNING_MEDIAN)
   RUNING_MEDIAN_SETUP();
 #endif
-#if SERIAL_TRANSMIT
+#if defined(USB_SERIAL)
   SERIAL_TRANSMIT_SETUP();
 #endif
-#if OSC_TRANSMIT
+#if defined(USB_OSC)
   OSC_TRANSMIT_SETUP();
 #endif
-#if MIDI_TRANSMIT
+#if defined(USB_MIDI)
   MIDI_TRANSMIT_SETUP();
 #endif
-#if SYNTH_PLAYER
+#if defined(SYNTH_PLAYER)
   SYNTH_PLAYER_SETUP();
 #endif
-#if FLASH_PLAYER
+#if defined(FLASH_PLAYER)
   FLASH_PLAYER_SETUP();
 #endif
-#if GRANULAR_PLAYER
+#if defined(GRANULAR_PLAYER)
   GRANULAR_PLAYER_SETUP();
 #endif
-#if MAPPING_LAYOUT
+#if defined(MAPPING_LAYOUT)
   GRID_LAYOUT_SETUP();
   //TRIGGER_SETUP();
   //TOGGLE_SETUP();
@@ -86,17 +81,17 @@ void setup() {
   //CSLIDER_SETUP();
 #endif
 
-#if SOUND_CARD
+#if defined(SOUND_CARD)
   SOUND_CARD_SETUP();
 #endif
 
 };
 
 void loop() {
-#if OSC_TRANSMIT
+#if defined(USB_OSC)
   read_osc_input();
 #endif
-#if MIDI_TRANSMIT
+#if defined(USB_MIDI)
   read_midi_input();
 #endif
 
@@ -110,7 +105,7 @@ void loop() {
   update_leds();
 #endif
 
-#if SOUND_CARD
+#if defined(SOUND_CARD)
   update_levels();
 #endif
 
@@ -119,7 +114,7 @@ void loop() {
   interp_matrix();
   find_blobs();
 
-#if MAPPING_LAYOUT
+#if defined(MAPPING_LAYOUT)
   //mapping_grid_populate(); // Use the MIDI input messages to populate the grid - If commented we use the DEFAULT mapping
   mapping_grid_update();
   //mapping_blob();
@@ -130,26 +125,26 @@ void loop() {
   //mapping_cSlider();
 #endif
 
-#if PLAYER_SYNTH
+#if defined(PLAYER_SYNTH)
   synth_player();
 #endif
-#if PLAYER_GRANULAR
+#if defined(PLAYER_GRANULAR)
   granular_player();
 #endif
-#if PLAYER_FLASH
+#if defined(PLAYER_FLASH)
   flash_player();
 #endif
-#if MIDI_TRANSMIT
+#if defined(USB_MIDI)
   midi_transmit();
 #endif
-#if OSC_TRANSMIT
+#if defined(USB_OSC)
   osc_transmit();
 #endif
 
   //if (loadPreset) preset_load(); // TODO
   //if (savePreset) preset_save(); // TODO
 
-#if DEBUG_FPS
+#if defined(DEBUG_FPS)
   if (millis() - fpsTimeStamp >= 1000) {
     fpsTimeStamp = millis();
     Serial.printf("\nFPS:%d", fps);

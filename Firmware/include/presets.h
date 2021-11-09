@@ -17,10 +17,10 @@
 #include <Encoder.h>                   // https://github.com/PaulStoffregen/Encoder
 //#include <EEPROM.h>                  // https://www.arduino.cc/en/Reference/EEPROM (TODO)
 
-#define LINE_OUT         0 // LED | 0 | 0 |
-#define SIG_IN           1 // LED | 1 | 0 |
-#define SIG_OUT          2 // LED | 0 | 1 |
-#define THRESHOLD        3 // LED | 1 | 1 |
+#define LINE_OUT         0  // LED | 0 | 0 |
+#define SIG_IN           1  // LED | 1 | 0 |
+#define SIG_OUT          2  // LED | 0 | 1 |
+#define THRESHOLD        3  // LED | 1 | 1 |
 #define CALIBRATE        4
 #define SAVE             5
 #define BLOBS_PLAY       6

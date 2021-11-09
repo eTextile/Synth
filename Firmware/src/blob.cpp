@@ -236,7 +236,7 @@ void find_blobs(void) {
         blobOut_ptr->lastState = false;
         llist_extract_node(&llist_blobs, prevBlob_ptr, blobOut_ptr);
         llist_push_front(&llist_blobs_stack, blobOut_ptr);
-#if DEBUG_FIND_BLOBS
+#if defined(DEBUG_FIND_BLOBS)
         Serial.printf("\nDEBUG_FIND_BLOBS / Blob: %p removed from **llist_blobs**", (lnode_t*)blobOut_ptr);
 #endif
         break;
@@ -264,7 +264,7 @@ void find_blobs(void) {
     // If the distance between curent blob and last blob position is less than minDist:
     // Give the nearestBlob UID to the input blob.
     if (minDist < 4) {
-#if DEBUG_FIND_BLOBS
+#if defined(DEBUG_FIND_BLOBS)
       //Serial.printf("\nDEBUG_FIND_BLOBS / the minimum distance between blobs from llist_blobs_temp & llist_blobs is: %f ", minDist);
       Serial.printf("\nDEBUG_FIND_BLOBS / Found corresponding blob: %p in the **llist_blobs**", (lnode_t*)nearestBlob_ptr);
 #endif
@@ -281,7 +281,7 @@ void find_blobs(void) {
         boolean isFree = true;
         for (blob_t* blobOut_ptr = (blob_t*)ITERATOR_START_FROM_HEAD(&llist_blobs); blobOut_ptr != NULL; blobOut_ptr = (blob_t*)ITERATOR_NEXT(blobOut_ptr)) {
           if (blobOut_ptr->UID == minID) {
-#if DEBUG_FIND_BLOBS
+#if defined(DEBUG_FIND_BLOBS)
             Serial.printf("\nDEBUG_FIND_BLOBS / USED_ID: %d ", minID);
 #endif
             isFree = false;
@@ -290,7 +290,7 @@ void find_blobs(void) {
           };
         };
         if (isFree) {
-#if DEBUG_FIND_BLOBS
+#if defined(DEBUG_FIND_BLOBS)
           Serial.printf("\nDEBUG_FIND_BLOBS / Found new blob and select ID: %d", minID);
 #endif
           blobIn_ptr->UID = minID;
@@ -325,14 +325,14 @@ void find_blobs(void) {
           //blobOut_ptr->state = false; // TO_REMOVE_LATER
           //blobOut_ptr->lastState = true; // TO_REMOVE_LATER
           blobOut_ptr->status = NOT_FOUND;
-#if DEBUG_FIND_BLOBS
+#if defined(DEBUG_FIND_BLOBS)
           Serial.printf("\nDEBUG_FIND_BLOBS / Blob: %p in the **llist_blobs** linked list is NOT_FOUND(%d)", (lnode_t*)blobOut_ptr, blobOut_ptr->UID);
 #endif
         } else {
           blobOut_ptr->state = false;
           //blobOut_ptr->lastState = true; // TO_REMOVE_LATER
           blobOut_ptr->status = TO_REMOVE;
-#if DEBUG_FIND_BLOBS
+#if defined(DEBUG_FIND_BLOBS)
           Serial.printf("\nDEBUG_FIND_BLOBS / Blob: %p in the **llist_blobs** linked list taged TO_REMOVE(%d)", (lnode_t*)blobOut_ptr, blobOut_ptr->UID);
 #endif
         };
@@ -350,11 +350,11 @@ void find_blobs(void) {
   llist_swap_llist(&llist_blobs, &llist_blobs_temp);             // Swap outputBlobs linked list nodes with inputBlobs linked list nodes
   llist_save_nodes(&llist_blobs_stack, &llist_blobs_temp); // Save/rescure all nodes from the temporay blobs Linked list
 
-#if RUNING_MEDIAN
+#if defined(RUNING_MEDIAN)
   runing_median();
 #endif
 
-#if VELOCITY
+#if defined(VELOCITY)
   for (blob_t* blob_ptr = (blob_t*)ITERATOR_START_FROM_HEAD(&llist_blobs); blob_ptr != NULL; blob_ptr = (blob_t*)ITERATOR_NEXT(blob_ptr)) {
     if (blob_ptr->UID < MAX_SYNTH) {
       if (!blob_ptr->lastState) {
@@ -379,7 +379,7 @@ void find_blobs(void) {
   };
 #endif
 
-#if DEBUG_BITMAP
+#if defined(DEBUG_BITMAP)
   for (uint8_t rowPos = 0; rowPos < NEW_ROWS; rowPos++) {
     uint8_t* rowPos_ptr = &bitmapArray[0] + rowPos * NEW_ROWS;
     for (int colPos = 0; colPos < NEW_COLS; colPos++) {
@@ -389,7 +389,7 @@ void find_blobs(void) {
   };
   Serial.printf("\n");
 #endif
-#if DEBUG_BLOBS
+#if defined(DEBUG_BLOBS)
   for (blob_t* blob_ptr = (blob_t*)ITERATOR_START_FROM_HEAD(&llist_blobs); blob_ptr != NULL; blob_ptr = (blob_t*)ITERATOR_NEXT(blob_ptr)) {
     Serial.printf("\nDEBUG_BLOBS:%d\tLS:%d\tS:%d\tX:%f\tY:%f\tZ:%d\tW:%d\tH:%d\tVXY:%f\tVZ:%f",
                   blob_ptr->UID,
@@ -406,7 +406,7 @@ void find_blobs(void) {
   };
 #endif
 
-#if DEBUG_FIND_BLOBS
+#if defined(DEBUG_FIND_BLOBS)
   if ((lnode_t*)llist_blobs_temp.head_ptr != NULL) {
     Serial.printf("\n___________DEBUG_FIND_BLOBS / END_OF_FRAME");
   }

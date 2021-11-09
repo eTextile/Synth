@@ -41,7 +41,7 @@ void mapping_trigger(void) {
             node_ptr->midiMsg.data2 = 127;                                          // Set the velocity
             node_ptr->midiMsg.channel = MIDI_OUTPUT_CHANNEL;                        // Set the channel see config.h
             llist_push_front(&midiOut, node_ptr);                                   // Add the node to the midiOut linked liste
-#if DEBUG_MAPPING
+#if defined(DEBUG_MAPPING)
             Serial.printf("\nDEBUG_TRIGGER:\tNOTE_ON : %d", triggerParam[keyPos].note);
 #endif
           }
@@ -52,7 +52,7 @@ void mapping_trigger(void) {
             node_ptr->midiMsg.data2 = 0;                                            // Set the velocity
             node_ptr->midiMsg.channel = MIDI_OUTPUT_CHANNEL;                        // Set the channel see config.h
             llist_push_front(&midiOut, node_ptr);                                   // Add the node to the midiOut linked liste
-#if DEBUG_MAPPING
+#if defined(DEBUG_MAPPING)
             Serial.printf("\nDEBUG_TRIGGER:\tNOTE_OFF : %d", triggerParam[keyPos].note);
 #endif
           };
@@ -94,7 +94,7 @@ void mapping_toggle(void) {
             toggleKey[keyPos].state = !toggleKey[keyPos].state;
             midiNode_t* node_ptr = (midiNode_t*)llist_pop_front(&midi_node_stack);    // Get a node from the MIDI node stack
             if (toggleKey[keyPos].state) {
-#if DEBUG_MAPPING
+#if defined(DEBUG_MAPPING)
               Serial.printf("\nDEBUG_TRIGGER:\tNOTE_ON : %d", toggleParam[keyPos].note);
 #else
               node_ptr->midiMsg.status = midi::NoteOn;                                // Set MIDI message status to NOTE_OFF
@@ -105,7 +105,7 @@ void mapping_toggle(void) {
               llist_push_front(&midiOut, node_ptr);                                   // Add the node to the midiOut linked liste
 #endif
             } else {
-#if DEBUG_MAPPING
+#if defined(DEBUG_MAPPING)
               Serial.printf("\nDEBUG_TRIGGER:\tNOTE_OFF : %d", toggleParam[keyPos].note);
 #else
               node_ptr->midiMsg.status = midi::NoteOff;                               // Set MIDI message status to NOTE_OFF
@@ -143,7 +143,7 @@ void GRID_LAYOUT_SETUP(void) {
       key[keyPos].rect.Xmax = key[keyPos].rect.Xmin + KEY_SIZE_X;
       key[keyPos].rect.Ymin = row * KEY_SIZE_Y + (row + 1) * GRID_GAP;
       key[keyPos].rect.Ymax = key[keyPos].rect.Ymin + KEY_SIZE_Y;
-#if DEBUG_MAPPING
+#if defined(DEBUG_MAPPING)
       Serial.printf("\nGRID\tkey:%d\t_Xmin:%f \t_Xmax:%f \t_Ymin:%f \t_Ymax:%f",
                     keyPos,
                     key[keyPos].rect.Xmin,
@@ -178,7 +178,7 @@ void mapping_grid_update(void) {
           */
           if (lastKeyPress[blob_ptr->UID] != -1) {                                  // Test if the blob was touching another key
 
-#if DEBUG_MAPPING
+#if defined(DEBUG_MAPPING)
             Serial.printf("\nGRID\tBLOB:%d\t\tKEY_SLIDING_OFF:%d", blob_ptr->UID, lastKeyPress[blob_ptr->UID]);
 #else
             midiNode_t* node_ptr = (midiNode_t*)llist_pop_front(&midi_node_stack);  // Get a node from the MIDI node stack
@@ -190,7 +190,7 @@ void mapping_grid_update(void) {
             lastKeyPress[blob_ptr->UID] = -1;                                       // RAZ last key pressed value
           };
 
-#if DEBUG_MAPPING
+#if defined(DEBUG_MAPPING)
           Serial.printf("\nGRID\tBLOB:%d\t\tKEY_PRESS:\t%d", blob_ptr->UID, gridLayout[keyPress]);
 #else
           midiNode_t* node_ptr = (midiNode_t*)llist_pop_front(&midi_node_stack);    // Get a node from the MIDI node stack
@@ -204,7 +204,7 @@ void mapping_grid_update(void) {
         };
       }
       else { // if !blob_ptr->state
-#if DEBUG_MAPPING
+#if defined(DEBUG_MAPPING)
         Serial.printf("\nGRID\tBLOB:%d\tKEY_UP:%d", blob_ptr->UID, lastKeyPress[blob_ptr->UID]);
 #else
         midiNode_t* node_ptr = (midiNode_t*)llist_pop_front(&midi_node_stack);      // Get a node from the MIDI nodes stack
@@ -297,7 +297,7 @@ void mapping_vSliders(void) {
           node_ptr->midiMsg.data2 = val;                                            // Set the velocity to 0
           node_ptr->midiMsg.channel = MIDI_OUTPUT_CHANNEL;                          // Set the channel see config.h
           llist_push_front(&midiOut, node_ptr);                                     // Add the node to the midiOut linked liste
-#if DEBUG_MAPPING
+#if defined(DEBUG_MAPPING)
           Serial.printf("\nDEBUG_VSLIDER:\t%d", val);
 #endif
         };
@@ -339,7 +339,7 @@ void mapping_hSliders(void) {
           node_ptr->midiMsg.data2 = val;                                           // Set the velocity to 0
           node_ptr->midiMsg.channel = MIDI_OUTPUT_CHANNEL;                         // Set the channel see config.h
           llist_push_front(&midiOut, node_ptr);                                    // Add the node to the midiOut linked liste
-#if DEBUG_MAPPING
+#if defined(DEBUG_MAPPING)
           Serial.printf("\nDEBUG_HSLIDER:\t%d", val);
 #endif
         };
@@ -408,7 +408,7 @@ void mapping_cSlider(void) {
       } else {
         theta = atanf(posY / posX);
       }
-#if DEBUG_MAPPING
+#if defined(DEBUG_MAPPING)
       Serial.printf("\nDEBUG_CSLIDER:\tTrack:\t%d\tTheta:\t%f", track, theta);
 #endif
       if (blob_ptr->state) {
@@ -417,7 +417,7 @@ void mapping_cSlider(void) {
             if (theta > cSliders[id].thetaMin && theta < cSliders[id].thetaMax) {
               csMapping[blob_ptr->UID] = &cSliders[id]; // Record pointer to slider
               uint8_t sliderVal = (uint8_t)map(theta, cSliders[id].thetaMin, cSliders[id].thetaMax, 0, 127);
-#if DEBUG_MAPPING
+#if defined(DEBUG_MAPPING)
               Serial.printf("\nDEBUG_CSLIDER:\tBlob:\t%d\tSlider:\t%d", blob_ptr->UID, id);
 #else
               midiNode_t* node_ptr = (midiNode_t*)llist_pop_front(&midi_node_stack);  // Get a node from the MIDI nodes stack
@@ -436,7 +436,7 @@ void mapping_cSlider(void) {
             if (theta > cSlider_ptr->thetaMin && theta < cSlider_ptr->thetaMax) {
               uint8_t sliderVal = (uint8_t)map(theta, cSlider_ptr->thetaMin, cSlider_ptr->thetaMax, 0, 127);
               if (sliderVal != cSlider_ptr->lastVal) {
-#if DEBUG_MAPPING
+#if defined(DEBUG_MAPPING)
                 Serial.printf("\nDEBUG_CSLIDER:\tRadius:\t%f\tTheta:\t%f\tVal:\t%d", radius, theta, cSlider_ptr->lastVal);
 #else
                 midiNode_t* node_ptr = (midiNode_t*)llist_pop_front(&midi_node_stack);                               // Get a node from the MIDI nodes stack
@@ -473,7 +473,7 @@ void mapping_blob(void) {
           switch (cChange[index].mappVal) {
             case BX:
               if (blob_ptr->centroid.X != cChange[index].lastX) {
-#if DEBUG_MAPPING
+#if defined(DEBUG_MAPPING)
                 Serial.printf("\nMIDI\tCC_BX:%d", map(blob_ptr->centroid.X, X_MIN, X_MAX, 0, 127));
 #else
                 midiNode_t* node_ptr = (midiNode_t*)llist_pop_front(&midi_node_stack);       // Get a node from the MIDI node stack
@@ -487,7 +487,7 @@ void mapping_blob(void) {
               break;
             case BY:
               if (blob_ptr->centroid.Y != cChange[index].lastY) {
-#if DEBUG_MAPPING
+#if defined(DEBUG_MAPPING)
                 Serial.printf("\nMIDI\tCC_BY:%d", map(blob_ptr->centroid.Y, Y_MIN, Y_MAX, 0, 127));
 #else
                 midiNode_t* node_ptr = (midiNode_t*)llist_pop_front(&midi_node_stack);       // Get a node from the MIDI node stack
@@ -501,7 +501,7 @@ void mapping_blob(void) {
               break;
             case BZ:
               if (blob_ptr->centroid.Z != cChange[index].lastZ) {
-#if DEBUG_MAPPING
+#if defined(DEBUG_MAPPING)
                 Serial.printf("\nMIDI\tCC_BZ:%d", constrain(blob_ptr->centroid.Z, 0, 127));
 #else
                 midiNode_t* node_ptr = (midiNode_t*)llist_pop_front(&midi_node_stack);       // Get a node from the MIDI node stack
@@ -515,7 +515,7 @@ void mapping_blob(void) {
               break;
             case BW:
               if (blob_ptr->box.W != cChange[index].lastW) {
-#if DEBUG_MAPPING
+#if defined(DEBUG_MAPPING)
                 Serial.printf("\nMIDI\tCC_BW:%d", blob_ptr->box.W);
 #else
                 midiNode_t* node_ptr = (midiNode_t*)llist_pop_front(&midi_node_stack);       // Get a node from the MIDI node stack
@@ -529,7 +529,7 @@ void mapping_blob(void) {
               break;
             case BH:
               if (blob_ptr->box.H != cChange[index].lastH) {
-#if DEBUG_MAPPING
+#if defined(DEBUG_MAPPING)
                 Serial.printf("\nMIDI\tCC_BH:%d", blob_ptr->box.H);
 #else
                 midiNode_t* node_ptr = (midiNode_t*)llist_pop_front(&midi_node_stack);       // Get a node from the MIDI node stack
