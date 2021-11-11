@@ -15,7 +15,6 @@
 #include <Bounce2.h>                   // https://github.com/thomasfredericks/Bounce2
 #define ENCODER_OPTIMIZE_INTERRUPTS
 #include <Encoder.h>                   // https://github.com/PaulStoffregen/Encoder
-//#include <EEPROM.h>                  // https://www.arduino.cc/en/Reference/EEPROM (TODO)
 
 #define LINE_OUT         0  // LED | 0 | 0 |
 #define SIG_IN           1  // LED | 1 | 0 |

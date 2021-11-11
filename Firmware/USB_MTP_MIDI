@@ -1,0 +1,53 @@
+
+cd .platformio/packages/framework-arduinoteensy/
+rm -r cores
+git clone https://github.com/PaulStoffregen/cores.git
+
+Following this thread :
+https://forum.pjrc.com/threads/26024-Adding-a-new-USB-type?p=50530&viewfull=1#post50530
+
+// usb_desc.h
+#elif defined(USB_MTPDISC_MIDI)
+  #define VENDOR_ID		           0x16C0
+  #define PRODUCT_ID		         0x0489
+  #define MANUFACTURER_NAME	     {'T','e','e','n','s','y','d','u','i','n','o'}
+  #define MANUFACTURER_NAME_LEN	 11
+  #define PRODUCT_NAME		       {'T','e','e','n','s','y',' ','M','T','P',' ','M','I','D','I'}
+  #define PRODUCT_NAME_LEN	     15
+  #define EP0_SIZE		           64
+  #define NUM_ENDPOINTS          4
+  #define NUM_INTERFACE		       3
+  #define MTP_INTERFACE		       1	// MTP Disk
+  #define MTP_RX_ENDPOINT	       3
+  #define MTP_TX_ENDPOINT	       3
+  #define MTP_RX_SIZE_12	       64
+  #define MTP_TX_SIZE_12	       64
+  #define MTP_RX_SIZE_480	       512
+  #define MTP_TX_SIZE_480	       512
+  #define MTP_EVENT_ENDPOINT	   4
+  #define MTP_EVENT_SIZE	       32
+  #define MTP_EVENT_INTERVAL_12	 10	
+  #define MTP_EVENT_INTERVAL_480 7
+  #define MIDI_INTERFACE         2	// MIDI
+  #define MIDI_NUM_CABLES        1
+  #define MIDI_TX_ENDPOINT       4
+  #define MIDI_TX_SIZE_12        64
+  #define MIDI_RX_SIZE_12        64
+  #define MIDI_TX_SIZE_480       512
+  #define MIDI_RX_SIZE_480       512
+  #define MIDI_RX_ENDPOINT       4
+  #define ENDPOINT2_CONFIG	ENDPOINT_RECEIVE_UNUSED + ENDPOINT_TRANSMIT_INTERRUPT
+  #define ENDPOINT3_CONFIG	ENDPOINT_RECEIVE_BULK + ENDPOINT_TRANSMIT_BULK
+  #define ENDPOINT4_CONFIG	ENDPOINT_RECEIVE_BULK + ENDPOINT_TRANSMIT_BULK
+
+// platformio/packages/framework-arduinoteensy/cores/teensy4/usb_inst.cpp
+    #ifdef MTP_INTERFACE
+    usb_mtp_class usbMTP;
+    #endif
+
+// platformio/packages/framework-arduinoteensy/boards.txt
+    teensy4.menu.usb.mtpmidi.name=MTP disc + MIDI (Experimental)
+    teensy4.menu.usb.mtpmidi.build.define0=-DUSB_MTP_MIDI (Experimental)
+
+// platformio/platforms/teensy/builder/frameworks/arduino.py
+> USB_MTPDISC_MIDI

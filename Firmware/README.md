@@ -1,31 +1,18 @@
 # eTextile-Synthesizer
 ## Exploring music through textile
 
-## Arduino Firmware
-    /Synth/Firmware/main/main.ino
+## Firmware
+    /Synth/Firmware/src/main.cpp
  
 ### Requirements
 - **eTextile-Synthesizer PCB** & **Teensy 4.0**
-- **Arduino IDE** : Arduino 1.8.14 [DOWNLOAD](https://www.arduino.cc/en/Main/Software)
-- **Arduino IDE additional board** : Teensyduino 1.54 [DOWNLOAD](https://www.pjrc.com/teensy/td_download.html)
-- **Arduino IDE additional library**
-  - **Included in Teensyduino**
-    - **SPI**: https://github.com/PaulStoffregen/SPI
-    - **ADC**: https://github.com/pedvide/ADC
-    - **Encoder** : https://github.com/PaulStoffregen/Encoder 
-    - **elapsedMillis** : https://github.com/pfeerick/elapsedMillis
-    - **Audio** : https://github.com/PaulStoffregen/Audio
-    - **MIDI** : https://github.com/PaulStoffregen/MIDI
-  - **To install with Arduino library manager**
-    - **Bounce2** : https://github.com/thomasfredericks/Bounce2
-  - **To install by hand in /Documents/Arduino/library**
-    - **OSC** : https://github.com/CNMAT/OSC
+- **Arduino IDE**: Arduino 1.8.16 [DOWNLOAD](https://www.arduino.cc/en/Main/Software)
+- **Visual Studio Code**: [DOWNLOAD](https://visualstudio.microsoft.com/fr/)
+- **platform.io extension**: [DOWNLOAD](https://platform.io/)
+- **platform.io additional board**: Teensy 4.0
 
-### Arduino IDE Settings for Teensy 4.0
-- **Board** :     Teensy 4.0
-- **USB Type** :  MIDI
-- **CPUSpeed** :  600MHz
-- **Optimize** :  Faster
+- **Library**
+/Synth/Firmware/.pio/libdeps/teensy40
 
 ### Powering the eTextile-Synthesizer
 - The Teensy Micro USB Type B **will not power** the eTextile-Synthesizer
@@ -36,7 +23,7 @@ The embedded Software is implementing **image analysis algorithms** on the E256 
 - **Bilinear interpolation** The 16x16 Analog pressure sensor values are interpolated with a bilinear algorithm
 - **Blob tracking** The interpolated pressure matrix sensor values are analyzed with a Connected Component Labelling algorithm
 - **Blob ID management** each blob is tracked in space and time using single chained linked list
-- **Blob shape and movement characterisation** Blobs coordinates, size and pressure are used to play music...
+- **Blob shape and movement characterisation**: blobs coordinates, size and pressure
 
 ### eTextile-Synthesizer / Benchmark
   - ADC_INPUT : 2500 FPS
@@ -45,26 +32,26 @@ The embedded Software is implementing **image analysis algorithms** on the E256 
   - ADC_INPUT / BILINEAR_INTERPOLATION / BLOB_TRACKING / AUDIO : ...
 
 ## Configuring the system
-The Synth firmware is offering a **config.h** to select the needed fonctionnalites. 
+The firmware is using a **platformio.ini** to select the needed fonctionnalites. Uncomment the lines that you need.
 
 ### Use the eTextile-Synthesizer as COMPUTER_INTERFACE
- / HARDWARE_MIDI / USB_SLIP_OSC]
-- [0:1] #define MIDI_USB : Transmit touch coordinates via MIDI_USB **DO NOT FORGET: Arduino>Touls>USB_Type>MIDI**
-- [0:1] #define MIDI_HARDWARE : Transmit touch coordinates via MIDI_HARDWARE **DO NOT FORGET: Arduino>Touls>USB_Type>Serial**
-- [0:1] #define USB_SLIP_OSC : Transmit touch coordinates via USB_SLIP_OSC **DO NOT FORGET: Arduino>Touls>USB_Type>Serial**
+
+- [USB_MIDI]: Transmit touch coordinates via USB_MIDI
+- [HARDWARE_MIDI]: Transmit touch coordinates via HARDWARE_MIDI
+- [USB_OSC]: Transmit touch coordinates via USB_SLIP_OSC
 
 ### Use the eTextile-Synthesizer as STANDALONE divice
-- [0:1] #define SYNTH_PLAYER : Set the eTextile-Synthesizer as polyphonic synthesizer
-- [0:1] #define GRANULAR_PLAYER : Set the eTextile-Synthesizer as
-- [0:1] #define FLASH_PLAYER : Set the eTextile-Synthesizer as 
+- [SYNTH_PLAYER] : Set the eTextile-Synthesizer as polyphonic synthesizer
+- [GRANULAR_PLAYER] : Set the eTextile-Synthesizer as 
+- [FLASH_PLAYER] : Set the eTextile-Synthesizer as 
 
-### Mapping functionality (IN PROGRESS)
-- [0:1] #define MAPPING_LAYOUT
-  - [0:1] #define GRID_LAYOUT_MIDI_IN
-  - [0:1] #define GRID_LAYOUT_DEFAULT
-  - [0:1] #define GRID_LAYOUT_HARMONIC
-  - [0:1] #define GRID_LAYOUT_NOTES
-  - [0:1] #define GRID_LAYOUT_FREQ
+### Mapping functionality (IN_PROGRESS)
+- [MAPPING_LAYOUT]
+  - [GRID_LAYOUT_MIDI_IN]
+  - [GRID_LAYOUT_DEFAULT]
+  - [GRID_LAYOUT_HARMONIC]
+  - [GRID_LAYOUT_NOTES]
+  - [GRID_LAYOUT_FREQ]
 
 ## FLASH_PLAYER - prerequisite
 
@@ -83,7 +70,6 @@ For information on usage and redistribution, and for a DISCLAIMER OF ALL
 WARRANTIES, see LICENSE.txt included in the eTextile-Synthesizer project folder.
 
 ## TODO
-- Optimise interpolation method (it have been already updated with windowing method)
 - **Gesture Recognizer** could be a nice feature that fit the eTextile-Synthesizer tactile surface.
 - **MIDI MPE** : MIDI in general does not have continuous control of note parameters (pitch and velocity) after the note has been played. Some companies like Roli with MPE have tried to address these limitations, but support is not as wide as standard control changes.
 - **Teensy Synthesizer** / Open source

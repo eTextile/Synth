@@ -13,6 +13,16 @@
 #define PROJECT                  "ETEXTILE-SYNTHESIZER"
 #define VERSION                  "1.0.9"
 
+// HARDWARE CONSTANTES **DO NOT CHANGE**
+#if defined(__IMXRT1062__)
+#define LED_PIN_D1              5
+#define LED_PIN_D2              4
+#define BUTTON_PIN_L            2
+#define BUTTON_PIN_R            3
+#define ENCODER_PIN_A           22
+#define ENCODER_PIN_B           9
+#endif
+
 #define BAUD_RATE                230400
 #define RAW_COLS                 16
 #define RAW_ROWS                 16

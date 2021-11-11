@@ -4,7 +4,7 @@
   This work is licensed under Creative Commons Attribution-ShareAlike 4.0 International license, see the LICENSE file for details.
 */
 
-#if defined(USB_MIDI) || (USB_MIDI_SERIAL)
+#if defined(USB_MIDI) || (USB_MIDI_SERIAL) || (USB_MIDI_MTPDISC)
 
 #include "usb_names.h"
 

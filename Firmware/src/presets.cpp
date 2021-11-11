@@ -6,14 +6,6 @@
 
 #include "presets.h"
 
-// HARDWARE CONSTANTES **DO NOT CHANGE**
-#define LED_PIN_D1              5
-#define LED_PIN_D2              4
-#define BUTTON_PIN_L            2
-#define BUTTON_PIN_R            3
-#define ENCODER_PIN_A           22
-#define ENCODER_PIN_B           9
-
 // SOFTWARE CONSTANTES **DO NOT CHANGE**
 #define LONG_HOLD                   1500
 #define BLOBS_PLAY_LED_TIMEON       600

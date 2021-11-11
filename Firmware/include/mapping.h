@@ -21,6 +21,9 @@ struct key {
   uint8_t note;
 };
 
+extern stroke_t triggerParam[];
+extern stroke_t toggleParam[];
+
 typedef struct rect rect_t;
 struct rect {
   float Xmin;

@@ -12,5 +12,4 @@
 
 void SERIAL_TRANSMIT_SETUP(void);
 
-
 #endif /*__SERIAL_TRANSMIT_H__*/

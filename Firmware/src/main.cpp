@@ -11,6 +11,9 @@
 #include "interp.h"
 #include "blob.h"
 
+#if defined(E256_FS)
+#include "e256_fs.h"
+#endif
 #if defined(USB_SERIAL) || (USB_MIDI_SERIAL)
 #include "serial_transmit.h"
 #endif
@@ -52,6 +55,9 @@ void setup() {
   INTERP_SETUP();
   BLOB_SETUP();
 
+#if defined(E256_FS)
+  FS_SETUP();
+#endif
 #if defined(RUNING_MEDIAN)
   RUNING_MEDIAN_SETUP();
 #endif
@@ -115,7 +121,7 @@ void loop() {
   find_blobs();
 
 #if defined(MAPPING_LAYOUT)
-  //mapping_grid_populate(); // Use the MIDI input messages to populate the grid - If commented we use the DEFAULT mapping
+  //mapping_grid_populate();
   mapping_grid_update();
   //mapping_blob();
   //mapping_trigger();
