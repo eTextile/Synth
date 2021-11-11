@@ -1,5 +1,5 @@
 
-cd .platformio/packages/framework-arduinoteensy/
+cd ~/.platformio/packages/framework-arduinoteensy/
 rm -r cores
 git clone https://github.com/PaulStoffregen/cores.git
 
