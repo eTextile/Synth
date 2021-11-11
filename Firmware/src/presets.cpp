@@ -58,9 +58,9 @@ void LEDS_SETUP(void) {
   digitalWrite(LED_PIN_D2, LOW);
 };
 
-// Hear it should not compile if you didn't install the library (Manually!)
+// Hear it should not compile if you didn't install the library
 // [Bounce2](https://github.com/thomasfredericks/Bounce2)
-// Install it in /Documents/Arduino/library/
+
 void SWITCHES_SETUP(void) {
   BUTTON_L.attach(BUTTON_PIN_L, INPUT_PULLUP);  // Attach the debouncer to a pin with INPUT_PULLUP mode
   BUTTON_R.attach(BUTTON_PIN_R, INPUT_PULLUP);  // Attach the debouncer to a pin with INPUT_PULLUP mode

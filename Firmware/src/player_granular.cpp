@@ -23,7 +23,7 @@ void PLAYER_GRANULAR_SETUP(void) {
 
 void player_granular(void) {
 
-  blob_t* blob_ptr = (blob_t*)blobs.tail_ptr;
+  blob_t* blob_ptr = (blob_t*)llist_blobs.tail_ptr;
   if (blob_ptr != NULL) {
     AudioNoInterrupts();
     if (blob_ptr->state) {

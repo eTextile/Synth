@@ -22,7 +22,7 @@ void PLAYER_FLASH_SETUP(void) {
 }
 
 void player_flash(void) {
-  blob_t* blob_ptr = (blob_t*)llist_ptr->tail_ptr;
+  blob_t* blob_ptr = (blob_t*)llist_blobs.tail_ptr;
   if (blob_ptr != NULL) {
     //AudioNoInterrupts();
     if (blob_ptr->state) {
