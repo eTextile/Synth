@@ -11,8 +11,9 @@
 #include "interp.h"
 #include "blob.h"
 
-#if defined(E256_FS)
-#include "e256_fs.h"
+#if defined(USB_MTPDISK)
+#include "mtp_spi.h"
+#include "json_parser.h"
 #endif
 #if defined(USB_SERIAL) || (USB_MIDI_SERIAL)
 #include "serial_transmit.h"
@@ -55,8 +56,9 @@ void setup() {
   INTERP_SETUP();
   BLOB_SETUP();
 
-#if defined(E256_FS)
-  FS_SETUP();
+#if defined(USB_MTPDISK) || (USB_MTPDISC_MIDI)
+  MTP_SPI_SETUP();
+  JSON_PARSER_SETUP();
 #endif
 #if defined(RUNING_MEDIAN)
   RUNING_MEDIAN_SETUP();
@@ -80,20 +82,18 @@ void setup() {
   PLAYER_GRANULAR_SETUP();
 #endif
 #if defined(MAPPING_LAYOUT)
-  GRID_LAYOUT_SETUP();
-  //TRIGGER_SETUP();
-  //TOGGLE_SETUP();
-  //VSLIDER_SETUP();
-  //HSLIDER_SETUP();
-  //CSLIDER_SETUP();
+  MAPPING_LAYOUT_SETUP();
 #endif
-
 #if defined(SOUND_CARD)
   SOUND_CARD_SETUP();
 #endif
 };
 
 void loop() {
+
+#if defined(USB_MTPDISK) || (USB_MTPDISC_MIDI)
+  handle_mtp_spi();
+#endif
 #if defined(USB_OSC)
   read_osc_input();
 #endif
@@ -121,14 +121,7 @@ void loop() {
   find_blobs();
 
 #if defined(MAPPING_LAYOUT)
-  //mapping_grid_populate();
-  mapping_grid_update();
-  //mapping_blob();
-  //mapping_trigger();
-  //mapping_toggle();
-  //mapping_hSlider();
-  //mapping_vSlider();
-  //mapping_cSlider();
+  update_mapping_layout();
 #endif
 
 #if defined(PLAYER_SYNTH)

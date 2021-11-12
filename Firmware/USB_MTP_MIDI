@@ -1,12 +1,17 @@
 
-cd ~/.platformio/packages/framework-arduinoteensy/
-rm -r cores
-git clone https://github.com/PaulStoffregen/cores.git
+// W25Q128JV: 128M-bit/ 16M-byte
+
+// **Updates**
+// For Arduino IDE, update Teensyduino : https://forum.pjrc.com/threads/68386-Teensyduino-1-56-Beta-2
+// For platformio IDE :
+  cd ~/.platformio/packages/framework-arduinoteensy/
+  rm -r cores
+  git clone https://github.com/PaulStoffregen/cores.git
 
 Following this thread :
 https://forum.pjrc.com/threads/26024-Adding-a-new-USB-type?p=50530&viewfull=1#post50530
 
-// usb_desc.h
+// platformio/packages/framework-arduinoteensy/cores/teensy4/usb_desc.h
 #elif defined(USB_MTPDISC_MIDI)
   #define VENDOR_ID		           0x16C0
   #define PRODUCT_ID		         0x0489

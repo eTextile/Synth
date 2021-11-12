@@ -1,9 +1,6 @@
 # eTextile-Synthesizer
 ## Exploring music through textile
 
-## Firmware
-    /Synth/Firmware/src/main.cpp
- 
 ### Requirements
 - **eTextile-Synthesizer PCB** & **Teensy 4.0**
 - **Arduino IDE**: Arduino 1.8.16 [DOWNLOAD](https://www.arduino.cc/en/Main/Software)
@@ -11,8 +8,16 @@
 - **platform.io extension**: [DOWNLOAD](https://platform.io/)
 - **platform.io additional board**: Teensy 4.0
 
-- **Library**
-/Synth/Firmware/.pio/libdeps/teensy40
+### External Libraries
+All Library dependencies are automatically installed using platformio.ini (lib_deps)
+Path of the lib_deps installation :
+    /Synth/Firmware/.pio/libdeps/teensy40/...
+
+### Firmware main file
+    /Synth/Firmware/src/main.cpp
+ 
+### MTP - prerequisite
+  https://github.com/KurtE/MTP_Teensy.git (testing)
 
 ### Powering the eTextile-Synthesizer
 - The Teensy Micro USB Type B **will not power** the eTextile-Synthesizer
@@ -25,7 +30,7 @@ The embedded Software is implementing **image analysis algorithms** on the E256 
 - **Blob ID management** each blob is tracked in space and time using single chained linked list
 - **Blob shape and movement characterisation**: blobs coordinates, size and pressure
 
-### eTextile-Synthesizer / Benchmark
+### Benchmark
   - ADC_INPUT : 2500 FPS
   - ADC_INPUT / BILINEAR_INTERPOLATION : ...
   - ADC_INPUT / BILINEAR_INTERPOLATION / BLOB_TRACKING : 550 FPS
@@ -35,7 +40,6 @@ The embedded Software is implementing **image analysis algorithms** on the E256 
 The firmware is using a **platformio.ini** to select the needed fonctionnalites. Uncomment the lines that you need.
 
 ### Use the eTextile-Synthesizer as COMPUTER_INTERFACE
-
 - [USB_MIDI]: Transmit touch coordinates via USB_MIDI
 - [HARDWARE_MIDI]: Transmit touch coordinates via HARDWARE_MIDI
 - [USB_OSC]: Transmit touch coordinates via USB_SLIP_OSC
@@ -52,14 +56,6 @@ The firmware is using a **platformio.ini** to select the needed fonctionnalites.
   - [GRID_LAYOUT_HARMONIC]
   - [GRID_LAYOUT_NOTES]
   - [GRID_LAYOUT_FREQ]
-
-## FLASH_PLAYER - prerequisite
-
-    cd /Synth-master/Firmware/extras/CopyFromSerial/
-    **Arduino** : CopyFromSerial.ino 
-    
-    cd /Synth-master/Firmware/medias/
-    **python** rawfile-uploader.py /dev/ttyACM0 RAW/*
 
 ## Copyright
 Except as otherwise noted, all files in the eTextile-Synthesizer project folder

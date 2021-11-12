@@ -11,18 +11,16 @@
 #include "blob.h"
 #include "llist.h"
 #include "notes.h"
+#include "json_parser.h"
 #include "midi_transmit.h"
 
-typedef struct key stroke_t;
-struct key {
+typedef struct mKey mKey_t;
+struct mKey {
   uint8_t posX;
   uint8_t posY;
   uint8_t size;
   uint8_t note;
 };
-
-extern stroke_t triggerParam[];
-extern stroke_t toggleParam[];
 
 typedef struct rect rect_t;
 struct rect {
@@ -32,8 +30,8 @@ struct rect {
   float Ymax;
 };
 
-typedef struct tSwitch tSwitch_t;
-struct tSwitch {
+typedef struct mSwitch mSwitch_t;
+struct mSwitch {
   rect_t rect;
   boolean state;
 };
@@ -79,6 +77,9 @@ struct cChange {
   uint8_t cChange;
   uint8_t lastX, lastY, lastZ, lastW, lastH;
 };
+
+void MAPPING_LAYOUT_SETUP(void);
+void update_mapping_layout(void);
 
 void TRIGGER_SETUP(void);
 void TOGGLE_SETUP(void);
