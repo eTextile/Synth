@@ -7,14 +7,15 @@
 #ifndef __MTP_SPI_H__
 #define __MTP_SPI_H__
 
-#include <LittleFS.h>
-#include <MTP_Teensy.h>
-
 #include "config.h"
 #include "json_parser.h"
 
+#include <LittleFS.h>
+#include <MTP_Teensy.h>
+
 void MTP_SPI_SETUP(void);
 void handle_mtp_spi(void);
+
 void write_start(void);
 void write_stop(void);
 void dump_json(void);

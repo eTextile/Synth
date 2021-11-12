@@ -28,7 +28,7 @@ void JSON_PARSER_SETUP(void) {
         
         uint8_t map_triggers = doc["mapping"]["trigs"].size();
         mKey_t map_triggerParam[map_triggers];
-        mSwitch_t triggerKey[map_triggers];
+        mSwitch_t map_triggerKey[map_triggers];
 
         for(uint8_t i =0; i < map_triggers; i++){
             map_triggerParam[i].posX = doc["mapping"]["trigs"][i][0];

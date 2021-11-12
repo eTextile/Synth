@@ -28,7 +28,7 @@ void update_mapping_layout(void) {
 
 /*
 #define TRIGGERS 2
-mKey_t triggerParam[TRIGGERS] = {
+mKey_t mamp_triggerParam[TRIGGERS] = {
   {30, 20, 10, 44},  // PARAMS[posX, posY, size, note]
   {50, 30, 10, 33}   // PARAMS[posX, posY, size, note]
 };
@@ -61,7 +61,7 @@ void mapping_trigger(void) {
             node_ptr->midiMsg.channel = MIDI_OUTPUT_CHANNEL;                        // Set the channel see config.h
             llist_push_front(&midiOut, node_ptr);                                   // Add the node to the midiOut linked liste
 #if defined(DEBUG_MAPPING)
-            Serial.printf("\nDEBUG_TRIGGER:\tNOTE_ON : %d", triggerParam[keyPos].note);
+            Serial.printf("\nDEBUG_TRIGGER:\tNOTE_ON : %d", map_triggerParam[keyPos].note);
 #endif
           }
           else if (!blob_ptr->state) {
@@ -72,7 +72,7 @@ void mapping_trigger(void) {
             node_ptr->midiMsg.channel = MIDI_OUTPUT_CHANNEL;                        // Set the channel see config.h
             llist_push_front(&midiOut, node_ptr);                                   // Add the node to the midiOut linked liste
 #if defined(DEBUG_MAPPING)
-            Serial.printf("\nDEBUG_TRIGGER:\tNOTE_OFF : %d", triggerParam[keyPos].note);
+            Serial.printf("\nDEBUG_TRIGGER:\tNOTE_OFF : %d", map_triggerParam[keyPos].note);
 #endif
           };
         };
@@ -83,7 +83,7 @@ void mapping_trigger(void) {
 
 /*
 #define TOGGLES 2
-key_t toggleParam[TOGGLES] = {
+key_t map_toggleParam[TOGGLES] = {
   {10, 10, 5, 64},  // ARGS[posX, posY, size, note]
   {20, 10, 5, 65}   // ARGS[posX, posY, size, note]
 };

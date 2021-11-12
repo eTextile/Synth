@@ -4,12 +4,10 @@
   This work is licensed under Creative Commons Attribution-ShareAlike 4.0 International license, see the LICENSE file for details.
 */
 
-#if defined(USB_MIDI) || (USB_MIDI_SERIAL) || (USB_MIDI_MTPDISC)
+/*
+#if defined(USB_MIDI) || (USB_MIDI_SERIAL) || (USB_MTPDISK_MIDI)
 
 #include "usb_names.h"
-
-//#define MIDI_NAME      {'E','2','5','6'}
-//#define MIDI_NAME_LEN  4
 
 #define MIDI_NAME {'E','T','E','X','T','I','L','E','_','S','Y','N','T','H'}
 #define MIDI_NAME_LEN  14
@@ -21,3 +19,4 @@ struct usb_string_descriptor_struct usb_string_product_name = {
 };
 
 #endif
+*/

@@ -18,7 +18,7 @@ MTPStorage storage;
 MTPD mtpd(&storage);
 
 void MTP_SPI_SETUP(void) {
-  Serial.begin(115200);
+  //Serial.begin(115200);
   if (!myfs.begin(chipSelect, SPI)) {
     while (1){
         digitalWrite(LED_PIN_D1, HIGH);
@@ -49,8 +49,8 @@ void write_start(void) {
       dataString += ",";
     };
   };
-  Serial.begin(115200);
-  while (!Serial);
+  //Serial.begin(115200);
+  //while (!Serial);
   if (dataFile) {
     dataFile.println(dataString);
     //Serial.println(dataString);

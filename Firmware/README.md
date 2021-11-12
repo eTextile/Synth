@@ -16,8 +16,8 @@ Path of the lib_deps installation :
 ### Firmware main file
     /Synth/Firmware/src/main.cpp
  
-### MTP - prerequisite
-  https://github.com/KurtE/MTP_Teensy.git (testing)
+### USB_MTP_MIDI - prerequisite
+ ...
 
 ### Powering the eTextile-Synthesizer
 - The Teensy Micro USB Type B **will not power** the eTextile-Synthesizer
@@ -41,6 +41,7 @@ The firmware is using a **platformio.ini** to select the needed fonctionnalites.
 
 ### Use the eTextile-Synthesizer as COMPUTER_INTERFACE
 - [USB_MIDI]: Transmit touch coordinates via USB_MIDI
+- [USB_MTP_MIDI]: Experimental
 - [HARDWARE_MIDI]: Transmit touch coordinates via HARDWARE_MIDI
 - [USB_OSC]: Transmit touch coordinates via USB_SLIP_OSC
 

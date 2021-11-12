@@ -7,10 +7,10 @@
 #ifndef __JSON_PARSER_H__
 #define __JSON_PARSER_H__
 
-#include <ArduinoJson.h>  // https://github.com/bblanchon/ArduinoJson.git
-
 #include "config.h"
 #include "mapping.h"
+
+#include <ArduinoJson.h>  // https://github.com/bblanchon/ArduinoJson.git
 
 extern char json[];
 

@@ -30,7 +30,7 @@ void llist_midi_init(llist_t* llist_ptr, midiNode_t* nodeArray_ptr, const int no
 };
 
 void MIDI_TRANSMIT_SETUP(void) {
-#if defined(USB_MIDI) || (USB_MIDI_SERIAL)
+#if defined(USB_MIDI) || (USB_MIDI_SERIAL) || (USB_MTPDISK_MIDI)
   usbMIDI.begin();
   //usbMIDI.setHandleMessage(handle_midi_input); // TODO
   usbMIDI.setHandleControlChange(handle_midi_cc);
@@ -46,7 +46,7 @@ void MIDI_TRANSMIT_SETUP(void) {
 };
 
 void read_midi_input(void) {
-#if defined(USB_MIDI) || (USB_MIDI_SERIAL)
+#if defined(USB_MIDI) || (USB_MIDI_SERIAL) || (USB_MTPDISK_MIDI)
   usbMIDI.read(MIDI_INPUT_CHANNEL);         // Is there a MIDI incoming messages on channel One
   while (usbMIDI.read(MIDI_INPUT_CHANNEL)); // Read and discard any incoming MIDI messages
 #endif
@@ -107,7 +107,7 @@ void midi_transmit(void) {
     case RAW_MATRIX:
       if (millis() - usbTransmitTimeStamp > MIDI_TRANSMIT_INTERVAL) {
         usbTransmitTimeStamp = millis();
-#if defined(USB_MIDI) || (USB_MIDI_SERIAL)
+#if defined(USB_MIDI) || (USB_MIDI_SERIAL) || (USB_MTPDISK_MIDI)
         usbMIDI.sendSysEx(RAW_FRAME, rawFrame.pData, false, 0);
         usbMIDI.send_now();
 #endif
@@ -116,7 +116,7 @@ void midi_transmit(void) {
     case INTERP_MATRIX:
       if (millis() - usbTransmitTimeStamp > MIDI_TRANSMIT_INTERVAL) {
         usbTransmitTimeStamp = millis();
-#if defined(USB_MIDI) || (USB_MIDI_SERIAL)
+#if defined(USB_MIDI) || (USB_MIDI_SERIAL) || (USB_MTPDISK_MIDI)
         // NOT_WORKING > You can use OSC insted of MIDI!
         // See https://forum.pjrc.com/threads/28282-How-big-is-the-MIDI-receive-buffer
         //usbMIDI.sendSysEx(NEW_FRAME, interpFrame.pData, false, 0);
@@ -126,7 +126,7 @@ void midi_transmit(void) {
       break;
     case BLOBS_PLAY:
       // Send all blobs values over USB using MIDI format
-#if defined(USB_MIDI) || (USB_MIDI_SERIAL)
+#if defined(USB_MIDI) || (USB_MIDI_SERIAL) || (USB_MTPDISK_MIDI)
       for (blob_t* blob_ptr = (blob_t*)ITERATOR_START_FROM_HEAD(&llist_blobs); blob_ptr != NULL; blob_ptr = (blob_t*)ITERATOR_NEXT(blob_ptr)) {
         if (blob_ptr->state) {
           if (!blob_ptr->lastState) {
@@ -169,7 +169,7 @@ void midi_transmit(void) {
       // Send separate blobs values using Control Change MIDI format
       // Send only the last blob that have been added to the sensor surface
       // Select blob's values according to the encoder position to allow the auto-mapping into Max4Live...
-#if defined(USB_MIDI) || (USB_MIDI_SERIAL)
+#if defined(USB_MIDI) || (USB_MIDI_SERIAL) || (USB_MTPDISK_MIDI)
       if ((blob_t*)llist_blobs.tail_ptr != NULL) {
         blob_t* blob_ptr = (blob_t*)llist_blobs.tail_ptr;
         switch (presets[BLOBS_LEARN].val) {
@@ -211,7 +211,7 @@ void midi_transmit(void) {
 #if defined(DEBUG_MIDI_TRANSMIT)
             Serial.printf("\nDEBUG_MIDI_TRANSMIT\tNOTE_ON:%d\tVALUE:%d\tCHANNEL:%d", node_ptr->midiMsg.data1, node_ptr->midiMsg.data2, MIDI_OUTPUT_CHANNEL);
 #endif
-#if defined(USB_MIDI) || (USB_MIDI_SERIAL)
+#if defined(USB_MIDI) || (USB_MIDI_SERIAL) || (USB_MTPDISK_MIDI)
             usbMIDI.sendNoteOn(node_ptr->midiMsg.data1, node_ptr->midiMsg.data2, MIDI_OUTPUT_CHANNEL);  // USB send MIDI noteOn
 #endif
 #if defined(HARDWARE_MIDI)
@@ -222,7 +222,7 @@ void midi_transmit(void) {
 #if defined(DEBUG_MIDI_TRANSMIT)
             Serial.printf("\nDEBUG_MIDI_TRANSMIT\tNOTE_OFF:%d\tVALUE:%d\tCHANNEL:%d", node_ptr->midiMsg.data1, node_ptr->midiMsg.data2, MIDI_OUTPUT_CHANNEL);
 #endif
-#if defined(USB_MIDI) || (USB_MIDI_SERIAL)
+#if defined(USB_MIDI) || (USB_MIDI_SERIAL) || (USB_MTPDISK_MIDI)
             usbMIDI.sendNoteOff(node_ptr->midiMsg.data1, node_ptr->midiMsg.data2, MIDI_OUTPUT_CHANNEL);  // USB send MIDI noteOff
 #endif
 #if defined(HARDWARE_MIDI)
@@ -233,7 +233,7 @@ void midi_transmit(void) {
 #if defined(DEBUG_MIDI_TRANSMIT)
             Serial.printf("\nDEBUG_MIDI_TRANSMIT\tCC:%d\tVALUE:%d\tCHANNEL:%d", node_ptr->midiMsg.data1, node_ptr->midiMsg.data2, MIDI_OUTPUT_CHANNEL);
 #endif
-#if defined(USB_MIDI) || (USB_MIDI_SERIAL)
+#if defined(USB_MIDI) || (USB_MIDI_SERIAL) || (USB_MTPDISK_MIDI)
             usbMIDI.sendControlChange(node_ptr->midiMsg.data1, node_ptr->midiMsg.data2, MIDI_OUTPUT_CHANNEL); // USB send MIDI control_change
 #endif
 #if defined(HARDWARE_MIDI)
