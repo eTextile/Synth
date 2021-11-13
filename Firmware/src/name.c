@@ -4,7 +4,6 @@
   This work is licensed under Creative Commons Attribution-ShareAlike 4.0 International license, see the LICENSE file for details.
 */
 
-/*
 #if defined(USB_MIDI) || (USB_MIDI_SERIAL) || (USB_MTPDISK_MIDI)
 
 #include "usb_names.h"
@@ -19,4 +18,3 @@ struct usb_string_descriptor_struct usb_string_product_name = {
 };
 
 #endif
-*/

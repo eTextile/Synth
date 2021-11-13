@@ -14,7 +14,7 @@
 
 extern char json[];
 
-typedef struct mKey mKey_t;   // Forward declaration located in blob.h
+typedef struct mKey mKey_t;         // Forward declaration located in blob.h
 typedef struct mSwitch mSwitch_t;   // Forward declaration located in blob.h
 
 extern uint8_t map_triggers; 
