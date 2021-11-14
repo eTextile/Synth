@@ -108,10 +108,10 @@ void update_presets_usb(void) {
             presets[BLOBS_LEARN].update = true;
             presets[BLOBS_LEARN].setLed = true;
             break;
-          case BLOBS_MAPPING: // PROGRAM 8
-            currentMode = BLOBS_MAPPING;
-            presets[BLOBS_MAPPING].update = true;
-            presets[BLOBS_MAPPING].setLed = true;
+          case MAPPING_LIB: // PROGRAM 8
+            currentMode = MAPPING_LIB;
+            presets[MAPPING_LIB].update = true;
+            presets[MAPPING_LIB].setLed = true;
             break;
           case RAW_MATRIX: // PROGRAM 9
             currentMode = RAW_MATRIX;
@@ -136,6 +136,7 @@ void update_presets_usb(void) {
   llist_save_nodes(&midi_node_stack, &midiIn); // Save/rescure all midiOut nodes
 };
 
+// Selec the current mode and perform calibration 
 void update_presets_buttons(void) {
   BUTTON_L.update();
   BUTTON_R.update();
@@ -401,20 +402,20 @@ void update_leds(void) {
         };
       };
       break;
-    case BLOBS_MAPPING: // LEDs : blink alternately
-      if (presets[BLOBS_MAPPING].setLed) {
-        presets[BLOBS_MAPPING].setLed = false;
+    case MAPPING_LIB: // LEDs : blink alternately
+      if (presets[MAPPING_LIB].setLed) {
+        presets[MAPPING_LIB].setLed = false;
         pinMode(LED_PIN_D1, OUTPUT);
         pinMode(LED_PIN_D2, OUTPUT);
         timeStamp = millis();
       };
-      if (millis() - timeStamp < BLOBS_MAPPING_LED_TIMEON && presets[BLOBS_MAPPING].updateLed == true) {
-        presets[BLOBS_MAPPING].updateLed = false;
+      if (millis() - timeStamp < BLOBS_MAPPING_LED_TIMEON && presets[MAPPING_LIB].updateLed == true) {
+        presets[MAPPING_LIB].updateLed = false;
         digitalWrite(LED_PIN_D1, HIGH);
         digitalWrite(LED_PIN_D2, LOW);
       }
-      else if (millis() - timeStamp > BLOBS_MAPPING_LED_TIMEON && presets[BLOBS_MAPPING].updateLed == false) {
-        presets[BLOBS_MAPPING].updateLed = true;
+      else if (millis() - timeStamp > BLOBS_MAPPING_LED_TIMEON && presets[MAPPING_LIB].updateLed == false) {
+        presets[MAPPING_LIB].updateLed = true;
         digitalWrite(LED_PIN_D1, LOW);
         digitalWrite(LED_PIN_D2, HIGH);
       }

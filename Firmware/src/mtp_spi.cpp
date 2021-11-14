@@ -6,6 +6,8 @@
 
 #include "mtp_spi.h"
 
+#if defined(USB_MTPDISK) || (USB_MTPDISK_MIDI)
+
 LittleFS_SPIFlash myfs;
 File dataFile;
 
@@ -89,3 +91,4 @@ void dump_json(void) {
     delay(5);  
   };
 };
+#endif

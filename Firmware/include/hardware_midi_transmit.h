@@ -4,22 +4,18 @@
   This work is licensed under Creative Commons Attribution-ShareAlike 4.0 International license, see the LICENSE file for details.
 */
 
-#ifndef __SEQ_H__
-#define __SEQ_H__
+#ifndef __HARDWARE_MIDI_TRANSMIT_H__
+#define __HARDWARE_MIDI_TRANSMIT_H__
 
 #include "config.h"
+#include "presets.h"
 #include "llist.h"
-#include "blob.h"
 #include "midi_nodes.h"
 
-typedef struct seq seq_t;
-struct seq {
-  uint16_t intervalTime[];
-  uint8_t* seqframe;
-};
+void HARDWARE_MIDI_TRANSMIT_SETUP(void);
 
-void tapTempo(void);      // TODO
-void stepSequencer(void); // TODO
-void arpeggiator(void);   // TODO
+void hardware_midi_read_input(void);
+void hardware_midi_handle_input(const midi::Message<128u> &midiMsg);
+void hardware_midi_transmit(void);
 
-#endif /*__SEQ_H__*/
+#endif /*__HARDWARE_MIDI_TRANSMIT_H__*/

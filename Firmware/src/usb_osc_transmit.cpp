@@ -5,7 +5,7 @@
   TODO: Lufa_lib...
 */
 
-#include "osc_transmit.h"
+#include "usb_osc_transmit.h"
 
 #if defined(USB_OSC)
 
@@ -14,12 +14,11 @@ SLIPEncodedUSBSerial SLIPSerial(thisBoardsSerialUSB);
 #define OSC_TRANSMIT_INTERVAL 5
 unsigned long oscTransmitTimeStamp = 0;
 
-void OSC_TRANSMIT_SETUP(void) {
+void USB_OSC_TRANSMIT_SETUP(void) {
   SLIPSerial.begin(BAUD_RATE);
-  //while (!Serial);
 };
 
-void read_osc_input(void) {
+void usb_osc_read_input(void) {
   OSCMessage bundleIN;
   int size;
   if (SLIPSerial.available()) {
@@ -33,13 +32,13 @@ void read_osc_input(void) {
   if (!bundleIN.hasError()) {
     //if (bundleIN.fullMatch("/C")) { // Calibrate
       //bundleIN.dispatch("/C", handle_osc_input);
-      bundleIN.route("/C", handle_osc_input);
+      bundleIN.route("/C", usb_osc_handle_input);
     //};
   };
 };
 
 // INPUT_CONTROL
-void handle_osc_input(OSCMessage & msg) {
+void usb_osc_handle_input(OSCMessage & msg) {
   midiNode_t* node_ptr = (midiNode_t*)llist_pop_front(&midi_node_stack);  // Get a node from the MIDI nodes stack
   switch (msg.getInt(0)) {
     case midi::NoteOn:
@@ -76,7 +75,7 @@ void handle_osc_input(OSCMessage & msg) {
   };
 };
 
-void osc_transmit(void) {
+void usb_osc_transmit(void) {
   switch (currentMode) {
     case RAW_MATRIX:
       if (millis() - oscTransmitTimeStamp > OSC_TRANSMIT_INTERVAL) {

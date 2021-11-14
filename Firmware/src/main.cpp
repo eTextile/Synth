@@ -5,8 +5,8 @@
   This work is licensed under Creative Commons Attribution-ShareAlike 4.0 International license, see the LICENSE file for details.
 */
 
-#include "config.h"
-#include "presets.h"
+//#include "config.h"
+//#include "presets.h"
 #include "scan.h"
 #include "interp.h"
 #include "blob.h"
@@ -14,15 +14,23 @@
 #if defined(USB_MTPDISK) || (USB_MTPDISK_MIDI)
 #include "mtp_spi.h"
 #include "json_parser.h"
+#include "usb_midi_transmit.h"
+//#include "usb_osc_transmit.h"
 #endif
+
 #if defined(USB_SERIAL) || (USB_MIDI_SERIAL)
-#include "serial_transmit.h"
+#include "usb_serial_transmit.h"
 #endif
+
 #if defined(USB_MIDI) || (USB_MTPDISK_MIDI)
-#include "midi_transmit.h"
+#include "usb_midi_transmit.h"
 #endif
+#if defined(HARDWARE_MIDI)
+#include "hardware_midi_transmit.h"
+#endif
+
 #if defined(USB_OSC)
-#include "osc_transmit.h"
+#include "usb_osc_transmit.h"
 #endif
 #if defined(MAPPING_LAYOUT)
 #include "mapping.h"
@@ -52,6 +60,7 @@ void setup() {
   SCAN_SETUP();
   INTERP_SETUP();
   BLOB_SETUP();
+  MIDI_NODES_SETUP();
 
 #if defined(USB_MTPDISK) || (USB_MTPDISK_MIDI)
   MTP_SPI_SETUP();
@@ -60,15 +69,21 @@ void setup() {
 #if defined(RUNING_MEDIAN)
   RUNING_MEDIAN_SETUP();
 #endif
+
 #if defined(USB_SERIAL) || (USB_MIDI_SERIAL)
-  SERIAL_TRANSMIT_SETUP();
+  USB_SERIAL_TRANSMIT_SETUP();
+#endif
+
+#if defined(USB_MIDI) || (USB_MIDI_SERIAL) || (USB_MTPDISK_MIDI)
+  USB_MIDI_TRANSMIT_SETUP();
+#endif
+#if defined(HARDWARE_MIDI)
+  HARDWARE_MIDI_TRANSMIT_SETUP();
 #endif
 #if defined(USB_OSC)
-  OSC_TRANSMIT_SETUP();
+  USB_OSC_TRANSMIT_SETUP();
 #endif
-#if defined(USB_MIDI) || (USB_MIDI_SERIAL) || (USB_MTPDISK_MIDI)
-  MIDI_TRANSMIT_SETUP();
-#endif
+
 #if defined(PLAYER_SYNTH)
   PLAYER_SYNTH_SETUP();
 #endif
@@ -91,10 +106,13 @@ void loop() {
   handle_mtp_spi();
 #endif
 #if defined(USB_OSC)
-  read_osc_input();
+  usb_osc_read_input();
 #endif
 #if defined(USB_MIDI) || (USB_MIDI_SERIAL) || (USB_MTPDISK_MIDI)
-  read_midi_input();
+  usb_midi_read_input();
+#endif
+#if defined(HARDWARE_MIDI)
+    hardware_midi_read_input();
 #endif
 #if defined(__MK20DX256__)  // Teensy 3.1 & 3.2
   update_presets_midi_usb();
@@ -125,10 +143,13 @@ void loop() {
   player_flash();
 #endif
 #if defined(USB_MIDI) || (USB_MIDI_SERIAL) || (USB_MTPDISK_MIDI)
-  midi_transmit();
+  usb_midi_transmit();
+#endif
+#if defined(HARDWARE_MIDI)
+  hardware_midi_transmit();
 #endif
 #if defined(USB_OSC)
-  osc_transmit();
+  usb_osc_transmit();
 #endif
 #if defined(DEBUG_FPS)
   if (millis() - fpsTimeStamp >= 1000) {

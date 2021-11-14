@@ -4,9 +4,9 @@
   This work is licensed under Creative Commons Attribution-ShareAlike 4.0 International license, see the LICENSE file for details.
 */
 
-#include "serial_transmit.h"
+#include "usb_serial_transmit.h"
 
-void SERIAL_TRANSMIT_SETUP(void) {
+void USB_SERIAL_TRANSMIT_SETUP(void) {
   Serial.begin(BAUD_RATE);
   //while (!Serial);
   Serial.printf("\n%s_%s_%s", NAME, PROJECT, VERSION);

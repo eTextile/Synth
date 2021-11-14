@@ -12,7 +12,7 @@
 #include "llist.h"
 #include "notes.h"
 #include "json_parser.h"
-#include "midi_transmit.h"
+#include "midi_nodes.h"
 
 typedef struct mKey mKey_t;
 struct mKey {

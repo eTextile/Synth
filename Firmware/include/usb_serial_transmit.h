@@ -4,12 +4,12 @@
   This work is licensed under Creative Commons Attribution-ShareAlike 4.0 International license, see the LICENSE file for details.
 */
 
-#ifndef __SERIAL_TRANSMIT_H__
-#define __SERIAL_TRANSMIT_H__
+#ifndef __USB_SERIAL_TRANSMIT_H__
+#define __USB_SERIAL_TRANSMIT_H__
 
 #include "config.h"
 #include "presets.h"
 
-void SERIAL_TRANSMIT_SETUP(void);
+void USB_SERIAL_TRANSMIT_SETUP(void);
 
-#endif /*__SERIAL_TRANSMIT_H__*/
+#endif /*__USB_SERIAL_TRANSMIT_H__*/
