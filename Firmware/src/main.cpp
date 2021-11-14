@@ -17,20 +17,17 @@
 #include "usb_midi_transmit.h"
 //#include "usb_osc_transmit.h"
 #endif
-
 #if defined(USB_SERIAL) || (USB_MIDI_SERIAL)
 #include "usb_serial_transmit.h"
 #endif
-
-#if defined(USB_MIDI) || (USB_MTPDISK_MIDI)
+#if defined(USB_MIDI)
 #include "usb_midi_transmit.h"
+#endif
+#if defined(USB_OSC)
+#include "usb_osc_transmit.h"
 #endif
 #if defined(HARDWARE_MIDI)
 #include "hardware_midi_transmit.h"
-#endif
-
-#if defined(USB_OSC)
-#include "usb_osc_transmit.h"
 #endif
 #if defined(MAPPING_LAYOUT)
 #include "mapping.h"
@@ -69,20 +66,19 @@ void setup() {
 #if defined(RUNING_MEDIAN)
   RUNING_MEDIAN_SETUP();
 #endif
-
 #if defined(USB_SERIAL) || (USB_MIDI_SERIAL)
   USB_SERIAL_TRANSMIT_SETUP();
 #endif
-
 #if defined(USB_MIDI) || (USB_MIDI_SERIAL) || (USB_MTPDISK_MIDI)
   USB_MIDI_TRANSMIT_SETUP();
-#endif
-#if defined(HARDWARE_MIDI)
-  HARDWARE_MIDI_TRANSMIT_SETUP();
 #endif
 #if defined(USB_OSC)
   USB_OSC_TRANSMIT_SETUP();
 #endif
+#if defined(HARDWARE_MIDI)
+  HARDWARE_MIDI_TRANSMIT_SETUP();
+#endif
+
 
 #if defined(PLAYER_SYNTH)
   PLAYER_SYNTH_SETUP();
@@ -105,14 +101,14 @@ void loop() {
 #if defined(USB_MTPDISK) || (USB_MTPDISK_MIDI)
   handle_mtp_spi();
 #endif
-#if defined(USB_OSC)
-  usb_osc_read_input();
-#endif
 #if defined(USB_MIDI) || (USB_MIDI_SERIAL) || (USB_MTPDISK_MIDI)
   usb_midi_read_input();
 #endif
+#if defined(USB_OSC)
+  usb_osc_read_input();
+#endif
 #if defined(HARDWARE_MIDI)
-    hardware_midi_read_input();
+  hardware_midi_read_input();
 #endif
 #if defined(__MK20DX256__)  // Teensy 3.1 & 3.2
   update_presets_midi_usb();
@@ -145,11 +141,11 @@ void loop() {
 #if defined(USB_MIDI) || (USB_MIDI_SERIAL) || (USB_MTPDISK_MIDI)
   usb_midi_transmit();
 #endif
-#if defined(HARDWARE_MIDI)
-  hardware_midi_transmit();
-#endif
 #if defined(USB_OSC)
   usb_osc_transmit();
+#endif
+#if defined(HARDWARE_MIDI)
+  hardware_midi_transmit();
 #endif
 #if defined(DEBUG_FPS)
   if (millis() - fpsTimeStamp >= 1000) {
