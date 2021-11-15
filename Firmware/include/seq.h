@@ -10,7 +10,7 @@
 #include "config.h"
 #include "llist.h"
 #include "blob.h"
-#include "midi_nodes.h"
+#include "midi_bus.h"
 
 typedef struct seq seq_t;
 struct seq {

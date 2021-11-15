@@ -44,7 +44,7 @@ void INTERP_SETUP(void) {
 };
 
 // Bilinear interpolation
-void interp_matrix(void) {
+void matrix_interp(void) {
   // Clear interpFrameArray
   memset((uint8_t*)interpFrameArray, 0, SIZEOF_FRAME);
   for (uint8_t rowPos = 0; rowPos < IRAW_ROWS; rowPos++) {

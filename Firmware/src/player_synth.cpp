@@ -64,7 +64,7 @@ AudioConnection                   patchCord26(mix_2, 0, mix_3, 1);
 AudioConnection                   patchCord28(mix_3, 0, i2s_OUT, 0);
 AudioConnection                   patchCord29(mix_3, 0, i2s_OUT, 1);
 
-synth_t allSynth[MAX_SYNTH] = {
+synth_t allSynth[MAX_BLOBS] = {
   {&wf_1, &fm_1, &fade_1, &mix_1},
   {&wf_2, &fm_2, &fade_2, &mix_1},
   {&wf_3, &fm_3, &fade_3, &mix_1},
@@ -76,7 +76,7 @@ synth_t allSynth[MAX_SYNTH] = {
 };
 
 void PLAYER_SYNTH_SETUP(void) {
-  for (int i = 0; i < MAX_SYNTH; i++) {
+  for (int i = 0; i < MAX_BLOBS; i++) {
     allSynth[i].fade->fadeOut(0);
     allSynth[i].wf->begin(WAVEFORM_SINE);
     allSynth[i].wf->amplitude(0.9);
@@ -97,35 +97,33 @@ void PLAYER_SYNTH_SETUP(void) {
 void player_synth(void) {
   //static boolean lastState[MAX_BLOBS] = {false};
   for (blob_t* blob_ptr = (blob_t *)ITERATOR_START_FROM_HEAD(&llist_blobs); blob_ptr != NULL; blob_ptr = (blob_t *)ITERATOR_NEXT(blob_ptr)) {
-    if (blob_ptr->UID < MAX_SYNTH) {
-      AudioNoInterrupts();
-      if (blob_ptr->state) {
-        if (!blob_ptr->lastState) {
-          allSynth[blob_ptr->UID].wf->phase(0);
-          allSynth[blob_ptr->UID].fade->fadeIn(10);
-        }
-        else {
-          allSynth[blob_ptr->UID].wf->frequency(blob_ptr->centroid.X * 3);
-          allSynth[blob_ptr->UID].fm->frequency(blob_ptr->centroid.Y * 4 + 50);
-          //allSynth[blob_ptr->UID].wf->frequency((blob_ptr->centroid.X / 4.0) + 1);
-          //allSynth[blob_ptr->UID].fm->frequency((blob_ptr->centroid.Y / 2.0) + 5);
-          /*
-          if (blob_ptr->UID == 0) {
-            allSynth[blob_ptr->UID].wf->frequency((blob_ptr->centroid.X / 4.0) + 1);
-            allSynth[blob_ptr->UID].fm->frequency((blob_ptr->centroid.Y / 2.0) + 5);
-          }
-          else if (blob_ptr->UID == 1) {
-            allSynth[blob_ptr->UID].wf->frequency(blob_ptr->centroid.X * 3);
-            allSynth[blob_ptr->UID].fm->frequency(blob_ptr->centroid.Y * 4 + 50);
-          };
-          */
-        };
+    AudioNoInterrupts();
+    if (blob_ptr->state) {
+      if (!blob_ptr->lastState) {
+        allSynth[blob_ptr->UID].wf->phase(0);
+        allSynth[blob_ptr->UID].fade->fadeIn(10);
       }
       else {
-        allSynth[blob_ptr->UID].fade->fadeOut(50);
+        allSynth[blob_ptr->UID].wf->frequency(blob_ptr->centroid.X * 3);
+        allSynth[blob_ptr->UID].fm->frequency(blob_ptr->centroid.Y * 4 + 50);
+        //allSynth[blob_ptr->UID].wf->frequency((blob_ptr->centroid.X / 4.0) + 1);
+        //allSynth[blob_ptr->UID].fm->frequency((blob_ptr->centroid.Y / 2.0) + 5);
+        /*
+          if (blob_ptr->UID == 0) {
+          allSynth[blob_ptr->UID].wf->frequency((blob_ptr->centroid.X / 4.0) + 1);
+          allSynth[blob_ptr->UID].fm->frequency((blob_ptr->centroid.Y / 2.0) + 5);
+          }
+          else if (blob_ptr->UID == 1) {
+          allSynth[blob_ptr->UID].wf->frequency(blob_ptr->centroid.X * 3);
+          allSynth[blob_ptr->UID].fm->frequency(blob_ptr->centroid.Y * 4 + 50);
+          };
+        */
       };
-      AudioInterrupts();
+    }
+    else {
+      allSynth[blob_ptr->UID].fade->fadeOut(50);
     };
+    AudioInterrupts();
   };
 };
 #endif

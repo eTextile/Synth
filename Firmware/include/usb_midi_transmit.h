@@ -13,7 +13,7 @@
 #include "presets.h"
 #include "llist.h"
 #include "blob.h"
-#include "midi_nodes.h"
+#include "midi_bus.h"
 
 void USB_MIDI_TRANSMIT_SETUP(void);
 void usb_midi_read_input(void);

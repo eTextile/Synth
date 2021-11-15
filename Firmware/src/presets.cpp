@@ -453,7 +453,6 @@ boolean setLevel(preset_t* preset_ptr) {
 // TODO
 void preset_load(void) {
   for (int i = 0; i < 4; i++) {
-    // EEPROM.read(i, preset[i].val); // uint8_t
     // Read from external Flash chip !
   };
 };
@@ -461,7 +460,6 @@ void preset_load(void) {
 // TODO
 void save_presets(void) {
   for (int i = 0; i < 4; i++) {
-    //EEPROM.write(i, preset[i].val); // uint8_t
     // Write to external Flash chip !
   };
 };

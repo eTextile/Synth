@@ -8,7 +8,7 @@
 #define __JSON_PARSER_H__
 
 #include "config.h"
-#include "mapping.h"
+#include "mapping_lib.h"
 
 #include <ArduinoJson.h>  // https://github.com/bblanchon/ArduinoJson.git
 
@@ -17,13 +17,13 @@ extern char json[];
 typedef struct mKey mKey_t;         // Forward declaration located in blob.h
 typedef struct mSwitch mSwitch_t;   // Forward declaration located in blob.h
 
-extern uint8_t map_triggers; 
-extern mKey_t map_triggerParam[];
-extern mSwitch_t map_triggerKey[];
+extern uint8_t map_trigs; 
+extern mKey_t map_trigParams[];
+extern mSwitch_t map_trigKeys[];
 
-extern uint8_t map_toggles; 
-extern mKey_t map_toggleParam[];
-extern mSwitch_t map_toggleKey[];
+extern uint8_t map_togs; 
+extern mKey_t map_togParams[];
+extern mSwitch_t map_togKeys[];
 
 void JSON_PARSER_SETUP(void);
 

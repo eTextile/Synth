@@ -110,7 +110,7 @@ void SCAN_SETUP(void) {
 
 // Columns are analog INPUT_PINS reded two by two
 // Rows are digital OUTPUT_PINS supplyed one by one sequentially with 3.3V
-void calibrate_matrix(void) {
+void matrix_calibrate(void) {
 
   if (presets[CALIBRATE].update == true) {
     presets[CALIBRATE].update = false;
@@ -172,7 +172,7 @@ void calibrate_matrix(void) {
 
 // Columns are analog INPUT_PINS reded two by two
 // Rows are digital OUTPUT_PINS supplyed one by one sequentially with 3.3V
-void scan_matrix(void) {
+void matrix_scan(void) {
 
   for (uint8_t col = 0; col < DUAL_COLS; col++) {         // ANNALOG_PINS [0-7] with [8-15]
 

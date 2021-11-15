@@ -15,6 +15,6 @@ extern uint8_t interpThreshold; // Exposed local declaration see interp.cpp
 extern image_t interpFrame;     // Exposed local declaration see interp.cpp
 
 void INTERP_SETUP(void);
-void interp_matrix(void);
+void matrix_interp(void);
 
 #endif /*__INTERP_H__*/

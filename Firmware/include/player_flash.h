@@ -7,16 +7,17 @@
 #ifndef __PLAYER_FLASH_H__
 #define __PLAYER_FLASH_H__
 
+#include "config.h"
+#include "llist.h"
+#include "blob.h"
+#include "midi_bus.h"
+#include "mapping_lib.h"
+
 #include <Audio.h>         // https://github.com/PaulStoffregen/Audio
 #include <Wire.h>          // https://github.com/PaulStoffregen/Wire
 #include <SPI.h>           // https://github.com/PaulStoffregen/SPI
 #include <SD.h>            // https://github.com/PaulStoffregen/SD
 #include <SerialFlash.h>   // https://github.com/PaulStoffregen/SerialFlash
-
-#include "config.h"
-#include "llist.h"
-#include "blob.h"
-#include "mapping.h"
 
 void PLAYER_FLASH_SETUP(void);
 void player_flash(void);

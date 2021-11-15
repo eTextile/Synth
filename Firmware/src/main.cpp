@@ -30,7 +30,7 @@
 #include "hardware_midi_transmit.h"
 #endif
 #if defined(MAPPING_LAYOUT)
-#include "mapping.h"
+#include "mapping_lib.h"
 #endif
 #if defined(PLAYER_FLASH)
 #include "player_flash.h"
@@ -122,12 +122,12 @@ void loop() {
 #if defined(SOUND_CARD)
   update_levels();
 #endif
-  calibrate_matrix();
-  scan_matrix();
-  interp_matrix();
-  find_blobs();
+  matrix_calibrate();
+  matrix_scan();
+  matrix_interp();
+  matrix_find_blobs();
 #if defined(MAPPING_LAYOUT)
-  update_mapping_layout();
+  mapping_layout_update();
 #endif
 #if defined(PLAYER_SYNTH)
   player_synth();

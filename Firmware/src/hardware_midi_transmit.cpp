@@ -73,5 +73,4 @@ void hardware_midi_transmit(void) {
         };
     };
   };
-  llist_save_nodes(&midi_node_stack, &midiOut); // Save/rescure all midiOut nodes
 };

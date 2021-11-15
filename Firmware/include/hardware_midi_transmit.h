@@ -10,7 +10,7 @@
 #include "config.h"
 #include "presets.h"
 #include "llist.h"
-#include "midi_nodes.h"
+#include "midi_bus.h"
 
 void HARDWARE_MIDI_TRANSMIT_SETUP(void);
 

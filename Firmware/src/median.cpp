@@ -8,11 +8,11 @@
 
 #include "median.h"
 
-median_t filter[MAX_SYNTH];
+median_t filter[MAX_BLOBS];
 
 // resets all internal counters
 void RUNING_MEDIAN_SETUP(void) {
-  for (uint8_t i = 0; i < MAX_SYNTH; i++) {
+  for (uint8_t i = 0; i < MAX_BLOBS; i++) {
     for (uint8_t j = 0; j < MEDIAN_WINDOW; j++) {
       filter[i].X_sort[j] = j;
       filter[i].Y_sort[j] = j;

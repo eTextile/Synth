@@ -4,15 +4,15 @@
   This work is licensed under Creative Commons Attribution-ShareAlike 4.0 International license, see the LICENSE file for details.
 */
 
-#ifndef __MAPPING_H__
-#define __MAPPING_H__
+#ifndef __MAPPING_LIB_H__
+#define __MAPPING_LIB_H__
 
 #include "config.h"
 #include "blob.h"
 #include "llist.h"
 #include "notes.h"
 #include "json_parser.h"
-#include "midi_nodes.h"
+#include "midi_bus.h"
 
 typedef struct mKey mKey_t;
 struct mKey {
@@ -79,22 +79,24 @@ struct cChange {
 };
 
 void MAPPING_LAYOUT_SETUP(void);
-void update_mapping_layout(void);
+void mapping_layout_update(void);
 
-void TRIGGER_SETUP(void);
-void TOGGLE_SETUP(void);
-void GRID_LAYOUT_SETUP(void);
-void VSLIDER_SETUP(void);
-void HSLIDER_SETUP(void);
-void CSLIDER_SETUP(void);
+void MAPPING_TOUCHPAD_SETUP(void);
+void MAPPING_TRIGGER_SETUP(void);
+void MAPPING_TOGGLE_SETUP(void);
+void MAPPING_GRID_SETUP(void);
+void MAPPING_VSLIDER_SETUP(void);
+void MAPPING_HSLIDER_SETUP(void);
+void MAPPING_CSLIDER_SETUP(void);
 
-void mapping_trigger(void);
-void mapping_toggle(void);
+void mapping_touchpads(void);
+void mapping_triggers(void);
+void mapping_toggles(void);
 void mapping_grid_update(void);
 void mapping_grid_populate(void);
-void mapping_vSlider(void);
-void mapping_hSlider(void);
-void mapping_cSlider(void);
-void mapping_blob(void);
+void mapping_vSliders(void);
+void mapping_hSliders(void);
+void mapping_cSliders(void);
+void mapping_blobs(void);
 
-#endif /*__MAPPING_H__*/
+#endif /*__MAPPING_LIB_H__*/

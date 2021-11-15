@@ -18,34 +18,38 @@ void JSON_PARSER_SETUP(void) {
     DeserializationError error = deserializeJson(doc, json);
 
     if (error) {
+        while(1){
         digitalWrite(LED_PIN_D1, HIGH);
         digitalWrite(LED_PIN_D2, HIGH);
         delay(5);
         digitalWrite(LED_PIN_D1, LOW);
         digitalWrite(LED_PIN_D2, LOW);
         delay(5);
+        }
     } else {
         
-        uint8_t map_triggers = doc["mapping"]["trigs"].size();
-        mKey_t map_triggerParam[map_triggers];
-        mSwitch_t map_triggerKey[map_triggers];
+        uint8_t map_trigs = doc["mapping"]["trigs"].size();
+        mKey_t map_trigParams[map_trigs];
+        mSwitch_t map_trigKeys[map_trigs];
 
         for(uint8_t i =0; i < map_triggers; i++){
-            map_triggerParam[i].posX = doc["mapping"]["trigs"][i][0];
-            map_triggerParam[i].posY = doc["mapping"]["trigs"][i][1];
-            map_triggerParam[i].size = doc["mapping"]["trigs"][i][2];
-            map_triggerParam[i].note = doc["mapping"]["trigs"][i][3];
+            map_trigParams[i].posX = doc["mapping"]["trigs"][i][0];
+            map_trigParams[i].posY = doc["mapping"]["trigs"][i][1];
+            map_trigParams[i].size = doc["mapping"]["trigs"][i][2];
+            map_trigParams[i].note = doc["mapping"]["trigs"][i][3];
         };
         
-        uint8_t map_toggles = doc["mapping"]["togs"].size();
-        mKey_t map_toggleParam[map_toggles];
-        mSwitch_t map_toggleKey[map_toggles];
+        uint8_t map_togs = doc["mapping"]["togs"].size();
+        mKey_t map_togParams[map_togs];
+        mSwitch_t map_togKeys[map_togs];
 
         for(uint8_t i =0; i < map_toggles; i++){
-            map_toggleParam[i].posX = doc["mapping"]["trigs"][i][0];
-            map_toggleParam[i].posY = doc["mapping"]["trigs"][i][1];
-            map_toggleParam[i].size = doc["mapping"]["trigs"][i][2];
-            map_toggleParam[i].note = doc["mapping"]["trigs"][i][3];
+            map_togParams[i].posX = doc["mapping"]["trigs"][i][0];
+            map_togParams[i].posY = doc["mapping"]["trigs"][i][1];
+            map_togParams[i].size = doc["mapping"]["trigs"][i][2];
+            map_togParams[i].note = doc["mapping"]["trigs"][i][3];
         };
+
+
     };
 };

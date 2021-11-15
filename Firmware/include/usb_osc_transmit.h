@@ -13,7 +13,7 @@
 #include "presets.h"
 #include "llist.h"
 #include "blob.h"
-#include "midi_nodes.h"
+#include "midi_bus.h"
 
 #include <OSCBoards.h>              // https://github.com/CNMAT/OSC
 #include <OSCMessage.h>             // https://github.com/CNMAT/OSC

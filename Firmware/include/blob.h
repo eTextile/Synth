@@ -138,6 +138,6 @@ void llist_lifo_init(llist_t *list, xylr_t* nodesArray, const int nodes); // TOD
 void llist_blob_init(llist_t *list, blob_t* nodesArray, const int nodes); // TODO: Separation of concerns (SoC)
 
 void BLOB_SETUP(void);
-void find_blobs(void);
+void matrix_find_blobs(void);
 
 #endif /*__BLOB_H__*/

@@ -4,7 +4,7 @@
   This work is licensed under Creative Commons Attribution-ShareAlike 4.0 International license, see the LICENSE file for details.
 */
 
-#include "midi_nodes.h"
+#include "midi_bus.h"
 
 #define MIDI_NODES 64
 

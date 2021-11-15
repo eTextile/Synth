@@ -16,14 +16,14 @@
 #define LIFO_NODES          512           // Set the maximum nodes number
 #define X_STRIDE            4             // Speed up X scanning
 #define Y_STRIDE            2             // Speed up Y scanning
-#define MIN_BLOB_PIX        4             // Set the minimum blob pixels
+#define BLOB_MIN_PIX        6             // Set the minimum blob pixels
 #define DEBOUNCE_TIME       50            // Avioding undesired bouncing effect when taping on the sensor or sliding.
 
 uint8_t bitmapArray[NEW_FRAME] = {0};     // 1D Array to store (64*64) binary values
 xylr_t lifoArray[LIFO_NODES] = {0};       // 1D Array to store lifo nodes
 blob_t blobArray[MAX_BLOBS] = {0};        // 1D Array to store blobs
-velocity_t blobVelocity[MAX_SYNTH] = {0}; // 1D Array to store XY & Z blobs velocity
-point_t lastCoord[MAX_SYNTH] = {0};
+velocity_t blobVelocity[MAX_BLOBS] = {0}; // 1D Array to store XY & Z blobs velocity
+point_t lastCoord[MAX_BLOBS] = {0};
 
 llist_t llist_context_stack;              // Free nodes stack
 llist_t llist_context;                    // Used nodes
@@ -60,10 +60,11 @@ void BLOB_SETUP(void) {
 
 /////////////////////////////// Scanline flood fill algorithm / SFF
 /////////////////////////////// Connected-component labeling / CCL
-void find_blobs(void) {
+void matrix_find_blobs(void) {
 
   memset((uint8_t*)bitmapArray, 0, SIZEOF_FRAME);
-
+  uint8_t blob_count = 0;
+  
   for (uint8_t posY = 0; posY < NEW_ROWS; posY += Y_STRIDE) {
 
     uint8_t* row_ptr_A = COMPUTE_IMAGE_ROW_PTR(&interpFrame, posY);
@@ -206,7 +207,8 @@ void find_blobs(void) {
           };
         }; // END while_A
 
-        if (blob_pixels > MIN_BLOB_PIX) {
+        if (blob_pixels > BLOB_MIN_PIX && blob_count < MAX_BLOBS) {
+          blob_count++;
           blob_t* blob_ptr = (blob_t*)llist_pop_front(&llist_blobs_stack);
           blob_ptr->centroid.X = constrain(blob_cx / blob_pixels, X_MIN, X_MAX) - X_MIN ;
           blob_ptr->centroid.Y = constrain(blob_cy / blob_pixels, Y_MIN, Y_MAX) - Y_MIN;
@@ -355,28 +357,27 @@ void find_blobs(void) {
 #endif
 
 #if defined(VELOCITY)
-  for (blob_t* blob_ptr = (blob_t*)ITERATOR_START_FROM_HEAD(&llist_blobs); blob_ptr != NULL; blob_ptr = (blob_t*)ITERATOR_NEXT(blob_ptr)) {
-    if (blob_ptr->UID < MAX_SYNTH) {
-      if (!blob_ptr->lastState) {
-        blob_ptr->velocity.TimeStamp = millis();
-        lastCoord[blob_ptr->UID].X = blob_ptr->centroid.X;
-        lastCoord[blob_ptr->UID].Y = blob_ptr->centroid.Y;
-        lastCoord[blob_ptr->UID].Z = blob_ptr->centroid.Z;
-      }
-      else {
-        if (millis() - blob_ptr->velocity.TimeStamp > 10) {
-          blob_ptr->velocity.timeStamp = millis();
-          float vx = fabs(blob_ptr->centroid.X - lastCoord[blob_ptr->UID].X);
-          float vy = fabs(blob_ptr->centroid.Y - lastCoord[blob_ptr->UID].Y);
-          blob_ptr->velocity.XY = sqrtf(vx * vx + vy * vy);
-          blob_ptr->velocity.Z = blob_ptr->centroid.Z - lastCoord[blob_ptr->UID].Z;
-          lastCoord[blob_ptr->UID].X = blob_ptr->centroid.X;
-          lastCoord[blob_ptr->UID].Y = blob_ptr->centroid.Y;
-          lastCoord[blob_ptr->UID].Z = blob_ptr->centroid.Z;
-        };
-      };
+for (blob_t* blob_ptr = (blob_t*)ITERATOR_START_FROM_HEAD(&llist_blobs); blob_ptr != NULL; blob_ptr = (blob_t*)ITERATOR_NEXT(blob_ptr)) {
+  if (!blob_ptr->lastState) {
+    blob_ptr->velocity.TimeStamp = millis();
+    lastCoord[blob_ptr->UID].X = blob_ptr->centroid.X;
+    lastCoord[blob_ptr->UID].Y = blob_ptr->centroid.Y;
+    lastCoord[blob_ptr->UID].Z = blob_ptr->centroid.Z;
+  }
+  else {
+    if (millis() - blob_ptr->velocity.TimeStamp > 10) {
+      blob_ptr->velocity.timeStamp = millis();
+      float vx = fabs(blob_ptr->centroid.X - lastCoord[blob_ptr->UID].X);
+      float vy = fabs(blob_ptr->centroid.Y - lastCoord[blob_ptr->UID].Y);
+      blob_ptr->velocity.XY = sqrtf(vx * vx + vy * vy);
+      blob_ptr->velocity.Z = blob_ptr->centroid.Z - lastCoord[blob_ptr->UID].Z;
+      lastCoord[blob_ptr->UID].X = blob_ptr->centroid.X;
+      lastCoord[blob_ptr->UID].Y = blob_ptr->centroid.Y;
+      lastCoord[blob_ptr->UID].Z = blob_ptr->centroid.Z;
     };
   };
+
+};
 #endif
 
 #if defined(DEBUG_BITMAP)

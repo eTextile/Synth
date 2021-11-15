@@ -20,7 +20,7 @@ extern image_t rawFrame;        // Exposed local declaration see scan.cpp
 void SPI_SETUP(void);
 void ADC_SETUP(void);
 void SCAN_SETUP(void);
-void calibrate_matrix(void);
-void scan_matrix(void);
+void matrix_calibrate(void);
+void matrix_scan(void);
 
 #endif /*__SCAN_H__*/

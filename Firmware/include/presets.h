@@ -9,7 +9,7 @@
 
 #include "config.h"
 #include "interp.h"
-#include "midi_nodes.h"
+#include "midi_bus.h"
 
 #include <Bounce2.h>                   // https://github.com/thomasfredericks/Bounce2
 #define ENCODER_OPTIMIZE_INTERRUPTS

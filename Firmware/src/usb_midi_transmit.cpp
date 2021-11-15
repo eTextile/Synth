@@ -8,7 +8,7 @@
 
 #if defined(USB_MTPDISK) || (USB_MTPDISK_MIDI) || (USB_MIDI)
 
-#define MIDI_TRANSMIT_INTERVAL 5
+#define MIDI_TRANSMIT_INTERVAL 10
 unsigned long int usbTransmitTimeStamp = 0;
 
 void USB_MIDI_TRANSMIT_SETUP(void) {
@@ -132,7 +132,6 @@ void usb_midi_transmit(void) {
             break;
         };
       };
-      llist_save_nodes(&midi_node_stack, &midiOut); // Save/rescure all midiOut nodes
       break;
     default:
       break;
