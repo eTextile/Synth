@@ -5,8 +5,6 @@
   This work is licensed under Creative Commons Attribution-ShareAlike 4.0 International license, see the LICENSE file for details.
 */
 
-//#include "config.h"
-//#include "presets.h"
 #include "scan.h"
 #include "interp.h"
 #include "blob.h"
@@ -78,22 +76,24 @@ void setup() {
 #if defined(HARDWARE_MIDI)
   HARDWARE_MIDI_TRANSMIT_SETUP();
 #endif
-
-
+#if defined(MAPPING_LAYOUT)
+  MAPPING_LIB_SETUP();
+#endif
+#if defined(SOUND_CARD)
+  SOUND_CARD_SETUP();
+#endif
 #if defined(PLAYER_SYNTH)
-  PLAYER_SYNTH_SETUP();
+  //PLAYER_SYNTH_SETUP();
+  PLAYER_SYNTH2_SETUP();
+#endif
+#if defined(PLAYER_SYNTH2)
+  PLAYER_SYNTH2_SETUP();
 #endif
 #if defined(PLAYER_FLASH)
   PLAYER_FLASH_SETUP();
 #endif
 #if defined(PLAYER_GRANULAR)
   PLAYER_GRANULAR_SETUP();
-#endif
-#if defined(MAPPING_LAYOUT)
-  MAPPING_LAYOUT_SETUP();
-#endif
-#if defined(SOUND_CARD)
-  SOUND_CARD_SETUP();
 #endif
 };
 
@@ -127,10 +127,13 @@ void loop() {
   matrix_interp();
   matrix_find_blobs();
 #if defined(MAPPING_LAYOUT)
-  mapping_layout_update();
+  mapping_lib_update();
 #endif
 #if defined(PLAYER_SYNTH)
   player_synth();
+#endif
+#if defined(PLAYER_SYNTH2)
+  player_synth2();
 #endif
 #if defined(PLAYER_GRANULAR)
   player_granular();

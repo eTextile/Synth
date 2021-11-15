@@ -6,7 +6,38 @@
 
 #include "mapping_lib.h"
 
-void MAPPING_LAYOUT_SETUP(void){
+uint8_t map_trigs = 0; 
+mKey_t map_trigParams[];
+mSwitch_t map_trigKeys[];
+
+uint8_t map_togs = 0;
+mKey_t map_togParams[];
+mSwitch_t map_togKeys[];
+
+void MAPPING_LIB_SETUP(void){
+
+  map_trigs = doc["mapp"]["trigs"].size();
+  map_trigParams[map_trigs];
+  map_trigKeys[map_trigs];
+
+  for (uint8_t i = 0; i < map_trigs; i++) {
+    map_trigParams[i].posX = doc["mapp"]["trigs"][i][0];
+    map_trigParams[i].posY = doc["mapp"]["trigs"][i][1];
+    map_trigParams[i].size = doc["mapp"]["trigs"][i][2];
+    map_trigParams[i].note = doc["mapp"]["trigs"][i][3];
+  };
+
+  map_togs = doc["mapp"]["togs"].size();
+  map_togParams[map_togs];
+  map_togKeys[map_togs];
+
+  for (uint8_t i = 0; i < map_togs; i++) {
+    map_togParams[i].posX = doc["mapp"]["togs"][i][0];
+    map_togParams[i].posY = doc["mapp"]["togs"][i][1];
+    map_togParams[i].size = doc["mapp"]["togs"][i][2];
+    map_togParams[i].note = doc["mapp"]["togs"][i][3];
+  };
+
   MAPPING_TOUCHPAD_SETUP();
   MAPPING_TRIGGER_SETUP();
   MAPPING_TOGGLE_SETUP();
@@ -16,17 +47,17 @@ void MAPPING_LAYOUT_SETUP(void){
   MAPPING_CSLIDER_SETUP();
 };
 
-void mapping_layout_update(void) {
+void mapping_lib_update(void) {
   llist_save_nodes(&midi_node_stack, &midiOut); // Save/rescure all midiOut nodes
-  mapping_touchpads();
+  mapping_touchpads_update();
   //mapping_grid_populate();
   //mapping_grid_update();
-  //mapping_blobs();
-  //mapping_triggers();
-  //mapping_toggles();
-  //mapping_hSliders();
-  //mapping_vSliders();
-  //mapping_cSliders();
+  //mapping_triggers_update();
+  //mapping_toggles_update();
+  //mapping_hSliders_update();
+  //mapping_vSliders_update();
+  //mapping_cSliders_update();
+  //mapping_blobs_update();
 };
 
 #define TOUCHPAD 4
@@ -40,6 +71,10 @@ mKey_t mapp_touchpadParams[TOUCHPAD] = {
 void MAPPING_TOUCHPAD_SETUP(void){
   // TODO
 };
+
+ void mapping_touchpads_update(void){
+   // TODO
+ };
 
 /*
 #define TRIGGERS 2
@@ -58,7 +93,7 @@ inline void MAPPING_TRIGGER_SETUP(void) {
   };
 };
 
-void mapping_triggers(void) {
+void mapping_triggers_update(void) {
   for (blob_t* blob_ptr = (blob_t*)ITERATOR_START_FROM_HEAD(&llist_blobs); blob_ptr != NULL; blob_ptr = (blob_t*)ITERATOR_NEXT(blob_ptr)) {
     for (uint8_t keyPos = 0; keyPos < map_trigs; keyPos++) {
       // Test if the blob is within the key limits
@@ -75,7 +110,7 @@ void mapping_triggers(void) {
           node_ptr->midiMsg.channel = MIDI_OUTPUT_CHANNEL;                        // Set the channel see config.h
           llist_push_front(&midiOut, node_ptr);                                   // Add the node to the midiOut linked liste
 #if defined(DEBUG_MAPPING)
-          Serial.printf("\nDEBUG_TRIGGER:\tNOTE_ON : %d", map_trigParams[keyPos].note);
+          Serial.printf("\nDEBUG_MAPPING_TRIGGERS:\tNOTE_ON : %d", map_trigParams[keyPos].note);
 #endif
         }
         else if (!blob_ptr->state) {
@@ -86,7 +121,7 @@ void mapping_triggers(void) {
           node_ptr->midiMsg.channel = MIDI_OUTPUT_CHANNEL;                        // Set the channel see config.h
           llist_push_front(&midiOut, node_ptr);                                   // Add the node to the midiOut linked liste
 #if defined(DEBUG_MAPPING)
-          Serial.printf("\nDEBUG_TRIGGER:\tNOTE_OFF : %d", map_trigParams[keyPos].note);
+          Serial.printf("\nDEBUG_MAPPING_TRIGGERS:\tNOTE_OFF : %d", map_trigParams[keyPos].note);
 #endif
         };
       };
@@ -112,7 +147,7 @@ void MAPPING_TOGGLE_SETUP(void) {
   };
 };
 
-void mapping_toggles(void) {
+void mapping_toggles_update(void) {
   for (blob_t* blob_ptr = (blob_t*)ITERATOR_START_FROM_HEAD(&llist_blobs); blob_ptr != NULL; blob_ptr = (blob_t*)ITERATOR_NEXT(blob_ptr)) {
     for (uint8_t keyPos = 0; keyPos < map_togs; keyPos++) {
       // Test if the blob is within the key limits
@@ -125,7 +160,7 @@ void mapping_toggles(void) {
           midiNode_t* node_ptr = (midiNode_t*)llist_pop_front(&midi_node_stack);    // Get a node from the MIDI node stack
           if (map_togKeys[keyPos].state) {
 #if defined(DEBUG_MAPPING)
-            Serial.printf("\nDEBUG_TRIGGER:\tNOTE_ON : %d", toggleParam[keyPos].note);
+            Serial.printf("\nDEBUG_MAPPING_TOGGLES:\tNOTE_ON : %d", toggleParam[keyPos].note);
 #else
             node_ptr->midiMsg.status = midi::NoteOn;                                // Set MIDI message status to NOTE_OFF
             node_ptr->midiMsg.data1 = map_togParams[keyPos].note;                     // Set the note
@@ -136,7 +171,7 @@ void mapping_toggles(void) {
 #endif
           } else {
 #if defined(DEBUG_MAPPING)
-            Serial.printf("\nDEBUG_TRIGGER:\tNOTE_OFF : %d", toggleParam[keyPos].note);
+            Serial.printf("\nDEBUG_MAPPING_TOGGLES:\tNOTE_OFF : %d", toggleParam[keyPos].note);
 #else
             node_ptr->midiMsg.status = midi::NoteOff;                               // Set MIDI message status to NOTE_OFF
             node_ptr->midiMsg.data1 = map_togParams[keyPos].note;                     // Set the note
@@ -158,7 +193,7 @@ void mapping_toggles(void) {
 #define GRID_Y_SCALE_FACTOR    ((float)1/Y_MAX) * GRID_ROWS
 
 mSwitch_t key[GRID_KEYS] = {0};               // ARGS[posX, Ymin, Ymax, width, state] : 1D array to store keys limits & state
-int8_t lastKeyPress[MAX_BLOBS] = {0};      // 1D array to store last keys pressed value
+int16_t lastKeyPress[MAX_BLOBS] = {0};        // 1D array to store last keys pressed value
 
 unsigned long int lastTime[MAX_BLOBS] = {0};  // 1D array to store last keys pressed value
 
@@ -305,7 +340,7 @@ void MAPPING_VSLIDER_SETUP(void) {
   };
 };
 
-void mapping_vSliders(void) {
+void mapping_vSliders_update(void) {
   for (blob_t* blob_ptr = (blob_t*)ITERATOR_START_FROM_HEAD(&llist_blobs); blob_ptr != NULL; blob_ptr = (blob_t*)ITERATOR_NEXT(blob_ptr)) {
     for (uint8_t index = 0; index < VSLIDERS; index++) {
       if (blob_ptr->centroid.X > mapp_vSliders[index].Xmin &&
@@ -347,7 +382,7 @@ void MAPPING_HSLIDER_SETUP(void) {
   };
 };
 
-void mapping_hSliders(void) {
+void mapping_hSliders_update(void) {
   for (blob_t* blob_ptr = (blob_t*)ITERATOR_START_FROM_HEAD(&llist_blobs); blob_ptr != NULL; blob_ptr = (blob_t*)ITERATOR_NEXT(blob_ptr)) {
     for (uint8_t index = 0; index < HSLIDERS; index++) {
       if (blob_ptr->centroid.X > hSlider[index].Xmin &&
@@ -403,7 +438,7 @@ cSlider_t mapp_cSliders[CS_SLIDERS] = {
 
 cSlider_t* mapp_cSliders_ptr[CS_SLIDERS] = {NULL};
 
-void mapping_cSlider(void) {
+void mapping_cSlider_update(void) {
   for (blob_t* blob_ptr = (blob_t*)ITERATOR_START_FROM_HEAD(&llist_blobs); blob_ptr != NULL; blob_ptr = (blob_t*)ITERATOR_NEXT(blob_ptr)) {
     float x = blob_ptr->centroid.X - CS_RADIUS;
     float y = blob_ptr->centroid.Y - CS_RADIUS;
@@ -481,7 +516,7 @@ cChange_t cChange[CCHANGE] = {
   {1, BZ, 44, 0}  // CUTOFF // ARGS[blobID, mappVal[BX,BY,BW,BH,BD], cChange, lastVal]
 };
 
-void mapping_blob(void) {
+void mapping_blob_update(void) {
   for (blob_t* blob_ptr = (blob_t*)ITERATOR_START_FROM_HEAD(&llist_blobs); blob_ptr != NULL; blob_ptr = (blob_t*)ITERATOR_NEXT(blob_ptr)) {
     for (int index = 0; index < CCHANGE; index++) {
       if (blob_ptr->UID == cChange[index].blobID) {

@@ -12,18 +12,17 @@
 
 #include "blob.h"
 
-#define MAX_BLOBS           32            // [1:64] Set how many blobs can be tracked at the same time
 #define LIFO_NODES          512           // Set the maximum nodes number
 #define X_STRIDE            4             // Speed up X scanning
 #define Y_STRIDE            2             // Speed up Y scanning
 #define BLOB_MIN_PIX        6             // Set the minimum blob pixels
 #define DEBOUNCE_TIME       50            // Avioding undesired bouncing effect when taping on the sensor or sliding.
 
-uint8_t bitmapArray[NEW_FRAME] = {0};     // 1D Array to store (64*64) binary values
-xylr_t lifoArray[LIFO_NODES] = {0};       // 1D Array to store lifo nodes
-blob_t blobArray[MAX_BLOBS] = {0};        // 1D Array to store blobs
-velocity_t blobVelocity[MAX_BLOBS] = {0}; // 1D Array to store XY & Z blobs velocity
-point_t lastCoord[MAX_BLOBS] = {0};
+uint8_t bitmapArray[NEW_FRAME] = {0};     // Store (64*64) binary values
+xylr_t lifoArray[LIFO_NODES] = {0};       // Store lifo nodes
+blob_t blobArray[MAX_BLOBS] = {0};        // Store blobs
+velocity_t blobVelocity[MAX_BLOBS] = {0}; // Store XY & Z blobs velocity
+point_t lastCoord[MAX_BLOBS] = {0};       // Store last blobs coordinates 
 
 llist_t llist_context_stack;              // Free nodes stack
 llist_t llist_context;                    // Used nodes

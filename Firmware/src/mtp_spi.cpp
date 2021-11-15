@@ -8,6 +8,8 @@
 
 #if defined(USB_MTPDISK) || (USB_MTPDISK_MIDI)
 
+char jsonFile[1024] = {0};
+
 LittleFS_SPIFlash myfs;
 File dataFile;
 
@@ -77,7 +79,7 @@ void dump_json(void) {
   dataFile = myfs.open("config.json");
   if (dataFile) {
     while (dataFile.available()) {
-      dataFile.read(json, 1024);
+      dataFile.read(jsonFile, 1024);
     };
     dataFile.close();
     return;

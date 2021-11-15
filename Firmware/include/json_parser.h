@@ -8,22 +8,12 @@
 #define __JSON_PARSER_H__
 
 #include "config.h"
-#include "mapping_lib.h"
+#include "mtp_spi.h"
 
 #include <ArduinoJson.h>  // https://github.com/bblanchon/ArduinoJson.git
+//using namespace ArduinoJson6185_91;
 
-extern char json[];
-
-typedef struct mKey mKey_t;         // Forward declaration located in blob.h
-typedef struct mSwitch mSwitch_t;   // Forward declaration located in blob.h
-
-extern uint8_t map_trigs; 
-extern mKey_t map_trigParams[];
-extern mSwitch_t map_trigKeys[];
-
-extern uint8_t map_togs; 
-extern mKey_t map_togParams[];
-extern mSwitch_t map_togKeys[];
+extern DynamicJsonDocument doc();
 
 void JSON_PARSER_SETUP(void);
 

@@ -78,8 +78,8 @@ struct cChange {
   uint8_t lastX, lastY, lastZ, lastW, lastH;
 };
 
-void MAPPING_LAYOUT_SETUP(void);
-void mapping_layout_update(void);
+void MAPPING_LIB_SETUP(void);
+void mapping_lib_update(void);
 
 void MAPPING_TOUCHPAD_SETUP(void);
 void MAPPING_TRIGGER_SETUP(void);
@@ -89,14 +89,14 @@ void MAPPING_VSLIDER_SETUP(void);
 void MAPPING_HSLIDER_SETUP(void);
 void MAPPING_CSLIDER_SETUP(void);
 
-void mapping_touchpads(void);
-void mapping_triggers(void);
-void mapping_toggles(void);
-void mapping_grid_update(void);
+void mapping_touchpads_updete(void);
+void mapping_triggers_updete(void);
+void mapping_toggles_updete(void);
+void mapping_grid_updete(void);
 void mapping_grid_populate(void);
-void mapping_vSliders(void);
-void mapping_hSliders(void);
-void mapping_cSliders(void);
-void mapping_blobs(void);
+void mapping_vSliders_updete(void);
+void mapping_hSliders_updete(void);
+void mapping_cSliders_updete(void);
+void mapping_blobs_updete(void);
 
 #endif /*__MAPPING_LIB_H__*/

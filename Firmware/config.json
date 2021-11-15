@@ -2,7 +2,7 @@
 	"NAME": "E256",
 	"PROJECT": "ETEXTILE-SYNTHESIZER",
 	"VERSION": "1.0.9",
-	"mapping": {
+	"mapp": {
 		"trigs": [
 			[50, 10, 5, 50],
 			[51, 9, 6.5, 58.5],
