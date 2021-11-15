@@ -14,7 +14,7 @@ All Library dependencies are automatically installed using platformio.ini (lib_d
 
 ### Firmware main file
     /Synth/Firmware/src/main.cpp
- 
+
 ## USB_MTP_MIDI - prerequisite
 ### Update Platformio with the last teensyduino framework
 
@@ -24,7 +24,7 @@ All Library dependencies are automatically installed using platformio.ini (lib_d
 
 ### Create the USB_MTPDISK_MIDI inerface
     ~/.platformio/packages/framework-arduinoteensy/cores/teensy4/usb_desc.h > ADD this deffinition
-
+    
     #elif defined(USB_MTPDISK_MIDI)
       #define VENDOR_ID		            0x16E0
       #define PRODUCT_ID		          0x03D1
@@ -65,19 +65,19 @@ All Library dependencies are automatically installed using platformio.ini (lib_d
       #define ENDPOINT3_CONFIG	      ENDPOINT_RECEIVE_BULK + ENDPOINT_TRANSMIT_BULK
       #define ENDPOINT4_CONFIG	      ENDPOINT_RECEIVE_BULK + ENDPOINT_TRANSMIT_BULK
       #define ENDPOINT5_CONFIG	      ENDPOINT_RECEIVE_UNUSED + ENDPOINT_TRANSMIT_INTERRUPT
-
+    
     ~/.platformio/platforms/teensy/builder/frameworks/arduino.py > ADD:
     line 59: "USB_MTPDISK_MIDI",
-
+    
     ~/.platformio/packages/framework-arduinoteensy/cores/teensy4/usb.c > ADD:
     ligne 1031: #if defined(USB_MTPDISK) || defined(USB_MTPDISK_SERIAL) || (USB_MTPDISK_MIDI)
-
+    
     ~/.pio/libdeps/teensy40/MTP_Teensy/src/MTP_Teensy.cpp > ADD:
     ligne 28: #if defined(USB_MTPDISK) || defined(USB_MTPDISK_SERIAL) || defined(USB_MTPDISK_MIDI)
-
+    
     ~/.pio/libdeps/teensy40/MTP_Teensy/src/MTP_Teensy.h > ADD:
     line 32: #if !defined(USB_MTPDISK) && !defined(USB_MTPDISK_SERIAL) && !defined(USB_MTPDISK_MIDI)
-
+    
     ~/.pio/libdeps/teensy40/MTP_Teensy/src/MTP_Teensy.h > COMMENT:
     line 59: #include <MemoryHexDump.h>
 
@@ -107,7 +107,7 @@ The firmware is using a **platformio.ini** to select the needed fonctionnalites.
 - [HARDWARE_MIDI]: Transmit touch coordinates via HARDWARE_MIDI
 - [USB_OSC]: Transmit touch coordinates via USB_SLIP_OSC
 
-### Use the eTextile-Synthesizer as STANDALONE divice
+### Use the eTextile-Synthesizer as STANDALONE device
 - [SYNTH_PLAYER] : Set the eTextile-Synthesizer as polyphonic synthesizer
 - [GRANULAR_PLAYER] : Set the eTextile-Synthesizer as 
 - [FLASH_PLAYER] : Set the eTextile-Synthesizer as 
@@ -123,7 +123,7 @@ The firmware is using a **platformio.ini** to select the needed fonctionnalites.
 ## Copyright
 Except as otherwise noted, all files in the eTextile-Synthesizer project folder
 
-    Copyright (c) 20014- Maurin Donneaud
+    Copyright (c) 2014-2021 Maurin Donneaud
 
 For information on usage and redistribution, and for a DISCLAIMER OF ALL
 WARRANTIES, see LICENSE.txt included in the eTextile-Synthesizer project folder.
