@@ -42,6 +42,7 @@ mKey_t mapp_trigParams[TRIGGERS] = {
 */
 
 inline void MAPPING_TRIGGER_SETUP(void) {
+
   for (uint8_t keyPos = 0; keyPos < map_trigs; keyPos++) {
     map_trigKeys[keyPos].rect.Xmin = map_trigParams[keyPos].posX - round(map_trigParams[keyPos].size / 2);
     map_trigKeys[keyPos].rect.Xmax = map_trigParams[keyPos].posX + round(map_trigParams[keyPos].size / 2);

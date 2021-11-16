@@ -30,6 +30,7 @@ void LOAD_SPI_FLASH_CONFIG() {
     };
   }
   else {
+
     uint8_t buffer[1024];
     SerialFlashFile conf = SerialFlash.open("config.json");
     uint32_t size = conf.size();
@@ -38,6 +39,7 @@ void LOAD_SPI_FLASH_CONFIG() {
     //DynamicJsonDocument jsonFile(conf.size());
     DynamicJsonDocument jsonFile(1024);
     DeserializationError error = deserializeJson(jsonFile, conf["mapp"]);
+    
     if (error) {
       while (1) {
         digitalWrite(LED_PIN_D1, HIGH);
