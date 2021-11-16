@@ -6,38 +6,8 @@
 
 #include "mapping_lib.h"
 
-uint8_t map_trigs = 0; 
-mKey_t map_trigParams[];
-mSwitch_t map_trigKeys[];
-
-uint8_t map_togs = 0;
-mKey_t map_togParams[];
-mSwitch_t map_togKeys[];
-
-void MAPPING_LIB_SETUP(void){
-
-  map_trigs = doc["mapp"]["trigs"].size();
-  map_trigParams[map_trigs];
-  map_trigKeys[map_trigs];
-
-  for (uint8_t i = 0; i < map_trigs; i++) {
-    map_trigParams[i].posX = doc["mapp"]["trigs"][i][0];
-    map_trigParams[i].posY = doc["mapp"]["trigs"][i][1];
-    map_trigParams[i].size = doc["mapp"]["trigs"][i][2];
-    map_trigParams[i].note = doc["mapp"]["trigs"][i][3];
-  };
-
-  map_togs = doc["mapp"]["togs"].size();
-  map_togParams[map_togs];
-  map_togKeys[map_togs];
-
-  for (uint8_t i = 0; i < map_togs; i++) {
-    map_togParams[i].posX = doc["mapp"]["togs"][i][0];
-    map_togParams[i].posY = doc["mapp"]["togs"][i][1];
-    map_togParams[i].size = doc["mapp"]["togs"][i][2];
-    map_togParams[i].note = doc["mapp"]["togs"][i][3];
-  };
-
+void MAPPING_LIB_SETUP(){
+  
   MAPPING_TOUCHPAD_SETUP();
   MAPPING_TRIGGER_SETUP();
   MAPPING_TOGGLE_SETUP();
@@ -47,18 +17,13 @@ void MAPPING_LIB_SETUP(void){
   MAPPING_CSLIDER_SETUP();
 };
 
-void mapping_lib_update(void) {
-  llist_save_nodes(&midi_node_stack, &midiOut); // Save/rescure all midiOut nodes
-  mapping_touchpads_update();
-  //mapping_grid_populate();
-  //mapping_grid_update();
-  //mapping_triggers_update();
-  //mapping_toggles_update();
-  //mapping_hSliders_update();
-  //mapping_vSliders_update();
-  //mapping_cSliders_update();
-  //mapping_blobs_update();
+void MAPPING_TOUCHPAD_SETUP(void){
+  // TODO
 };
+
+ void mapping_touchpads_update(void){
+   // TODO
+ };
 
 #define TOUCHPAD 4
 mKey_t mapp_touchpadParams[TOUCHPAD] = {
@@ -67,14 +32,6 @@ mKey_t mapp_touchpadParams[TOUCHPAD] = {
   {X_MIN, Y_MIN, WIDTH/2, HEIGHT/2},       // PARAMS[posX, posY, sizeX, sizeY]
   {WIDTH/2, HEIGHT/2, WIDTH/2, HEIGHT/2}   // PARAMS[posX, posY, sizeX, sizeY]
 };
-
-void MAPPING_TOUCHPAD_SETUP(void){
-  // TODO
-};
-
- void mapping_touchpads_update(void){
-   // TODO
- };
 
 /*
 #define TRIGGERS 2
@@ -600,4 +557,17 @@ void mapping_blob_update(void) {
       };
     };
   };
+};
+
+void mapping_lib_update(void) {
+  llist_save_nodes(&midi_node_stack, &midiOut); // Save/rescure all midiOut nodes
+  mapping_touchpads_update();
+  //mapping_grid_populate();
+  //mapping_grid_update();
+  //mapping_triggers_update();
+  //mapping_toggles_update();
+  //mapping_hSliders_update();
+  //mapping_vSliders_update();
+  //mapping_cSliders_update();
+  //mapping_blobs_update();
 };

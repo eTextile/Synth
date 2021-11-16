@@ -4,6 +4,9 @@
   This work is licensed under Creative Commons Attribution-ShareAlike 4.0 International license, see the LICENSE file for details.
 */
 
+#ifndef __PLAYER_SYNTH2_H__
+#define __PLAYER_SYNTH2_H__
+
 #include "config.h"
 #include "llist.h"
 #include "blob.h"
@@ -15,3 +18,5 @@
 #include <SPI.h>           // https://github.com/PaulStoffregen/SPI
 #include <SD.h>            // https://github.com/PaulStoffregen/SD
 #include <SerialFlash.h>   // https://github.com/PaulStoffregen/SerialFlash
+
+#endif /*__PLAYER_SYNTH2_H__*/

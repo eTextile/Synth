@@ -11,7 +11,7 @@
 #include "blob.h"
 #include "llist.h"
 #include "notes.h"
-#include "json_parser.h"
+#include "json_config.h"
 #include "midi_bus.h"
 
 typedef struct mKey mKey_t;

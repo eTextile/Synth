@@ -7,7 +7,7 @@
 #ifndef __USB_MIDI_TRANSMIT_H__
 #define __USB_MIDI_TRANSMIT_H__
 
-#if defined(USB_MTPDISK) || (USB_MTPDISK_MIDI) || (USB_MIDI)
+#if defined(USB_MTPDISK) || (USB_MTPDISK_MIDI) || (USB_MIDI) || (USB_MIDI_SERIAL)
 
 #include "config.h"
 #include "presets.h"

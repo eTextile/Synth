@@ -16,7 +16,7 @@ File dataFile;
 bool write_data = false;
 uint32_t diskSize;
 
-const int chipSelect = 6;
+#define FLASH_CHIP_SELECT  6
 
 MTPStorage storage;
 MTPD mtpd(&storage);
@@ -72,7 +72,7 @@ void write_start(void) {
 void write_stop(void) {
   write_data = false;
   dataFile.close();
-  mtpd.send_DeviceResetEvent();
+  //mtpd.send_DeviceResetEvent();
 };
 
 void dump_json(void) {
