@@ -24,8 +24,8 @@ struct center {
 
 typedef struct circle circle_t;
 struct circle {
-    center_t c;
-    float r;
+    center_t center;
+    float radius;
     float offset;
 };
 
@@ -107,18 +107,17 @@ struct cChange {
   uint8_t lastX, lastY, lastZ, lastW, lastH;
 };
 
-
 extern uint8_t map_trigs;
-extern mKey_t *map_trigParams;
-
+extern mKey_t *map_trigsParams;
 void mapping_triggers_alloc(uint8_t count);
 
-
 extern uint8_t map_togs;
-extern mKey_t *map_togParams;
-
+extern mKey_t *map_togsParams;
 void mapping_toggles_alloc(uint8_t count);
 
+extern uint8_t map_circles;
+extern circle_t *map_circlesParams;
+void mapping_circles_alloc(uint8_t count);
 
 void MAPPING_LIB_SETUP(void);
 void mapping_lib_update(void);

@@ -70,9 +70,7 @@ void MAPPING_POLYGONS_SETUP(void){
 };
 
 void mapping_polygons_update(void) {
-
   for (blob_t* blob_ptr = (blob_t*)ITERATOR_START_FROM_HEAD(&llist_blobs); blob_ptr != NULL; blob_ptr = (blob_t*)ITERATOR_NEXT(blob_ptr)) {
-    
     bool odd_nodes = false;
     uint8_t p = 0;
     int i, j = (polygons[p].vertices_cnt - 1);
@@ -124,9 +122,13 @@ void MAPPING_TOUCHPADS_SETUP(void){
    // TODO
  };
 
-#define CIRCLES 1
-circle_t mapp_circleParams[CIRCLES] = {
-  { {WIDTH/2, HEIGHT/2}, WIDTH/2, 0 },  // PARAMS[[Xcenter, Ycenter], radius, offset]
+
+uint8_t map_circles = 0;
+static circle_t map_circlesParams_privStore[MAX_CIRCLES];
+
+void mapping_circles_alloc(uint8_t count) {
+  map_circles = min(count, MAX_CIRCLES);
+  map_circlesParams = map_circlesParams_privStore;
 };
 
 void MAPPING_CIRCLES_SETUP(void){
@@ -135,15 +137,15 @@ void MAPPING_CIRCLES_SETUP(void){
 
 void mapping_circles_update(void) {
   for (blob_t* blob_ptr = (blob_t*)ITERATOR_START_FROM_HEAD(&llist_blobs); blob_ptr != NULL; blob_ptr = (blob_t*)ITERATOR_NEXT(blob_ptr)) {
-    for (int i = 0; i < CIRCLES; i++) {
-      float x = blob_ptr->centroid.X - mapp_circleParams[i].r;
-      float y = blob_ptr->centroid.Y - mapp_circleParams[i].r;
+    for (int i = 0; i < map_circles; i++) {
+      float x = blob_ptr->centroid.X - map_circlesParams[i].radius;
+      float y = blob_ptr->centroid.Y - map_circlesParams[i].radius;
       float radius = sqrt(x * x + y * y);
-      if (radius < mapp_circleParams[i].r) {
+      if (radius < map_circlesParams[i].radius) {
         float theta = 0;
         // Rotation of Axes through an angle without shifting Origin
-        float posX = x * cos(mapp_circleParams[i].offset) + y * sin(mapp_circleParams[i].offset);
-        float posY = -x * sin(mapp_circleParams[i].offset) + y * cos(mapp_circleParams[i].offset);
+        float posX = x * cos(map_circlesParams[i].offset) + y * sin(map_circlesParams[i].offset);
+        float posY = -x * sin(map_circlesParams[i].offset) + y * cos(map_circlesParams[i].offset);
         if (posX == 0 && 0 < posY) {
           theta = PiII;
         } else if (posX == 0 && posY < 0) {
@@ -164,21 +166,21 @@ void mapping_circles_update(void) {
 };
 
 uint8_t map_trigs = 0;
-mKey_t *map_trigParams = NULL;
-static mKey_t map_trigParams_privStore[MAX_TRIGGERS];
-mSwitch_t map_trigKeys[MAX_TRIGGERS];
+mKey_t *map_trigsParams = NULL;
+static mKey_t map_trigsParams_privStore[MAX_TRIGGERS];
+mSwitch_t map_trigsKey[MAX_TRIGGERS];
 
 void mapping_triggers_alloc(uint8_t count) {
   map_trigs = min(count, MAX_TRIGGERS);
-  map_trigParams = map_trigParams_privStore;
+  map_trigsParams = map_trigsParams_privStore;
 }
 
 inline void MAPPING_TRIGGERS_SETUP(void) {
   for (uint8_t keyPos = 0; keyPos < map_trigs; keyPos++) {
-    map_trigKeys[keyPos].rect.Xmin = map_trigParams[keyPos].posX - round(map_trigParams[keyPos].size / 2);
-    map_trigKeys[keyPos].rect.Xmax = map_trigParams[keyPos].posX + round(map_trigParams[keyPos].size / 2);
-    map_trigKeys[keyPos].rect.Ymin = map_trigParams[keyPos].posY - round(map_trigParams[keyPos].size / 2);
-    map_trigKeys[keyPos].rect.Ymax = map_trigParams[keyPos].posY + round(map_trigParams[keyPos].size / 2);
+    map_trigsKey[keyPos].rect.Xmin = map_trigsParams[keyPos].posX - round(map_trigsParams[keyPos].size / 2);
+    map_trigsKey[keyPos].rect.Xmax = map_trigsParams[keyPos].posX + round(map_trigsParams[keyPos].size / 2);
+    map_trigsKey[keyPos].rect.Ymin = map_trigsParams[keyPos].posY - round(map_trigsParams[keyPos].size / 2);
+    map_trigsKey[keyPos].rect.Ymax = map_trigsParams[keyPos].posY + round(map_trigsParams[keyPos].size / 2);
   };
 };
 
@@ -186,14 +188,14 @@ void mapping_triggers_update(void) {
   for (blob_t* blob_ptr = (blob_t*)ITERATOR_START_FROM_HEAD(&llist_blobs); blob_ptr != NULL; blob_ptr = (blob_t*)ITERATOR_NEXT(blob_ptr)) {
     for (uint8_t keyPos = 0; keyPos < map_trigs; keyPos++) {
       // Test if the blob is within the key limits
-      if (blob_ptr->centroid.X > map_trigKeys[keyPos].rect.Xmin &&
-          blob_ptr->centroid.X < map_trigKeys[keyPos].rect.Xmax &&
-          blob_ptr->centroid.Y > map_trigKeys[keyPos].rect.Ymin &&
-          blob_ptr->centroid.Y < map_trigKeys[keyPos].rect.Ymax) {
+      if (blob_ptr->centroid.X > map_trigsKey[keyPos].rect.Xmin &&
+          blob_ptr->centroid.X < map_trigsKey[keyPos].rect.Xmax &&
+          blob_ptr->centroid.Y > map_trigsKey[keyPos].rect.Ymin &&
+          blob_ptr->centroid.Y < map_trigsKey[keyPos].rect.Ymax) {
         if (!blob_ptr->lastState) {
           midiNode_t* node_ptr = (midiNode_t*)llist_pop_front(&midi_node_stack);  // Get a node from the MIDI node stack
           node_ptr->midiMsg.status = midi::NoteOn;                                // Set MIDI message status to NOTE_OFF
-          node_ptr->midiMsg.data1 = map_trigParams[keyPos].note;                // Set the note
+          node_ptr->midiMsg.data1 = map_trigsParams[keyPos].note;                // Set the note
           //node_ptr->midiMsg.data2 = blob_ptr->velocity.Z                        // Set the velocity TODO
           node_ptr->midiMsg.data2 = 127;                                          // Set the velocity
           node_ptr->midiMsg.channel = MIDI_OUTPUT_CHANNEL;                        // Set the channel see config.h
@@ -205,7 +207,7 @@ void mapping_triggers_update(void) {
         else if (!blob_ptr->state) {
           midiNode_t* node_ptr = (midiNode_t*)llist_pop_front(&midi_node_stack);  // Get a node from the MIDI node stack
           node_ptr->midiMsg.status = midi::NoteOff;                               // Set MIDI message status to NOTE_OFF
-          node_ptr->midiMsg.data1 = map_trigParams[keyPos].note;                    // Set the note
+          node_ptr->midiMsg.data1 = map_trigsParams[keyPos].note;                    // Set the note
           node_ptr->midiMsg.data2 = 0;                                            // Set the velocity
           node_ptr->midiMsg.channel = MIDI_OUTPUT_CHANNEL;                        // Set the channel see config.h
           llist_push_front(&midiOut, node_ptr);                                   // Add the node to the midiOut linked liste
@@ -219,22 +221,22 @@ void mapping_triggers_update(void) {
 };
 
 uint8_t map_togs = 0;
-mKey_t *map_togParams = NULL;
-static mKey_t map_togParams_privStore[MAX_TOGGLES];
-mSwitch_t map_togKeys[MAX_TOGGLES];
+mKey_t *map_togsParams = NULL;
+static mKey_t map_togsParams_privStore[MAX_TOGGLES];
+mSwitch_t map_togsKey[MAX_TOGGLES];
 
 void mapping_toggles_alloc(uint8_t count) {
   map_togs = min(count, MAX_TOGGLES);
-  map_togParams = map_togParams_privStore;
+  map_togsParams = map_togsParams_privStore;
 }
 
 void MAPPING_TOGGLES_SETUP(void) {
   for (uint8_t keyPos = 0; keyPos < map_togs; keyPos++) {
-    map_togKeys[keyPos].rect.Xmin = map_togParams[keyPos].posX - round(map_togParams[keyPos].size / 2);
-    map_togKeys[keyPos].rect.Xmax = map_togParams[keyPos].posX + round(map_togParams[keyPos].size / 2);
-    map_togKeys[keyPos].rect.Ymin = map_togParams[keyPos].posY - round(map_togParams[keyPos].size / 2);
-    map_togKeys[keyPos].rect.Ymax = map_togParams[keyPos].posY + round(map_togParams[keyPos].size / 2);
-    map_togKeys[keyPos].state = false;
+    map_togsKey[keyPos].rect.Xmin = map_togsParams[keyPos].posX - round(map_togsParams[keyPos].size / 2);
+    map_togsKey[keyPos].rect.Xmax = map_togsParams[keyPos].posX + round(map_togsParams[keyPos].size / 2);
+    map_togsKey[keyPos].rect.Ymin = map_togsParams[keyPos].posY - round(map_togsParams[keyPos].size / 2);
+    map_togsKey[keyPos].rect.Ymax = map_togsParams[keyPos].posY + round(map_togsParams[keyPos].size / 2);
+    map_togsKey[keyPos].state = false;
   };
 };
 
@@ -242,19 +244,19 @@ void mapping_toggles_update(void) {
   for (blob_t* blob_ptr = (blob_t*)ITERATOR_START_FROM_HEAD(&llist_blobs); blob_ptr != NULL; blob_ptr = (blob_t*)ITERATOR_NEXT(blob_ptr)) {
     for (uint8_t keyPos = 0; keyPos < map_togs; keyPos++) {
       // Test if the blob is within the key limits
-      if (blob_ptr->centroid.X > map_togKeys[keyPos].rect.Xmin &&
-          blob_ptr->centroid.X < map_togKeys[keyPos].rect.Xmax &&
-          blob_ptr->centroid.Y > map_togKeys[keyPos].rect.Ymin &&
-          blob_ptr->centroid.Y < map_togKeys[keyPos].rect.Ymax) {
+      if (blob_ptr->centroid.X > map_togsKey[keyPos].rect.Xmin &&
+          blob_ptr->centroid.X < map_togsKey[keyPos].rect.Xmax &&
+          blob_ptr->centroid.Y > map_togsKey[keyPos].rect.Ymin &&
+          blob_ptr->centroid.Y < map_togsKey[keyPos].rect.Ymax) {
         if (!blob_ptr->lastState) {
-          map_togKeys[keyPos].state = !map_togKeys[keyPos].state;
+          map_togsKey[keyPos].state = !map_togsKey[keyPos].state;
           midiNode_t* node_ptr = (midiNode_t*)llist_pop_front(&midi_node_stack);    // Get a node from the MIDI node stack
-          if (map_togKeys[keyPos].state) {
+          if (map_togsKey[keyPos].state) {
 #if defined(DEBUG_MAPPING)
             Serial.printf("\nDEBUG_MAPPING_TOGGLES:\tNOTE_ON : %d", toggleParam[keyPos].note);
 #else
             node_ptr->midiMsg.status = midi::NoteOn;                                // Set MIDI message status to NOTE_OFF
-            node_ptr->midiMsg.data1 = map_togParams[keyPos].note;                     // Set the note
+            node_ptr->midiMsg.data1 = map_togsParams[keyPos].note;                     // Set the note
             //node_ptr->midiMsg.data2 = blob_ptr->velocity.Z                        // Set the velocity
             node_ptr->midiMsg.data2 = 127;                                          // Set the velocity
             node_ptr->midiMsg.channel = MIDI_OUTPUT_CHANNEL;                        // Set the channel see config.h
@@ -265,7 +267,7 @@ void mapping_toggles_update(void) {
             Serial.printf("\nDEBUG_MAPPING_TOGGLES:\tNOTE_OFF : %d", toggleParam[keyPos].note);
 #else
             node_ptr->midiMsg.status = midi::NoteOff;                               // Set MIDI message status to NOTE_OFF
-            node_ptr->midiMsg.data1 = map_togParams[keyPos].note;                     // Set the note
+            node_ptr->midiMsg.data1 = map_togsParams[keyPos].note;                     // Set the note
             node_ptr->midiMsg.data2 = 0;                                            // Set the velocity
             node_ptr->midiMsg.channel = MIDI_OUTPUT_CHANNEL;                        // Set the channel see config.h
             llist_push_front(&midiOut, node_ptr);                                   // Add the node to the midiOut linked liste

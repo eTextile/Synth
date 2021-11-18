@@ -17,11 +17,11 @@ inline bool config_load_mapping_triggers(const JsonArray& config) {
     return false;
   }
   mapping_triggers_alloc(config.size());
-  for (uint8_t keyPos = 0; keyPos < map_trigs; keyPos++) {
-    map_trigParams[keyPos].posX = config[keyPos]["posX"];
-    map_trigParams[keyPos].posY = config[keyPos]["posY"];
-    map_trigParams[keyPos].size = config[keyPos]["size"];
-    map_trigParams[keyPos].note = config[keyPos]["note"];
+  for (uint8_t i = 0; i < map_trigs; i++) {
+    map_trigsParams[i].posX = config[i]["posX"];
+    map_trigsParams[i].posY = config[i]["posY"];
+    map_trigsParams[i].size = config[i]["size"];
+    map_trigsParams[i].note = config[i]["note"];
   }
   return true;
 }
@@ -31,27 +31,46 @@ inline bool config_load_mapping_toggles(const JsonArray& config) {
     return false;
   }
   mapping_toggles_alloc(config.size());
-  for (uint8_t keyPos = 0; keyPos < map_togs; keyPos++) {
-    map_togParams[keyPos].posX = config[keyPos]["posX"];
-    map_togParams[keyPos].posY = config[keyPos]["posY"];
-    map_togParams[keyPos].size = config[keyPos]["size"];
-    map_togParams[keyPos].note = config[keyPos]["note"];
+  for (uint8_t i = 0; i < map_togs; i++) {
+    map_togsParams[i].posX = config[i]["posX"];
+    map_togsParams[i].posY = config[i]["posY"];
+    map_togsParams[i].size = config[i]["size"];
+    map_togsParams[i].note = config[i]["note"];
   }
+  return true;
+}
+
+inline bool config_load_mapping_circles(const JsonArray& config) {
+  if (config.isNull()) {
+    return false;
+  }
+  
+  mapping_circles_alloc(config.size());
+  for (uint8_t i = 0; i < map_circles; i++) {
+    map_circlesParams[i].center.x = config[i]["centerX"];
+    map_circlesParams[i].center.y = config[i]["centerY"];
+    map_circlesParams[i].radius = config[i]["radius"];
+    map_circlesParams[i].offset = config[i]["offset"];
+  };
   return true;
 }
 
 inline bool config_load_mapping(const JsonObject& config) {
   if (config.isNull()) {
     return false;
-  }
+  };
 
   if (!config_load_mapping_triggers(config["triggers"])) {
     return false;
-  }
+  };
 
   if (!config_load_mapping_toggles(config["toggles"])) {
     return false;
-  }
+  };
+
+  if (!config_load_mapping_triggers(config["circles"])) {
+    return false;
+  };
 
   return true;
 }

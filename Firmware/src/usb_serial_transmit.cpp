@@ -3,6 +3,7 @@
   Copyright (c) 2014- Maurin Donneaud <maurin@etextile.org>
   This work is licensed under Creative Commons Attribution-ShareAlike 4.0 International license, see the LICENSE file for details.
   See: https://github.com/makeabilitylab/p5js/tree/master/WebSerial/Basic
+  Demo: https://makeabilitylab.github.io/p5js/WebSerial/Basic/SliderOut/
 */
 
 #include "usb_serial_transmit.h"
