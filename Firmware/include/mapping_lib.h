@@ -100,7 +100,7 @@ void mapping_lib_update(void);
 void MAPPING_GRID_SETUP(void);
 void MAPPING_POLYGONS_SETUP(void);
 void MAPPING_TOUCHPADS_SETUP(void);
-
+void MAPPING_CIRCLES_SETUP(void);
 void MAPPING_TRIGGERS_SETUP(void);
 void MAPPING_TOGGLES_SETUP(void);
 void MAPPING_VSLIDERS_SETUP(void);
@@ -111,7 +111,7 @@ void mapping_grid_updete(void);
 void mapping_grid_populate(void);
 void mapping_polygons_update(void);
 void mapping_touchpads_updete(void);
-
+void mapping_circles_updete(void);
 void mapping_triggers_updete(void);
 void mapping_toggles_updete(void);
 void mapping_vSliders_updete(void);
