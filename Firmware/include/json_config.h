@@ -4,6 +4,7 @@
   This work is licensed under Creative Commons Attribution-ShareAlike 4.0 International license, see the LICENSE file for details.
 */
 
+<<<<<<< HEAD
 #ifndef __SPI_FLASH_H__
 #define __SPI_FLASH_H__
 /*
@@ -31,3 +32,11 @@ extern mSwitch_t map_togKeys[];
 void LOAD_SPI_FLASH_CONFIG();
 */
 #endif /*__SPI_FLASH_H__*/
+=======
+#ifndef __JSON_CONFIG_H__
+#define __JSON_CONFIG_H__
+
+void LOAD_SPI_FLASH_CONFIG();
+
+#endif /*__JSON_CONFIG_H__*/
+>>>>>>> 102d795054ed0b09a2ecc421375aba8ec3e758a0

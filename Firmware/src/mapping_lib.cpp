@@ -173,6 +173,16 @@ mKey_t map_trigParams[TRIGGERS] = {
   {50, 30, 10, 33}   // PARAMS[posX, posY, size, note]
 };
 
+uint8_t map_trigs = 0;
+mKey_t *map_trigParams = NULL;
+static mKey_t map_trigParams_privStore[MAX_TRIGGERS];
+mSwitch_t map_trigKeys[MAX_TRIGGERS];
+
+void mapping_triggers_alloc(uint8_t count) {
+  map_trigs = min(count, MAX_TRIGGERS);
+  map_trigParams = map_trigParams_privStore;
+}
+
 inline void MAPPING_TRIGGERS_SETUP(void) {
 
   for (uint8_t keyPos = 0; keyPos < map_trigs; keyPos++) {
@@ -227,6 +237,16 @@ mKey_t map_togParams[TOGGLES] = {
   {10, 10, 5, 64},  // ARGS[posX, posY, size, note]
   {20, 10, 5, 65}   // ARGS[posX, posY, size, note]
 };
+
+uint8_t map_togs = 0;
+mKey_t *map_togParams = NULL;
+static mKey_t map_togParams_privStore[MAX_TOGGLES];
+mSwitch_t map_togKeys[MAX_TOGGLES];
+
+void mapping_toggles_alloc(uint8_t count) {
+  map_togs = min(count, MAX_TOGGLES);
+  map_togParams = map_togParams_privStore;
+}
 
 void MAPPING_TOGGLES_SETUP(void) {
   for (uint8_t keyPos = 0; keyPos < map_togs; keyPos++) {
@@ -528,6 +548,10 @@ cSlider_t mapp_cSliders[CS_SLIDERS] = {
 };
 
 cSlider_t* mapp_cSliders_ptr[CS_SLIDERS] = {NULL};
+
+void MAPPING_CSLIDERS_SETUP() {
+  // FIXME
+}
 
 void mapping_cSliders_update(void) {
   for (blob_t* blob_ptr = (blob_t*)ITERATOR_START_FROM_HEAD(&llist_blobs); blob_ptr != NULL; blob_ptr = (blob_t*)ITERATOR_NEXT(blob_ptr)) {

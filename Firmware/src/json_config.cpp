@@ -5,30 +5,78 @@
 */
 
 #include "json_config.h"
+<<<<<<< HEAD
 /*
+=======
+#include "mapping_lib.h"
+
+#include <ArduinoJson.h>
+#include <SerialFlash.h>
+
+>>>>>>> 102d795054ed0b09a2ecc421375aba8ec3e758a0
 #define FLASH_CHIP_SELECT  6
 
-uint8_t map_trigs = 0;
-mKey_t map_trigParams[] = {0};
-mSwitch_t map_trigKeys[] = {0};
+inline bool config_load_mapping_triggers(const JsonArray& config) {
+  if (config.isNull()) {
+    return false;
+  }
+  mapping_triggers_alloc(config.size());
+  for (uint8_t keyPos = 0; keyPos < map_trigs; keyPos++) {
+    map_trigParams[keyPos].posX = config[keyPos]["posX"];
+    map_trigParams[keyPos].posY = config[keyPos]["posY"];
+    map_trigParams[keyPos].size = config[keyPos]["size"];
+    map_trigParams[keyPos].note = config[keyPos]["note"];
+  }
+  return true;
+}
 
-uint8_t map_togs = 0;
-mKey_t map_togParams[] = {0};
-mSwitch_t map_togKeys[] = {0};
+inline bool config_load_mapping_toggles(const JsonArray& config) {
+  if (config.isNull()) {
+    return false;
+  }
+  mapping_toggles_alloc(config.size());
+  for (uint8_t keyPos = 0; keyPos < map_togs; keyPos++) {
+    map_togParams[keyPos].posX = config[keyPos]["posX"];
+    map_togParams[keyPos].posY = config[keyPos]["posY"];
+    map_togParams[keyPos].size = config[keyPos]["size"];
+    map_togParams[keyPos].note = config[keyPos]["note"];
+  }
+  return true;
+}
 
+inline bool config_load_mapping(const JsonObject& config) {
+  if (config.isNull()) {
+    return false;
+  }
+
+  if (!config_load_mapping_triggers(config["triggers"])) {
+    return false;
+  }
+
+  if (!config_load_mapping_toggles(config["toggles"])) {
+    return false;
+  }
+
+  return true;
+}
+
+static void config_error(void) {
+  while (1) {
+    digitalWrite(LED_PIN_D1, HIGH);
+    digitalWrite(LED_PIN_D2, HIGH);
+    delay(5);
+    digitalWrite(LED_PIN_D1, LOW);
+    digitalWrite(LED_PIN_D2, LOW);
+    delay(5);
+  };
+}
 
 void LOAD_SPI_FLASH_CONFIG() {
 
   if (!SerialFlash.begin(FLASH_CHIP_SELECT)) {
-    while (1) {
-      digitalWrite(LED_PIN_D1, HIGH);
-      digitalWrite(LED_PIN_D2, HIGH);
-      delay(5);
-      digitalWrite(LED_PIN_D1, LOW);
-      digitalWrite(LED_PIN_D2, LOW);
-      delay(5);
-    };
+    config_error();
   }
+<<<<<<< HEAD
   else {
 
     uint8_t buffer[1024];
@@ -75,3 +123,22 @@ void LOAD_SPI_FLASH_CONFIG() {
   };
 };
 */
+=======
+
+  uint8_t configData[1024];
+  SerialFlashFile configFile = SerialFlash.open("config.json");
+  configFile.read(configData, configFile.size());
+
+  StaticJsonDocument<1024> config;
+  DeserializationError error = deserializeJson(config, configData);
+  if (error) {
+    config_error();
+  }
+
+  if (!config_load_mapping(config["mapping"])) {
+    // FIXME: loading JSON config failed! abort? alert? panic?
+  }
+
+  configFile.close();
+}
+>>>>>>> 102d795054ed0b09a2ecc421375aba8ec3e758a0

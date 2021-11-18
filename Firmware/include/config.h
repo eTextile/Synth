@@ -43,6 +43,8 @@
 #define HEIGHT                   (Y_MAX - Y_MIN)
 
 #define MAX_BLOBS                8  // [0:7] How many blobs can be tracked at the same time
+#define MAX_TRIGGERS             8
+#define MAX_TOGGLES              8
 
 //#define PI                     (float)3.1415926535897932384626433832795
 #define IIPi                     (float)(2 * PI)
