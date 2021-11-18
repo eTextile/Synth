@@ -10,7 +10,7 @@
 #include "config.h"
 #include "json_config.h"
 
-#if defined(USB_MTPDISK) || (USB_MTPDISK_MIDI)
+#if defined(USB_MTPDISK) || defined(USB_MTPDISK_MIDI)
 
 #include <FS.h>
 #include <LittleFS.h>

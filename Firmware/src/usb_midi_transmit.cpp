@@ -137,4 +137,5 @@ void usb_midi_transmit(void) {
       break;
   };
 };
+
 #endif

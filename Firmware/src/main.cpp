@@ -56,7 +56,7 @@
 #if defined(PLAYER_GRANULAR)
 #include "player_granular.h"
 #endif
-#if defined(PLAYER_FLASH) || (PLAYER_SYNTH) || (PLAYER_SYNTH2) || (PLAYER_GRANULAR)
+#if defined(PLAYER_FLASH) || defined(PLAYER_SYNTH) || defined(PLAYER_SYNTH2) || defined(PLAYER_GRANULAR)
 #include "soundCard.h"
 #endif
 
@@ -122,10 +122,10 @@ HARDWARE_MIDI_TRANSMIT_SETUP();
 };
 
 void loop() {
-#if defined(USB_MTPDISK) || (USB_MTPDISK_MIDI)
+#if defined(USB_MTPDISK) || defined(USB_MTPDISK_MIDI)
   handle_mtp_spi();
 #endif
-#if defined(USB_MIDI) || (USB_MIDI_SERIAL) || (USB_MTPDISK_MIDI)
+#if defined(USB_MIDI) || defined(USB_MIDI_SERIAL) || defined(USB_MTPDISK_MIDI)
   usb_midi_read_input();
 #endif
 #if defined(USB_OSC)
@@ -165,7 +165,7 @@ void loop() {
 #if defined(PLAYER_FLASH)
   player_flash();
 #endif
-#if defined(USB_MIDI) || (USB_MTPDISK_MIDI)
+#if defined(USB_MIDI) || defined(USB_MTPDISK_MIDI)
   usb_midi_transmit();
 #endif
 #if defined(USB_MIDI_SERIAL)

@@ -6,7 +6,7 @@
 
 #include "mtp_spi.h"
 
-#if defined(USB_MTPDISK) || (USB_MTPDISK_MIDI)
+#if defined(USB_MTPDISK) || defined(USB_MTPDISK_MIDI)
 
 char jsonFile[1024] = {0};
 

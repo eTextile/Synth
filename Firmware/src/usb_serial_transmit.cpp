@@ -7,7 +7,7 @@
 
 #include "usb_serial_transmit.h"
 
-#if defined(USB_MIDI_SERIAL)
+#if defined(USB_MIDI_SERIAL) || defined(USB_SERIAL)
 
 #define SERIAL_TRANSMIT_INTERVAL 10
 unsigned long serialTransmitTimeStamp = 0;
