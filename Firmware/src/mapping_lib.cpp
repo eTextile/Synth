@@ -17,6 +17,96 @@ void MAPPING_LIB_SETUP(){
   MAPPING_CSLIDER_SETUP();
 };
 
+/*
+  Algorithm: http://alienryderflex.com/polygon
+  To find if a point lies within a convex polygon, we draw an imaginary line passing through
+  the point and parallel to x axis. On either side of the point, if the line intersects
+  polygon edges odd number of times, the point is inside. For even number, it is outside.
+        _ _ _
+       /     /
+    --/-----/---
+     /     /
+    /_ _ _/
+  
+  The function will return true if the point x,y is inside the polygon, or
+  false if it is not.  If the point is exactly on the edge of the polygon,
+  then the function may return true or false.
+  Need to fix that (or just live with it as it is a border condition or define polygon so that entire range is within it)
+ */
+
+polygon_t polygons[] =    {
+        { MAX_VERTICES, {0}, {0}, { {10, 10}, {20, 20}, {40, 30}, {40, 5} } },
+        { MAX_VERTICES, {0}, {0}, { {-25, 0}, {-30, -10}, {-40, -20}, {-10, -30} } },
+        { MAX_VERTICES, {0}, {0}, { {-10, 10}, {-20, 10}, {-30, 30}, {-10, 20} } },
+        { MAX_VERTICES, {0}, {0}, { {0.10, 0.56}, {0.26, 0.54}, {0.32, 0.68}, {0.02, 0.90} } }
+};
+
+uint8_t polygons_cnt = (sizeof(polygons) / sizeof(polygons[0]));
+
+// For line equation y = mx + c, we Pre-compute m and c for all edges of a given polygon
+void MAPPING_POLYGON_SETUP(void){
+    uint8_t p = 0;
+    int i, j = (polygons[p].vertices_cnt - 1);
+    float x1, x2, y1, y2;
+    
+    for (p = 0; p < polygons_cnt; p++) {
+        for (i = 0; i < polygons[p].vertices_cnt; i++) {
+            x1 = polygons[p].vertices[i].x;
+            x2 = polygons[p].vertices[j].x;
+            y1 = polygons[p].vertices[i].y;
+            y2 = polygons[p].vertices[j].y;
+            if(y2 == y1) {
+                polygons[p].c[i] = x1;
+                polygons[p].m[i] = 0;
+            } 
+            else {
+                polygons[p].c[i] = x1 - (y1 * x2) / (y2 - y1) + (y1 * x1) / (y2 - y1);
+                polygons[p].m[i] = (x2 - x1) / (y2 - y1);
+            };
+            j = i;
+        };
+    };
+};
+
+void mapping_polygon_update(void) {
+
+  for (blob_t* blob_ptr = (blob_t*)ITERATOR_START_FROM_HEAD(&llist_blobs); blob_ptr != NULL; blob_ptr = (blob_t*)ITERATOR_NEXT(blob_ptr)) {
+    
+    bool odd_nodes = false;
+    uint8_t p = 0;
+    int i, j = (polygons[p].vertices_cnt - 1);
+    float x1, x2, y1, y2;
+
+    for (p = 0; p < polygons_cnt; p++) {
+      odd_nodes = false;
+      for (i = 0; i < polygons[p].vertices_cnt; i++) {
+        x1 = polygons[p].vertices[i].x;
+        x2 = polygons[p].vertices[j].x;
+        y1 = polygons[p].vertices[i].y;
+        y2 = polygons[p].vertices[j].y;
+        if ((y1 < blob_ptr->centroid.Y && y2 >= blob_ptr->centroid.Y) ||
+            (y2 < blob_ptr->centroid.Y && y1 >= blob_ptr->centroid.Y)) {
+          odd_nodes ^= ((blob_ptr->centroid.Y * polygons[p].m[i] + polygons[p].c[i]) < blob_ptr->centroid.X);
+        };
+        j = i;
+      };
+      if (odd_nodes) {
+          // TODO: get the max width & max height and scale it to [0-1]
+#if defined(DEBUG_MAPPING)
+    Serial.printf("\nDEBUG_MAPPING_POLYGONS:\tPoint %f %f is inside polygon %d\n", blob_ptr->centroid.X, blob_ptr->centroid.Y, p);
+#endif
+        break;
+      };
+    };
+    if (p == polygons_cnt) {
+      printf("Point %f %f does not lie within any polygon\n", x, y);
+    };
+  };
+};
+
+
+
+// 
 void MAPPING_TOUCHPAD_SETUP(void){
   // TODO
 };
@@ -468,6 +558,8 @@ void mapping_cSlider_update(void) {
   };
 };
 
+// This is temporary function
+// Instead of associating functionality to blob ID we will use 2D graphic shapes specialised into the textile surface
 #define CCHANGE 2
 cChange_t cChange[CCHANGE] = {
   {0, BZ, 42, 0}, // DETUNE // ARGS[blobID, mappVal[BX,BY,BW,BH,BD], cChange, lastVal]

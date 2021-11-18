@@ -14,6 +14,22 @@
 #include "json_config.h"
 #include "midi_bus.h"
 
+#define MAX_VERTICES 5
+
+typedef struct vertice vertice_t;
+struct vertice {
+    float x;
+    float y;
+};
+
+typedef struct polygon polygon_t;
+struct polygon {
+    uint8_t vertices_cnt;
+    float m[MAX_VERTICES]; // slope of the line
+    float c[MAX_VERTICES];
+    vertice_t vertices[MAX_VERTICES];
+};
+
 typedef struct mKey mKey_t;
 struct mKey {
   uint8_t posX;
@@ -82,6 +98,7 @@ void MAPPING_LIB_SETUP(void);
 void mapping_lib_update(void);
 
 void MAPPING_TOUCHPAD_SETUP(void);
+void MAPPING_POLYGON_SETUP(void);
 void MAPPING_TRIGGER_SETUP(void);
 void MAPPING_TOGGLE_SETUP(void);
 void MAPPING_GRID_SETUP(void);
@@ -89,6 +106,7 @@ void MAPPING_VSLIDER_SETUP(void);
 void MAPPING_HSLIDER_SETUP(void);
 void MAPPING_CSLIDER_SETUP(void);
 
+void mapping_polygon_update(void);
 void mapping_touchpads_updete(void);
 void mapping_triggers_updete(void);
 void mapping_toggles_updete(void);
