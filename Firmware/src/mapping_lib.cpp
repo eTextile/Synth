@@ -7,7 +7,7 @@
 #include "mapping_lib.h"
 
 void MAPPING_LIB_SETUP(){
-  
+  MAPPING_POLYGON_SETUP();
   MAPPING_TOUCHPAD_SETUP();
   MAPPING_TRIGGER_SETUP();
   MAPPING_TOGGLE_SETUP();
@@ -99,7 +99,9 @@ void mapping_polygon_update(void) {
       };
     };
     if (p == polygons_cnt) {
-      printf("Point %f %f does not lie within any polygon\n", x, y);
+#if defined(DEBUG_MAPPING)
+      printf("\nDEBUG_MAPPING_POLYGONS:\tPoint %f %f does not lie within any polygon\n", blob_ptr->centroid.X, blob_ptr->centroid.Y);
+#endif
     };
   };
 };
