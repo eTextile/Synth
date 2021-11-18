@@ -7,14 +7,14 @@
 #include "mapping_lib.h"
 
 void MAPPING_LIB_SETUP(){
-  MAPPING_POLYGON_SETUP();
-  MAPPING_TOUCHPAD_SETUP();
-  MAPPING_TRIGGER_SETUP();
-  MAPPING_TOGGLE_SETUP();
+  MAPPING_POLYGONS_SETUP();
+  MAPPING_TOUCHPADS_SETUP();
+  MAPPING_TRIGGERS_SETUP();
+  MAPPING_TOGGLES_SETUP();
   MAPPING_GRID_SETUP();
-  MAPPING_VSLIDER_SETUP();
-  MAPPING_HSLIDER_SETUP();
-  MAPPING_CSLIDER_SETUP();
+  MAPPING_VSLIDERS_SETUP();
+  MAPPING_HSLIDERS_SETUP();
+  MAPPING_CSLIDERS_SETUP();
 };
 
 /*
@@ -44,7 +44,7 @@ polygon_t polygons[] =    {
 uint8_t polygons_cnt = (sizeof(polygons) / sizeof(polygons[0]));
 
 // For line equation y = mx + c, we Pre-compute m and c for all edges of a given polygon
-void MAPPING_POLYGON_SETUP(void){
+void MAPPING_POLYGONS_SETUP(void){
     uint8_t p = 0;
     int i, j = (polygons[p].vertices_cnt - 1);
     float x1, x2, y1, y2;
@@ -68,7 +68,7 @@ void MAPPING_POLYGON_SETUP(void){
     };
 };
 
-void mapping_polygon_update(void) {
+void mapping_polygons_update(void) {
 
   for (blob_t* blob_ptr = (blob_t*)ITERATOR_START_FROM_HEAD(&llist_blobs); blob_ptr != NULL; blob_ptr = (blob_t*)ITERATOR_NEXT(blob_ptr)) {
     
@@ -109,7 +109,7 @@ void mapping_polygon_update(void) {
 
 
 // 
-void MAPPING_TOUCHPAD_SETUP(void){
+void MAPPING_TOUCHPADS_SETUP(void){
   // TODO
 };
 
@@ -133,7 +133,7 @@ mKey_t mapp_trigParams[TRIGGERS] = {
 };
 */
 
-inline void MAPPING_TRIGGER_SETUP(void) {
+inline void MAPPING_TRIGGERS_SETUP(void) {
 
   for (uint8_t keyPos = 0; keyPos < map_trigs; keyPos++) {
     map_trigKeys[keyPos].rect.Xmin = map_trigParams[keyPos].posX - round(map_trigParams[keyPos].size / 2);
@@ -187,7 +187,7 @@ key_t mapp_togParams[TOGGLES] = {
 };
 */
 
-void MAPPING_TOGGLE_SETUP(void) {
+void MAPPING_TOGGLES_SETUP(void) {
   for (uint8_t keyPos = 0; keyPos < map_togs; keyPos++) {
     map_togKeys[keyPos].rect.Xmin = map_togParams[keyPos].posX - round(map_togParams[keyPos].size / 2);
     map_togKeys[keyPos].rect.Xmax = map_togParams[keyPos].posX + round(map_togParams[keyPos].size / 2);
@@ -381,7 +381,7 @@ vSlider_t mapp_vsParams[VSLIDERS] = {
   {30, 10, 40, 10, 33, 0}   // ARGS[posX, Ymin, Ymax, width, cChnage, lastVal]
 };
 
-void MAPPING_VSLIDER_SETUP(void) {
+void MAPPING_VSLIDERS_SETUP(void) {
   for (uint8_t index = 0; index < VSLIDERS; index++) {
     mapp_vSliders[index].Xmin = mapp_vsParams[index].posX - round(mapp_vsParams[index].width / 2);
     mapp_vSliders[index].Xmax = mapp_vsParams[index].posX + round(mapp_vsParams[index].width / 2);
@@ -423,7 +423,7 @@ hSlider_t hSliderParams[HSLIDERS] = {
   {30, 15, 40, 10, 45, 0}   // ARGS[posY, Xmin, Xmax, height, cChange, lastVal]
 };
 
-void MAPPING_HSLIDER_SETUP(void) {
+void MAPPING_HSLIDERS_SETUP(void) {
   for (uint8_t index = 0; index < VSLIDERS; index++) {
     hSlider[index].Xmin = hSliderParams[index].Xmin;
     hSlider[index].Xmax = hSliderParams[index].Xmax;
@@ -488,7 +488,7 @@ cSlider_t mapp_cSliders[CS_SLIDERS] = {
 
 cSlider_t* mapp_cSliders_ptr[CS_SLIDERS] = {NULL};
 
-void mapping_cSlider_update(void) {
+void mapping_cSliders_update(void) {
   for (blob_t* blob_ptr = (blob_t*)ITERATOR_START_FROM_HEAD(&llist_blobs); blob_ptr != NULL; blob_ptr = (blob_t*)ITERATOR_NEXT(blob_ptr)) {
     float x = blob_ptr->centroid.X - CS_RADIUS;
     float y = blob_ptr->centroid.Y - CS_RADIUS;
@@ -656,7 +656,8 @@ void mapping_blob_update(void) {
 
 void mapping_lib_update(void) {
   llist_save_nodes(&midi_node_stack, &midiOut); // Save/rescure all midiOut nodes
-  mapping_touchpads_update();
+  mapping_polygons_update();
+  //mapping_touchpads_update();
   //mapping_grid_populate();
   //mapping_grid_update();
   //mapping_triggers_update();

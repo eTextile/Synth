@@ -97,21 +97,23 @@ struct cChange {
 void MAPPING_LIB_SETUP(void);
 void mapping_lib_update(void);
 
-void MAPPING_TOUCHPAD_SETUP(void);
-void MAPPING_POLYGON_SETUP(void);
-void MAPPING_TRIGGER_SETUP(void);
-void MAPPING_TOGGLE_SETUP(void);
 void MAPPING_GRID_SETUP(void);
-void MAPPING_VSLIDER_SETUP(void);
-void MAPPING_HSLIDER_SETUP(void);
-void MAPPING_CSLIDER_SETUP(void);
+void MAPPING_POLYGONS_SETUP(void);
+void MAPPING_TOUCHPADS_SETUP(void);
 
-void mapping_polygon_update(void);
-void mapping_touchpads_updete(void);
-void mapping_triggers_updete(void);
-void mapping_toggles_updete(void);
+void MAPPING_TRIGGERS_SETUP(void);
+void MAPPING_TOGGLES_SETUP(void);
+void MAPPING_VSLIDERS_SETUP(void);
+void MAPPING_HSLIDERS_SETUP(void);
+void MAPPING_CSLIDERS_SETUP(void);
+
 void mapping_grid_updete(void);
 void mapping_grid_populate(void);
+void mapping_polygons_update(void);
+void mapping_touchpads_updete(void);
+
+void mapping_triggers_updete(void);
+void mapping_toggles_updete(void);
 void mapping_vSliders_updete(void);
 void mapping_hSliders_updete(void);
 void mapping_cSliders_updete(void);
