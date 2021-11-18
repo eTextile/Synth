@@ -2,18 +2,18 @@
 	"NAME": "E256",
 	"PROJECT": "ETEXTILE-SYNTHESIZER",
 	"VERSION": "1.0.9",
-	"mapp": {
-		"trigs": [
-			[50, 10, 5, 50],
-			[51, 9, 6.5, 58.5],
-			[52, 8, 7, 56],
-			[51, 9, 6.5, 58.5]
+	"mapping": {
+		"triggers": [
+			{ "posX": 50, "posY": 10, "size": 5, "note": 50 },
+			{ "posX": 51, "posY": 9, "size": 6.5, "note": 58.5 },
+			{ "posX": 52, "posY": 8, "size": 7, "note": 56 },
+			{ "posX": 51, "posY": 9, "size": 6.5, "note": 58.5 }
 		],
-		"togs": [
-			[50, 10, 5, 50],
-			[51, 9, 6.5, 58.5],
-			[52, 8, 7, 56],
-			[51, 9, 6.5, 58.5]
+		"toggles": [
+			{ "posX": 50, "posY": 10, "size": 5, "note": 50 },
+			{ "posX": 51, "posY": 9, "size": 6.5, "note": 58.5 },
+			{ "posX": 52, "posY": 8, "size": 7, "note": 56 },
+			{ "posX": 51, "posY": 9, "size": 6.5, "note": 58.5 }
 		]
 	}
 }
