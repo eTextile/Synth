@@ -164,13 +164,14 @@ void mapping_circles_update(void) {
   };
 };
 
-/*
+
 #define TRIGGERS 2
-mKey_t mapp_trigParams[TRIGGERS] = {
+uint8_t map_trigs;
+mSwitch_t map_trigKeys[TRIGGERS];
+mKey_t map_trigParams[TRIGGERS] = {
   {30, 20, 10, 44},  // PARAMS[posX, posY, size, note]
   {50, 30, 10, 33}   // PARAMS[posX, posY, size, note]
 };
-*/
 
 inline void MAPPING_TRIGGERS_SETUP(void) {
 
@@ -218,13 +219,14 @@ void mapping_triggers_update(void) {
   };
 };
 
-/*
+
 #define TOGGLES 2
-key_t mapp_togParams[TOGGLES] = {
+uint8_t map_togs;
+mSwitch_t map_togKeys[TOGGLES];
+mKey_t map_togParams[TOGGLES] = {
   {10, 10, 5, 64},  // ARGS[posX, posY, size, note]
   {20, 10, 5, 65}   // ARGS[posX, posY, size, note]
 };
-*/
 
 void MAPPING_TOGGLES_SETUP(void) {
   for (uint8_t keyPos = 0; keyPos < map_togs; keyPos++) {

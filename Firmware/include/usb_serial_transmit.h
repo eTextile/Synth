@@ -9,7 +9,12 @@
 
 #include "config.h"
 #include "presets.h"
+#include "llist.h"
+#include "blob.h"
 
 void USB_SERIAL_TRANSMIT_SETUP(void);
+
+void usb_serial_handle_input(void);
+void usb_serial_transmit(void);
 
 #endif /*__USB_SERIAL_TRANSMIT_H__*/

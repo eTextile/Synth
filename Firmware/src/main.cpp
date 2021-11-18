@@ -27,7 +27,7 @@
 #endif
 
 #if defined(USB_MIDI_SERIAL)
-#include "json_config.h"
+//#include "json_config.h"
 #include "usb_serial_transmit.h"
 #include "usb_midi_transmit.h"
 #endif
@@ -76,36 +76,30 @@ void setup() {
 
 #if defined(USB_MTPDISK)
 MTP_SPI_SETUP();
-LOAD_SPI_FLASH_CONFIG();
+//LOAD_SPI_FLASH_CONFIG();
 USB_OSC_TRANSMIT_SETUP();
 #endif
-
 #if defined(USB_MTPDISK_MIDI)
 MTP_SPI_SETUP();
-LOAD_SPI_FLASH_CONFIG();
+//LOAD_SPI_FLASH_CONFIG();
 USB_MIDI_TRANSMIT_SETUP();
 #endif
-
 #if defined(USB_SERIAL)
-LOAD_SPI_FLASH_CONFIG();
+//LOAD_SPI_FLASH_CONFIG();
 USB_OSC_TRANSMIT_SETUP();
 #endif
-
 #if defined(USB_MIDI_SERIAL)
-LOAD_SPI_FLASH_CONFIG();
+//LOAD_SPI_FLASH_CONFIG();
 USB_SERIAL_TRANSMIT_SETUP();
 USB_MIDI_TRANSMIT_SETUP();
 #endif
-
 #if defined(HARDWARE_MIDI)
-LOAD_SPI_FLASH_CONFIG();
+//LOAD_SPI_FLASH_CONFIG();
 HARDWARE_MIDI_TRANSMIT_SETUP();
 #endif
-
 #if defined(RUNING_MEDIAN)
   RUNING_MEDIAN_SETUP();
 #endif
-
 #if defined(MAPPING_LAYOUT)
   MAPPING_LIB_SETUP();
 #endif
@@ -171,8 +165,12 @@ void loop() {
 #if defined(PLAYER_FLASH)
   player_flash();
 #endif
-#if defined(USB_MIDI) || (USB_MIDI_SERIAL) || (USB_MTPDISK_MIDI)
+#if defined(USB_MIDI) || (USB_MTPDISK_MIDI)
   usb_midi_transmit();
+#endif
+#if defined(USB_MIDI_SERIAL)
+  usb_midi_transmit();
+  usb_serial_transmit();
 #endif
 #if defined(USB_OSC)
   usb_osc_transmit();

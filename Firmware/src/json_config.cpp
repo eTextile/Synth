@@ -5,7 +5,7 @@
 */
 
 #include "json_config.h"
-
+/*
 #define FLASH_CHIP_SELECT  6
 
 uint8_t map_trigs = 0;
@@ -74,3 +74,4 @@ void LOAD_SPI_FLASH_CONFIG() {
     };
   };
 };
+*/

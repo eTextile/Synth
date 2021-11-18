@@ -6,7 +6,7 @@
 
 #ifndef __SPI_FLASH_H__
 #define __SPI_FLASH_H__
-
+/*
 #include "config.h"
 #include "mapping_lib.h"
 
@@ -29,5 +29,5 @@ extern mKey_t map_togParams[];
 extern mSwitch_t map_togKeys[];
 
 void LOAD_SPI_FLASH_CONFIG();
-
+*/
 #endif /*__SPI_FLASH_H__*/

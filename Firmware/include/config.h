@@ -23,7 +23,8 @@
 #define ENCODER_PIN_B           9
 #endif
 
-#define BAUD_RATE                230400
+//#define BAUD_RATE                230400
+#define BAUD_RATE                9600
 #define RAW_COLS                 16
 #define RAW_ROWS                 16
 #define RAW_FRAME                (RAW_COLS * RAW_ROWS)
