@@ -107,6 +107,19 @@ struct cChange {
   uint8_t lastX, lastY, lastZ, lastW, lastH;
 };
 
+
+extern uint8_t map_trigs;
+extern mKey_t *map_trigParams;
+
+void mapping_triggers_alloc(uint8_t count);
+
+
+extern uint8_t map_togs;
+extern mKey_t *map_togParams;
+
+void mapping_toggles_alloc(uint8_t count);
+
+
 void MAPPING_LIB_SETUP(void);
 void mapping_lib_update(void);
 
