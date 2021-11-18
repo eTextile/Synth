@@ -44,7 +44,7 @@ polygon_t polygons[] =    {
 
 uint8_t polygons_cnt = (sizeof(polygons) / sizeof(polygons[0]));
 
-// For line equation y = mx + c, we Pre-compute m and c for all edges of a given polygon
+// For line equation y = mx + c, we pre-compute m and c for all edges of a given polygon
 void MAPPING_POLYGONS_SETUP(void){
     uint8_t p = 0;
     int i, j = (polygons[p].vertices_cnt - 1);
@@ -125,13 +125,44 @@ void MAPPING_TOUCHPADS_SETUP(void){
  };
 
 
-void MAPPING_CIRCLES_SETUP(void){
-  // TODO
+#define CIRCLES 1
+circle_t mapp_circleParams[CIRCLES] = {
+  { {WIDTH/2, HEIGHT/2}, WIDTH/2, 0 },  // PARAMS[[Xcenter, Ycenter], radius, offset]
 };
 
- void mapping_circles_update(void){
-   // TODO
- };
+void MAPPING_CIRCLES_SETUP(void){
+   // Nothing to pre-compute
+};
+
+void mapping_circles_update(void) {
+  for (blob_t* blob_ptr = (blob_t*)ITERATOR_START_FROM_HEAD(&llist_blobs); blob_ptr != NULL; blob_ptr = (blob_t*)ITERATOR_NEXT(blob_ptr)) {
+    for (int i = 0; i < CIRCLES; i++) {
+      float x = blob_ptr->centroid.X - mapp_circleParams[i].r;
+      float y = blob_ptr->centroid.Y - mapp_circleParams[i].r;
+      float radius = sqrt(x * x + y * y);
+      if (radius < mapp_circleParams[i].r) {
+        float theta = 0;
+        // Rotation of Axes through an angle without shifting Origin
+        float posX = x * cos(mapp_circleParams[i].offset) + y * sin(mapp_circleParams[i].offset);
+        float posY = -x * sin(mapp_circleParams[i].offset) + y * cos(mapp_circleParams[i].offset);
+        if (posX == 0 && 0 < posY) {
+          theta = PiII;
+        } else if (posX == 0 && posY < 0) {
+          theta = IIIPiII;
+        } else if (posX < 0) {
+          theta = atanf(posY / posX) + PI;
+        } else if (posY < 0) {
+          theta = atanf(posY / posX) + IIPi;
+        } else {
+          theta = atanf(posY / posX);
+        }
+#if defined(DEBUG_MAPPING)
+        Serial.printf("\nDEBUG_MAPPING_CIRCLES:\tCircleID:\t%d\tradius:\t%fTheta:\t%f", i, radius, theta);
+#endif
+      };
+    };
+  };
+};
 
 /*
 #define TRIGGERS 2

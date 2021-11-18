@@ -16,6 +16,19 @@
 
 #define MAX_VERTICES 5
 
+typedef struct center center_t;
+struct center {
+    float x;
+    float y;
+};
+
+typedef struct circle circle_t;
+struct circle {
+    center_t c;
+    float r;
+    float offset;
+};
+
 typedef struct vertice vertice_t;
 struct vertice {
     float x;
