@@ -6,11 +6,7 @@
 
 #include "usb_midi_transmit.h"
 
-<<<<<<< HEAD
-#if defined(USB_MTPDISK) || (USB_MTPDISK_MIDI) || (USB_MIDI) || (USB_MIDI_SERIAL)
-=======
 #if defined(USB_MTPDISK) || defined(USB_MTPDISK_MIDI) || defined(USB_MIDI) || defined(USB_MIDI_SERIAL)
->>>>>>> 102d795054ed0b09a2ecc421375aba8ec3e758a0
 
 #define MIDI_TRANSMIT_INTERVAL 10
 unsigned long int usbTransmitTimeStamp = 0;

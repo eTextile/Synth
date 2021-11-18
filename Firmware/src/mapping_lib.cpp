@@ -7,15 +7,15 @@
 #include "mapping_lib.h"
 
 void MAPPING_LIB_SETUP(){
-  MAPPING_GRID_SETUP();
-  MAPPING_POLYGONS_SETUP();
-  MAPPING_TOUCHPADS_SETUP();
-  MAPPING_CIRCLES_SETUP();
+  //MAPPING_GRID_SETUP();
+  //MAPPING_POLYGONS_SETUP();
+  //MAPPING_TOUCHPADS_SETUP();
+  //MAPPING_CIRCLES_SETUP();
   MAPPING_TRIGGERS_SETUP();
   MAPPING_TOGGLES_SETUP();
-  MAPPING_VSLIDERS_SETUP();
-  MAPPING_HSLIDERS_SETUP();
-  MAPPING_CSLIDERS_SETUP();
+  //MAPPING_VSLIDERS_SETUP();
+  //MAPPING_HSLIDERS_SETUP();
+  //MAPPING_CSLIDERS_SETUP();
 };
 
 /*
@@ -124,7 +124,6 @@ void MAPPING_TOUCHPADS_SETUP(void){
    // TODO
  };
 
-
 #define CIRCLES 1
 circle_t mapp_circleParams[CIRCLES] = {
   { {WIDTH/2, HEIGHT/2}, WIDTH/2, 0 },  // PARAMS[[Xcenter, Ycenter], radius, offset]
@@ -164,15 +163,6 @@ void mapping_circles_update(void) {
   };
 };
 
-
-#define TRIGGERS 2
-uint8_t map_trigs;
-mSwitch_t map_trigKeys[TRIGGERS];
-mKey_t map_trigParams[TRIGGERS] = {
-  {30, 20, 10, 44},  // PARAMS[posX, posY, size, note]
-  {50, 30, 10, 33}   // PARAMS[posX, posY, size, note]
-};
-
 uint8_t map_trigs = 0;
 mKey_t *map_trigParams = NULL;
 static mKey_t map_trigParams_privStore[MAX_TRIGGERS];
@@ -184,7 +174,6 @@ void mapping_triggers_alloc(uint8_t count) {
 }
 
 inline void MAPPING_TRIGGERS_SETUP(void) {
-
   for (uint8_t keyPos = 0; keyPos < map_trigs; keyPos++) {
     map_trigKeys[keyPos].rect.Xmin = map_trigParams[keyPos].posX - round(map_trigParams[keyPos].size / 2);
     map_trigKeys[keyPos].rect.Xmax = map_trigParams[keyPos].posX + round(map_trigParams[keyPos].size / 2);
@@ -227,15 +216,6 @@ void mapping_triggers_update(void) {
       };
     };
   };
-};
-
-
-#define TOGGLES 2
-uint8_t map_togs;
-mSwitch_t map_togKeys[TOGGLES];
-mKey_t map_togParams[TOGGLES] = {
-  {10, 10, 5, 64},  // ARGS[posX, posY, size, note]
-  {20, 10, 5, 65}   // ARGS[posX, posY, size, note]
 };
 
 uint8_t map_togs = 0;
@@ -721,13 +701,13 @@ void mapping_blob_update(void) {
 
 void mapping_lib_update(void) {
   llist_save_nodes(&midi_node_stack, &midiOut); // Save/rescure all midiOut nodes
-  mapping_polygons_update();
+  //mapping_polygons_update();
   //mapping_touchpads_update();
   //mapping_grid_populate();
   //mapping_grid_update();
   //mapping_circles_update();
-  //mapping_triggers_update();
-  //mapping_toggles_update();
+  mapping_triggers_update();
+  mapping_toggles_update();
   //mapping_hSliders_update();
   //mapping_vSliders_update();
   //mapping_cSliders_update();

@@ -5,15 +5,11 @@
 */
 
 #include "json_config.h"
-<<<<<<< HEAD
-/*
-=======
 #include "mapping_lib.h"
 
 #include <ArduinoJson.h>
 #include <SerialFlash.h>
 
->>>>>>> 102d795054ed0b09a2ecc421375aba8ec3e758a0
 #define FLASH_CHIP_SELECT  6
 
 inline bool config_load_mapping_triggers(const JsonArray& config) {
@@ -62,11 +58,9 @@ inline bool config_load_mapping(const JsonObject& config) {
 
 static void config_error(void) {
   while (1) {
-    digitalWrite(LED_PIN_D1, HIGH);
-    digitalWrite(LED_PIN_D2, HIGH);
+    digitalWrite(LED_BUILTIN, HIGH);
     delay(5);
-    digitalWrite(LED_PIN_D1, LOW);
-    digitalWrite(LED_PIN_D2, LOW);
+    digitalWrite(LED_BUILTIN, LOW);
     delay(5);
   };
 }
@@ -76,54 +70,6 @@ void LOAD_SPI_FLASH_CONFIG() {
   if (!SerialFlash.begin(FLASH_CHIP_SELECT)) {
     config_error();
   }
-<<<<<<< HEAD
-  else {
-
-    uint8_t buffer[1024];
-    SerialFlashFile conf = SerialFlash.open("config.json");
-    uint32_t size = conf.size();
-    conf.read(buffer, size);
-
-    //DynamicJsonDocument jsonFile(conf.size());
-    DynamicJsonDocument jsonFile(1024);
-    DeserializationError error = deserializeJson(jsonFile, conf["mapp"]);
-    
-    if (error) {
-      while (1) {
-        digitalWrite(LED_PIN_D1, HIGH);
-        digitalWrite(LED_PIN_D2, HIGH);
-        delay(5);
-        digitalWrite(LED_PIN_D1, LOW);
-        digitalWrite(LED_PIN_D2, LOW);
-        delay(5);
-      };
-    }
-    else {
-      map_trigs = jsonFile["mapp"]["trigs"].size();
-      map_trigParams[map_trigs];
-      map_trigKeys[map_trigs];
-      for (uint8_t i = 0; i < map_trigs; i++) {
-        map_trigParams[i].posX = jsonFile["mapp"]["trigs"][i][0];
-        map_trigParams[i].posY = jsonFile["mapp"]["trigs"][i][1];
-        map_trigParams[i].size = jsonFile["mapp"]["trigs"][i][2];
-        map_trigParams[i].note = jsonFile["mapp"]["trigs"][i][3];
-      };
-
-      map_togs = jsonFile["mapp"]["togs"].size();
-      map_togParams[map_togs];
-      map_togKeys[map_togs];
-      for (uint8_t i = 0; i < map_togs; i++) {
-        map_togParams[i].posX = jsonFile["mapp"]["togs"][i][0];
-        map_togParams[i].posY = jsonFile["mapp"]["togs"][i][1];
-        map_togParams[i].size = jsonFile["mapp"]["togs"][i][2];
-        map_togParams[i].note = jsonFile["mapp"]["togs"][i][3];
-      };
-      conf.close();
-    };
-  };
-};
-*/
-=======
 
   uint8_t configData[1024];
   SerialFlashFile configFile = SerialFlash.open("config.json");
@@ -141,4 +87,3 @@ void LOAD_SPI_FLASH_CONFIG() {
 
   configFile.close();
 }
->>>>>>> 102d795054ed0b09a2ecc421375aba8ec3e758a0
