@@ -527,6 +527,10 @@ cSlider_t mapp_cSliders[CS_SLIDERS] = {
 
 cSlider_t* mapp_cSliders_ptr[CS_SLIDERS] = {NULL};
 
+void MAPPING_CSLIDERS_SETUP() {
+  // FIXME
+}
+
 void mapping_cSliders_update(void) {
   for (blob_t* blob_ptr = (blob_t*)ITERATOR_START_FROM_HEAD(&llist_blobs); blob_ptr != NULL; blob_ptr = (blob_t*)ITERATOR_NEXT(blob_ptr)) {
     float x = blob_ptr->centroid.X - CS_RADIUS;
