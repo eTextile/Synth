@@ -35,6 +35,9 @@
 #define NEW_FRAME                (NEW_COLS * NEW_ROWS)
 #define SIZEOF_FRAME             (NEW_FRAME * sizeof(uint8_t))
 
+#define BLOB_MIN_PIX             6 // Set the minimum blob pixels
+#define BLOB_MAX_PIX             1024 // Set the minimum blob pixels
+
 #define X_MIN                    1  // Blob centroid X min value
 #define X_MAX                    58 // Blob centroid X max value
 #define Y_MIN                    1  // Blob centroid Y min value

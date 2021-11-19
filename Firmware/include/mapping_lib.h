@@ -63,7 +63,13 @@ struct rect {
 
 typedef struct touchpad touchpad_t;
 struct touchpad {
-    rect_t rect;
+  rect_t rect;
+  uint8_t CCx;    // X axis MIDI cChange mapping
+  uint8_t CCy;    // X axis MIDI cChange mapping
+  uint8_t CCz;    // X axis MIDI cChange mapping
+  uint8_t CCs;    // XY size MIDI cChange mapping
+  uint8_t CCxyv;  // XY velocity MIDI cChange mapping
+  uint8_t CCzv;   // XY velocity MIDI cChange mapping
 };
 
 typedef struct mSwitch mSwitch_t;

@@ -24,15 +24,16 @@
 			{ "cnt": 5, "vertrices": [ {"X": 4.6, "Y": 12}, {"X": 10, "Y": 20}, {"X": 44, "Y": 32}, {"X": 16, "Y": 7}, {"X": 33, "Y": 12} ] }
 		],
 		"vSliders": [
-			{ "CC": 44, "Xmin": 5, "Xmax": 9, "Ymin": 5, "Ymax": 50 },
-			{ "CC": 27, "Xmin": 10, "Xmax": 14, "Ymin": 5, "Ymax": 50 }
+			{ "CC": 42, "Xmin": 5, "Xmax": 9, "Ymin": 5, "Ymax": 50 },
+			{ "CC": 44, "Xmin": 10, "Xmax": 14, "Ymin": 5, "Ymax": 50 }
 		],
 		"hSliders": [
 			{ "Xmin": 5, "Xmax": 50, "Ymin": 5, "Ymax": 9 },
 			{ "Xmin": 5, "Xmax": 50, "Ymin": 10, "Ymax": 14 }
 		],
 		"touchpad": [
-			{ "Xmin": 1, "Xmax": 40, "Ymin": 1, "Ymax": 40 }
+			{ "Xmin": 1, "Xmax": 40, "Ymin": 1, "Ymax": 40, "CCx": 41, "CCy": 42, "CCz": 43, "CCs": 44, "CCxyv": 45, "CCzv": 46 },
+			{ "Xmin": 1, "Xmax": 40, "Ymin": 1, "Ymax": 40, "CCx": -1, "CCy": -1, "CCz": -1, "CCs": -1, "CCxyv": -1, "CCzv": -1 }
 		]
 	}
 }

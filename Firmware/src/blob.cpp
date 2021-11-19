@@ -15,7 +15,6 @@
 #define LIFO_NODES          512           // Set the maximum nodes number
 #define X_STRIDE            4             // Speed up X scanning
 #define Y_STRIDE            2             // Speed up Y scanning
-#define BLOB_MIN_PIX        6             // Set the minimum blob pixels
 #define DEBOUNCE_TIME       50            // Avioding undesired bouncing effect when taping on the sensor or sliding.
 
 uint8_t bitmapArray[NEW_FRAME] = {0};     // Store (64*64) binary values
@@ -206,7 +205,7 @@ void matrix_find_blobs(void) {
           };
         }; // END while_A
 
-        if (blob_pixels > BLOB_MIN_PIX && blob_count < MAX_BLOBS) {
+        if (blob_pixels > BLOB_MIN_PIX && blob_pixels < BLOB_MAX_PIX && blob_count < MAX_BLOBS) {
           blob_count++;
           blob_t* blob_ptr = (blob_t*)llist_pop_front(&llist_blobs_stack);
           blob_ptr->centroid.X = constrain(blob_cx / blob_pixels, X_MIN, X_MAX) - X_MIN ;

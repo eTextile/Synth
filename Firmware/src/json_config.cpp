@@ -111,6 +111,12 @@ inline bool config_load_mapping_touchpads(const JsonArray& config) {
     mapp_touchpadsParams[i].rect.Xmax = config[i]["Xmax"];
     mapp_touchpadsParams[i].rect.Ymin = config[i]["Ymin"];
     mapp_touchpadsParams[i].rect.Ymax = config[i]["Ymax"];
+    mapp_touchpadsParams[i].CCx = config[i]["CCx"];     // X axis MIDI cChange mapping
+    mapp_touchpadsParams[i].CCy = config[i]["CCy"];     // X axis MIDI cChange mapping
+    mapp_touchpadsParams[i].CCz = config[i]["CCz"];     // X axis MIDI cChange mapping
+    mapp_touchpadsParams[i].CCs = config[i]["CCs"];     // XY size MIDI cChange mapping
+    mapp_touchpadsParams[i].CCxyv = config[i]["CCxyv"]; // XY velocity MIDI cChange mapping
+    mapp_touchpadsParams[i].CCzv = config[i]["CCzv"];   // XY velocity MIDI cChange mapping
  };
   return true;
 };
