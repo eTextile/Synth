@@ -46,9 +46,11 @@ void mapping_polygons_alloc(uint8_t count) {
 
 // For line equation y = mx + c, we pre-compute m and c for all edges of a given polygon
 void MAPPING_POLYGONS_SETUP(void) {
+  uint8_t p = 0;
+  uint8_t v, _v = (mapp_polygonsParams[p].vertices_cnt - 1);
   float x1, x2, y1, y2;
-  for (uint8_t p = 0; p < mapp_polygons; p++) {
-    for (uint8_t v = 0; v < mapp_polygonsParams[p].vertices_cnt; v++) {
+  for (p = 0; p < mapp_polygons; p++) {
+    for (v = 0; v < mapp_polygonsParams[p].vertices_cnt; v++) {
       x1 = mapp_polygonsParams[p].vertices[v].x;
       y1 = mapp_polygonsParams[p].vertices[v].y;
       x2 = mapp_polygonsParams[p].vertices[v].x;
