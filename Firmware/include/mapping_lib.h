@@ -45,20 +45,19 @@ struct polygon {
     float c[MAX_VERTICES];
 };
 
-typedef struct mKey mKey_t;
-struct mKey {
-  uint8_t posX;
-  uint8_t posY;
-  uint8_t size;
-  uint8_t note;
-};
-
 typedef struct rect rect_t;
 struct rect {
   float Xmin;
   float Xmax;
   float Ymin;
   float Ymax;
+};
+
+typedef struct Key Key_t;
+struct Key {
+  rect_t rect;
+  boolean state;
+  uint8_t note;
 };
 
 typedef struct touchpad touchpad_t;
@@ -72,23 +71,19 @@ struct touchpad {
   uint8_t CCzv;   // XY velocity MIDI cChange mapping
 };
 
-typedef struct mSwitch mSwitch_t;
-struct mSwitch {
-  rect_t rect;
-  boolean state;
-};
-
 typedef struct vSlider vSlider_t;
 struct vSlider {
   rect_t rect;
-  uint8_t cChange;
+  uint8_t CC;
 };
 
 typedef struct hSlider hSlider_t;
 struct hSlider {
   rect_t rect;
-  uint8_t cChange;
+  uint8_t CC;
 };
+
+
 
 typedef struct cTrack cTrack_t;
 struct cTrack {
@@ -104,24 +99,16 @@ struct cSlider {
   float lastVal;
 };
 
-typedef struct cChange cChange_t;
-struct cChange {
-  uint8_t blobID;
-  uint8_t mappVal;
-  uint8_t cChange;
-  uint8_t lastX, lastY, lastZ, lastW, lastH;
-};
-
 extern uint8_t mapp_touchpads;
 extern touchpad_t *mapp_touchpadsParams;
 void mapping_touchpads_alloc(uint8_t count);
 
 extern uint8_t mapp_trigs;
-extern mKey_t *mapp_trigsParams;
+extern Key_t *mapp_trigsParams;
 void mapping_triggers_alloc(uint8_t count);
 
 extern uint8_t mapp_togs;
-extern mKey_t *mapp_togsParams;
+extern Key_t *mapp_togsParams;
 void mapping_toggles_alloc(uint8_t count);
 
 extern uint8_t mapp_circles;

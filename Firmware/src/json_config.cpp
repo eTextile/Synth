@@ -18,9 +18,10 @@ inline bool config_load_mapping_triggers(const JsonArray& config) {
   }
   mapping_triggers_alloc(config.size());
   for (uint8_t i = 0; i < mapp_trigs; i++) {
-    mapp_trigsParams[i].posX = config[i]["posX"];
-    mapp_trigsParams[i].posY = config[i]["posY"];
-    mapp_trigsParams[i].size = config[i]["size"];
+    mapp_trigsParams[i].rect.Xmin = config[i]["Xmin"];
+    mapp_trigsParams[i].rect.Xmax = config[i]["Xmax"];
+    mapp_trigsParams[i].rect.Ymin = config[i]["Ymin"];
+    mapp_trigsParams[i].rect.Ymax = config[i]["Ymax"];
     mapp_trigsParams[i].note = config[i]["note"];
   }
   return true;
@@ -32,9 +33,10 @@ inline bool config_load_mapping_toggles(const JsonArray& config) {
   }
   mapping_toggles_alloc(config.size());
   for (uint8_t i = 0; i < mapp_togs; i++) {
-    mapp_togsParams[i].posX = config[i]["posX"];
-    mapp_togsParams[i].posY = config[i]["posY"];
-    mapp_togsParams[i].size = config[i]["size"];
+    mapp_togsParams[i].rect.Xmin = config[i]["Xmin"];
+    mapp_togsParams[i].rect.Xmax = config[i]["Xmax"];
+    mapp_togsParams[i].rect.Ymin = config[i]["Ymin"];
+    mapp_togsParams[i].rect.Ymax = config[i]["Ymax"];
     mapp_togsParams[i].note = config[i]["note"];
   }
   return true;
@@ -79,9 +81,9 @@ inline bool config_load_mapping_hSliders(const JsonArray& config) {
   for (uint8_t i = 0; i < mapp_hSliders; i++) {
     mapp_hSlidersParams[i].rect.Xmin = config[i]["Xmin"];
     mapp_hSlidersParams[i].rect.Xmax = config[i]["Xmax"];
-    mapp_hSlidersParams[i].rect.Xmin = config[i]["Ymin"];
-    mapp_hSlidersParams[i].rect.Xmax = config[i]["Ymax"];
-    mapp_hSlidersParams[i].cChange = config[i]["CC"];
+    mapp_hSlidersParams[i].rect.Ymin = config[i]["Ymin"];
+    mapp_hSlidersParams[i].rect.Ymax = config[i]["Ymax"];
+    mapp_hSlidersParams[i].CC = config[i]["CC"];
   };
   return true;
 };
@@ -94,9 +96,9 @@ inline bool config_load_mapping_vSliders(const JsonArray& config) {
   for (uint8_t i = 0; i < mapp_vSliders; i++) {
     mapp_vSlidersParams[i].rect.Xmin = config[i]["Xmin"];
     mapp_vSlidersParams[i].rect.Xmax = config[i]["Xmax"];
-    mapp_vSlidersParams[i].rect.Xmin = config[i]["Ymin"];
-    mapp_vSlidersParams[i].rect.Xmax = config[i]["Ymax"];
-    mapp_vSlidersParams[i].cChange = config[i]["CC"];
+    mapp_vSlidersParams[i].rect.Ymin = config[i]["Ymin"];
+    mapp_vSlidersParams[i].rect.Ymax = config[i]["Ymax"];
+    mapp_vSlidersParams[i].CC = config[i]["CC"];
   };
   return true;
 };
