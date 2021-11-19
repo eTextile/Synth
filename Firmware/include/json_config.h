@@ -7,6 +7,7 @@
 #ifndef __JSON_CONFIG_H__
 #define __JSON_CONFIG_H__
 
+void USB_SERIAL_UPDATE_CONFIG(void);
 void LOAD_SPI_FLASH_CONFIG();
 
 #endif /*__JSON_CONFIG_H__*/
