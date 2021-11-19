@@ -83,8 +83,6 @@ struct hSlider {
   uint8_t CC;
 };
 
-
-
 typedef struct cTrack cTrack_t;
 struct cTrack {
   uint8_t sliders;
@@ -127,29 +125,29 @@ extern uint8_t mapp_vSliders;
 extern vSlider_t *mapp_vSlidersParams;
 void mapping_vSliders_alloc(uint8_t count);
 
-
 void MAPPING_LIB_SETUP(void);
-void mapping_lib_update(void);
 
-void MAPPING_GRID_SETUP(void);
-void MAPPING_POLYGONS_SETUP(void);
-void MAPPING_TOUCHPADS_SETUP(void);
-void MAPPING_CIRCLES_SETUP(void);
-void MAPPING_TRIGGERS_SETUP(void);
 void MAPPING_TOGGLES_SETUP(void);
+void MAPPING_TRIGGERS_SETUP(void);
 void MAPPING_VSLIDERS_SETUP(void);
 void MAPPING_HSLIDERS_SETUP(void);
+void MAPPING_CIRCLES_SETUP(void);
+void MAPPING_TOUCHPADS_SETUP(void);
+void MAPPING_POLYGONS_SETUP(void);
+void MAPPING_GRID_SETUP(void);
 void MAPPING_CSLIDERS_SETUP(void);
 
-void mapping_grid_updete(void);
-void mapping_grid_populate(void);
-void mapping_polygons_update(void);
-void mapping_touchpads_updete(void);
-void mapping_circles_updete(void);
 void mapping_toggles_updete(void);
+void mapping_tirggers_updete(void);
 void mapping_vSliders_updete(void);
 void mapping_hSliders_updete(void);
+void mapping_circles_updete(void);
+void mapping_touchpads_updete(void);
+void mapping_polygons_update(void);
+void mapping_grid_populate(void);
+void mapping_grid_updete(void);
 void mapping_cSliders_updete(void);
-void mapping_blobs_updete(void);
+
+void mapping_lib_update(void);
 
 #endif /*__MAPPING_LIB_H__*/
