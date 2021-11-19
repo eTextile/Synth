@@ -14,8 +14,6 @@
 #include "json_config.h"
 #include "midi_bus.h"
 
-#define MAX_VERTICES 5
-
 typedef struct center center_t;
 struct center {
     float x;
@@ -27,6 +25,10 @@ struct circle {
     center_t center;
     float radius;
     float offset;
+    //float lastRadius;
+    //float lasttheta;
+    //uint8_t CCradius;
+    //uint8_t CCtheta;
 };
 
 typedef struct vertice vertice_t;
@@ -38,9 +40,9 @@ struct vertice {
 typedef struct polygon polygon_t;
 struct polygon {
     uint8_t vertices_cnt;
-    float m[MAX_VERTICES]; // slope of the line
-    float c[MAX_VERTICES];
     vertice_t vertices[MAX_VERTICES];
+    float m[MAX_VERTICES];
+    float c[MAX_VERTICES];
 };
 
 typedef struct mKey mKey_t;
@@ -59,6 +61,11 @@ struct rect {
   float Ymax;
 };
 
+typedef struct touchpad touchpad_t;
+struct touchpad {
+    rect_t rect;
+};
+
 typedef struct mSwitch mSwitch_t;
 struct mSwitch {
   rect_t rect;
@@ -67,22 +74,14 @@ struct mSwitch {
 
 typedef struct vSlider vSlider_t;
 struct vSlider {
-  uint8_t posX;
-  uint8_t Ymin;
-  uint8_t Ymax;
-  uint8_t width;
+  rect_t rect;
   uint8_t cChange;
-  int8_t lastVal;
 };
 
 typedef struct hSlider hSlider_t;
 struct hSlider {
-  uint8_t posY;
-  uint8_t Xmin;
-  uint8_t Xmax;
-  uint8_t height;
+  rect_t rect;
   uint8_t cChange;
-  int8_t lastVal;
 };
 
 typedef struct cTrack cTrack_t;
@@ -107,17 +106,34 @@ struct cChange {
   uint8_t lastX, lastY, lastZ, lastW, lastH;
 };
 
-extern uint8_t map_trigs;
-extern mKey_t *map_trigsParams;
+extern uint8_t mapp_touchpads;
+extern touchpad_t *mapp_touchpadsParams;
+void mapping_touchpads_alloc(uint8_t count);
+
+extern uint8_t mapp_trigs;
+extern mKey_t *mapp_trigsParams;
 void mapping_triggers_alloc(uint8_t count);
 
-extern uint8_t map_togs;
-extern mKey_t *map_togsParams;
+extern uint8_t mapp_togs;
+extern mKey_t *mapp_togsParams;
 void mapping_toggles_alloc(uint8_t count);
 
-extern uint8_t map_circles;
-extern circle_t *map_circlesParams;
+extern uint8_t mapp_circles;
+extern circle_t *mapp_circlesParams;
 void mapping_circles_alloc(uint8_t count);
+
+extern uint8_t mapp_polygons;
+extern polygon_t *mapp_polygonsParams;
+void mapping_polygons_alloc(uint8_t count);
+
+extern uint8_t mapp_hSliders;
+extern hSlider_t *mapp_hSlidersParams;
+void mapping_hSliders_alloc(uint8_t count);
+
+extern uint8_t mapp_vSliders;
+extern vSlider_t *mapp_vSlidersParams;
+void mapping_vSliders_alloc(uint8_t count);
+
 
 void MAPPING_LIB_SETUP(void);
 void mapping_lib_update(void);
@@ -137,7 +153,6 @@ void mapping_grid_populate(void);
 void mapping_polygons_update(void);
 void mapping_touchpads_updete(void);
 void mapping_circles_updete(void);
-void mapping_triggers_updete(void);
 void mapping_toggles_updete(void);
 void mapping_vSliders_updete(void);
 void mapping_hSliders_updete(void);

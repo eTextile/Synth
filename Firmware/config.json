@@ -14,6 +14,25 @@
 			{ "posX": 51, "posY": 9, "size": 6.5, "note": 58.5 },
 			{ "posX": 52, "posY": 8, "size": 7, "note": 56 },
 			{ "posX": 51, "posY": 9, "size": 6.5, "note": 58.5 }
+		],
+		"circles": [
+			{ "CX": 20, "CY": 10, "radius": 5, "offset": 5 },
+			{ "CX": 11, "CY": 20, "radius": 6.5, "offset": 8.5 }
+		],
+		"polygons": [
+			{ "cnt": 4, "vertrices": [ {"X": 10, "Y": 10}, {"X": 20, "Y": 20}, {"X": 40, "Y": 30}, {"X": 40, "Y": 5} ] },
+			{ "cnt": 5, "vertrices": [ {"X": 4.6, "Y": 12}, {"X": 10, "Y": 20}, {"X": 44, "Y": 32}, {"X": 16, "Y": 7}, {"X": 33, "Y": 12} ] }
+		],
+		"vSliders": [
+			{ "CC": 44, "Xmin": 5, "Xmax": 9, "Ymin": 5, "Ymax": 50 },
+			{ "CC": 27, "Xmin": 10, "Xmax": 14, "Ymin": 5, "Ymax": 50 }
+		],
+		"hSliders": [
+			{ "Xmin": 5, "Xmax": 50, "Ymin": 5, "Ymax": 9 },
+			{ "Xmin": 5, "Xmax": 50, "Ymin": 10, "Ymax": 14 }
+		],
+		"touchpad": [
+			{ "Xmin": 1, "Xmax": 40, "Ymin": 1, "Ymax": 40 }
 		]
 	}
 }
