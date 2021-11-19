@@ -13,6 +13,8 @@
 #define PROJECT                  "ETEXTILE-SYNTHESIZER"
 #define VERSION                  "1.0.9"
 
+#define FLASH_CHIP_SELECT  6
+
 // HARDWARE CONSTANTES **DO NOT CHANGE**
 #if defined(__IMXRT1062__)
 #define LED_PIN_D1              5

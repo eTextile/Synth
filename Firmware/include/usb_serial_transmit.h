@@ -7,12 +7,8 @@
 #ifndef __USB_SERIAL_TRANSMIT_H__
 #define __USB_SERIAL_TRANSMIT_H__
 
-#include "config.h"
-#include "presets.h"
-#include "llist.h"
-#include "blob.h"
-
 void USB_SERIAL_TRANSMIT_SETUP(void);
+void USB_SERIAL_UPDATE_CONFIG(void);
 
 void usb_serial_handle_input(void);
 void usb_serial_transmit(void);

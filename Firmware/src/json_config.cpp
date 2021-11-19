@@ -10,8 +10,6 @@
 #include <ArduinoJson.h>
 #include <SerialFlash.h>
 
-#define FLASH_CHIP_SELECT  6
-
 inline bool config_load_mapping_triggers(const JsonArray& config) {
   if (config.isNull()) {
     return false;
@@ -161,6 +159,8 @@ static void config_error(void) {
 }
 
 void LOAD_SPI_FLASH_CONFIG() {
+  
+  pinMode(LED_BUILTIN, OUTPUT);
 
   if (!SerialFlash.begin(FLASH_CHIP_SELECT)) {
     config_error();

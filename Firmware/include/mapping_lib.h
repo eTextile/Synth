@@ -97,7 +97,6 @@ struct cSlider {
   float lastVal;
 };
 
-
 extern uint8_t mapp_trigs;
 extern Key_t *mapp_trigsParams;
 void mapping_triggers_alloc(uint8_t count);
