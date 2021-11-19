@@ -7,16 +7,69 @@
 #include "mapping_lib.h"
 
 void MAPPING_LIB_SETUP(){
-  MAPPING_TOUCHPADS_SETUP();
-  MAPPING_POLYGONS_SETUP();
-  MAPPING_CIRCLES_SETUP();
   MAPPING_TRIGGERS_SETUP();
   MAPPING_TOGGLES_SETUP();
   MAPPING_VSLIDERS_SETUP();
   MAPPING_HSLIDERS_SETUP();
+  MAPPING_CIRCLES_SETUP();
+  MAPPING_TOUCHPADS_SETUP();
+  MAPPING_POLYGONS_SETUP();
   //MAPPING_GRID_SETUP();
   //MAPPING_CSLIDERS_SETUP();
 };
+
+///////////////////////////////////////////////
+              /*__TRIGGERS__*/
+///////////////////////////////////////////////
+uint8_t mapp_trigs = 0;
+Key_t *mapp_trigsParams = NULL;
+static Key_t mapp_trigsParams_privStore[MAX_TRIGGERS];
+
+void mapping_triggers_alloc(uint8_t count) {
+  mapp_trigs = min(count, MAX_TRIGGERS);
+  mapp_trigsParams = mapp_trigsParams_privStore;
+};
+
+inline void MAPPING_TRIGGERS_SETUP(void) {
+  // Nothing to pre-compute yet
+};
+
+void mapping_triggers_update(void) {
+  for (blob_t* blob_ptr = (blob_t*)ITERATOR_START_FROM_HEAD(&llist_blobs); blob_ptr != NULL; blob_ptr = (blob_t*)ITERATOR_NEXT(blob_ptr)) {
+    for (uint8_t i = 0; i < mapp_trigs; i++) {
+      // Test if the blob is within the key limits
+      if (blob_ptr->centroid.X > mapp_trigsParams[i].rect.Xmin &&
+          blob_ptr->centroid.X < mapp_trigsParams[i].rect.Xmax &&
+          blob_ptr->centroid.Y > mapp_trigsParams[i].rect.Ymin &&
+          blob_ptr->centroid.Y < mapp_trigsParams[i].rect.Ymax) {
+        if (!blob_ptr->lastState) {
+          midiNode_t* node_ptr = (midiNode_t*)llist_pop_front(&midi_node_stack);  // Get a node from the MIDI node stack
+          node_ptr->midiMsg.status = midi::NoteOn;                                // Set MIDI message status to NOTE_OFF
+          node_ptr->midiMsg.data1 = mapp_trigsParams[i].note;                     // Set the note
+          //node_ptr->midiMsg.data2 = blob_ptr->velocity.Z                        // TODO: Set the velocity
+          node_ptr->midiMsg.data2 = 127;                                          // Set the velocity
+          node_ptr->midiMsg.channel = MIDI_OUTPUT_CHANNEL;                        // Set the channel see config.h
+          llist_push_front(&midiOut, node_ptr);                                   // Add the node to the midiOut linked liste
+#if defined(DEBUG_MAPPING)
+          Serial.printf("\nDEBUG_MAPPING_TRIGGERS\tID:%d\tNOTE_ON:%d", i, mapp_trigParams[i].note);
+#endif
+        }
+        else if (!blob_ptr->state) {
+          midiNode_t* node_ptr = (midiNode_t*)llist_pop_front(&midi_node_stack);  // Get a node from the MIDI node stack
+          node_ptr->midiMsg.status = midi::NoteOff;                               // Set MIDI message status to NOTE_OFF
+          node_ptr->midiMsg.data1 = mapp_trigsParams[i].note;                     // Set the note
+          node_ptr->midiMsg.data2 = 0;                                            // Set the velocity
+          node_ptr->midiMsg.channel = MIDI_OUTPUT_CHANNEL;                        // Set the channel see config.h
+          llist_push_front(&midiOut, node_ptr);                                   // Add the node to the midiOut linked liste
+#if defined(DEBUG_MAPPING)
+          Serial.printf("\nDEBUG_MAPPING_TRIGGERS\tID;%d\tNOTE_OFF:%d", i, mapp_trigParams[i].note);
+#endif
+        };
+      };
+    };
+  };
+};
+
 
 ///////////////////////////////////////////////
               /*__TOGGLES__*/
@@ -65,58 +118,6 @@ void mapping_toggles_update(void) {
           node_ptr->midiMsg.data2 = 0;                                            // Set the velocity
           node_ptr->midiMsg.channel = MIDI_OUTPUT_CHANNEL;                        // Set the channel see config.h
           llist_push_front(&midiOut, node_ptr);                                   // Add the node to the midiOut linked liste
-#endif
-        };
-      };
-    };
-  };
-};
-
-///////////////////////////////////////////////
-              /*__TRIGGERS__*/
-///////////////////////////////////////////////
-uint8_t mapp_trigs = 0;
-Key_t *mapp_trigsParams = NULL;
-static Key_t mapp_trigsParams_privStore[MAX_TRIGGERS];
-
-void mapping_triggers_alloc(uint8_t count) {
-  mapp_trigs = min(count, MAX_TRIGGERS);
-  mapp_trigsParams = mapp_trigsParams_privStore;
-};
-
-inline void MAPPING_TRIGGERS_SETUP(void) {
-  // Nothing to pre-compute yet
-};
-
-void mapping_triggers_update(void) {
-  for (blob_t* blob_ptr = (blob_t*)ITERATOR_START_FROM_HEAD(&llist_blobs); blob_ptr != NULL; blob_ptr = (blob_t*)ITERATOR_NEXT(blob_ptr)) {
-    for (uint8_t i = 0; i < mapp_trigs; i++) {
-      // Test if the blob is within the key limits
-      if (blob_ptr->centroid.X > mapp_trigsParams[i].rect.Xmin &&
-          blob_ptr->centroid.X < mapp_trigsParams[i].rect.Xmax &&
-          blob_ptr->centroid.Y > mapp_trigsParams[i].rect.Ymin &&
-          blob_ptr->centroid.Y < mapp_trigsParams[i].rect.Ymax) {
-        if (!blob_ptr->lastState) {
-          midiNode_t* node_ptr = (midiNode_t*)llist_pop_front(&midi_node_stack);  // Get a node from the MIDI node stack
-          node_ptr->midiMsg.status = midi::NoteOn;                                // Set MIDI message status to NOTE_OFF
-          node_ptr->midiMsg.data1 = mapp_trigsParams[i].note;                     // Set the note
-          //node_ptr->midiMsg.data2 = blob_ptr->velocity.Z                        // TODO: Set the velocity
-          node_ptr->midiMsg.data2 = 127;                                          // Set the velocity
-          node_ptr->midiMsg.channel = MIDI_OUTPUT_CHANNEL;                        // Set the channel see config.h
-          llist_push_front(&midiOut, node_ptr);                                   // Add the node to the midiOut linked liste
-#if defined(DEBUG_MAPPING)
-          Serial.printf("\nDEBUG_MAPPING_TRIGGERS\tID:%d\tNOTE_ON:%d", i, mapp_trigParams[i].note);
-#endif
-        }
-        else if (!blob_ptr->state) {
-          midiNode_t* node_ptr = (midiNode_t*)llist_pop_front(&midi_node_stack);  // Get a node from the MIDI node stack
-          node_ptr->midiMsg.status = midi::NoteOff;                               // Set MIDI message status to NOTE_OFF
-          node_ptr->midiMsg.data1 = mapp_trigsParams[i].note;                     // Set the note
-          node_ptr->midiMsg.data2 = 0;                                            // Set the velocity
-          node_ptr->midiMsg.channel = MIDI_OUTPUT_CHANNEL;                        // Set the channel see config.h
-          llist_push_front(&midiOut, node_ptr);                                   // Add the node to the midiOut linked liste
-#if defined(DEBUG_MAPPING)
-          Serial.printf("\nDEBUG_MAPPING_TRIGGERS\tID;%d\tNOTE_OFF:%d", i, mapp_trigParams[i].note);
 #endif
         };
       };

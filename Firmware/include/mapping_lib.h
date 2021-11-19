@@ -97,9 +97,6 @@ struct cSlider {
   float lastVal;
 };
 
-extern uint8_t mapp_touchpads;
-extern touchpad_t *mapp_touchpadsParams;
-void mapping_touchpads_alloc(uint8_t count);
 
 extern uint8_t mapp_trigs;
 extern Key_t *mapp_trigsParams;
@@ -109,14 +106,6 @@ extern uint8_t mapp_togs;
 extern Key_t *mapp_togsParams;
 void mapping_toggles_alloc(uint8_t count);
 
-extern uint8_t mapp_circles;
-extern circle_t *mapp_circlesParams;
-void mapping_circles_alloc(uint8_t count);
-
-extern uint8_t mapp_polygons;
-extern polygon_t *mapp_polygonsParams;
-void mapping_polygons_alloc(uint8_t count);
-
 extern uint8_t mapp_hSliders;
 extern hSlider_t *mapp_hSlidersParams;
 void mapping_hSliders_alloc(uint8_t count);
@@ -125,10 +114,23 @@ extern uint8_t mapp_vSliders;
 extern vSlider_t *mapp_vSlidersParams;
 void mapping_vSliders_alloc(uint8_t count);
 
+extern uint8_t mapp_circles;
+extern circle_t *mapp_circlesParams;
+void mapping_circles_alloc(uint8_t count);
+
+extern uint8_t mapp_touchpads;
+extern touchpad_t *mapp_touchpadsParams;
+void mapping_touchpads_alloc(uint8_t count);
+
+extern uint8_t mapp_polygons;
+extern polygon_t *mapp_polygonsParams;
+void mapping_polygons_alloc(uint8_t count);
+
+
 void MAPPING_LIB_SETUP(void);
 
-void MAPPING_TOGGLES_SETUP(void);
 void MAPPING_TRIGGERS_SETUP(void);
+void MAPPING_TOGGLES_SETUP(void);
 void MAPPING_VSLIDERS_SETUP(void);
 void MAPPING_HSLIDERS_SETUP(void);
 void MAPPING_CIRCLES_SETUP(void);
@@ -137,8 +139,8 @@ void MAPPING_POLYGONS_SETUP(void);
 void MAPPING_GRID_SETUP(void);
 void MAPPING_CSLIDERS_SETUP(void);
 
-void mapping_toggles_updete(void);
 void mapping_tirggers_updete(void);
+void mapping_toggles_updete(void);
 void mapping_vSliders_updete(void);
 void mapping_hSliders_updete(void);
 void mapping_circles_updete(void);
