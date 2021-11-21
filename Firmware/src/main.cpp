@@ -14,39 +14,32 @@
 #include "mtp_spi.h"
 #include "usb_osc_transmit.h"
 #endif
-
 #if defined(USB_MTPDISK_MIDI)
 #include "mtp_spi.h"
 #include "midi_bus.h"
 #include "usb_midi_transmit.h"
 #endif
-
 #if defined(USB_MIDI)
 #include "midi_bus.h"
 #include "usb_midi_transmit.h"
 #endif
-
 #if defined(USB_MIDI_SERIAL)
 #include "midi_bus.h"
 #include "usb_serial_transmit.h"
 #include "usb_midi_transmit.h"
 #endif
-
 #if defined(USB_OSC)
 #include "usb_serial_transmit.h"
 #include "usb_osc_transmit.h"
 #endif
-
 #if defined(HARDWARE_MIDI)
 #include "midi_bus.h"
 #include "hardware_midi_transmit.h"
 #endif
-
 #if defined(MAPPING_LAYOUT)
 #include "midi_bus.h"
 #include "mapping_lib.h"
 #endif
-
 #if defined(PLAYER_FLASH)
 #include "player_flash.h"
 #endif
@@ -64,43 +57,32 @@ unsigned long fpsTimeStamp = 0;
 uint16_t fps = 0;
 
 void setup() {
-
-  LEDS_SETUP();
-  SWITCHES_SETUP();
-  SPI_SETUP();
-  ADC_SETUP();
+  CONFIG_SETUP();
   SCAN_SETUP();
   INTERP_SETUP();
   BLOB_SETUP();
-  MIDI_NODES_SETUP();
-
+  MIDI_SETUP();
 #if defined(USB_MTPDISK)
 MTP_SPI_SETUP();
-LOAD_SPI_FLASH_CONFIG();
 USB_OSC_TRANSMIT_SETUP();
 #endif
 #if defined(USB_MTPDISK_MIDI)
 MTP_SPI_SETUP();
-LOAD_SPI_FLASH_CONFIG();
 USB_MIDI_TRANSMIT_SETUP();
 #endif
 #if defined(USB_SERIAL)
-LOAD_SPI_FLASH_CONFIG();
 USB_OSC_TRANSMIT_SETUP();
 #endif
 #if defined(USB_MIDI_SERIAL)
 USB_SERIAL_TRANSMIT_SETUP();
-LOAD_SPI_FLASH_CONFIG();
 USB_MIDI_TRANSMIT_SETUP();
 #endif
 #if defined(HARDWARE_MIDI)
 HARDWARE_MIDI_TRANSMIT_SETUP();
 #endif
-
 #if defined(RUNING_MEDIAN)
   RUNING_MEDIAN_SETUP();
 #endif
-
 #if defined(MAPPING_LAYOUT)
   MAPPING_LIB_SETUP();
 #endif
@@ -135,15 +117,7 @@ void loop() {
 #if defined(HARDWARE_MIDI)
   hardware_midi_read_input();
 #endif
-#if defined(__MK20DX256__)  // Teensy 3.1 & 3.2
-  update_presets_midi_usb();
-#endif
-#if defined(__IMXRT1062__)  // Teensy 4.0 & 4.1
-  update_presets_usb_midi();
-  update_presets_buttons();
-  update_presets_encoder();
-  update_leds();
-#endif
+  update_presets();
 #if defined(SOUND_CARD)
   update_levels();
 #endif

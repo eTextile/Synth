@@ -142,22 +142,8 @@ struct preset {
 
 extern preset_t presets[];        // Exposed local declaration see presets.cpp
 
-
-void LEDS_SETUP(void);
-void SWITCHES_SETUP(void);
-
-void LOAD_SPI_FLASH_CONFIG(void);
-void update_config_usb_serial(void);
-
-void update_presets_buttons(void);
-void update_presets_encoder(void);
-void update_presets_usb_midi(void);
-void update_presets_usb_serial(void);
-
-
-void update_leds(void);
-
-boolean setLevel(preset_t* preset_ptr);
-
+void CONFIG_SETUP(void);
+void update_presets(void);
+void update_config(void);
 
 #endif /*__CONFIG_H__*/

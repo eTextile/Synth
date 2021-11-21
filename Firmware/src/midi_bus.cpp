@@ -15,14 +15,14 @@ llist_t midiIn;                             // Main MIDI Input linked list
 llist_t midiOut;                            // Main MIDI Output linked list
 llist_t midiChord;                          // Main MIDI chord linked list
 
-void llist_midi_init(llist_t* llist_ptr, midiNode_t* nodeArray_ptr, const int nodes) {
+inline void llist_midi_init(llist_t* llist_ptr, midiNode_t* nodeArray_ptr, const int nodes) {
   llist_raz(llist_ptr);
   for (int i = 0; i < nodes; i++) {
     llist_push_front(llist_ptr, &nodeArray_ptr[i]);
   };
 };
 
-void MIDI_NODES_SETUP(void) {
+void MIDI_SETUP(void) {
     llist_midi_init(&midi_node_stack, &midiNodeArray[0], MIDI_NODES); // Add X nodes to the midi_node_stack
     llist_raz(&midiIn);
     llist_raz(&midiOut);

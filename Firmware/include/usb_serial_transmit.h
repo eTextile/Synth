@@ -8,8 +8,6 @@
 #define __USB_SERIAL_TRANSMIT_H__
 
 void USB_SERIAL_TRANSMIT_SETUP(void);
-void USB_SERIAL_UPDATE_CONFIG(void);
-
 void usb_serial_handle_input(void);
 void usb_serial_transmit(void);
 

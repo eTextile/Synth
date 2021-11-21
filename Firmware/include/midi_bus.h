@@ -4,10 +4,9 @@
   This work is licensed under Creative Commons Attribution-ShareAlike 4.0 International license, see the LICENSE file for details.
 */
 
-#ifndef __MIDI_NODES_H__
-#define __MIDI_NODES_H__
+#ifndef __MIDI_BUS_H__
+#define __MIDI_BUS_H__
 
-#include "config.h"
 #include "llist.h"
 
 #include <MIDI.h>  // https://github.com/FortySevenEffects/arduino_midi_library > https://github.com/PaulStoffregen/MIDI
@@ -32,8 +31,6 @@ struct midiNode {
   midiMsg_t midiMsg;
 };
 
-void llist_midi_init(llist_t* llist_ptr, midiNode_t* nodeArray_ptr, const int nodes);
+void MIDI_SETUP(void);
 
-void MIDI_NODES_SETUP(void);
-
-#endif /*__MIDI_NODES_H__*/
+#endif /*__MIDI_BUS_H__*/

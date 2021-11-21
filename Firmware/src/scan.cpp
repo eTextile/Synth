@@ -8,6 +8,10 @@
 */
 
 #include "scan.h"
+#include "blob.h"
+
+#include <SPI.h>                         // https://github.com/PaulStoffregen/SPI
+#include <ADC.h>                         // https://github.com/pedvide/ADC
 
 ADC* adc = new ADC();                    // ADC object
 ADC::Sync_result result;                 // Store ADC_0 & ADC_1
@@ -61,7 +65,7 @@ uint8_t setDualCols[DUAL_COLS] = {
 #undef SPI_HAS_TRANSACTION
 #define SPI_HAS_TRANSACTION 0
 
-void SPI_SETUP(void) {
+inline void setup_spi(void) {
 #if defined(__MK20DX256__)                                                // If using Teensy 3.2
   pinMode(SS_PIN, OUTPUT);                                                // Set the Slave Select Pin as OUTPUT
   SPI.begin();                                                            // Start the SPI module
@@ -78,7 +82,7 @@ void SPI_SETUP(void) {
 #endif
 };
 
-void ADC_SETUP(void) {
+inline void setup_adc(void) {
   pinMode(ADC0_PIN, INPUT);                                               // PIN A2 (Teensy 4.0 pin 16)
   pinMode(ADC1_PIN, INPUT);                                               // PIN A3 (Teensy 4.0 pin 17)
   adc->adc0->setAveraging(1);                                             // Set number of averages
@@ -97,6 +101,10 @@ void ADC_SETUP(void) {
 };
 
 void SCAN_SETUP(void) {
+
+  setup_spi(); 
+  setup_adc();
+
   // image_t* rawFrame init config
   rawFrame.pData = &rawFrameArray[0];
   rawFrame.numCols = RAW_COLS;

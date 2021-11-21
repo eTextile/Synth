@@ -6,6 +6,17 @@
 
 #include "player_synth.h"
 
+#include "config.h"
+#include "llist.h"
+#include "blob.h"
+#include "midi_bus.h"
+#include "mapping_lib.h"
+
+#include <Wire.h>          // https://github.com/PaulStoffregen/Wire
+#include <SPI.h>           // https://github.com/PaulStoffregen/SPI
+#include <SD.h>            // https://github.com/PaulStoffregen/SD
+#include <SerialFlash.h>   // https://github.com/PaulStoffregen/SerialFlash
+
 #if defined(PLAYER_SYNTH)
 AudioOutputI2S                    i2s_OUT;
 AudioSynthWaveform                wf_1;

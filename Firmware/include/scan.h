@@ -7,17 +7,11 @@
 #ifndef __SCAN_H__
 #define __SCAN_H__
 
-#include "config.h"
 #include "blob.h"
 
 typedef struct image image_t;   // Forward declaration located in blob.h
 extern image_t rawFrame;        // Exposed local declaration see scan.cpp
 
-#include <SPI.h>                // https://github.com/PaulStoffregen/SPI
-#include <ADC.h>                // https://github.com/pedvide/ADC
-
-void SPI_SETUP(void);
-void ADC_SETUP(void);
 void SCAN_SETUP(void);
 void matrix_calibrate(void);
 void matrix_scan(void);

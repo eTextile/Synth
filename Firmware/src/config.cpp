@@ -37,7 +37,7 @@ uint8_t currentMode = CALIBRATE;      // Init currentMode with CALIBRATE (SET as
 //uint8_t lastMode = BLOBS_MAPPING;   // Init lastMode with MIDI_MAPPING (SET as DEFAULT_MODE)
 uint8_t lastMode = MIDI_PLAY;        // Init lastMode with MIDI_MIDI_PLAY (SET as DEFAULT_MODE)
 
-void LEDS_SETUP(void) {
+inline void setup_leds(void) {
   pinMode(LED_PIN_D1, OUTPUT);
   pinMode(LED_PIN_D2, OUTPUT);
   digitalWrite(LED_PIN_D1, LOW);
@@ -49,7 +49,7 @@ void LEDS_SETUP(void) {
 // https://www.pjrc.com/teensy/interrupts.html
 // https://github.com/khoih-prog/Teensy_TimerInterrupt/blob/main/examples/SwitchDebounce/SwitchDebounce.ino
 
-void SWITCHES_SETUP(void) {
+inline void setup_switches(void) {
   BUTTON_L.attach(BUTTON_PIN_L, INPUT_PULLUP);  // Attach the debouncer to a pin with INPUT_PULLUP mode
   BUTTON_R.attach(BUTTON_PIN_R, INPUT_PULLUP);  // Attach the debouncer to a pin with INPUT_PULLUP mode
   BUTTON_L.interval(25);                        // Debounce interval of 25 millis
@@ -57,7 +57,7 @@ void SWITCHES_SETUP(void) {
 };
 
 // Selec the current mode and perform the matrix sensor calibration 
-void update_presets_buttons(void) {
+inline void update_presets_buttons(void) {
   BUTTON_L.update();
   BUTTON_R.update();
   // ACTION: BUTTON_L short press
@@ -117,8 +117,30 @@ void update_presets_buttons(void) {
   };
 };
 
+// Values adjustment using rotary encoder
+inline boolean setLevel(preset_t* preset_ptr) {
+  uint8_t val = encoder.read() >> 2;
+  if (val != preset_ptr->val) {
+    if (val > preset_ptr->maxVal) {
+      encoder.write(preset_ptr->maxVal << 2);
+      return false;
+    }
+    else if (val < preset_ptr->minVal) {
+      encoder.write(preset_ptr->minVal << 2);
+      return false;
+    }
+    else {
+      preset_ptr->val = val;
+      return true;
+    };
+  }
+  else {
+    return false;
+  };
+};
+
 // Update preset of each mode with the encoder position
-void update_presets_encoder(void) {
+inline void update_presets_encoder(void) {
   switch (currentMode) {
     case LINE_OUT:
       if (setLevel(&presets[LINE_OUT])) {
@@ -153,7 +175,7 @@ void update_presets_encoder(void) {
   };
 };
 
-void update_presets_usb_midi(void) {
+inline void update_presets_usb_midi(void) {
   for (midiNode_t* node_ptr = (midiNode_t*)ITERATOR_START_FROM_HEAD(&midiIn); node_ptr != NULL; node_ptr = (midiNode_t*)ITERATOR_NEXT(node_ptr)) {
     switch (node_ptr->midiMsg.status) {
       case midi::NoteOn:
@@ -229,17 +251,16 @@ void update_presets_usb_midi(void) {
   llist_save_nodes(&midi_node_stack, &midiIn); // Save/rescure all midiOut nodes
 };
 
-void update_presets_usb_serial(void) {
+inline void update_presets_usb_serial(void) {
   // TODO
 };
 
 // Update LEDs according to the mode and rotary encoder values
-void update_leds(void) {
+inline void update_leds(void) {
   static uint32_t timeStamp = 0;
   static uint8_t iter = 0;
 
   switch (currentMode) {
-
     case LOAD_CONFIG: // LEDs : Both LEDs are blinking fast
       if (presets[LOAD_CONFIG].setLed) {
         presets[LOAD_CONFIG].setLed = false;
@@ -300,7 +321,6 @@ void update_leds(void) {
         };
       };
       break;
-
     case LINE_OUT:
       if (presets[LINE_OUT].setLed) {
         presets[LINE_OUT].setLed = false;
@@ -460,30 +480,18 @@ void update_leds(void) {
   };
 };
 
-// Values adjustment using rotary encoder
-boolean setLevel(preset_t* preset_ptr) {
-  uint8_t val = encoder.read() >> 2;
-  if (val != preset_ptr->val) {
-    if (val > preset_ptr->maxVal) {
-      encoder.write(preset_ptr->maxVal << 2);
-      return false;
-    }
-    else if (val < preset_ptr->minVal) {
-      encoder.write(preset_ptr->minVal << 2);
-      return false;
-    }
-    else {
-      preset_ptr->val = val;
-      return true;
-    };
-  }
-  else {
-    return false;
-  };
+void update_presets(){
+#if defined(__MK20DX256__)  // Teensy 3.1 & 3.2
+  update_presets_usb_midi();
+#endif
+#if defined(__IMXRT1062__)  // Teensy 4.0 & 4.1
+  update_presets_buttons();
+  update_presets_encoder();
+  update_presets_usb_midi();
+  //update_presets_usb_serial();
+  update_leds();
+#endif
 };
-
-
-
 
 inline void config_error(uint8_t status) {
   while (1) {
@@ -823,7 +831,7 @@ inline bool config_load_mapping(const JsonObject& config) {
   return true;
 };
 
-void LOAD_SPI_FLASH_CONFIG() {
+inline void load_config(void) {
   
   //pinMode(LED_BUILTIN, OUTPUT);
 
@@ -852,4 +860,10 @@ void LOAD_SPI_FLASH_CONFIG() {
   };
 
   configFile.close();
+};
+
+void CONFIG_SETUP(void){
+  setup_leds();
+  setup_switches();
+  load_config();
 };
