@@ -11,7 +11,6 @@
 #include "blob.h"
 #include "llist.h"
 #include "notes.h"
-#include "json_config.h"
 #include "midi_bus.h"
 
 typedef struct center center_t;

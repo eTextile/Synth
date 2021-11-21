@@ -15,8 +15,17 @@
 
 #include "config.h"
 #include "llist.h"
-#include "presets.h"
+#include "interp.h"
 #include "median.h"
+
+#define  BI   0  // [0] Blob UID
+#define  BS   1  // [1] Blob State
+#define  BL   2  // [2] Blob Last State
+#define  BX   3  // [3] Blob X centroid position
+#define  BY   4  // [4] Blob Y centroid position
+#define  BZ   5  // [5] Blob Depth
+#define  BW   6  // [6] Blob width
+#define  BH   7  // [7] Blob Height
 
 extern llist_t llist_blobs;            // Exposed local declaration see blob.cpp
 
@@ -102,8 +111,8 @@ struct blob {
   lnode_t node;
   uint8_t UID;
   status_t status;
-  unsigned long debounceTimeStamp;
-  unsigned long transmitTimeStamp;
+  uint32_t debounceTimeStamp;
+  uint32_t transmitTimeStamp;
   uint16_t pixels;
   boolean state;
   boolean lastState;
@@ -111,31 +120,6 @@ struct blob {
   point_t centroid;
   velocity_t velocity;
 };
-
-#define  BI   0  // [0] Blob UID
-#define  BS   1  // [1] Blob State
-#define  BL   2  // [2] Blob Last State
-#define  BX   3  // [3] Blob X centroid position
-#define  BY   4  // [4] Blob Y centroid position
-#define  BZ   5  // [5] Blob Depth
-#define  BW   6  // [6] Blob width
-#define  BH   7  // [7] Blob Height
-
-/*
-  typedef enum blobParam {
-  BI,  // [0] Blob UID
-  BS,  // [1] Blob State
-  BL,  // [2] Blob Last State
-  BX,  // [3] Blob X centroid position
-  BY,  // [4] Blob Y centroid position
-  BZ,  // [5] Blob Depth
-  BW,  // [6] Blob width
-  BH   // [7] Blob Height
-  } blobParam_t;
-*/
-
-void llist_lifo_init(llist_t *list, xylr_t* nodesArray, const int nodes); // TODO: Separation of concerns (SoC)
-void llist_blob_init(llist_t *list, blob_t* nodesArray, const int nodes); // TODO: Separation of concerns (SoC)
 
 void BLOB_SETUP(void);
 void matrix_find_blobs(void);

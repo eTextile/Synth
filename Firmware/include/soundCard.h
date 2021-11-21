@@ -8,7 +8,6 @@
 #define __SOUND_CARD_H__
 
 #include "config.h"
-#include "presets.h"
 
 #include <Audio.h>                    // https://github.com/PaulStoffregen/Audio
 

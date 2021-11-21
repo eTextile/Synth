@@ -8,7 +8,6 @@
 #define __SCAN_H__
 
 #include "config.h"
-#include "presets.h"
 #include "blob.h"
 
 typedef struct image image_t;   // Forward declaration located in blob.h

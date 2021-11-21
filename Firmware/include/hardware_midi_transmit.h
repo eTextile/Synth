@@ -8,7 +8,6 @@
 #define __HARDWARE_MIDI_TRANSMIT_H__
 
 #include "config.h"
-#include "presets.h"
 #include "llist.h"
 #include "midi_bus.h"
 

@@ -234,11 +234,11 @@ void MAPPING_CIRCLES_SETUP(void){
 void mapping_circles_update(void) {
   for (blob_t* blob_ptr = (blob_t*)ITERATOR_START_FROM_HEAD(&llist_blobs); blob_ptr != NULL; blob_ptr = (blob_t*)ITERATOR_NEXT(blob_ptr)) {
     for (int i = 0; i < mapp_circles; i++) {
-      float x = blob_ptr->centroid.X - mapp_circlesParams[i].radius;
-      float y = blob_ptr->centroid.Y - mapp_circlesParams[i].radius;
+      float x = blob_ptr->centroid.X - mapp_circlesParams[i].center.x;
+      float y = blob_ptr->centroid.Y - mapp_circlesParams[i].center.y;
       float radius = sqrt(x * x + y * y);
-      float theta = 0;
       if (radius < mapp_circlesParams[i].radius) {
+        float theta = 0;
         // Rotation of Axes through an angle without shifting Origin
         float posX = x * cos(mapp_circlesParams[i].offset) + y * sin(mapp_circlesParams[i].offset);
         float posY = -x * sin(mapp_circlesParams[i].offset) + y * cos(mapp_circlesParams[i].offset);

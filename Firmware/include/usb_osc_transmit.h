@@ -7,18 +7,9 @@
 #ifndef __USB_OSC_TRANSMIT_H__
 #define __USB_OSC_TRANSMIT_H__
 
-#if defined(USB_OSC)
+#if defined(USB_OSC) || defined(USB_MTPDISK)
 
-#include "config.h"
-#include "presets.h"
-#include "llist.h"
-#include "blob.h"
-#include "midi_bus.h"
-
-#include <OSCBoards.h>              // https://github.com/CNMAT/OSC
 #include <OSCMessage.h>             // https://github.com/CNMAT/OSC
-#include <OSCBundle.h>              // https://github.com/CNMAT/OSC
-#include <SLIPEncodedUSBSerial.h>   // https://github.com/CNMAT/OSC
 
 void USB_OSC_TRANSMIT_SETUP(void);
 void usb_osc_read_input(void);

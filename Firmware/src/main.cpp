@@ -5,41 +5,37 @@
   This work is licensed under Creative Commons Attribution-ShareAlike 4.0 International license, see the LICENSE file for details.
 */
 
+#include "config.h"
 #include "scan.h"
 #include "interp.h"
 #include "blob.h"
+#include "midi_bus.h"
 
 #if defined(USB_MTPDISK)
 #include "mtp_spi.h"
-#include "json_config.h"
 #include "usb_osc_transmit.h"
 #endif
 
 #if defined(USB_MTPDISK_MIDI)
 #include "mtp_spi.h"
-#include "json_config.h"
 #include "usb_midi_transmit.h"
 #endif
 
 #if defined(USB_MIDI)
-#include "json_config.h"
 #include "usb_midi_transmit.h"
 #endif
 
 #if defined(USB_MIDI_SERIAL)
-#include "json_config.h"
 #include "usb_serial_transmit.h"
 #include "usb_midi_transmit.h"
 #endif
 
 #if defined(USB_OSC)
-#include "json_config.h"
 #include "usb_serial_transmit.h"
 #include "usb_osc_transmit.h"
 #endif
 
 #if defined(HARDWARE_MIDI)
-#include "json_config.h"
 #include "hardware_midi_transmit.h"
 #endif
 
@@ -90,7 +86,6 @@ USB_OSC_TRANSMIT_SETUP();
 #endif
 #if defined(USB_MIDI_SERIAL)
 USB_SERIAL_TRANSMIT_SETUP();
-USB_SERIAL_UPDATE_CONFIG(); // TIMEOUT: 4 second
 LOAD_SPI_FLASH_CONFIG();
 USB_MIDI_TRANSMIT_SETUP();
 #endif
@@ -101,6 +96,7 @@ HARDWARE_MIDI_TRANSMIT_SETUP();
 #if defined(RUNING_MEDIAN)
   RUNING_MEDIAN_SETUP();
 #endif
+
 #if defined(MAPPING_LAYOUT)
   MAPPING_LIB_SETUP();
 #endif
@@ -139,7 +135,7 @@ void loop() {
   update_presets_midi_usb();
 #endif
 #if defined(__IMXRT1062__)  // Teensy 4.0 & 4.1
-  update_presets_usb();
+  update_presets_usb_midi();
   update_presets_buttons();
   update_presets_encoder();
   update_leds();

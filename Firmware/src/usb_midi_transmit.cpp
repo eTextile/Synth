@@ -6,10 +6,24 @@
 
 #include "usb_midi_transmit.h"
 
-#if defined(USB_MTPDISK) || defined(USB_MTPDISK_MIDI) || defined(USB_MIDI) || defined(USB_MIDI_SERIAL)
+#include "config.h"
+#include "llist.h"
+#include "blob.h"
+#include "midi_bus.h"
+
+#if defined(USB_MIDI) || defined(USB_MIDI_SERIAL) || defined(USB_MTPDISK_MIDI)
 
 #define MIDI_TRANSMIT_INTERVAL 10
 unsigned long int usbTransmitTimeStamp = 0;
+
+void usb_midi_handle_cc(byte channel, byte control, byte value){
+  midiNode_t* node_ptr = (midiNode_t*)llist_pop_front(&midi_node_stack);  // Get a node from the MIDI nodes stack
+  node_ptr->midiMsg.status = midi::ControlChange;  // Set the MIDI status
+  node_ptr->midiMsg.data1 = control;               // Set the MIDI control
+  node_ptr->midiMsg.data2 = value;                 // Set the MIDI value
+  //node_ptr->midiMsg.channel = channel;           // Set the MIDI channel
+  llist_push_front(&midiIn, node_ptr);             // Add the node to the midiIn linked liste
+};
 
 void USB_MIDI_TRANSMIT_SETUP(void) {
   usbMIDI.begin();
@@ -19,15 +33,6 @@ void USB_MIDI_TRANSMIT_SETUP(void) {
 void usb_midi_read_input(void) {
   usbMIDI.read(MIDI_INPUT_CHANNEL);         // Is there a MIDI incoming messages on channel One
   while (usbMIDI.read(MIDI_INPUT_CHANNEL)); // Read and discard any incoming MIDI messages
-};
-
-void usb_midi_handle_cc(byte channel, byte control, byte value){
-  midiNode_t* node_ptr = (midiNode_t*)llist_pop_front(&midi_node_stack);  // Get a node from the MIDI nodes stack
-  node_ptr->midiMsg.status = midi::ControlChange;  // Set the MIDI status
-  node_ptr->midiMsg.data1 = control;               // Set the MIDI control
-  node_ptr->midiMsg.data2 = value;                 // Set the MIDI value
-  //node_ptr->midiMsg.channel = channel;           // Set the MIDI channel
-  llist_push_front(&midiIn, node_ptr);             // Add the node to the midiIn linked liste
 };
 
 void usb_midi_transmit(void) {
@@ -137,5 +142,4 @@ void usb_midi_transmit(void) {
       break;
   };
 };
-
 #endif

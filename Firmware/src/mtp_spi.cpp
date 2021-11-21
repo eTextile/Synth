@@ -6,7 +6,14 @@
 
 #include "mtp_spi.h"
 
-#if defined(USB_MTPDISK) || defined(USB_MTPDISK_MIDI)
+#if defined(USB_MTPDISK) || defined(USB_MTPDISK_MIDI) || defined(USB_MTPDISK_SERIAL)
+
+#include "config.h"
+#include "mapping_lib.h"
+
+#include <FS.h>
+#include <LittleFS.h>
+#include <MTP_Teensy.h>
 
 char jsonFile[1024] = {0};
 
@@ -16,14 +23,12 @@ File dataFile;
 bool write_data = false;
 uint32_t diskSize;
 
-#define FLASH_CHIP_SELECT  6
-
 MTPStorage storage;
 MTPD mtpd(&storage);
 
 void MTP_SPI_SETUP(void) {
   //Serial.begin(115200);
-  if (!myfs.begin(chipSelect, SPI)) {
+  if (!myfs.begin(FLASH_CHIP_SELECT, SPI)) {
     while (1){
         digitalWrite(LED_PIN_D1, HIGH);
         digitalWrite(LED_PIN_D2, HIGH);
@@ -93,4 +98,5 @@ void dump_json(void) {
     delay(5);  
   };
 };
+
 #endif

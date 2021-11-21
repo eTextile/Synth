@@ -4,22 +4,15 @@
   This work is licensed under Creative Commons Attribution-ShareAlike 4.0 International license, see the LICENSE file for details.
 */
 
-#include "presets.h"
+#include "config.h"
+#include "interp.h"
+#include "midi_bus.h"
+#include "mapping_lib.h"
 
-// SOFTWARE CONSTANTES **DO NOT CHANGE**
-#define LONG_HOLD                   1500
-#define BLOBS_PLAY_LED_TIMEON       600
-#define BLOBS_PLAY_LED_TIMEOFF      600
-#define BLOBS_LEARN_LED_TIMEON      100
-#define BLOBS_LEARN_LED_TIMEOFF     100
-#define BLOBS_MAPPING_LED_TIMEON    1000
-#define BLOBS_MAPPING_LED_TIMEOFF   100
-#define CALIBRATE_LED_TIMEON        35
-#define CALIBRATE_LED_TIMEOFF       100
-#define CALIBRATE_LED_ITER          5
-#define SAVE_LED_TIMEON             20
-#define SAVE_LED_TIMEOFF            50
-#define SAVE_LED_ITER               10
+#include <ArduinoJson.h>
+#include <SerialFlash.h>
+
+uint32_t serialUpdateConfigTimeStamp = 0;
 
 Encoder encoder(ENCODER_PIN_A, ENCODER_PIN_B);
 
@@ -28,14 +21,14 @@ Bounce BUTTON_R = Bounce();
 
 uint8_t currentMode = CALIBRATE;      // Init currentMode with CALIBRATE (SET as DEFAULT_MODE)
 //uint8_t lastMode = LINE_OUT;        // Init lastMode with LINE_OUT (SET as DEFAULT_MODE)
-//uint8_t lastMode = BLOBS_MAPPING;     // Init lastMode with MIDI_MAPPING (SET as DEFAULT_MODE)
-uint8_t lastMode = BLOBS_PLAY;      // Init lastMode with MIDI_BLOBS_PLAY (SET as DEFAULT_MODE)
+//uint8_t lastMode = BLOBS_MAPPING;   // Init lastMode with MIDI_MAPPING (SET as DEFAULT_MODE)
+uint8_t lastMode = BLOBS_PLAY;        // Init lastMode with MIDI_BLOBS_PLAY (SET as DEFAULT_MODE)
 
 preset_t presets[9] = {
   {13, 31, 29, 0, false, false, false, false, LOW,  LOW  },  // LINE_OUT          ARGS[minVal, maxVal, val, ledVal, update, setLed, updateLed, allDone, D1, D2]
   { 1, 50, 12, 0, false, false, false, false, HIGH, LOW  },  // SIG_IN            ARGS[minVal, maxVal, val, ledVal, update, setLed, updateLed, allDone, D1, D2]
   { 1, 31, 17, 0, false, false, false, false, LOW,  HIGH },  // SIG_OUT           ARGS[minVal, maxVal, val, ledVal, update, setLed, updateLed, allDone, D1, D2]
-  { 2, 60, 3, 0, false, false, false, false, HIGH, HIGH },   // THRESHOLD         ARGS[minVal, maxVal, val, ledVal, update, setLed, updateLed, allDone, D1, D2]
+  { 2, 60, 3,  0, false, false, false, false, HIGH, HIGH },  // THRESHOLD         ARGS[minVal, maxVal, val, ledVal, update, setLed, updateLed, allDone, D1, D2]
   { 0, 0,  0,  0, true,  false, false, false, HIGH, HIGH },  // CALIBRATE         ARGS[minVal, maxVal, val, ledVal, update, setLed, updateLed, allDone, D1, D2]
   { 0, 0,  0,  0, false, false, false, false, NULL, NULL },  // SAVE              ARGS[minVal, maxVal, val, ledVal, update, setLed, updateLed, allDone, D1, D2]
   { 0, 0,  0,  0, false, false, false, false, NULL, NULL },  // MIDI_BLOBS_PLAY   ARGS[minVal, maxVal, val, ledVal, update, setLed, updateLed, allDone, D1, D2]
@@ -52,6 +45,8 @@ void LEDS_SETUP(void) {
 
 // Hear it should not compile if you didn't install the library
 // [Bounce2](https://github.com/thomasfredericks/Bounce2)
+// https://www.pjrc.com/teensy/interrupts.html
+// https://github.com/khoih-prog/Teensy_TimerInterrupt/blob/main/examples/SwitchDebounce/SwitchDebounce.ino
 
 void SWITCHES_SETUP(void) {
   BUTTON_L.attach(BUTTON_PIN_L, INPUT_PULLUP);  // Attach the debouncer to a pin with INPUT_PULLUP mode
@@ -60,7 +55,7 @@ void SWITCHES_SETUP(void) {
   BUTTON_R.interval(25);                        // Debounce interval of 25 millis
 };
 
-void update_presets_usb(void) {
+void update_presets_usb_midi(void) {
   for (midiNode_t* node_ptr = (midiNode_t*)ITERATOR_START_FROM_HEAD(&midiIn); node_ptr != NULL; node_ptr = (midiNode_t*)ITERATOR_NEXT(node_ptr)) {
     switch (node_ptr->midiMsg.status) {
       case midi::NoteOn:
@@ -90,7 +85,7 @@ void update_presets_usb(void) {
             interpThreshold = constrain(presets[THRESHOLD].val - 5, presets[THRESHOLD].minVal, presets[THRESHOLD].maxVal);
             presets[THRESHOLD].ledVal = map(node_ptr->midiMsg.data2, 0, 127, 0, 255);
             //presets[THRESHOLD].update = true;
-            presets[THRESHOLD].setLed = true; // TEENSY 3.2 DO NOT HAVE LEDs!!!
+            presets[THRESHOLD].setLed = true;
             presets[THRESHOLD].updateLed = true;
             break;
           case CALIBRATE: // PROGRAM 4
@@ -136,7 +131,7 @@ void update_presets_usb(void) {
   llist_save_nodes(&midi_node_stack, &midiIn); // Save/rescure all midiOut nodes
 };
 
-// Selec the current mode and perform calibration 
+// Selec the current mode and perform the matrix sensor calibration 
 void update_presets_buttons(void) {
   BUTTON_L.update();
   BUTTON_R.update();
@@ -151,13 +146,13 @@ void update_presets_buttons(void) {
 #endif
   };
   // ACTION : BUTTON_L long press
-  // FONCTION : SAVE ALL PARAMETERS TO THE EEPROM MEMORY
+  // FONCTION : UPDATE FLASH CONFIG FILE
   if (BUTTON_L.rose() && BUTTON_L.previousDuration() > LONG_HOLD) {
     lastMode = currentMode; // keep track of last Mode to set it back after saving
-    currentMode = SAVE;
-    presets[SAVE].update = true;
+    currentMode = UPDATE_CONFIG;
+    presets[UPDATE_CONFIG].update = true;
 #if defined(DEBUG_BUTTONS)
-    Serial.printf("\nBUTTON_L : SAVE : %d", currentMode);
+    Serial.printf("\nBUTTON_L : UPDATE_CONFIG : %d", currentMode);
 #endif
   };
   // ACTION : BUTTON_R short press
@@ -372,27 +367,27 @@ void update_leds(void) {
         timeStamp = millis();
       };
       break;
-    case SAVE: // LEDs : Both LEDs are blinking very fast
-      if (presets[SAVE].setLed) {
-        presets[SAVE].setLed = false;
+    case UPDATE_CONFIG: // LEDs : Both LEDs are blinking
+      if (presets[UPDATE_CONFIG].setLed) {
+        presets[UPDATE_CONFIG].setLed = false;
         pinMode(LED_PIN_D1, OUTPUT);
         pinMode(LED_PIN_D2, OUTPUT);
         timeStamp = millis();
         iter = 0;
       };
-      if (iter <= SAVE_LED_ITER) {
-        if (millis() - timeStamp < SAVE_LED_TIMEON && presets[SAVE].updateLed == true) {
-          presets[SAVE].updateLed = false;
+      if (iter <= UPDATE_CONFIG_LED_ITER) {
+        if (millis() - timeStamp < UPDATE_CONFIG_LED_TIMEON && presets[UPDATE_CONFIG].updateLed == true) {
+          presets[UPDATE_CONFIG].updateLed = false;
           digitalWrite(LED_PIN_D1, HIGH);
           digitalWrite(LED_PIN_D2, HIGH);
         }
-        else if (millis() - timeStamp > SAVE_LED_TIMEON && presets[SAVE].updateLed == false) {
-          presets[SAVE].updateLed = true;
+        else if (millis() - timeStamp > UPDATE_CONFIG_LED_TIMEON && presets[UPDATE_CONFIG].updateLed == false) {
+          presets[UPDATE_CONFIG].updateLed = true;
           digitalWrite(LED_PIN_D1, LOW);
           digitalWrite(LED_PIN_D2, LOW);
         }
-        else if (millis() - timeStamp > SAVE_LED_TIMEON + SAVE_LED_TIMEOFF) {
-          if (iter < SAVE_LED_ITER) {
+        else if (millis() - timeStamp > UPDATE_CONFIG_LED_TIMEON + UPDATE_CONFIG_LED_TIMEOFF) {
+          if (iter < UPDATE_CONFIG_LED_ITER) {
             timeStamp = millis();
             iter++;
           }
@@ -450,16 +445,374 @@ boolean setLevel(preset_t* preset_ptr) {
   };
 };
 
-// TODO
-void preset_load(void) {
-  for (int i = 0; i < 4; i++) {
-    // Read from external Flash chip !
+
+
+
+inline void config_error(uint8_t status) {
+  while (1) {
+#if defined(DEBUG_SERIAL_FLASH)
+    Serial.printf("\nDEBUG_SERIAL_FLASH\t%d", status);
+#endif
+    //digitalWrite(LED_BUILTIN, HIGH);
+    digitalWrite(LED_PIN_D1, HIGH);
+    digitalWrite(LED_PIN_D2, HIGH);
+    delay(40);
+    //digitalWrite(LED_BUILTIN, LOW);
+    digitalWrite(LED_PIN_D1, LOW);
+    digitalWrite(LED_PIN_D2, LOW);
+    delay(40);
   };
 };
 
-// TODO
-void save_presets(void) {
-  for (int i = 0; i < 4; i++) {
-    // Write to external Flash chip !
+inline void flushError(void) {
+  uint32_t lastReceiveTime = millis();
+  char usbBuffer[USB_BUFFER_SIZE];
+  // We assume the serial receive part is finished when we have not received something for 3 seconds
+  while (Serial.available() || millis() < lastReceiveTime + 3000) {
+    if (Serial.readBytes(usbBuffer, USB_BUFFER_SIZE)) {
+      lastReceiveTime = millis();
+      serialUpdateConfigTimeStamp = millis();
+    };
   };
+};
+
+inline void usb_serial_update_config(void) {
+
+  if (!SerialFlash.begin(FLASH_CHIP_SELECT)) {
+    config_error(0);
+  };
+
+  serialUpdateConfigTimeStamp = millis();
+  
+  // Waiting for config file!
+  while (millis() - serialUpdateConfigTimeStamp < SERIAL_UPDATE_CONFIG_TIMEOUT) {
+    if (Serial.available()) {
+
+      SerialFlashFile flashFile;
+      uint8_t state = STATE_START;
+      uint8_t escape = 0;
+      uint8_t fileSizeIndex = 0;
+      uint32_t fileSize = 0;
+  
+      char usbBuffer[USB_BUFFER_SIZE];
+      uint8_t flashBuffer[FLASH_BUFFER_SIZE];
+      char filename[FILENAME_STRING_SIZE];
+  
+      uint16_t flashBufferIndex = 0;
+      uint8_t filenameIndex = 0;
+
+      uint32_t lastReceiveTime = millis();
+
+      // Flash LED while formatting!
+      while (!SerialFlash.ready()) {
+#if defined(DEBUG_SERIAL_FLASH)
+        Serial.printf("\nDEBUG_SERIAL_FLASH\t%d", 2);
+#endif
+        delay(100);
+        digitalWrite(LED_PIN_D1, HIGH);
+        digitalWrite(LED_PIN_D2, HIGH);
+        delay(100);
+        digitalWrite(LED_PIN_D1, LOW);
+        digitalWrite(LED_PIN_D2, LOW);
+      };
+
+      digitalWrite(LED_PIN_D1, HIGH);
+      digitalWrite(LED_PIN_D2, HIGH);
+      
+      // We assume the serial receive part is finished when we have not received something for 3 seconds
+      while (Serial.available() || lastReceiveTime + 3000 > millis()) {
+
+        uint16_t available = Serial.readBytes(usbBuffer, USB_BUFFER_SIZE);
+        
+        if (available) {
+          lastReceiveTime = millis();
+          serialUpdateConfigTimeStamp = millis();
+        };
+
+        for (uint16_t usbBufferIndex = 0; usbBufferIndex < available; usbBufferIndex++) {
+          uint8_t b = usbBuffer[usbBufferIndex];
+
+          ////////////////////////////////////////// STATE_START
+          if (state == STATE_START) {
+            // Start byte - Reepat start is fine
+            if (b == BYTE_START) {
+              for (uint8_t i = 0; i < FILENAME_STRING_SIZE; i++) {
+                filename[i] = 0x00;
+              };
+              filenameIndex = 0;
+            }
+            // Valid characters are A-Z, 0-9, comma, period, colon, dash, underscore
+            else if ((b >= 'A' && b <= 'Z') || (b >= '0' && b <= '9') || b == '.' || b == ',' || b == ':' || b == '-' || b == '_') {
+              filename[filenameIndex++] = b;
+              if (filenameIndex >= FILENAME_STRING_SIZE) {
+                //Error name too long
+                flushError();
+                return;
+              };
+            }
+            // Filename end character
+            else if (b == BYTE_SEPARATOR) {
+              if (filenameIndex == 0) {
+                // Error empty filename
+                flushError();
+                return;
+              };
+              // Change state
+              state = STATE_SIZE;
+              fileSizeIndex = 0;
+              fileSize = 0;
+            }
+            // Invalid character
+            else {
+              // Error bad filename
+              flushError();
+              return;
+            };
+          }
+
+          ////////////////////////////////////////// STATE_SIZE
+          // We read 4 bytes as a uint32_t for file size
+          else if (state == STATE_SIZE) {
+            if (fileSizeIndex < 4) {
+              fileSize = (fileSize << 8) + b;
+              fileSizeIndex++;
+            }
+            else if (b == BYTE_SEPARATOR) {
+              state = STATE_CONTENT;
+              flashBufferIndex = 0;
+              escape = 0;
+              if (SerialFlash.exists(filename)) {
+                SerialFlash.remove(filename);  // It doesn't reclaim the space, but it does let you create a new file with the same name
+              };
+              // Create a new file and open it for writing
+              if (SerialFlash.create(filename, fileSize)) {
+                flashFile = SerialFlash.open(filename);
+                if (!flashFile) {
+                  // Error flash file open
+                  flushError();
+                  return;
+                };
+              }
+              else {
+                // Error flash create (no room left?)
+                flushError();
+                return;
+              };
+            }
+            else {
+              // Error invalid length requested
+              flushError();
+              return;
+            };
+          }
+
+          ////////////////////////////////////////// STATE_CONTENT
+          else if (state == STATE_CONTENT) {
+            // Previous byte was escaped; unescape and add to buffer
+            if (escape) {
+              escape = 0;
+              flashBuffer[flashBufferIndex++] = b ^ 0x20;
+            }
+            // Escape the next byte
+            else if (b == BYTE_ESCAPE) {
+              //Serial.println("esc");
+              escape = 1;
+            }
+            // End of file
+            else if (b == BYTE_START) {
+              //Serial.println("End of file");
+              state = STATE_START;
+              flashFile.write(flashBuffer, flashBufferIndex);
+              flashFile.close();
+              flashBufferIndex = 0;
+            }
+            // Normal byte; add to buffer
+            else {
+              flashBuffer[flashBufferIndex++] = b;
+            };
+            // The buffer is filled; write to SD card
+            if (flashBufferIndex >= FLASH_BUFFER_SIZE) {
+              flashFile.write(flashBuffer, FLASH_BUFFER_SIZE);
+              flashBufferIndex = 0;
+            };
+          };
+
+        };
+      };
+      // Success!  Turn the LEDs off
+      digitalWrite(LED_PIN_D1, LOW);
+      digitalWrite(LED_PIN_D2, LOW);
+    };
+  };
+};
+
+//////////////////////////////////////// LOAD CONFIG
+inline bool config_load_mapping_triggers(const JsonArray& config) {
+  if (config.isNull()) {
+    return false;
+  }
+  mapping_triggers_alloc(config.size());
+  for (uint8_t i = 0; i < mapp_trigs; i++) {
+    mapp_trigsParams[i].rect.Xmin = config[i]["Xmin"];
+    mapp_trigsParams[i].rect.Xmax = config[i]["Xmax"];
+    mapp_trigsParams[i].rect.Ymin = config[i]["Ymin"];
+    mapp_trigsParams[i].rect.Ymax = config[i]["Ymax"];
+    mapp_trigsParams[i].note = config[i]["note"];
+  }
+  return true;
+}
+
+inline bool config_load_mapping_toggles(const JsonArray& config) {
+  if (config.isNull()) {
+    return false;
+  }
+  mapping_toggles_alloc(config.size());
+  for (uint8_t i = 0; i < mapp_togs; i++) {
+    mapp_togsParams[i].rect.Xmin = config[i]["Xmin"];
+    mapp_togsParams[i].rect.Xmax = config[i]["Xmax"];
+    mapp_togsParams[i].rect.Ymin = config[i]["Ymin"];
+    mapp_togsParams[i].rect.Ymax = config[i]["Ymax"];
+    mapp_togsParams[i].note = config[i]["note"];
+  }
+  return true;
+}
+
+inline bool config_load_mapping_vSliders(const JsonArray& config) {
+  if (config.isNull()) {
+    return false;
+  };
+  mapping_vSliders_alloc(config.size());
+  for (uint8_t i = 0; i < mapp_vSliders; i++) {
+    mapp_vSlidersParams[i].rect.Xmin = config[i]["Xmin"];
+    mapp_vSlidersParams[i].rect.Xmax = config[i]["Xmax"];
+    mapp_vSlidersParams[i].rect.Ymin = config[i]["Ymin"];
+    mapp_vSlidersParams[i].rect.Ymax = config[i]["Ymax"];
+    mapp_vSlidersParams[i].CC = config[i]["CC"];
+  };
+  return true;
+};
+
+inline bool config_load_mapping_hSliders(const JsonArray& config) {
+  if (config.isNull()) {
+    return false;
+  };
+  mapping_hSliders_alloc(config.size());
+  for (uint8_t i = 0; i < mapp_hSliders; i++) {
+    mapp_hSlidersParams[i].rect.Xmin = config[i]["Xmin"];
+    mapp_hSlidersParams[i].rect.Xmax = config[i]["Xmax"];
+    mapp_hSlidersParams[i].rect.Ymin = config[i]["Ymin"];
+    mapp_hSlidersParams[i].rect.Ymax = config[i]["Ymax"];
+    mapp_hSlidersParams[i].CC = config[i]["CC"];
+  };
+  return true;
+};
+
+inline bool config_load_mapping_circles(const JsonArray& config) {
+  if (config.isNull()) {
+    return false;
+  }
+  mapping_circles_alloc(config.size());
+  for (uint8_t i = 0; i < mapp_circles; i++) {
+    mapp_circlesParams[i].center.x = config[i]["CX"];
+    mapp_circlesParams[i].center.y = config[i]["CY"];
+    mapp_circlesParams[i].radius = config[i]["radius"];
+    mapp_circlesParams[i].offset = config[i]["offset"];
+    //mapp_circlesParams[i].CCradius = config[i]["CCradius"];
+    //mapp_circlesParams[i].CCtheta = config[i]["CCtheta"];
+  };
+  return true;
+}
+
+inline bool config_load_mapping_touchpads(const JsonArray& config) {
+  if (config.isNull()) {
+    return false;
+  };
+  mapping_touchpads_alloc(config.size());
+  for (uint8_t i = 0; i < mapp_touchpads; i++) {
+    mapp_touchpadsParams[i].rect.Xmin = config[i]["Xmin"];
+    mapp_touchpadsParams[i].rect.Xmax = config[i]["Xmax"];
+    mapp_touchpadsParams[i].rect.Ymin = config[i]["Ymin"];
+    mapp_touchpadsParams[i].rect.Ymax = config[i]["Ymax"];
+    mapp_touchpadsParams[i].CCx = config[i]["CCx"];     // X axis MIDI cChange mapping
+    mapp_touchpadsParams[i].CCy = config[i]["CCy"];     // X axis MIDI cChange mapping
+    mapp_touchpadsParams[i].CCz = config[i]["CCz"];     // X axis MIDI cChange mapping
+    mapp_touchpadsParams[i].CCs = config[i]["CCs"];     // XY size MIDI cChange mapping
+    mapp_touchpadsParams[i].CCxyv = config[i]["CCxyv"]; // XY velocity MIDI cChange mapping
+    mapp_touchpadsParams[i].CCzv = config[i]["CCzv"];   // XY velocity MIDI cChange mapping
+ };
+  return true;
+};
+
+inline bool config_load_mapping_polygons(const JsonArray& config) {
+  if (config.isNull()) {
+    return false;
+  };
+  mapping_polygons_alloc(config.size());
+  for (uint8_t i = 0; i < mapp_polygons; i++) {
+    mapp_polygonsParams[i].vertices_cnt = config[i]["cnt"];
+    for (uint8_t j = 0; j < config[i]["cnt"]; j++) {
+      mapp_polygonsParams[i].vertices[j].x = (float)config[i]["vertrices"][j]["X"];
+      mapp_polygonsParams[i].vertices[j].y = (float)config[i]["vertrices"][j]["Y"];
+    };
+  };
+  return true;
+};
+
+inline bool config_load_mapping(const JsonObject& config) {
+  if (config.isNull()) {
+    return false;
+  };
+  if (!config_load_mapping_triggers(config["triggers"])) {
+    return false;
+  };
+  if (!config_load_mapping_toggles(config["toggles"])) {
+    return false;
+  };
+  if (!config_load_mapping_vSliders(config["vSliders"])) {
+    return false;
+  };
+  if (!config_load_mapping_hSliders(config["hSliders"])) {
+    return false;
+  };
+  if (!config_load_mapping_circles(config["circles"])) {
+    return false;
+  };
+  if (!config_load_mapping_touchpads(config["touchpad"])) {
+    return false;
+  };
+  if (!config_load_mapping_polygons(config["polygons"])) {
+    return false;
+  };
+  return true;
+};
+
+void LOAD_SPI_FLASH_CONFIG() {
+  
+  //pinMode(LED_BUILTIN, OUTPUT);
+
+  if (!SerialFlash.begin(FLASH_CHIP_SELECT)) {
+    config_error(1);
+  };
+
+  uint8_t configData[1024];
+  SerialFlashFile configFile = SerialFlash.open("config.json");
+  configFile.read(configData, configFile.size());
+
+  StaticJsonDocument<1024> config;
+  DeserializationError error = deserializeJson(config, configData);
+  if (error) {
+    // Waiting for config file!
+    // Load the default config file!
+    currentMode = UPDATE_CONFIG;
+    usb_serial_update_config();
+    //config_error(2);
+  };
+
+  if (!config_load_mapping(config["mapping"])) {
+    // Loading JSON config failed!
+    config_error(3);
+    
+  };
+
+  configFile.close();
 };

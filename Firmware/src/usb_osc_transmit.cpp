@@ -7,7 +7,18 @@
 
 #include "usb_osc_transmit.h"
 
-#if defined(USB_OSC)
+#if defined(USB_OSC) || defined(USB_MTPDISK)
+
+#include "config.h"
+#include "presets.h"
+#include "llist.h"
+#include "blob.h"
+#include "midi_bus.h"
+
+#include <OSCBoards.h>              // https://github.com/CNMAT/OSC
+#include <OSCMessage.h>             // https://github.com/CNMAT/OSC
+#include <OSCBundle.h>              // https://github.com/CNMAT/OSC
+#include <SLIPEncodedUSBSerial.h>   // https://github.com/CNMAT/OSC
 
 SLIPEncodedUSBSerial SLIPSerial(thisBoardsSerialUSB);
 

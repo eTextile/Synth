@@ -29,14 +29,14 @@ llist_t llist_blobs_stack;                // Free nodes stack
 llist_t llist_blobs_temp;                 // Intermediate blobs linked list
 llist_t llist_blobs;                      // Output blobs linked list
 
-void llist_lifo_init(llist_t* llist_ptr, xylr_t* nodesArray_ptr, const int nodes) {
+inline void llist_lifo_init(llist_t* llist_ptr, xylr_t* nodesArray_ptr, const int nodes) {
   llist_raz(llist_ptr);
   for (int i = 0; i < nodes; i++) {
     llist_push_front(llist_ptr, &nodesArray_ptr[i]);
   };
 };
 
-void llist_blob_init(llist_t* llist_ptr, blob_t* nodesArray_ptr, const int nodes) {
+inline void llist_blob_init(llist_t* llist_ptr, blob_t* nodesArray_ptr, const int nodes) {
   llist_raz(llist_ptr);
   for (int i = 0; i < nodes; i++) {
     llist_push_front(llist_ptr, &nodesArray_ptr[i]);

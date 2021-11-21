@@ -24,8 +24,8 @@
 			{ "Xmin": 10, "Xmax": 14, "Ymin": 5, "Ymax": 50, "CC": 44 }
 		],
 		"hSliders": [
-			{ "Xmin": 5, "Xmax": 50, "Ymin": 5, "Ymax": 9 },
-			{ "Xmin": 5, "Xmax": 50, "Ymin": 10, "Ymax": 14 }
+			{ "Xmin": 5, "Xmax": 50, "Ymin": 5, "Ymax": 9, "CC": 42},
+			{ "Xmin": 5, "Xmax": 50, "Ymin": 10, "Ymax": 14, "CC": 42}
 		],
 		"touchpad": [
 			{ "Xmin": 1, "Xmax": 40, "Ymin": 1, "Ymax": 40, "CCx": 41, "CCy": 42, "CCz": 43, "CCs": 44, "CCxyv": 45, "CCzv": 46 },
