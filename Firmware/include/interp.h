@@ -7,11 +7,7 @@
 #ifndef __INTERP_H__
 #define __INTERP_H__
 
-#include "config.h"
-#include "scan.h"
 #include "blob.h"
-
-typedef struct image image_t;   // Forward declaration located in blob.h
 
 extern uint8_t interpThreshold; // Exposed local declaration see interp.cpp
 extern image_t interpFrame;     // Exposed local declaration see interp.cpp

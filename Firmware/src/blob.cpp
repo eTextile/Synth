@@ -10,7 +10,10 @@
     - This work is licensed under Creative Commons Attribution-ShareAlike 4.0 International license, see the LICENSE file for details.
 */
 
+#include "config.h"
+#include "interp.h"
 #include "blob.h"
+#include "median.h"
 
 #define LIFO_NODES          512           // Set the maximum nodes number
 #define X_STRIDE            4             // Speed up X scanning

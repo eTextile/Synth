@@ -9,7 +9,6 @@
 #include "scan.h"
 #include "interp.h"
 #include "blob.h"
-#include "midi_bus.h"
 
 #if defined(USB_MTPDISK)
 #include "mtp_spi.h"
@@ -18,14 +17,17 @@
 
 #if defined(USB_MTPDISK_MIDI)
 #include "mtp_spi.h"
+#include "midi_bus.h"
 #include "usb_midi_transmit.h"
 #endif
 
 #if defined(USB_MIDI)
+#include "midi_bus.h"
 #include "usb_midi_transmit.h"
 #endif
 
 #if defined(USB_MIDI_SERIAL)
+#include "midi_bus.h"
 #include "usb_serial_transmit.h"
 #include "usb_midi_transmit.h"
 #endif
@@ -36,10 +38,12 @@
 #endif
 
 #if defined(HARDWARE_MIDI)
+#include "midi_bus.h"
 #include "hardware_midi_transmit.h"
 #endif
 
 #if defined(MAPPING_LAYOUT)
+#include "midi_bus.h"
 #include "mapping_lib.h"
 #endif
 

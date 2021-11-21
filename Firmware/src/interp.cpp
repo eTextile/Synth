@@ -7,6 +7,8 @@
 */
 
 #include "interp.h"
+#include "config.h"
+#include "scan.h"
 
 #define IRAW_ROWS       (RAW_ROWS - 1)
 #define IRAW_COLS       (RAW_COLS - 1)

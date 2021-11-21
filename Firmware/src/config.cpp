@@ -12,29 +12,30 @@
 #include <ArduinoJson.h>
 #include <SerialFlash.h>
 
-uint32_t serialUpdateConfigTimeStamp = 0;
-
 Encoder encoder(ENCODER_PIN_A, ENCODER_PIN_B);
 
 Bounce BUTTON_L = Bounce();
 Bounce BUTTON_R = Bounce();
 
+preset_t presets[10] = {
+  { 0, 0,  0,  0, false, false, false, false, NULL, NULL },  // [0] LOAD_CONFIG     ARGS[minVal, maxVal, val, ledVal, update, setLed, updateLed, allDone, D1, D2]
+  { 0, 0,  0,  0, false, false, false, false, NULL, NULL },  // [1] UPDATE_CONFIG   ARGS[minVal, maxVal, val, ledVal, update, setLed, updateLed, allDone, D1, D2]
+  {13, 31, 29, 0, false, false, false, false, LOW,  LOW  },  // [2] LINE_OUT        ARGS[minVal, maxVal, val, ledVal, update, setLed, updateLed, allDone, D1, D2]
+  { 1, 50, 12, 0, false, false, false, false, HIGH, LOW  },  // [3] SIG_IN          ARGS[minVal, maxVal, val, ledVal, update, setLed, updateLed, allDone, D1, D2]
+  { 1, 31, 17, 0, false, false, false, false, LOW,  HIGH },  // [4] SIG_OUT         ARGS[minVal, maxVal, val, ledVal, update, setLed, updateLed, allDone, D1, D2]
+  { 2, 60, 3,  0, false, false, false, false, HIGH, HIGH },  // [5] THRESHOLD       ARGS[minVal, maxVal, val, ledVal, update, setLed, updateLed, allDone, D1, D2]
+  { 0, 0,  0,  0, true,  false, false, false, HIGH, HIGH },  // [6] CALIBRATE       ARGS[minVal, maxVal, val, ledVal, update, setLed, updateLed, allDone, D1, D2]
+  { 0, 0,  0,  0, false, false, false, false, NULL, NULL },  // [7] MIDI_LEARN      ARGS[minVal, maxVal, val, ledVal, update, setLed, updateLed, allDone, D1, D2]
+  { 1, 7,  0,  0, false, false, false, false, NULL, NULL },  // [8] MIDI_PLAY       ARGS[minVal, maxVal, val, ledVal, update, setLed, updateLed, allDone, D1, D2]
+  { 0, 0,  0,  0, false, false, false, false, NULL, NULL }   // [9] MAPPING_LIB     ARGS[minVal, maxVal, val, ledVal, update, setLed, updateLed, allDone, D1, D2]
+};
+
+uint32_t serialUpdateConfigTimeStamp = 0;
+
 uint8_t currentMode = CALIBRATE;      // Init currentMode with CALIBRATE (SET as DEFAULT_MODE)
 //uint8_t lastMode = LINE_OUT;        // Init lastMode with LINE_OUT (SET as DEFAULT_MODE)
 //uint8_t lastMode = BLOBS_MAPPING;   // Init lastMode with MIDI_MAPPING (SET as DEFAULT_MODE)
-uint8_t lastMode = BLOBS_PLAY;        // Init lastMode with MIDI_BLOBS_PLAY (SET as DEFAULT_MODE)
-
-preset_t presets[9] = {
-  {13, 31, 29, 0, false, false, false, false, LOW,  LOW  },  // LINE_OUT          ARGS[minVal, maxVal, val, ledVal, update, setLed, updateLed, allDone, D1, D2]
-  { 1, 50, 12, 0, false, false, false, false, HIGH, LOW  },  // SIG_IN            ARGS[minVal, maxVal, val, ledVal, update, setLed, updateLed, allDone, D1, D2]
-  { 1, 31, 17, 0, false, false, false, false, LOW,  HIGH },  // SIG_OUT           ARGS[minVal, maxVal, val, ledVal, update, setLed, updateLed, allDone, D1, D2]
-  { 2, 60, 3,  0, false, false, false, false, HIGH, HIGH },  // THRESHOLD         ARGS[minVal, maxVal, val, ledVal, update, setLed, updateLed, allDone, D1, D2]
-  { 0, 0,  0,  0, true,  false, false, false, HIGH, HIGH },  // CALIBRATE         ARGS[minVal, maxVal, val, ledVal, update, setLed, updateLed, allDone, D1, D2]
-  { 0, 0,  0,  0, false, false, false, false, NULL, NULL },  // SAVE              ARGS[minVal, maxVal, val, ledVal, update, setLed, updateLed, allDone, D1, D2]
-  { 0, 0,  0,  0, false, false, false, false, NULL, NULL },  // MIDI_BLOBS_PLAY   ARGS[minVal, maxVal, val, ledVal, update, setLed, updateLed, allDone, D1, D2]
-  { 1, 7,  0,  0, false, false, false, false, NULL, NULL },  // MIDI_BLOBS_LEARN  ARGS[minVal, maxVal, val, ledVal, update, setLed, updateLed, allDone, D1, D2]
-  { 0, 0,  0,  0, false, false, false, false, NULL, NULL }   // MIDI_MAPPING      ARGS[minVal, maxVal, val, ledVal, update, setLed, updateLed, allDone, D1, D2]
-};
+uint8_t lastMode = MIDI_PLAY;        // Init lastMode with MIDI_MIDI_PLAY (SET as DEFAULT_MODE)
 
 void LEDS_SETUP(void) {
   pinMode(LED_PIN_D1, OUTPUT);
@@ -53,6 +54,103 @@ void SWITCHES_SETUP(void) {
   BUTTON_R.attach(BUTTON_PIN_R, INPUT_PULLUP);  // Attach the debouncer to a pin with INPUT_PULLUP mode
   BUTTON_L.interval(25);                        // Debounce interval of 25 millis
   BUTTON_R.interval(25);                        // Debounce interval of 25 millis
+};
+
+// Selec the current mode and perform the matrix sensor calibration 
+void update_presets_buttons(void) {
+  BUTTON_L.update();
+  BUTTON_R.update();
+  // ACTION: BUTTON_L short press
+  // FONCTION: CALIBRATE THE SENSOR MATRIX
+  if (BUTTON_L.rose() && BUTTON_L.previousDuration() < LONG_HOLD) {
+    lastMode = currentMode; // keep track of last Mode to set it back after calibration
+    currentMode = CALIBRATE;
+    presets[CALIBRATE].update = true;
+#if defined(DEBUG_BUTTONS)
+    Serial.printf("\nBUTTON_L : CALIBRATE : %d", currentMode);
+#endif
+  };
+  // ACTION: BUTTON_L long press
+  // FONCTION: UPDATE FLASH CONFIG FILE
+  if (BUTTON_L.rose() && BUTTON_L.previousDuration() > LONG_HOLD) {
+    lastMode = currentMode; // keep track of last Mode to set it back after saving
+    currentMode = UPDATE_CONFIG;
+    presets[UPDATE_CONFIG].update = true;
+#if defined(DEBUG_BUTTONS)
+    Serial.printf("\nBUTTON_L : UPDATE_CONFIG : %d", currentMode);
+#endif
+  };
+  // ACTION: BUTTON_R short press
+  // FONCTION: SELECT_MODE
+  // [2]-LINE_OUT
+  // [3]-SIG_IN
+  // [4]-SIG_OUT
+  // [5]-THRESHOLD
+  if (BUTTON_R.rose() && BUTTON_R.previousDuration() < LONG_HOLD) {
+    currentMode = (currentMode + 3) % 6;   // Loop into the modes
+    encoder.write(presets[currentMode].val << 2);
+    presets[currentMode].setLed = true;
+#if defined(DEBUG_BUTTONS)
+    Serial.printf("\nBUTTON_R : SELECT_MODE : %d", currentMode);
+#endif
+  };
+  // ACTION: BUTTON_R long press
+  // FONCTION_A: MIDI_MIDI_PLAY (send all blob values over MIDI format)
+  // FONCTION_B: MIDI_MIDI_LEARN (send blob values separately for Max4Live MIDI_LEARN)
+  // LEDs: blink alternately, slow for playing mode and fast or learning mode
+  if (BUTTON_R.rose() && BUTTON_R.previousDuration() > LONG_HOLD) {
+    if (currentMode == MIDI_PLAY) {
+      currentMode = MIDI_LEARN;
+      presets[MIDI_LEARN].update = true;
+#if defined(DEBUG_BUTTONS)
+      Serial.printf("\nMIDI_MIDI_PLAY : %d", currentMode);
+#endif
+    }
+    else {
+      currentMode = MIDI_PLAY;
+      encoder.write(0x1);
+      presets[MIDI_PLAY].update = true;
+#if defined(DEBUG_BUTTONS)
+      Serial.printf("\nMIDI_MIDI_LEARN : %d", currentMode);
+#endif
+    };
+  };
+};
+
+// Update preset of each mode with the encoder position
+void update_presets_encoder(void) {
+  switch (currentMode) {
+    case LINE_OUT:
+      if (setLevel(&presets[LINE_OUT])) {
+        presets[LINE_OUT].ledVal = map(presets[LINE_OUT].val, presets[LINE_OUT].minVal, presets[LINE_OUT].maxVal, 0, 255);
+        presets[LINE_OUT].updateLed = true;
+      };
+      break;
+    case SIG_IN:
+      if (setLevel(&presets[SIG_IN])) {
+        presets[SIG_IN].ledVal = map(presets[SIG_IN].val, presets[SIG_IN].minVal, presets[SIG_IN].maxVal, 0, 255);
+        presets[SIG_IN].updateLed = true;
+      };
+      break;
+    case SIG_OUT:
+      if (setLevel(&presets[SIG_OUT])) {
+        presets[SIG_OUT].ledVal = map(presets[SIG_OUT].val, presets[SIG_OUT].minVal, presets[SIG_OUT].maxVal, 0, 255);
+        presets[SIG_OUT].updateLed = true;
+      };
+      break;
+    case THRESHOLD:
+      if (setLevel(&presets[THRESHOLD])) {
+        presets[THRESHOLD].ledVal = map(presets[THRESHOLD].val, presets[THRESHOLD].minVal, presets[THRESHOLD].maxVal, 0, 255);
+        interpThreshold = constrain(presets[THRESHOLD].val - 5, presets[THRESHOLD].minVal, presets[THRESHOLD].maxVal);
+        presets[THRESHOLD].updateLed = true;
+      };
+      break;
+    case MIDI_LEARN:
+      if (setLevel(&presets[MIDI_LEARN]));
+      break;
+    default:
+      break;
+  };
 };
 
 void update_presets_usb_midi(void) {
@@ -93,15 +191,15 @@ void update_presets_usb_midi(void) {
             currentMode = CALIBRATE;
             presets[CALIBRATE].update = true;
             break;
-          case BLOBS_PLAY: // PROGRAM 6
-            currentMode = BLOBS_PLAY;
-            presets[BLOBS_PLAY].update = true;
-            presets[BLOBS_PLAY].setLed = true;
+          case MIDI_PLAY: // PROGRAM 6
+            currentMode = MIDI_PLAY;
+            presets[MIDI_PLAY].update = true;
+            presets[MIDI_PLAY].setLed = true;
             break;
-          case BLOBS_LEARN: // PROGRAM 7
-            currentMode = BLOBS_LEARN;
-            presets[BLOBS_LEARN].update = true;
-            presets[BLOBS_LEARN].setLed = true;
+          case MIDI_LEARN: // PROGRAM 7
+            currentMode = MIDI_LEARN;
+            presets[MIDI_LEARN].update = true;
+            presets[MIDI_LEARN].setLed = true;
             break;
           case MAPPING_LIB: // PROGRAM 8
             currentMode = MAPPING_LIB;
@@ -131,101 +229,8 @@ void update_presets_usb_midi(void) {
   llist_save_nodes(&midi_node_stack, &midiIn); // Save/rescure all midiOut nodes
 };
 
-// Selec the current mode and perform the matrix sensor calibration 
-void update_presets_buttons(void) {
-  BUTTON_L.update();
-  BUTTON_R.update();
-  // ACTION : BUTTON_L short press
-  // FONCTION : CALIBRATE THE SENSOR MATRIX
-  if (BUTTON_L.rose() && BUTTON_L.previousDuration() < LONG_HOLD) {
-    lastMode = currentMode; // keep track of last Mode to set it back after calibration
-    currentMode = CALIBRATE;
-    presets[CALIBRATE].update = true;
-#if defined(DEBUG_BUTTONS)
-    Serial.printf("\nBUTTON_L : CALIBRATE : %d", currentMode);
-#endif
-  };
-  // ACTION : BUTTON_L long press
-  // FONCTION : UPDATE FLASH CONFIG FILE
-  if (BUTTON_L.rose() && BUTTON_L.previousDuration() > LONG_HOLD) {
-    lastMode = currentMode; // keep track of last Mode to set it back after saving
-    currentMode = UPDATE_CONFIG;
-    presets[UPDATE_CONFIG].update = true;
-#if defined(DEBUG_BUTTONS)
-    Serial.printf("\nBUTTON_L : UPDATE_CONFIG : %d", currentMode);
-#endif
-  };
-  // ACTION : BUTTON_R short press
-  // FONCTION : SELECT_MODE
-  // [0]-LINE_OUT
-  // [1]-SIG_IN
-  // [2]-SIG_OUT
-  // [3]-THRESHOLD
-  if (BUTTON_R.rose() && BUTTON_R.previousDuration() < LONG_HOLD) {
-    currentMode = (currentMode + 1) % 4;   // Loop into the modes
-    encoder.write(presets[currentMode].val << 2);
-    presets[currentMode].setLed = true;
-#if defined(DEBUG_BUTTONS)
-    Serial.printf("\nBUTTON_R : SELECT_MODE : %d", currentMode);
-#endif
-  };
-  // ACTION : BUTTON_R long press
-  // FONCTION_A : MIDI_BLOBS_PLAY (send all blob values over MIDI format)
-  // FONCTION_B : MIDI_BLOBS_LEARN (send blob values separately for Max4Live MIDI_LEARN)
-  // LEDs : blink alternately, slow for playing mode and fast or learning mode
-  if (BUTTON_R.rose() && BUTTON_R.previousDuration() > LONG_HOLD) {
-    if (currentMode == BLOBS_PLAY) {
-      currentMode = BLOBS_LEARN;
-      presets[BLOBS_LEARN].update = true;
-#if defined(DEBUG_BUTTONS)
-      Serial.printf("\nMIDI_BLOBS_PLAY : %d", currentMode);
-#endif
-    }
-    else {
-      currentMode = BLOBS_PLAY;
-      encoder.write(0x1);
-      presets[BLOBS_PLAY].update = true;
-#if defined(DEBUG_BUTTONS)
-      Serial.printf("\nMIDI_BLOBS_LEARN : %d", currentMode);
-#endif
-    };
-  };
-};
-
-// Update preset of each mode with the encoder position
-void update_presets_encoder(void) {
-  switch (currentMode) {
-    case LINE_OUT:
-      if (setLevel(&presets[LINE_OUT])) {
-        presets[LINE_OUT].ledVal = map(presets[LINE_OUT].val, presets[LINE_OUT].minVal, presets[LINE_OUT].maxVal, 0, 255);
-        presets[LINE_OUT].updateLed = true;
-      };
-      break;
-    case SIG_IN:
-      if (setLevel(&presets[SIG_IN])) {
-        presets[SIG_IN].ledVal = map(presets[SIG_IN].val, presets[SIG_IN].minVal, presets[SIG_IN].maxVal, 0, 255);
-        presets[SIG_IN].updateLed = true;
-      };
-      break;
-    case SIG_OUT:
-      if (setLevel(&presets[SIG_OUT])) {
-        presets[SIG_OUT].ledVal = map(presets[SIG_OUT].val, presets[SIG_OUT].minVal, presets[SIG_OUT].maxVal, 0, 255);
-        presets[SIG_OUT].updateLed = true;
-      };
-      break;
-    case THRESHOLD:
-      if (setLevel(&presets[THRESHOLD])) {
-        presets[THRESHOLD].ledVal = map(presets[THRESHOLD].val, presets[THRESHOLD].minVal, presets[THRESHOLD].maxVal, 0, 255);
-        interpThreshold = constrain(presets[THRESHOLD].val - 5, presets[THRESHOLD].minVal, presets[THRESHOLD].maxVal);
-        presets[THRESHOLD].updateLed = true;
-      };
-      break;
-    case BLOBS_LEARN:
-      if (setLevel(&presets[BLOBS_LEARN]));
-      break;
-    default:
-      break;
-  };
+void update_presets_usb_serial(void) {
+  // TODO
 };
 
 // Update LEDs according to the mode and rotary encoder values
@@ -234,6 +239,68 @@ void update_leds(void) {
   static uint8_t iter = 0;
 
   switch (currentMode) {
+
+    case LOAD_CONFIG: // LEDs : Both LEDs are blinking fast
+      if (presets[LOAD_CONFIG].setLed) {
+        presets[LOAD_CONFIG].setLed = false;
+        pinMode(LED_PIN_D1, OUTPUT);
+        pinMode(LED_PIN_D2, OUTPUT);
+        timeStamp = millis();
+        iter = 0;
+      };
+      if (iter <= LOAD_CONFIG_LED_ITER) {
+        if (millis() - timeStamp < LOAD_CONFIG_LED_TIMEON && presets[LOAD_CONFIG].updateLed == true) {
+          presets[LOAD_CONFIG].updateLed = false;
+          digitalWrite(LED_PIN_D1, HIGH);
+          digitalWrite(LED_PIN_D2, HIGH);
+        }
+        else if (millis() - timeStamp > LOAD_CONFIG_LED_TIMEON && presets[LOAD_CONFIG].updateLed == false) {
+          presets[LOAD_CONFIG].updateLed = true;
+          digitalWrite(LED_PIN_D1, LOW);
+          digitalWrite(LED_PIN_D2, LOW);
+        }
+        else if (millis() - timeStamp > LOAD_CONFIG_LED_TIMEON + LOAD_CONFIG_LED_TIMEOFF) {
+          if (iter < LOAD_CONFIG_LED_ITER) {
+            timeStamp = millis();
+            iter++;
+          }
+          else {
+            currentMode = lastMode;
+          };
+        };
+      };
+      break;
+      case UPDATE_CONFIG: // LEDs : Both LEDs are blinking
+      if (presets[UPDATE_CONFIG].setLed) {
+        presets[UPDATE_CONFIG].setLed = false;
+        pinMode(LED_PIN_D1, OUTPUT);
+        pinMode(LED_PIN_D2, OUTPUT);
+        timeStamp = millis();
+        iter = 0;
+      };
+      if (iter <= UPDATE_CONFIG_LED_ITER) {
+        if (millis() - timeStamp < UPDATE_CONFIG_LED_TIMEON && presets[UPDATE_CONFIG].updateLed == true) {
+          presets[UPDATE_CONFIG].updateLed = false;
+          digitalWrite(LED_PIN_D1, HIGH);
+          digitalWrite(LED_PIN_D2, HIGH);
+        }
+        else if (millis() - timeStamp > UPDATE_CONFIG_LED_TIMEON && presets[UPDATE_CONFIG].updateLed == false) {
+          presets[UPDATE_CONFIG].updateLed = true;
+          digitalWrite(LED_PIN_D1, LOW);
+          digitalWrite(LED_PIN_D2, LOW);
+        }
+        else if (millis() - timeStamp > UPDATE_CONFIG_LED_TIMEON + UPDATE_CONFIG_LED_TIMEOFF) {
+          if (iter < UPDATE_CONFIG_LED_ITER) {
+            timeStamp = millis();
+            iter++;
+          }
+          else {
+            currentMode = lastMode;
+          };
+        };
+      };
+      break;
+
     case LINE_OUT:
       if (presets[LINE_OUT].setLed) {
         presets[LINE_OUT].setLed = false;
@@ -325,76 +392,46 @@ void update_leds(void) {
         };
       };
       break;
-    case BLOBS_PLAY: // LEDs : blink alternately slow
-      if (presets[BLOBS_PLAY].setLed) {
-        presets[BLOBS_PLAY].setLed = false;
+    case MIDI_PLAY: // LEDs : blink alternately slow
+      if (presets[MIDI_PLAY].setLed) {
+        presets[MIDI_PLAY].setLed = false;
         pinMode(LED_PIN_D1, OUTPUT);
         pinMode(LED_PIN_D2, OUTPUT);
         timeStamp = millis();
       };
-      if (millis() - timeStamp < BLOBS_PLAY_LED_TIMEON && presets[BLOBS_PLAY].updateLed == true) {
-        presets[BLOBS_PLAY].updateLed = false;
+      if (millis() - timeStamp < MIDI_PLAY_LED_TIMEON && presets[MIDI_PLAY].updateLed == true) {
+        presets[MIDI_PLAY].updateLed = false;
         digitalWrite(LED_PIN_D1, HIGH);
         digitalWrite(LED_PIN_D2, LOW);
       }
-      else if (millis() - timeStamp > BLOBS_PLAY_LED_TIMEON && presets[BLOBS_PLAY].updateLed == false) {
-        presets[BLOBS_PLAY].updateLed = true;
+      else if (millis() - timeStamp > MIDI_PLAY_LED_TIMEON && presets[MIDI_PLAY].updateLed == false) {
+        presets[MIDI_PLAY].updateLed = true;
         digitalWrite(LED_PIN_D1, LOW);
         digitalWrite(LED_PIN_D2, HIGH);
       }
-      else if (millis() - timeStamp > BLOBS_PLAY_LED_TIMEON + BLOBS_PLAY_LED_TIMEOFF) {
+      else if (millis() - timeStamp > MIDI_PLAY_LED_TIMEON + MIDI_PLAY_LED_TIMEOFF) {
         timeStamp = millis();
       };
       break;
-    case BLOBS_LEARN: // LEDs : blink alternately fast
-      if (presets[BLOBS_LEARN].setLed) {
-        presets[BLOBS_LEARN].setLed = false;
+    case MIDI_LEARN: // LEDs : blink alternately fast
+      if (presets[MIDI_LEARN].setLed) {
+        presets[MIDI_LEARN].setLed = false;
         pinMode(LED_PIN_D1, OUTPUT);
         pinMode(LED_PIN_D2, OUTPUT);
         timeStamp = millis();
       };
-      if (millis() - timeStamp < BLOBS_LEARN_LED_TIMEON && presets[BLOBS_LEARN].updateLed == true) {
-        presets[BLOBS_LEARN].updateLed = false;
+      if (millis() - timeStamp < MIDI_LEARN_LED_TIMEON && presets[MIDI_LEARN].updateLed == true) {
+        presets[MIDI_LEARN].updateLed = false;
         digitalWrite(LED_PIN_D1, HIGH);
         digitalWrite(LED_PIN_D2, LOW);
       }
-      else if (millis() - timeStamp > BLOBS_LEARN_LED_TIMEON && presets[BLOBS_LEARN].updateLed == false) {
-        presets[BLOBS_LEARN].updateLed = true;
+      else if (millis() - timeStamp > MIDI_LEARN_LED_TIMEON && presets[MIDI_LEARN].updateLed == false) {
+        presets[MIDI_LEARN].updateLed = true;
         digitalWrite(LED_PIN_D1, LOW);
         digitalWrite(LED_PIN_D2, HIGH);
       }
-      else if (millis() - timeStamp > BLOBS_LEARN_LED_TIMEON + BLOBS_LEARN_LED_TIMEOFF) {
+      else if (millis() - timeStamp > MIDI_LEARN_LED_TIMEON + MIDI_LEARN_LED_TIMEOFF) {
         timeStamp = millis();
-      };
-      break;
-    case UPDATE_CONFIG: // LEDs : Both LEDs are blinking
-      if (presets[UPDATE_CONFIG].setLed) {
-        presets[UPDATE_CONFIG].setLed = false;
-        pinMode(LED_PIN_D1, OUTPUT);
-        pinMode(LED_PIN_D2, OUTPUT);
-        timeStamp = millis();
-        iter = 0;
-      };
-      if (iter <= UPDATE_CONFIG_LED_ITER) {
-        if (millis() - timeStamp < UPDATE_CONFIG_LED_TIMEON && presets[UPDATE_CONFIG].updateLed == true) {
-          presets[UPDATE_CONFIG].updateLed = false;
-          digitalWrite(LED_PIN_D1, HIGH);
-          digitalWrite(LED_PIN_D2, HIGH);
-        }
-        else if (millis() - timeStamp > UPDATE_CONFIG_LED_TIMEON && presets[UPDATE_CONFIG].updateLed == false) {
-          presets[UPDATE_CONFIG].updateLed = true;
-          digitalWrite(LED_PIN_D1, LOW);
-          digitalWrite(LED_PIN_D2, LOW);
-        }
-        else if (millis() - timeStamp > UPDATE_CONFIG_LED_TIMEON + UPDATE_CONFIG_LED_TIMEOFF) {
-          if (iter < UPDATE_CONFIG_LED_ITER) {
-            timeStamp = millis();
-            iter++;
-          }
-          else {
-            currentMode = lastMode;
-          };
-        };
       };
       break;
     case MAPPING_LIB: // LEDs : blink alternately
@@ -404,17 +441,17 @@ void update_leds(void) {
         pinMode(LED_PIN_D2, OUTPUT);
         timeStamp = millis();
       };
-      if (millis() - timeStamp < BLOBS_MAPPING_LED_TIMEON && presets[MAPPING_LIB].updateLed == true) {
+      if (millis() - timeStamp < MIDI_MAPPING_LED_TIMEON && presets[MAPPING_LIB].updateLed == true) {
         presets[MAPPING_LIB].updateLed = false;
         digitalWrite(LED_PIN_D1, HIGH);
         digitalWrite(LED_PIN_D2, LOW);
       }
-      else if (millis() - timeStamp > BLOBS_MAPPING_LED_TIMEON && presets[MAPPING_LIB].updateLed == false) {
+      else if (millis() - timeStamp > MIDI_MAPPING_LED_TIMEON && presets[MAPPING_LIB].updateLed == false) {
         presets[MAPPING_LIB].updateLed = true;
         digitalWrite(LED_PIN_D1, LOW);
         digitalWrite(LED_PIN_D2, HIGH);
       }
-      else if (millis() - timeStamp > BLOBS_MAPPING_LED_TIMEON + BLOBS_MAPPING_LED_TIMEOFF) {
+      else if (millis() - timeStamp > MIDI_MAPPING_LED_TIMEON + MIDI_MAPPING_LED_TIMEOFF) {
         timeStamp = millis();
       };
       break;

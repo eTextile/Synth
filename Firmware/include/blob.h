@@ -13,10 +13,7 @@
 #ifndef __BLOB_H__
 #define __BLOB_H__
 
-#include "config.h"
 #include "llist.h"
-#include "interp.h"
-#include "median.h"
 
 #define  BI   0  // [0] Blob UID
 #define  BS   1  // [1] Blob State
@@ -101,7 +98,6 @@ struct velocity {
 
 typedef enum status {
   FREE,
-  //TO_ADD,
   NOT_FOUND,
   TO_REMOVE
 } status_t;

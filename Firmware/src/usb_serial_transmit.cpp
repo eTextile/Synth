@@ -56,7 +56,7 @@ void usb_serial_transmit(void) {
         };
       */
       break;
-    case BLOBS_PLAY:
+    case MIDI_PLAY:
     /*
       for (blob_t* blob_ptr = (blob_t*)ITERATOR_START_FROM_HEAD(&llist_blobs); blob_ptr != NULL; blob_ptr = (blob_t*)ITERATOR_NEXT(blob_ptr)) {
         if (blob_ptr->state) {
