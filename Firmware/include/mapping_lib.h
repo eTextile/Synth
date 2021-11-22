@@ -24,10 +24,10 @@ struct circle {
     center_t center;
     float radius;
     float offset;
+    float CCr;
+    float CCt;
     //float lastRadius;
     //float lasttheta;
-    //uint8_t CCradius;
-    //uint8_t CCtheta;
 };
 
 typedef struct vertice vertice_t;
@@ -91,6 +91,7 @@ struct cTrack {
 
 typedef struct cSlider cSlider_t;
 struct cSlider {
+  uint8_t id;
   float thetaMin;
   float thetaMax;
   float lastVal;

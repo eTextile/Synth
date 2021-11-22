@@ -83,28 +83,6 @@
 #define MIDI_INPUT_CHANNEL          1  // [1:15] Set the HARDWARE MIDI_INPUT channel
 #define MIDI_OUTPUT_CHANNEL         1  // [1:15] Set the HARDWARE MIDI_OUTPUT channel
 
-#define FLASH_CHIP_SELECT           6
-
-//////////////////////////////////////// WRITE CONFIG
-//Using: /Synth/Software/Python/usb_config/rawfile-uploader.py
-// $ python rawfile-uploader.py <port> config.json
-
-// Buffer sizes
-#define USB_BUFFER_SIZE       128
-#define FLASH_BUFFER_SIZE     4096
-// Max filename length (8.3 plus a null char terminator)
-#define FILENAME_STRING_SIZE  11
-// State machine
-#define STATE_START           0
-#define STATE_SIZE            1
-#define STATE_CONTENT         2
-// Special bytes in the communication protocol
-#define BYTE_START            0x7e
-#define BYTE_ESCAPE           0x7d
-#define BYTE_SEPARATOR        0x7c
-
-#define SERIAL_UPDATE_CONFIG_TIMEOUT 15000
-
 extern uint8_t currentMode;   // Exposed local declaration see presets.cpp
 extern uint8_t lastMode;      // Exposed local declaration see presets.cpp
 
