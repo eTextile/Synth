@@ -91,7 +91,6 @@ struct preset {
   uint8_t minVal;
   uint8_t maxVal;
   uint8_t val;
-  uint8_t ledVal;
   boolean update;
   boolean setupLeds;
   boolean updateLeds;

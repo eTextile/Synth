@@ -24,16 +24,16 @@ Bounce BUTTON_L = Bounce();
 Bounce BUTTON_R = Bounce();
 
 preset_t presets[10] = {
-  { 0, 0,  0,  0, false, false, false, true, HIGH, HIGH, 200, 500, -1 },  // [0] LOAD_CONFIG     ARGS[minVal, maxVal, val, ledVal, update, setLed, updateLed, allDone, D1, D2]
-  { 0, 0,  0,  0, false, false, false, true, HIGH, LOW,  200, 500, -1 },  // [1] UPDATE_CONFIG   ARGS[minVal, maxVal, val, ledVal, update, setLed, updateLed, allDone, D1, D2]
-  {13, 31, 29, 0, false, false, false, true, LOW,  LOW,  200, 500, -1 },  // [2] LINE_OUT        ARGS[minVal, maxVal, val, ledVal, update, setLed, updateLed, allDone, D1, D2]
-  { 1, 50, 12, 0, false, false, false, true, HIGH, LOW,  200, 500, -1 },  // [3] SIG_IN          ARGS[minVal, maxVal, val, ledVal, update, setLed, updateLed, allDone, D1, D2]
-  { 1, 31, 17, 0, false, false, false, true, LOW,  HIGH, 200, 500, -1 },  // [4] SIG_OUT         ARGS[minVal, maxVal, val, ledVal, update, setLed, updateLed, allDone, D1, D2]
-  { 2, 60, 3,  0, false, false, false, true, HIGH, HIGH, 200, 500, -1 },  // [5] THRESHOLD       ARGS[minVal, maxVal, val, ledVal, update, setLed, updateLed, allDone, D1, D2]
-  { 0, 0,  0,  0, false, false, false, true, HIGH, HIGH,  40, 100,  6 },  // [6] CALIBRATE       ARGS[minVal, maxVal, val, ledVal, update, setLed, updateLed, allDone, D1, D2]
-  { 1, 7,  0,  0, false, false, false, true, HIGH, LOW,  150, 150, -1 },  // [7] MIDI_LEARN      ARGS[minVal, maxVal, val, ledVal, update, setLed, updateLed, allDone, D1, D2]
-  { 0, 0,  0,  0, false, false, false, true, HIGH, LOW,  600, 600, -1 },  // [8] MIDI_PLAY       ARGS[minVal, maxVal, val, ledVal, update, setLed, updateLed, allDone, D1, D2]
-  { 0, 0,  0,  0, false, false, false, true, HIGH, HIGH, 900, 100, -1 }   // [9] MAPPING_LIB     ARGS[minVal, maxVal, val, ledVal, update, setLed, updateLed, allDone, D1, D2]
+  { 0, 0,  0,  false, false, false, true, HIGH, HIGH, 200, 500, -1 },  // [0] LOAD_CONFIG     ARGS[minVal, maxVal, val, update, setLed, updateLed, allDone, D1, D2, timeOn, timeOff, iter]
+  { 0, 0,  0,  false, false, false, true, HIGH, LOW,  200, 500, -1 },  // [1] UPDATE_CONFIG   ARGS[minVal, maxVal, val, update, setLed, updateLed, allDone, D1, D2, timeOn, timeOff, iter]
+  {13, 31, 29, false, false, false, true, LOW,  LOW,  200, 500, -1 },  // [2] LINE_OUT        ARGS[minVal, maxVal, val, update, setLed, updateLed, allDone, D1, D2, timeOn, timeOff, iter]
+  { 1, 50, 12, false, false, false, true, HIGH, LOW,  200, 500, -1 },  // [3] SIG_IN          ARGS[minVal, maxVal, val, update, setLed, updateLed, allDone, D1, D2, timeOn, timeOff, iter]
+  { 1, 31, 17, false, false, false, true, LOW,  HIGH, 200, 500, -1 },  // [4] SIG_OUT         ARGS[minVal, maxVal, val, update, setLed, updateLed, allDone, D1, D2, timeOn, timeOff, iter]
+  { 2, 60, 3,  false, false, false, true, HIGH, HIGH, 200, 500, -1 },  // [5] THRESHOLD       ARGS[minVal, maxVal, val, update, setLed, updateLed, allDone, D1, D2, timeOn, timeOff, iter]
+  { 0, 0,  0,  false, false, false, true, HIGH, HIGH,  40, 100,  6 },  // [6] CALIBRATE       ARGS[minVal, maxVal, val, update, setLed, updateLed, allDone, D1, D2, timeOn, timeOff, iter]
+  { 1, 7,  0,  false, false, false, true, HIGH, LOW,  150, 150, -1 },  // [7] MIDI_LEARN      ARGS[minVal, maxVal, val, update, setLed, updateLed, allDone, D1, D2, timeOn, timeOff, iter]
+  { 0, 0,  0,  false, false, false, true, HIGH, LOW,  600, 600, -1 },  // [8] MIDI_PLAY       ARGS[minVal, maxVal, val, update, setLed, updateLed, allDone, D1, D2, timeOn, timeOff, iter]
+  { 0, 0,  0,  false, false, false, true, HIGH, HIGH, 900, 100, -1 }   // [9] MAPPING_LIB     ARGS[minVal, maxVal, val, update, setLed, updateLed, allDone, D1, D2, timeOn, timeOff, iter]
 };
 
 //uint8_t currentMode = LOAD_CONFIG;     // Init currentMode with LOAD_CONFIG (SET as DEFAULT_MODE)
@@ -158,25 +158,21 @@ inline void encoder_update_presets(void) {
   switch (currentMode) {
     case LINE_OUT:
       if (setLevel(&presets[LINE_OUT])) {
-        presets[LINE_OUT].ledVal = map(presets[LINE_OUT].val, presets[LINE_OUT].minVal, presets[LINE_OUT].maxVal, 0, 255);
         presets[LINE_OUT].updateLeds = true;
       };
       break;
     case SIG_IN:
       if (setLevel(&presets[SIG_IN])) {
-        presets[SIG_IN].ledVal = map(presets[SIG_IN].val, presets[SIG_IN].minVal, presets[SIG_IN].maxVal, 0, 255);
         presets[SIG_IN].updateLeds = true;
       };
       break;
     case SIG_OUT:
       if (setLevel(&presets[SIG_OUT])) {
-        presets[SIG_OUT].ledVal = map(presets[SIG_OUT].val, presets[SIG_OUT].minVal, presets[SIG_OUT].maxVal, 0, 255);
         presets[SIG_OUT].updateLeds = true;
       };
       break;
     case THRESHOLD:
       if (setLevel(&presets[THRESHOLD])) {
-        presets[THRESHOLD].ledVal = map(presets[THRESHOLD].val, presets[THRESHOLD].minVal, presets[THRESHOLD].maxVal, 0, 255);
         interpThreshold = constrain(presets[THRESHOLD].val - 5, presets[THRESHOLD].minVal, presets[THRESHOLD].maxVal);
         presets[THRESHOLD].updateLeds = true;
       };
@@ -189,87 +185,16 @@ inline void encoder_update_presets(void) {
   };
 };
 
-inline void mode_selector(uint8_t mode, uint8_t value) {
-  switch (mode) {
-    case LINE_OUT: // MODE 0
-      currentMode = LINE_OUT;
-      presets[LINE_OUT].val = value;
-      presets[LINE_OUT].setupLeds = true;
-      presets[LINE_OUT].update = true;
-      break;
-    case SIG_IN: // MODE 1
-      currentMode = SIG_IN;
-      presets[SIG_IN].val = value;
-      presets[SIG_IN].setupLeds = true;
-      presets[SIG_IN].update = true;
-      break;
-    case SIG_OUT: // MODE 2
-      currentMode = SIG_OUT;
-      presets[SIG_OUT].val = value;
-      presets[SIG_OUT].setupLeds = true;
-      presets[SIG_OUT].update = true;
-      break;
-    case THRESHOLD: // MODE 3
-      currentMode = THRESHOLD;
-      presets[THRESHOLD].val = map(value, 0, 127, presets[THRESHOLD].minVal, presets[THRESHOLD].maxVal);
-      encoder.write(presets[THRESHOLD].val << 2);
-      interpThreshold = constrain(presets[THRESHOLD].val - 5, presets[THRESHOLD].minVal, presets[THRESHOLD].maxVal);
-      presets[THRESHOLD].ledVal = map(value, 0, 127, 0, 255);
-      //presets[THRESHOLD].update = true;
-      presets[THRESHOLD].setupLeds = true;
-      presets[THRESHOLD].update = true;
-      break;
-    case CALIBRATE: // MODE 4
-      lastMode = currentMode;
-      currentMode = CALIBRATE;
-      presets[CALIBRATE].val = value;
-      presets[CALIBRATE].setupLeds = true;
-      presets[CALIBRATE].update = true;
-      break;
-    case MIDI_PLAY: // MODE 6
-      currentMode = MIDI_PLAY;
-      presets[MIDI_PLAY].val = value;
-      presets[MIDI_PLAY].setupLeds = true;
-      presets[MIDI_PLAY].update = true;
-      break;
-    case MIDI_LEARN: // MODE 7
-      currentMode = MIDI_LEARN;
-      presets[MIDI_LEARN].val = value;
-      presets[MIDI_LEARN].setupLeds = true;
-      presets[MIDI_LEARN].update = true;
-      break;
-    case MAPPING_LIB: // MODE 8
-      currentMode = MAPPING_LIB;
-      presets[MIDI_LEARN].val = value;
-      presets[MAPPING_LIB].setupLeds = true;
-      presets[MAPPING_LIB].update = true;
-      break;
-    case RAW_MATRIX: // MODE 9
-      currentMode = RAW_MATRIX;
-      presets[RAW_MATRIX].val = value;
-      presets[RAW_MATRIX].setupLeds = true;
-      presets[RAW_MATRIX].update = true;
-      break;
-    case INTERP_MATRIX: // MODE 10
-      currentMode = INTERP_MATRIX;
-      presets[INTERP_MATRIX].val = value;
-      presets[INTERP_MATRIX].setupLeds = true;
-      presets[INTERP_MATRIX].update = true;
-      break;
-    case ALL_OFF: // MODE 11
-      currentMode = ALL_OFF;
-      presets[ALL_OFF].val = value;
-      presets[ALL_OFF].setupLeds = true;
-      presets[ALL_OFF].update = true;
-      break;
-    default:
-      break;
-  };
+inline void usb_update_presets(preset_t* presets_ptr, uint8_t value) {
+  presets_ptr->val = constrain(value, presets_ptr->minVal, presets_ptr->maxVal);
+  presets_ptr->setupLeds = true;
+  presets_ptr->update = true;
 };
 
-inline void usb_midi_update_presets(void) {
+inline void usb_midi_mode_selector(void) {
   for (midiNode_t* node_ptr = (midiNode_t*)ITERATOR_START_FROM_HEAD(&midiIn); node_ptr != NULL; node_ptr = (midiNode_t*)ITERATOR_NEXT(node_ptr)) {
-    mode_selector(node_ptr->midiMsg.data1, node_ptr->midiMsg.data2);
+    currentMode = node_ptr->midiMsg.data1;
+    usb_update_presets(&presets[node_ptr->midiMsg.data1], node_ptr->midiMsg.data2);
   };
   llist_save_nodes(&midi_node_stack, &midiIn); // Save/rescure all midiOut nodes
 };
@@ -277,8 +202,8 @@ inline void usb_midi_update_presets(void) {
 inline void usb_serial_update_presets(void) {
   if (Serial.available() == 2) {
     uint8_t mode = Serial.read();
-    uint8_t val = Serial.read();
-    mode_selector(mode, val);
+    uint8_t value = Serial.read();
+    usb_update_presets(&presets[mode], value);
   };
 };
 
@@ -324,11 +249,11 @@ inline void leds_control_fade(preset_t* presets_ptr) {
   leds_setup(&presets[currentMode]);
   if (presets_ptr->updateLeds) {
     presets_ptr->updateLeds = false;
-    analogWrite(LED_PIN_D1, presets_ptr->ledVal);
-    analogWrite(LED_PIN_D2, abs(presets_ptr->ledVal - 255));
+    uint8_t ledVal = constrain(map(presets_ptr->val, presets[LINE_OUT].minVal, presets[LINE_OUT].maxVal, 0, 255), 0, 255);
+    analogWrite(LED_PIN_D1, ledVal);
+    analogWrite(LED_PIN_D2, abs(255 - ledVal));
   };
 };
-
 
 // Update LEDs according to the mode and rotary encoder values
 inline void update_leds(void) {
