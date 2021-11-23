@@ -15,8 +15,8 @@
 // E256 LEDs CONSTANTES
 #define LONG_HOLD                  1500
 
-uint32_t timeStamp = 0;
-uint8_t iterCount = 0;
+uint32_t ledsTimeStamp = 0;
+uint8_t ledsIterCount = 0;
 
 Encoder encoder(ENCODER_PIN_A, ENCODER_PIN_B);
 
@@ -24,16 +24,16 @@ Bounce BUTTON_L = Bounce();
 Bounce BUTTON_R = Bounce();
 
 preset_t presets[10] = {
-  {  0,  0,  0, false, false, false, true, HIGH, HIGH, 200, 500,  0 },  // [0] LOAD_CONFIG     ARGS[minVal, maxVal, val, update, setLed, updateLed, allDone, D1, D2, timeOn, timeOff, iter]
-  {  0,  0,  0, false, false, false, true, HIGH,  LOW, 200, 500,  0 },  // [1] UPDATE_CONFIG   ARGS[minVal, maxVal, val, update, setLed, updateLed, allDone, D1, D2, timeOn, timeOff, iter]
-  { 13, 31, 29, false, false, false, true,  LOW,  LOW, 200, 500,  0 },  // [2] LINE_OUT        ARGS[minVal, maxVal, val, update, setLed, updateLed, allDone, D1, D2, timeOn, timeOff, iter]
-  {  1, 50, 12, false, false, false, true, HIGH,  LOW, 200, 500,  0 },  // [3] SIG_IN          ARGS[minVal, maxVal, val, update, setLed, updateLed, allDone, D1, D2, timeOn, timeOff, iter]
-  {  1, 31, 17, false, false, false, true,  LOW, HIGH, 200, 500,  0 },  // [4] SIG_OUT         ARGS[minVal, maxVal, val, update, setLed, updateLed, allDone, D1, D2, timeOn, timeOff, iter]
-  {  2, 60,  3, false, false, false, true, HIGH, HIGH, 200, 500,  0 },  // [5] THRESHOLD       ARGS[minVal, maxVal, val, update, setLed, updateLed, allDone, D1, D2, timeOn, timeOff, iter]
-  {  0,  0,  0, false, false, false, true, HIGH, HIGH,  40, 100, 10 },  // [6] CALIBRATE       ARGS[minVal, maxVal, val, update, setLed, updateLed, allDone, D1, D2, timeOn, timeOff, iter]
-  {  1,  7,  0, false, false, false, true, HIGH,  LOW, 150, 150,  0 },  // [7] MIDI_LEARN      ARGS[minVal, maxVal, val, update, setLed, updateLed, allDone, D1, D2, timeOn, timeOff, iter]
-  {  0,  0,  0, false, false, false, true, HIGH,  LOW, 600, 600,  0 },  // [8] MIDI_PLAY       ARGS[minVal, maxVal, val, update, setLed, updateLed, allDone, D1, D2, timeOn, timeOff, iter]
-  {  0,  0,  0, false, false, false, true, HIGH, HIGH, 900, 100,  0 }   // [9] MAPPING_LIB     ARGS[minVal, maxVal, val, update, setLed, updateLed, allDone, D1, D2, timeOn, timeOff, iter]
+  {  0,  0,  0, false, false, false, true, HIGH, HIGH, 200, 500, -1 },  // [0] LOAD_CONFIG     ARGS[minVal, maxVal, val, update, setLed, updateLed, allDone, D1, D2, timeOn, timeOff, iter]
+  {  0,  0,  0, false, false, false, true, HIGH,  LOW, 200, 500, -1 },  // [1] UPDATE_CONFIG   ARGS[minVal, maxVal, val, update, setLed, updateLed, allDone, D1, D2, timeOn, timeOff, iter]
+  { 13, 31, 29, false, false, false, true,  LOW,  LOW, 200, 500, -1 },  // [2] LINE_OUT        ARGS[minVal, maxVal, val, update, setLed, updateLed, allDone, D1, D2, timeOn, timeOff, iter]
+  {  1, 50, 12, false, false, false, true, HIGH,  LOW, 200, 500, -1 },  // [3] SIG_IN          ARGS[minVal, maxVal, val, update, setLed, updateLed, allDone, D1, D2, timeOn, timeOff, iter]
+  {  1, 31, 17, false, false, false, true,  LOW, HIGH, 200, 500, -1 },  // [4] SIG_OUT         ARGS[minVal, maxVal, val, update, setLed, updateLed, allDone, D1, D2, timeOn, timeOff, iter]
+  {  2, 60,  3, false, false, false, true, HIGH, HIGH, 200, 500, -1 },  // [5] THRESHOLD       ARGS[minVal, maxVal, val, update, setLed, updateLed, allDone, D1, D2, timeOn, timeOff, iter]
+  {  0,  0,  0, false, false, false, true, HIGH, HIGH,  40, 100,  6 },  // [6] CALIBRATE       ARGS[minVal, maxVal, val, update, setLed, updateLed, allDone, D1, D2, timeOn, timeOff, iter]
+  {  1,  7,  0, false, false, false, true, HIGH,  LOW, 150, 150, -1 },  // [7] MIDI_LEARN      ARGS[minVal, maxVal, val, update, setLed, updateLed, allDone, D1, D2, timeOn, timeOff, iter]
+  {  0,  0,  0, false, false, false, true, HIGH,  LOW, 600, 600, -1 },  // [8] MIDI_PLAY       ARGS[minVal, maxVal, val, update, setLed, updateLed, allDone, D1, D2, timeOn, timeOff, iter]
+  {  0,  0,  0, false, false, false, true, HIGH, HIGH, 900, 100, -1 }   // [9] MAPPING_LIB     ARGS[minVal, maxVal, val, update, setLed, updateLed, allDone, D1, D2, timeOn, timeOff, iter]
 };
 
 //uint8_t currentMode = LOAD_CONFIG;     // Init currentMode with LOAD_CONFIG (SET as DEFAULT_MODE)
@@ -73,7 +73,7 @@ inline void buttons_update_presets(void) {
     presets[currentMode].setupLeds = true;
     presets[currentMode].updateLeds = true;
     presets[currentMode].update = true;
-    timeStamp = millis();
+    ledsTimeStamp = millis();
     #if defined(DEBUG_BUTTONS)
       Serial.printf("\nDEBUG_BUTTONS\tBUTTON_L_CALIBRATE:%d", currentMode);
     #endif
@@ -86,7 +86,7 @@ inline void buttons_update_presets(void) {
     presets[currentMode].setupLeds = true;
     presets[currentMode].updateLeds = true;
     presets[currentMode].update = true;
-    timeStamp = millis();
+    ledsTimeStamp = millis();
     #if defined(DEBUG_BUTTONS)
       Serial.printf("\nDEBUG_BUTTONS\tBUTTON_L_UPDATE_CONFIG:%d", currentMode);
     #endif
@@ -101,9 +101,9 @@ inline void buttons_update_presets(void) {
     currentMode = ((currentMode + 1) % 4) + 2;   // Loop into the modes
     encoder.write(presets[currentMode].val << 2);
     presets[currentMode].setupLeds = true;
-    presets[currentMode].updateLeds = true;
+    //presets[currentMode].updateLeds = true; 
     presets[currentMode].update = true;
-    timeStamp = millis();
+    ledsTimeStamp = millis();
     #if defined(DEBUG_BUTTONS)
       Serial.printf("\nDEBUG_BUTTONS\tBUTTON_R_SELECT_MODE:%d", currentMode);
     #endif
@@ -118,7 +118,7 @@ inline void buttons_update_presets(void) {
       presets[currentMode].setupLeds = true;
       presets[currentMode].updateLeds = true;
       presets[currentMode].update = true;
-      timeStamp = millis();
+      ledsTimeStamp = millis();
       #if defined(DEBUG_BUTTONS)
         Serial.printf("\nDEBUG_BUTTONS\tBUTTON_R_MIDI_MIDI_PLAY:%d", currentMode);
       #endif
@@ -129,7 +129,7 @@ inline void buttons_update_presets(void) {
       presets[currentMode].setupLeds = true;
       presets[currentMode].updateLeds = true;
       presets[currentMode].update = true;
-      timeStamp = millis();
+      ledsTimeStamp = millis();
       #if defined(DEBUG_BUTTONS)
         Serial.printf("\nDEBUG_BUTTONS\tBUTTON_R_MIDI_MIDI_LEARN:%d", currentMode);
       #endif
@@ -202,25 +202,30 @@ inline void leds_setup(preset_t* presets_ptr){
 inline void leds_control_blink(preset_t* presets_ptr) {
   leds_setup(&presets[currentMode]);
   if (presets_ptr->updateLeds) {
-    if (millis() - timeStamp < presets_ptr->timeOn && presets_ptr->ledsToggle == true ) {
+    if (millis() - ledsTimeStamp < presets_ptr->timeOn && presets_ptr->ledsToggle == true ) {
       presets_ptr->ledsToggle = false;
       digitalWrite(LED_PIN_D1, presets_ptr->D1);
       digitalWrite(LED_PIN_D2, presets_ptr->D2);
     }
-    else if (millis() - timeStamp > presets_ptr->timeOn && presets_ptr->ledsToggle == false) {
+    else if (millis() - ledsTimeStamp > presets_ptr->timeOn && presets_ptr->ledsToggle == false) {
       presets_ptr->ledsToggle = true;
       digitalWrite(LED_PIN_D1, !presets_ptr->D1);
       digitalWrite(LED_PIN_D2, !presets_ptr->D2);
     }
-    else if (millis() - timeStamp > presets_ptr->timeOn + presets_ptr->timeOff) {
-      if (iterCount < presets_ptr->iter) {
-        timeStamp = millis();
-        iterCount++;
+    else if (millis() - ledsTimeStamp > presets_ptr->timeOn + presets_ptr->timeOff) {
+      if (presets_ptr->iter != -1) {
+        if (ledsIterCount < presets_ptr->iter) {
+          ledsTimeStamp = millis();
+          ledsIterCount++;
+        }
+        else {
+          ledsIterCount = 0;
+          presets_ptr->updateLeds = false;
+          currentMode = lastMode;
+        };
       }
-      else {
-        iterCount = 0;
-        presets_ptr->updateLeds = false;
-        //currentMode = lastMode;
+      else{
+          ledsTimeStamp = millis();
       };
     };
   };
@@ -231,8 +236,8 @@ inline void leds_control_fade(preset_t* presets_ptr) {
   if (presets_ptr->updateLeds) {
     presets_ptr->updateLeds = false;
     uint8_t ledVal = constrain(map(presets_ptr->val, presets[LINE_OUT].minVal, presets[LINE_OUT].maxVal, 0, 255), 0, 255);
-    analogWrite(LED_PIN_D1, ledVal);
-    analogWrite(LED_PIN_D2, abs(255 - ledVal));
+    analogWrite(LED_PIN_D1, abs(255 -ledVal));
+    analogWrite(LED_PIN_D2, ledVal);
   };
 };
 
