@@ -45,8 +45,16 @@ void INTERP_SETUP(void) {
   };
 };
 
+inline void update_interpThreshold(preset_t* presets_ptr){
+  if (presets_ptr->update){
+    presets_ptr->update = false;
+    interpThreshold = constrain(presets_ptr->val - 4, 0, presets_ptr->maxVal);
+  };
+};
+
 // Bilinear interpolation
 void matrix_interp(void) {
+  update_interpThreshold(&presets[THRESHOLD]);
   // Clear interpFrameArray
   memset((uint8_t*)interpFrameArray, 0, SIZEOF_FRAME);
   for (uint8_t rowPos = 0; rowPos < IRAW_ROWS; rowPos++) {

@@ -24,16 +24,16 @@ Bounce BUTTON_L = Bounce();
 Bounce BUTTON_R = Bounce();
 
 preset_t presets[10] = {
-  { 0, 0,  0,  false, false, false, true, HIGH, HIGH, 200, 500, -1 },  // [0] LOAD_CONFIG     ARGS[minVal, maxVal, val, update, setLed, updateLed, allDone, D1, D2, timeOn, timeOff, iter]
-  { 0, 0,  0,  false, false, false, true, HIGH, LOW,  200, 500, -1 },  // [1] UPDATE_CONFIG   ARGS[minVal, maxVal, val, update, setLed, updateLed, allDone, D1, D2, timeOn, timeOff, iter]
-  {13, 31, 29, false, false, false, true, LOW,  LOW,  200, 500, -1 },  // [2] LINE_OUT        ARGS[minVal, maxVal, val, update, setLed, updateLed, allDone, D1, D2, timeOn, timeOff, iter]
-  { 1, 50, 12, false, false, false, true, HIGH, LOW,  200, 500, -1 },  // [3] SIG_IN          ARGS[minVal, maxVal, val, update, setLed, updateLed, allDone, D1, D2, timeOn, timeOff, iter]
-  { 1, 31, 17, false, false, false, true, LOW,  HIGH, 200, 500, -1 },  // [4] SIG_OUT         ARGS[minVal, maxVal, val, update, setLed, updateLed, allDone, D1, D2, timeOn, timeOff, iter]
-  { 2, 60, 3,  false, false, false, true, HIGH, HIGH, 200, 500, -1 },  // [5] THRESHOLD       ARGS[minVal, maxVal, val, update, setLed, updateLed, allDone, D1, D2, timeOn, timeOff, iter]
-  { 0, 0,  0,  false, false, false, true, HIGH, HIGH,  40, 100,  6 },  // [6] CALIBRATE       ARGS[minVal, maxVal, val, update, setLed, updateLed, allDone, D1, D2, timeOn, timeOff, iter]
-  { 1, 7,  0,  false, false, false, true, HIGH, LOW,  150, 150, -1 },  // [7] MIDI_LEARN      ARGS[minVal, maxVal, val, update, setLed, updateLed, allDone, D1, D2, timeOn, timeOff, iter]
-  { 0, 0,  0,  false, false, false, true, HIGH, LOW,  600, 600, -1 },  // [8] MIDI_PLAY       ARGS[minVal, maxVal, val, update, setLed, updateLed, allDone, D1, D2, timeOn, timeOff, iter]
-  { 0, 0,  0,  false, false, false, true, HIGH, HIGH, 900, 100, -1 }   // [9] MAPPING_LIB     ARGS[minVal, maxVal, val, update, setLed, updateLed, allDone, D1, D2, timeOn, timeOff, iter]
+  {  0,  0,  0, false, false, false, true, HIGH, HIGH, 200, 500,  0 },  // [0] LOAD_CONFIG     ARGS[minVal, maxVal, val, update, setLed, updateLed, allDone, D1, D2, timeOn, timeOff, iter]
+  {  0,  0,  0, false, false, false, true, HIGH,  LOW, 200, 500,  0 },  // [1] UPDATE_CONFIG   ARGS[minVal, maxVal, val, update, setLed, updateLed, allDone, D1, D2, timeOn, timeOff, iter]
+  { 13, 31, 29, false, false, false, true,  LOW,  LOW, 200, 500,  0 },  // [2] LINE_OUT        ARGS[minVal, maxVal, val, update, setLed, updateLed, allDone, D1, D2, timeOn, timeOff, iter]
+  {  1, 50, 12, false, false, false, true, HIGH,  LOW, 200, 500,  0 },  // [3] SIG_IN          ARGS[minVal, maxVal, val, update, setLed, updateLed, allDone, D1, D2, timeOn, timeOff, iter]
+  {  1, 31, 17, false, false, false, true,  LOW, HIGH, 200, 500,  0 },  // [4] SIG_OUT         ARGS[minVal, maxVal, val, update, setLed, updateLed, allDone, D1, D2, timeOn, timeOff, iter]
+  {  2, 60,  3, false, false, false, true, HIGH, HIGH, 200, 500,  0 },  // [5] THRESHOLD       ARGS[minVal, maxVal, val, update, setLed, updateLed, allDone, D1, D2, timeOn, timeOff, iter]
+  {  0,  0,  0, false, false, false, true, HIGH, HIGH,  40, 100, 10 },  // [6] CALIBRATE       ARGS[minVal, maxVal, val, update, setLed, updateLed, allDone, D1, D2, timeOn, timeOff, iter]
+  {  1,  7,  0, false, false, false, true, HIGH,  LOW, 150, 150,  0 },  // [7] MIDI_LEARN      ARGS[minVal, maxVal, val, update, setLed, updateLed, allDone, D1, D2, timeOn, timeOff, iter]
+  {  0,  0,  0, false, false, false, true, HIGH,  LOW, 600, 600,  0 },  // [8] MIDI_PLAY       ARGS[minVal, maxVal, val, update, setLed, updateLed, allDone, D1, D2, timeOn, timeOff, iter]
+  {  0,  0,  0, false, false, false, true, HIGH, HIGH, 900, 100,  0 }   // [9] MAPPING_LIB     ARGS[minVal, maxVal, val, update, setLed, updateLed, allDone, D1, D2, timeOn, timeOff, iter]
 };
 
 //uint8_t currentMode = LOAD_CONFIG;     // Init currentMode with LOAD_CONFIG (SET as DEFAULT_MODE)
@@ -70,8 +70,9 @@ inline void buttons_update_presets(void) {
   if (BUTTON_L.rose() && BUTTON_L.previousDuration() < LONG_HOLD) {
     lastMode = currentMode; // keep track of last Mode to set it back after calibration
     currentMode = CALIBRATE;
-    presets[CALIBRATE].setupLeds = true;
-    presets[CALIBRATE].update = true;
+    presets[currentMode].setupLeds = true;
+    presets[currentMode].updateLeds = true;
+    presets[currentMode].update = true;
     timeStamp = millis();
     #if defined(DEBUG_BUTTONS)
       Serial.printf("\nDEBUG_BUTTONS\tBUTTON_L_CALIBRATE:%d", currentMode);
@@ -82,8 +83,9 @@ inline void buttons_update_presets(void) {
   if (BUTTON_L.rose() && BUTTON_L.previousDuration() > LONG_HOLD) {
     lastMode = currentMode; // keep track of last Mode to set it back after saving
     currentMode = UPDATE_CONFIG;
-    presets[UPDATE_CONFIG].setupLeds = true;
-    presets[UPDATE_CONFIG].update = true;
+    presets[currentMode].setupLeds = true;
+    presets[currentMode].updateLeds = true;
+    presets[currentMode].update = true;
     timeStamp = millis();
     #if defined(DEBUG_BUTTONS)
       Serial.printf("\nDEBUG_BUTTONS\tBUTTON_L_UPDATE_CONFIG:%d", currentMode);
@@ -99,6 +101,8 @@ inline void buttons_update_presets(void) {
     currentMode = ((currentMode + 1) % 4) + 2;   // Loop into the modes
     encoder.write(presets[currentMode].val << 2);
     presets[currentMode].setupLeds = true;
+    presets[currentMode].updateLeds = true;
+    presets[currentMode].update = true;
     timeStamp = millis();
     #if defined(DEBUG_BUTTONS)
       Serial.printf("\nDEBUG_BUTTONS\tBUTTON_R_SELECT_MODE:%d", currentMode);
@@ -111,8 +115,9 @@ inline void buttons_update_presets(void) {
   if (BUTTON_R.rose() && BUTTON_R.previousDuration() > LONG_HOLD) {
     if (currentMode == MIDI_PLAY) {
       currentMode = MIDI_LEARN;
-      presets[MIDI_LEARN].setupLeds = true;
-      presets[MIDI_LEARN].update = true;
+      presets[currentMode].setupLeds = true;
+      presets[currentMode].updateLeds = true;
+      presets[currentMode].update = true;
       timeStamp = millis();
       #if defined(DEBUG_BUTTONS)
         Serial.printf("\nDEBUG_BUTTONS\tBUTTON_R_MIDI_MIDI_PLAY:%d", currentMode);
@@ -121,8 +126,9 @@ inline void buttons_update_presets(void) {
     else {
       currentMode = MIDI_PLAY;
       encoder.write(0x1);
-      presets[MIDI_PLAY].setupLeds = true;
-      presets[MIDI_PLAY].update = true;
+      presets[currentMode].setupLeds = true;
+      presets[currentMode].updateLeds = true;
+      presets[currentMode].update = true;
       timeStamp = millis();
       #if defined(DEBUG_BUTTONS)
         Serial.printf("\nDEBUG_BUTTONS\tBUTTON_R_MIDI_MIDI_LEARN:%d", currentMode);
@@ -153,48 +159,24 @@ inline boolean setLevel(preset_t* preset_ptr) {
   };
 };
 
-// Update preset of each mode with the encoder position
+// Update preset of each mode using the rotary encoder
 inline void encoder_update_presets(void) {
-  switch (currentMode) {
-    case LINE_OUT:
-      if (setLevel(&presets[LINE_OUT])) {
-        presets[LINE_OUT].updateLeds = true;
-      };
-      break;
-    case SIG_IN:
-      if (setLevel(&presets[SIG_IN])) {
-        presets[SIG_IN].updateLeds = true;
-      };
-      break;
-    case SIG_OUT:
-      if (setLevel(&presets[SIG_OUT])) {
-        presets[SIG_OUT].updateLeds = true;
-      };
-      break;
-    case THRESHOLD:
-      if (setLevel(&presets[THRESHOLD])) {
-        interpThreshold = constrain(presets[THRESHOLD].val - 5, presets[THRESHOLD].minVal, presets[THRESHOLD].maxVal);
-        presets[THRESHOLD].updateLeds = true;
-      };
-      break;
-    case MIDI_LEARN:
-      if (setLevel(&presets[MIDI_LEARN]));
-      break;
-    default:
-      break;
+  if (setLevel(&presets[currentMode])) {
+    presets[currentMode].updateLeds = true;
   };
 };
 
-inline void usb_update_presets(preset_t* presets_ptr, uint8_t value) {
+inline void update_presets(preset_t* presets_ptr, uint8_t value) {
   presets_ptr->val = constrain(value, presets_ptr->minVal, presets_ptr->maxVal);
+  encoder.write(presets_ptr->val << 2);
   presets_ptr->setupLeds = true;
   presets_ptr->update = true;
 };
 
-inline void usb_midi_mode_selector(void) {
+inline void usb_midi_update_presets(void) {
   for (midiNode_t* node_ptr = (midiNode_t*)ITERATOR_START_FROM_HEAD(&midiIn); node_ptr != NULL; node_ptr = (midiNode_t*)ITERATOR_NEXT(node_ptr)) {
     currentMode = node_ptr->midiMsg.data1;
-    usb_update_presets(&presets[node_ptr->midiMsg.data1], node_ptr->midiMsg.data2);
+    update_presets(&presets[node_ptr->midiMsg.data1], node_ptr->midiMsg.data2);
   };
   llist_save_nodes(&midi_node_stack, &midiIn); // Save/rescure all midiOut nodes
 };
@@ -203,7 +185,7 @@ inline void usb_serial_update_presets(void) {
   if (Serial.available() == 2) {
     uint8_t mode = Serial.read();
     uint8_t value = Serial.read();
-    usb_update_presets(&presets[mode], value);
+    update_presets(&presets[mode], value);
   };
 };
 
@@ -218,9 +200,7 @@ inline void leds_setup(preset_t* presets_ptr){
 };
 
 inline void leds_control_blink(preset_t* presets_ptr) {
-  
   leds_setup(&presets[currentMode]);
-
   if (presets_ptr->updateLeds) {
     if (millis() - timeStamp < presets_ptr->timeOn && presets_ptr->ledsToggle == true ) {
       presets_ptr->ledsToggle = false;
@@ -238,8 +218,9 @@ inline void leds_control_blink(preset_t* presets_ptr) {
         iterCount++;
       }
       else {
+        iterCount = 0;
         presets_ptr->updateLeds = false;
-        currentMode = lastMode;
+        //currentMode = lastMode;
       };
     };
   };
@@ -395,9 +376,7 @@ inline void usb_serial_update_config(void) {
             if (state == STATE_START) {
               // Start byte - Reepat start is fine
               if (b == BYTE_START) {
-                for (uint8_t i = 0; i < FILENAME_STRING_SIZE; i++) {
-                  filename[i] = 0x00;
-                };
+                memset((char*)filename, 0, FILENAME_STRING_SIZE);
                 filenameIndex = 0;
               }
               // Valid characters are a-z, 0-9, point
