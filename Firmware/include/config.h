@@ -93,11 +93,14 @@ struct preset {
   uint8_t val;
   uint8_t ledVal;
   boolean update;
-  boolean setLed;
-  boolean updateLed;
-  boolean allDone;
+  boolean setupLeds;
+  boolean updateLeds;
+  boolean ledsToggle;
   boolean D1;
   boolean D2;
+  uint16_t timeOn;
+  uint16_t timeOff;
+  int8_t iter;
 };
 
 extern preset_t presets[];        // Exposed local declaration see presets.cpp

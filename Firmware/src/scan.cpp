@@ -173,8 +173,6 @@ void matrix_calibrate(void) {
         };
       };
     };
-    presets[CALIBRATE].setLed = true;
-    presets[CALIBRATE].allDone = true;
   };
 };
 

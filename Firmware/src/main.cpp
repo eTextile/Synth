@@ -25,8 +25,8 @@
 #endif
 #if defined(USB_MIDI_SERIAL)
 #include "midi_bus.h"
-#include "usb_serial_transmit.h"
 #include "usb_midi_transmit.h"
+#include "usb_serial_transmit.h"
 #endif
 #if defined(USB_OSC)
 #include "usb_serial_transmit.h"
@@ -57,7 +57,6 @@ unsigned long fpsTimeStamp = 0;
 uint16_t fps = 0;
 
 void setup() {
-  CONFIG_SETUP();
   SCAN_SETUP();
   INTERP_SETUP();
   BLOB_SETUP();
@@ -76,6 +75,7 @@ USB_OSC_TRANSMIT_SETUP();
 #if defined(USB_MIDI_SERIAL)
 USB_SERIAL_TRANSMIT_SETUP();
 USB_MIDI_TRANSMIT_SETUP();
+CONFIG_SETUP();
 #endif
 #if defined(HARDWARE_MIDI)
 HARDWARE_MIDI_TRANSMIT_SETUP();

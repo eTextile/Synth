@@ -29,8 +29,8 @@ void update_levels(void) {
         //sgtl5000.dacVolume(presets_ptr[LINE_OUT].val);
         //sgtl5000.volume(presets[LINE_OUT].val); // DO NOT WORK!?
         AudioInterrupts();
-        presets[LINE_OUT].setLed = true;
-        presets[LINE_OUT].updateLed = true;
+        presets[LINE_OUT].setupLeds = true;
+        presets[LINE_OUT].updateLeds = true;
       }
       break;
     case SIG_IN:
@@ -44,8 +44,8 @@ void update_levels(void) {
         sgtl5000.lineInLevel(presets[SIG_IN].val);
         //sgtl5000.micGain(presets[SIG_IN].val);
         AudioInterrupts();
-        presets[SIG_IN].setLed = true;
-        presets[SIG_IN].updateLed = true;
+        presets[SIG_IN].setupLeds = true;
+        presets[SIG_IN].updateLeds = true;
       }
       break;
     case SIG_OUT:
@@ -58,8 +58,8 @@ void update_levels(void) {
         AudioNoInterrupts();
         sgtl5000.lineOutLevel(presets[SIG_OUT].val);
         AudioInterrupts();
-        presets[SIG_OUT].setLed = true;
-        presets[SIG_OUT].updateLed = true;
+        presets[SIG_OUT].setupLeds = true;
+        presets[SIG_OUT].updateLeds = true;
       };
       break;
   };

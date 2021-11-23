@@ -15,23 +15,8 @@
 // E256 LEDs CONSTANTES
 #define LONG_HOLD                  1500
 
-#define UPDATE_CONFIG_LED_TIMEON   50
-#define UPDATE_CONFIG_LED_TIMEOFF  100
-#define LOAD_CONFIG_LED_TIMEON     200
-#define LOAD_CONFIG_LED_TIMEOFF    500 
-#define ERROR_LED_TIMEON           200
-#define ERROR_LED_TIMEOFF          500 
-
-#define MIDI_PLAY_LED_TIMEON       600
-#define MIDI_PLAY_LED_TIMEOFF      600
-#define MIDI_LEARN_LED_TIMEON      100
-#define MIDI_LEARN_LED_TIMEOFF     100
-#define MIDI_MAPPING_LED_TIMEON    1000
-#define MIDI_MAPPING_LED_TIMEOFF   100
-
-#define CALIBRATE_LED_TIMEON        35
-#define CALIBRATE_LED_TIMEOFF       100
-#define CALIBRATE_LED_ITER          5
+uint32_t timeStamp = 0;
+uint8_t iterCount = 0;
 
 Encoder encoder(ENCODER_PIN_A, ENCODER_PIN_B);
 
@@ -39,45 +24,45 @@ Bounce BUTTON_L = Bounce();
 Bounce BUTTON_R = Bounce();
 
 preset_t presets[10] = {
-  { 0, 0,  0,  0, false, false, false, false, NULL, NULL },  // [0] LOAD_CONFIG     ARGS[minVal, maxVal, val, ledVal, update, setLed, updateLed, allDone, D1, D2]
-  { 0, 0,  0,  0, false, false, false, false, NULL, NULL },  // [1] UPDATE_CONFIG   ARGS[minVal, maxVal, val, ledVal, update, setLed, updateLed, allDone, D1, D2]
-  {13, 31, 29, 0, false, false, false, false, LOW,  LOW  },  // [2] LINE_OUT        ARGS[minVal, maxVal, val, ledVal, update, setLed, updateLed, allDone, D1, D2]
-  { 1, 50, 12, 0, false, false, false, false, HIGH, LOW  },  // [3] SIG_IN          ARGS[minVal, maxVal, val, ledVal, update, setLed, updateLed, allDone, D1, D2]
-  { 1, 31, 17, 0, false, false, false, false, LOW,  HIGH },  // [4] SIG_OUT         ARGS[minVal, maxVal, val, ledVal, update, setLed, updateLed, allDone, D1, D2]
-  { 2, 60, 3,  0, false, false, false, false, HIGH, HIGH },  // [5] THRESHOLD       ARGS[minVal, maxVal, val, ledVal, update, setLed, updateLed, allDone, D1, D2]
-  { 0, 0,  0,  0, true,  false, false, false, HIGH, HIGH },  // [6] CALIBRATE       ARGS[minVal, maxVal, val, ledVal, update, setLed, updateLed, allDone, D1, D2]
-  { 0, 0,  0,  0, false, false, false, false, NULL, NULL },  // [7] MIDI_LEARN      ARGS[minVal, maxVal, val, ledVal, update, setLed, updateLed, allDone, D1, D2]
-  { 1, 7,  0,  0, false, false, false, false, NULL, NULL },  // [8] MIDI_PLAY       ARGS[minVal, maxVal, val, ledVal, update, setLed, updateLed, allDone, D1, D2]
-  { 0, 0,  0,  0, false, false, false, false, NULL, NULL }   // [9] MAPPING_LIB     ARGS[minVal, maxVal, val, ledVal, update, setLed, updateLed, allDone, D1, D2]
+  { 0, 0,  0,  0, false, false, false, true, HIGH, HIGH, 200, 500, -1 },  // [0] LOAD_CONFIG     ARGS[minVal, maxVal, val, ledVal, update, setLed, updateLed, allDone, D1, D2]
+  { 0, 0,  0,  0, false, false, false, true, HIGH, LOW,  200, 500, -1 },  // [1] UPDATE_CONFIG   ARGS[minVal, maxVal, val, ledVal, update, setLed, updateLed, allDone, D1, D2]
+  {13, 31, 29, 0, false, false, false, true, LOW,  LOW,  200, 500, -1 },  // [2] LINE_OUT        ARGS[minVal, maxVal, val, ledVal, update, setLed, updateLed, allDone, D1, D2]
+  { 1, 50, 12, 0, false, false, false, true, HIGH, LOW,  200, 500, -1 },  // [3] SIG_IN          ARGS[minVal, maxVal, val, ledVal, update, setLed, updateLed, allDone, D1, D2]
+  { 1, 31, 17, 0, false, false, false, true, LOW,  HIGH, 200, 500, -1 },  // [4] SIG_OUT         ARGS[minVal, maxVal, val, ledVal, update, setLed, updateLed, allDone, D1, D2]
+  { 2, 60, 3,  0, false, false, false, true, HIGH, HIGH, 200, 500, -1 },  // [5] THRESHOLD       ARGS[minVal, maxVal, val, ledVal, update, setLed, updateLed, allDone, D1, D2]
+  { 0, 0,  0,  0, false, false, false, true, HIGH, HIGH,  40, 100,  6 },  // [6] CALIBRATE       ARGS[minVal, maxVal, val, ledVal, update, setLed, updateLed, allDone, D1, D2]
+  { 1, 7,  0,  0, false, false, false, true, HIGH, LOW,  150, 150, -1 },  // [7] MIDI_LEARN      ARGS[minVal, maxVal, val, ledVal, update, setLed, updateLed, allDone, D1, D2]
+  { 0, 0,  0,  0, false, false, false, true, HIGH, LOW,  600, 600, -1 },  // [8] MIDI_PLAY       ARGS[minVal, maxVal, val, ledVal, update, setLed, updateLed, allDone, D1, D2]
+  { 0, 0,  0,  0, false, false, false, true, HIGH, HIGH, 900, 100, -1 }   // [9] MAPPING_LIB     ARGS[minVal, maxVal, val, ledVal, update, setLed, updateLed, allDone, D1, D2]
 };
 
-uint8_t currentMode = LOAD_CONFIG;     // Init currentMode with LOAD_CONFIG (SET as DEFAULT_MODE)
-//uint8_t currentMode = CALIBRATE;     // Init currentMode with CALIBRATE (SET as DEFAULT_MODE)
+//uint8_t currentMode = LOAD_CONFIG;     // Init currentMode with LOAD_CONFIG (SET as DEFAULT_MODE)
+uint8_t currentMode = CALIBRATE;     // Init currentMode with CALIBRATE (SET as DEFAULT_MODE)
 //uint8_t lastMode = LINE_OUT;         // Init lastMode with LINE_OUT (SET as DEFAULT_MODE)
 //uint8_t lastMode = BLOBS_MAPPING;    // Init lastMode with MIDI_MAPPING (SET as DEFAULT_MODE)
-//uint8_t lastMode = MIDI_PLAY;        // Init lastMode with MIDI_MIDI_PLAY (SET as DEFAULT_MODE)
-uint8_t lastMode = MAPPING_LIB;        // Init lastMode with MIDI_MIDI_PLAY (SET as DEFAULT_MODE)
-
-inline void setup_leds(void) {
-  pinMode(LED_PIN_D1, OUTPUT);
-  pinMode(LED_PIN_D2, OUTPUT);
-  digitalWrite(LED_PIN_D1, LOW);
-  digitalWrite(LED_PIN_D2, LOW);
-};
+uint8_t lastMode = MIDI_PLAY;        // Init lastMode with MIDI_MIDI_PLAY (SET as DEFAULT_MODE)
+//uint8_t lastMode = MAPPING_LIB;        // Init lastMode with MIDI_MIDI_PLAY (SET as DEFAULT_MODE)
 
 // Her it should not compile if you didn't install the library
-// [Bounce2](https://github.com/thomasfredericks/Bounce2)
+// [Bounce2]: https://github.com/thomasfredericks/Bounce2
 // https://www.pjrc.com/teensy/interrupts.html
 // https://github.com/khoih-prog/Teensy_TimerInterrupt/blob/main/examples/SwitchDebounce/SwitchDebounce.ino
-inline void setup_switches(void) {
+inline void controls_hardware_setup(void) {
   BUTTON_L.attach(BUTTON_PIN_L, INPUT_PULLUP);  // Attach the debouncer to a pin with INPUT_PULLUP mode
   BUTTON_R.attach(BUTTON_PIN_R, INPUT_PULLUP);  // Attach the debouncer to a pin with INPUT_PULLUP mode
   BUTTON_L.interval(25);                        // Debounce interval of 25 millis
   BUTTON_R.interval(25);                        // Debounce interval of 25 millis
 };
 
+inline void leds_hardware_setup(void) {
+  pinMode(LED_PIN_D1, OUTPUT);
+  pinMode(LED_PIN_D2, OUTPUT);
+  digitalWrite(LED_PIN_D1, LOW);
+  digitalWrite(LED_PIN_D2, LOW);
+};
+
 // Selec the current mode and perform the matrix sensor calibration 
-inline void update_presets_buttons(void) {
+inline void buttons_update_presets(void) {
   BUTTON_L.update();
   BUTTON_R.update();
   // ACTION: BUTTON_L short press
@@ -85,20 +70,24 @@ inline void update_presets_buttons(void) {
   if (BUTTON_L.rose() && BUTTON_L.previousDuration() < LONG_HOLD) {
     lastMode = currentMode; // keep track of last Mode to set it back after calibration
     currentMode = CALIBRATE;
+    presets[CALIBRATE].setupLeds = true;
     presets[CALIBRATE].update = true;
-#if defined(DEBUG_BUTTONS)
-    Serial.printf("\nDEBUG_BUTTONS\tBUTTON_L_CALIBRATE:%d", currentMode);
-#endif
+    timeStamp = millis();
+    #if defined(DEBUG_BUTTONS)
+      Serial.printf("\nDEBUG_BUTTONS\tBUTTON_L_CALIBRATE:%d", currentMode);
+    #endif
   };
   // ACTION: BUTTON_L long press
   // FONCTION: UPDATE FLASH CONFIG FILE
   if (BUTTON_L.rose() && BUTTON_L.previousDuration() > LONG_HOLD) {
     lastMode = currentMode; // keep track of last Mode to set it back after saving
     currentMode = UPDATE_CONFIG;
+    presets[UPDATE_CONFIG].setupLeds = true;
     presets[UPDATE_CONFIG].update = true;
-#if defined(DEBUG_BUTTONS)
-    Serial.printf("\nDEBUG_BUTTONS\tBUTTON_L_UPDATE_CONFIG:%d", currentMode);
-#endif
+    timeStamp = millis();
+    #if defined(DEBUG_BUTTONS)
+      Serial.printf("\nDEBUG_BUTTONS\tBUTTON_L_UPDATE_CONFIG:%d", currentMode);
+    #endif
   };
   // ACTION: BUTTON_R short press
   // FONCTION: SELECT_MODE
@@ -107,12 +96,13 @@ inline void update_presets_buttons(void) {
   // [4]-SIG_OUT
   // [5]-THRESHOLD
   if (BUTTON_R.rose() && BUTTON_R.previousDuration() < LONG_HOLD) {
-    currentMode = (currentMode + 3) % 6;   // Loop into the modes
+    currentMode = ((currentMode + 1) % 4) + 2;   // Loop into the modes
     encoder.write(presets[currentMode].val << 2);
-    presets[currentMode].setLed = true;
-#if defined(DEBUG_BUTTONS)
-    Serial.printf("\nDEBUG_BUTTONS\tBUTTON_R_SELECT_MODE:%d", currentMode);
-#endif
+    presets[currentMode].setupLeds = true;
+    timeStamp = millis();
+    #if defined(DEBUG_BUTTONS)
+      Serial.printf("\nDEBUG_BUTTONS\tBUTTON_R_SELECT_MODE:%d", currentMode);
+    #endif
   };
   // ACTION: BUTTON_R long press
   // FONCTION_A: MIDI_MIDI_PLAY (send all blob values over MIDI format)
@@ -121,18 +111,22 @@ inline void update_presets_buttons(void) {
   if (BUTTON_R.rose() && BUTTON_R.previousDuration() > LONG_HOLD) {
     if (currentMode == MIDI_PLAY) {
       currentMode = MIDI_LEARN;
+      presets[MIDI_LEARN].setupLeds = true;
       presets[MIDI_LEARN].update = true;
-#if defined(DEBUG_BUTTONS)
-      Serial.printf("\nDEBUG_BUTTONS\tMIDI_MIDI_PLAY:%d", currentMode);
-#endif
+      timeStamp = millis();
+      #if defined(DEBUG_BUTTONS)
+        Serial.printf("\nDEBUG_BUTTONS\tBUTTON_R_MIDI_MIDI_PLAY:%d", currentMode);
+      #endif
     }
     else {
       currentMode = MIDI_PLAY;
       encoder.write(0x1);
+      presets[MIDI_PLAY].setupLeds = true;
       presets[MIDI_PLAY].update = true;
-#if defined(DEBUG_BUTTONS)
-      Serial.printf("\nDEBUG_BUTTONS\tMIDI_MIDI_LEARN:%d", currentMode);
-#endif
+      timeStamp = millis();
+      #if defined(DEBUG_BUTTONS)
+        Serial.printf("\nDEBUG_BUTTONS\tBUTTON_R_MIDI_MIDI_LEARN:%d", currentMode);
+      #endif
     };
   };
 };
@@ -160,31 +154,31 @@ inline boolean setLevel(preset_t* preset_ptr) {
 };
 
 // Update preset of each mode with the encoder position
-inline void update_presets_encoder(void) {
+inline void encoder_update_presets(void) {
   switch (currentMode) {
     case LINE_OUT:
       if (setLevel(&presets[LINE_OUT])) {
         presets[LINE_OUT].ledVal = map(presets[LINE_OUT].val, presets[LINE_OUT].minVal, presets[LINE_OUT].maxVal, 0, 255);
-        presets[LINE_OUT].updateLed = true;
+        presets[LINE_OUT].updateLeds = true;
       };
       break;
     case SIG_IN:
       if (setLevel(&presets[SIG_IN])) {
         presets[SIG_IN].ledVal = map(presets[SIG_IN].val, presets[SIG_IN].minVal, presets[SIG_IN].maxVal, 0, 255);
-        presets[SIG_IN].updateLed = true;
+        presets[SIG_IN].updateLeds = true;
       };
       break;
     case SIG_OUT:
       if (setLevel(&presets[SIG_OUT])) {
         presets[SIG_OUT].ledVal = map(presets[SIG_OUT].val, presets[SIG_OUT].minVal, presets[SIG_OUT].maxVal, 0, 255);
-        presets[SIG_OUT].updateLed = true;
+        presets[SIG_OUT].updateLeds = true;
       };
       break;
     case THRESHOLD:
       if (setLevel(&presets[THRESHOLD])) {
         presets[THRESHOLD].ledVal = map(presets[THRESHOLD].val, presets[THRESHOLD].minVal, presets[THRESHOLD].maxVal, 0, 255);
         interpThreshold = constrain(presets[THRESHOLD].val - 5, presets[THRESHOLD].minVal, presets[THRESHOLD].maxVal);
-        presets[THRESHOLD].updateLed = true;
+        presets[THRESHOLD].updateLeds = true;
       };
       break;
     case MIDI_LEARN:
@@ -195,247 +189,182 @@ inline void update_presets_encoder(void) {
   };
 };
 
-inline void usb_midi_update_presets(void) {
-  for (midiNode_t* node_ptr = (midiNode_t*)ITERATOR_START_FROM_HEAD(&midiIn); node_ptr != NULL; node_ptr = (midiNode_t*)ITERATOR_NEXT(node_ptr)) {
-    switch (node_ptr->midiMsg.status) {
-      case midi::NoteOn:
-        // NOT_USED
-        break;
-      case midi::NoteOff:
-        // NOT_USED
-        break;
-      case midi::ControlChange:
-        switch (node_ptr->midiMsg.data1) {
-          case LINE_OUT: // PROGRAM 0
-            currentMode = LINE_OUT;
-            presets[LINE_OUT].update = true;
-            break;
-          case SIG_IN: // PROGRAM 1
-            currentMode = SIG_IN;
-            presets[SIG_IN].update = true;
-            break;
-          case SIG_OUT: // PROGRAM 2
-            currentMode = SIG_OUT;
-            presets[SIG_OUT].update = true;
-            break;
-          case THRESHOLD: // PROGRAM 3
-            currentMode = THRESHOLD;
-            presets[THRESHOLD].val = map(node_ptr->midiMsg.data2, 0, 127, presets[THRESHOLD].minVal, presets[THRESHOLD].maxVal);
-            encoder.write(presets[THRESHOLD].val << 2);
-            interpThreshold = constrain(presets[THRESHOLD].val - 5, presets[THRESHOLD].minVal, presets[THRESHOLD].maxVal);
-            presets[THRESHOLD].ledVal = map(node_ptr->midiMsg.data2, 0, 127, 0, 255);
-            //presets[THRESHOLD].update = true;
-            presets[THRESHOLD].setLed = true;
-            presets[THRESHOLD].updateLed = true;
-            break;
-          case CALIBRATE: // PROGRAM 4
-            lastMode = currentMode;
-            currentMode = CALIBRATE;
-            presets[CALIBRATE].update = true;
-            break;
-          case MIDI_PLAY: // PROGRAM 6
-            currentMode = MIDI_PLAY;
-            presets[MIDI_PLAY].update = true;
-            presets[MIDI_PLAY].setLed = true;
-            break;
-          case MIDI_LEARN: // PROGRAM 7
-            currentMode = MIDI_LEARN;
-            presets[MIDI_LEARN].update = true;
-            presets[MIDI_LEARN].setLed = true;
-            break;
-          case MAPPING_LIB: // PROGRAM 8
-            currentMode = MAPPING_LIB;
-            presets[MAPPING_LIB].update = true;
-            presets[MAPPING_LIB].setLed = true;
-            break;
-          case RAW_MATRIX: // PROGRAM 9
-            currentMode = RAW_MATRIX;
-            //presets[RAW_MATRIX].updat = true;
-            break;
-          case INTERP_MATRIX: // PROGRAM 10
-            currentMode = INTERP_MATRIX;
-            //presets[INTERP_MATRIX].update = true;
-            break;
-          case ALL_OFF: // PROGRAM 11
-            currentMode = ALL_OFF;
-            //presets[ALL_OFF].update = true;
-            break;
-          default:
-            break;
-        };
-        break;
-      default:
-        break;
-    };
-  };
-  llist_save_nodes(&midi_node_stack, &midiIn); // Save/rescure all midiOut nodes
-};
-
-inline void usb_serial_update_presets(void) {
-  uint8_t mode = 0;
-  uint8_t val = 0;
-  if (Serial.available() == 2) {
-    mode = Serial.read();
-    val = Serial.read();
-  };
+inline void mode_selector(uint8_t mode, uint8_t value) {
   switch (mode) {
-    case LOAD_CONFIG: // MODE 0
-      currentMode = LOAD_CONFIG;
-      presets[LOAD_CONFIG].update = true;
-      break;
-    case UPDATE_CONFIG: // MODE 1
-      currentMode = UPDATE_CONFIG;
-      presets[UPDATE_CONFIG].update = true;
-      break;
-    case LINE_OUT: // MODE 2
+    case LINE_OUT: // MODE 0
       currentMode = LINE_OUT;
+      presets[LINE_OUT].val = value;
+      presets[LINE_OUT].setupLeds = true;
       presets[LINE_OUT].update = true;
       break;
-    case SIG_IN: // MODE 3
+    case SIG_IN: // MODE 1
       currentMode = SIG_IN;
+      presets[SIG_IN].val = value;
+      presets[SIG_IN].setupLeds = true;
       presets[SIG_IN].update = true;
       break;
-    case SIG_OUT: // MODE 4
+    case SIG_OUT: // MODE 2
       currentMode = SIG_OUT;
+      presets[SIG_OUT].val = value;
+      presets[SIG_OUT].setupLeds = true;
       presets[SIG_OUT].update = true;
       break;
-    case THRESHOLD: // MODE 5
+    case THRESHOLD: // MODE 3
       currentMode = THRESHOLD;
-      presets[THRESHOLD].val = map(val, 0, 127, presets[THRESHOLD].minVal, presets[THRESHOLD].maxVal);
+      presets[THRESHOLD].val = map(value, 0, 127, presets[THRESHOLD].minVal, presets[THRESHOLD].maxVal);
       encoder.write(presets[THRESHOLD].val << 2);
       interpThreshold = constrain(presets[THRESHOLD].val - 5, presets[THRESHOLD].minVal, presets[THRESHOLD].maxVal);
-      presets[THRESHOLD].ledVal = map(val, 0, 127, 0, 255);
+      presets[THRESHOLD].ledVal = map(value, 0, 127, 0, 255);
       //presets[THRESHOLD].update = true;
-      presets[THRESHOLD].setLed = true;
-      presets[THRESHOLD].updateLed = true;
+      presets[THRESHOLD].setupLeds = true;
+      presets[THRESHOLD].update = true;
       break;
-    case CALIBRATE: // MODE 6
+    case CALIBRATE: // MODE 4
       lastMode = currentMode;
       currentMode = CALIBRATE;
+      presets[CALIBRATE].val = value;
+      presets[CALIBRATE].setupLeds = true;
       presets[CALIBRATE].update = true;
+      break;
+    case MIDI_PLAY: // MODE 6
+      currentMode = MIDI_PLAY;
+      presets[MIDI_PLAY].val = value;
+      presets[MIDI_PLAY].setupLeds = true;
+      presets[MIDI_PLAY].update = true;
       break;
     case MIDI_LEARN: // MODE 7
       currentMode = MIDI_LEARN;
+      presets[MIDI_LEARN].val = value;
+      presets[MIDI_LEARN].setupLeds = true;
       presets[MIDI_LEARN].update = true;
-      presets[MIDI_LEARN].setLed = true;
       break;
-    case MIDI_PLAY: // MODE 8
-      currentMode = MIDI_PLAY;
-      presets[MIDI_PLAY].update = true;
-      presets[MIDI_PLAY].setLed = true;
-      break;
-    case MAPPING_LIB: // MODE 9
+    case MAPPING_LIB: // MODE 8
       currentMode = MAPPING_LIB;
+      presets[MIDI_LEARN].val = value;
+      presets[MAPPING_LIB].setupLeds = true;
       presets[MAPPING_LIB].update = true;
-      presets[MAPPING_LIB].setLed = true;
       break;
-    case RAW_MATRIX: // MODE 13
+    case RAW_MATRIX: // MODE 9
       currentMode = RAW_MATRIX;
-      //presets[RAW_MATRIX].updat = true;
+      presets[RAW_MATRIX].val = value;
+      presets[RAW_MATRIX].setupLeds = true;
+      presets[RAW_MATRIX].update = true;
       break;
-    case INTERP_MATRIX: // MODE 14
+    case INTERP_MATRIX: // MODE 10
       currentMode = INTERP_MATRIX;
-      //presets[INTERP_MATRIX].update = true;
+      presets[INTERP_MATRIX].val = value;
+      presets[INTERP_MATRIX].setupLeds = true;
+      presets[INTERP_MATRIX].update = true;
       break;
-    case ALL_OFF: // MODE 15
+    case ALL_OFF: // MODE 11
       currentMode = ALL_OFF;
-      //presets[ALL_OFF].update = true;
+      presets[ALL_OFF].val = value;
+      presets[ALL_OFF].setupLeds = true;
+      presets[ALL_OFF].update = true;
       break;
     default:
       break;
   };
 };
 
-inline void led_control_blink(const uint8_t mode, const uint8_t timeOn, const uint8_t timeOff, const int8_t iter) {
-  static uint32_t timeStamp = 0;
-  static uint8_t iterCount = 0;
+inline void usb_midi_update_presets(void) {
+  for (midiNode_t* node_ptr = (midiNode_t*)ITERATOR_START_FROM_HEAD(&midiIn); node_ptr != NULL; node_ptr = (midiNode_t*)ITERATOR_NEXT(node_ptr)) {
+    mode_selector(node_ptr->midiMsg.data1, node_ptr->midiMsg.data2);
+  };
+  llist_save_nodes(&midi_node_stack, &midiIn); // Save/rescure all midiOut nodes
+};
 
-  if (presets[mode].setLed) {
-    presets[mode].setLed = false;
+inline void usb_serial_update_presets(void) {
+  if (Serial.available() == 2) {
+    uint8_t mode = Serial.read();
+    uint8_t val = Serial.read();
+    mode_selector(mode, val);
+  };
+};
+
+inline void leds_setup(preset_t* presets_ptr){
+  if (presets_ptr->setupLeds) {
+    presets_ptr->setupLeds = false;
     pinMode(LED_PIN_D1, OUTPUT);
     pinMode(LED_PIN_D2, OUTPUT);
-    timeStamp = millis();
-    iterCount = 0;
+    digitalWrite(LED_PIN_D1, presets_ptr->D1);
+    digitalWrite(LED_PIN_D2, presets_ptr->D2);
   };
-  if (!presets[mode].allDone) {
-    if (iterCount <= iter) {
-      if (millis() - timeStamp < timeOn && presets[mode].updateLed == true ) {
-        presets[mode].updateLed = false;
-        digitalWrite(LED_PIN_D1, HIGH);
-        digitalWrite(LED_PIN_D2, HIGH);
+};
+
+inline void leds_control_blink(preset_t* presets_ptr) {
+  
+  leds_setup(&presets[currentMode]);
+
+  if (presets_ptr->updateLeds) {
+    if (millis() - timeStamp < presets_ptr->timeOn && presets_ptr->ledsToggle == true ) {
+      presets_ptr->ledsToggle = false;
+      digitalWrite(LED_PIN_D1, presets_ptr->D1);
+      digitalWrite(LED_PIN_D2, presets_ptr->D2);
+    }
+    else if (millis() - timeStamp > presets_ptr->timeOn && presets_ptr->ledsToggle == false) {
+      presets_ptr->ledsToggle = true;
+      digitalWrite(LED_PIN_D1, !presets_ptr->D1);
+      digitalWrite(LED_PIN_D2, !presets_ptr->D2);
+    }
+    else if (millis() - timeStamp > presets_ptr->timeOn + presets_ptr->timeOff) {
+      if (iterCount < presets_ptr->iter) {
+        timeStamp = millis();
+        iterCount++;
       }
-      else if (millis() - timeStamp > timeOn && presets[mode].updateLed == false) {
-        presets[mode].updateLed = true;
-        digitalWrite(LED_PIN_D1, LOW);
-        digitalWrite(LED_PIN_D2, LOW);
-      }
-      else if (millis() - timeStamp > timeOn + timeOff) {
-        if (iter != -1) {
-          if (iterCount < iter) {
-            timeStamp = millis();
-            iterCount++;
-          }
-          else {
-            presets[mode].allDone = true;
-            currentMode = lastMode;
-            presets[currentMode].setLed = true;
-          };
-        }
-        else {
-          timeStamp = millis();
-        };
+      else {
+        presets_ptr->updateLeds = false;
+        currentMode = lastMode;
       };
     };
   };
 };
 
-inline void led_control_fade(uint8_t mode) {
-  if (presets[mode].setLed) {
-    presets[mode].setLed = false;
-    pinMode(LED_PIN_D1, OUTPUT);
-    pinMode(LED_PIN_D2, OUTPUT);
-    digitalWrite(LED_PIN_D1, presets[mode].D1);
-    digitalWrite(LED_PIN_D2, presets[mode].D2);
-  };
-  if (presets[mode].updateLed) {
-    presets[mode].updateLed = false;
-    analogWrite(LED_PIN_D1, presets[mode].ledVal);
-    analogWrite(LED_PIN_D2, abs(presets[mode].ledVal - 255));
+inline void leds_control_fade(preset_t* presets_ptr) {
+  leds_setup(&presets[currentMode]);
+  if (presets_ptr->updateLeds) {
+    presets_ptr->updateLeds = false;
+    analogWrite(LED_PIN_D1, presets_ptr->ledVal);
+    analogWrite(LED_PIN_D2, abs(presets_ptr->ledVal - 255));
   };
 };
+
 
 // Update LEDs according to the mode and rotary encoder values
 inline void update_leds(void) {
   switch (currentMode) {
-    case LOAD_CONFIG: // LEDs : Both LEDs are blinking fast
-      led_control_blink(LOAD_CONFIG, LOAD_CONFIG_LED_TIMEON, LOAD_CONFIG_LED_TIMEOFF, -1);
+    case LOAD_CONFIG: // LEDs: both LEDs are blinking fast
+      leds_control_blink(&presets[LOAD_CONFIG]);
       break;
-    case UPDATE_CONFIG: // LEDs : Both LEDs are blinking very fast
-      led_control_blink(UPDATE_CONFIG, UPDATE_CONFIG_LED_TIMEON, UPDATE_CONFIG_LED_TIMEOFF, -1);
+    case UPDATE_CONFIG: // LEDs: blink alternately very fast
+      leds_control_blink(&presets[UPDATE_CONFIG]);
       break;
-    case LINE_OUT: // Adjust both LEDs intensity according to output volume value
-      led_control_fade(LINE_OUT);
+    case LINE_OUT: // LEDs: adjust both LEDs intensity according to output volume value
+      leds_control_fade(&presets[LINE_OUT]);
       break;
-    case SIG_IN: // Adjust both LEDs intensity according to the input volume value
-      led_control_fade(SIG_IN);
+    case SIG_IN: // LEDs: adjust both LEDs intensity according to the input volume value
+      leds_control_fade(&presets[SIG_IN]);
       break;
-    case SIG_OUT: // Adjust both LEDs intensity according to the output volume value
-      led_control_fade(SIG_OUT);
+    case SIG_OUT: // LEDs: adjust both LEDs intensity according to the output volume value
+      leds_control_fade(&presets[SIG_OUT]);
       break;
-    case THRESHOLD: // Adjust both LEDs intensity according to the threshold value
-      led_control_fade(THRESHOLD);
+    case THRESHOLD: // LEDs: adjust both LEDs intensity according to the threshold value
+      leds_control_fade(&presets[THRESHOLD]);
       break;
-    case CALIBRATE: // LEDs : both LED are blinking three time
-      led_control_blink(CALIBRATE, CALIBRATE_LED_TIMEON, CALIBRATE_LED_TIMEOFF, CALIBRATE_LED_ITER);
+    case CALIBRATE: // LEDs: both LED are blinking three time
+      leds_control_blink(&presets[CALIBRATE]);
       break;
-    case MIDI_PLAY: // LEDs : blink alternately slow
-      led_control_blink(MIDI_PLAY, MIDI_PLAY_LED_TIMEON, MIDI_PLAY_LED_TIMEOFF, -1);
+    case MIDI_PLAY: // LEDs: blink alternately slow
+      leds_control_blink(&presets[MIDI_PLAY]);
       break;
-    case MIDI_LEARN: // LEDs : blink alternately fast
-      led_control_blink(MIDI_LEARN, MIDI_LEARN_LED_TIMEON, MIDI_LEARN_LED_TIMEOFF, -1);
+    case MIDI_LEARN: // LEDs: blink alternately fast
+      leds_control_blink(&presets[MIDI_LEARN]);
       break;
-    case MAPPING_LIB: // LEDs : blink alternately slow
-      led_control_blink(MAPPING_LIB, MIDI_MAPPING_LED_TIMEON, MIDI_MAPPING_LED_TIMEOFF, -1);
+    case MAPPING_LIB: // LEDs: blink alternately slow
+      leds_control_blink(&presets[MAPPING_LIB]);
+      break;
+    case ERROR: // LEDs: both LEDs are blinking fast
+      leds_control_blink(&presets[ERROR]);
       break;
     default:
       break;
@@ -449,7 +378,7 @@ inline void update_leds(void) {
 // $ python rawfile-uploader.py <port> config.json
 
 // Buffer sizes
-#define USB_BUFFER_SIZE       128
+#define USB_BUFFER_SIZE       1024
 #define FLASH_BUFFER_SIZE     4096
 // Max filename length (8.3 plus a null char terminator)
 #define FILENAME_STRING_SIZE  10
@@ -465,8 +394,6 @@ inline void update_leds(void) {
 
 #define SERIAL_UPDATE_CONFIG_TIMEOUT 15000
 
-uint32_t serialUpdateConfigTimeStamp = 0;
-
 inline void flushError(void) {
   uint32_t lastReceiveTime = millis();
   char usbBuffer[USB_BUFFER_SIZE];
@@ -474,178 +401,204 @@ inline void flushError(void) {
   while (Serial.available() || millis() < lastReceiveTime + 3000) {
     if (Serial.readBytes(usbBuffer, USB_BUFFER_SIZE)) {
       lastReceiveTime = millis();
-      serialUpdateConfigTimeStamp = millis();
     };
   };
 };
 
 inline void usb_serial_update_config(void) {
-  
-  if (!SerialFlash.begin(FLASH_CHIP_SELECT)) {
-#if defined(DEBUG_SERIAL_FLASH)
-    Serial.printf("\nDEBUG_SERIAL_FLASH\tERROR_CONNECTING_FLASH");
-#endif
-  currentMode = ERROR;
-    return;
-  };
 
-  // Waiting for config file!
-  while (millis() - serialUpdateConfigTimeStamp < SERIAL_UPDATE_CONFIG_TIMEOUT) {
-    if (Serial.available() && Serial.read() == HAND_SHAKE) {
-      serialUpdateConfigTimeStamp = millis();
+  if (currentMode == UPDATE_CONFIG) {
+    uint32_t serialUpdateConfigTimeStamp = 0;
 
-      SerialFlashFile flashFile;
-      uint8_t state = STATE_START;
-      uint8_t escape = 0;
-      uint8_t fileSizeIndex = 0;
-      uint32_t fileSize = 0;
-  
-      char usbBuffer[USB_BUFFER_SIZE];
-      uint8_t flashBuffer[FLASH_BUFFER_SIZE];
-      char filename[FILENAME_STRING_SIZE];
-  
-      uint16_t flashBufferIndex = 0;
-      uint8_t filenameIndex = 0;
-      uint32_t lastReceiveTime = millis();
+    if (!SerialFlash.begin(FLASH_CHIP_SELECT)) {
+      #if defined(DEBUG_SERIAL_FLASH)
+        Serial.printf("\nDEBUG_SERIAL_FLASH\tERROR_CONNECTING_FLASH");
+      #endif
+      currentMode = ERROR;
+      return;
+    };
 
-#if defined(DEBUG_SERIAL_FLASH)
-    Serial.printf("\nDEBUG_SERIAL_FLASH\tFORMATING_FLASH...");
-#endif
-      // Flash LED while formatting!
-      while (!SerialFlash.ready()) {
-        delay(50);
+    // Waiting for config file!
+    while (millis() - serialUpdateConfigTimeStamp < SERIAL_UPDATE_CONFIG_TIMEOUT) {
+      if (Serial.available() && Serial.read() == HAND_SHAKE) {
+        serialUpdateConfigTimeStamp = millis();
+
+        SerialFlashFile flashFile;
+        uint8_t state = STATE_START;
+        uint8_t escape = 0;
+        uint8_t fileSizeIndex = 0;
+        uint32_t fileSize = 0;
+
+        char usbBuffer[USB_BUFFER_SIZE];
+        uint8_t flashBuffer[FLASH_BUFFER_SIZE];
+        char filename[FILENAME_STRING_SIZE];
+
+        uint16_t flashBufferIndex = 0;
+        uint8_t filenameIndex = 0;
+        uint32_t lastReceiveTime = millis();
+
+        #if defined(DEBUG_SERIAL_FLASH)
+          Serial.printf("\nDEBUG_SERIAL_FLASH\tFORMATING_FLASH...");
+        #endif
+        // Flash LED while formatting!
+        while (!SerialFlash.ready()) {
+          delay(50);
+          digitalWrite(LED_PIN_D1, HIGH);
+          digitalWrite(LED_PIN_D2, HIGH);
+          delay(50);
+          digitalWrite(LED_PIN_D1, LOW);
+          digitalWrite(LED_PIN_D2, LOW);
+        };
         digitalWrite(LED_PIN_D1, HIGH);
         digitalWrite(LED_PIN_D2, HIGH);
-        delay(50);
-        digitalWrite(LED_PIN_D1, LOW);
-        digitalWrite(LED_PIN_D2, LOW);
-      };
-      digitalWrite(LED_PIN_D1, HIGH);
-      digitalWrite(LED_PIN_D2, HIGH);
-      
-      // We assume the serial receive part is finished when we have not received something for 3 seconds
-      while (Serial.available() || lastReceiveTime + 3000 > millis()) {
 
-        uint16_t available = Serial.readBytes(usbBuffer, USB_BUFFER_SIZE);
-        
-        if (available) {
-          lastReceiveTime = millis();
-          serialUpdateConfigTimeStamp = millis();
-        };
+        // We assume the serial receive part is finished when we have not received something for 3 seconds
+        while (Serial.available() || lastReceiveTime + 3000 > millis()) {
 
-        for (uint16_t usbBufferIndex = 0; usbBufferIndex < available; usbBufferIndex++) {
-          uint8_t b = usbBuffer[usbBufferIndex];
+          uint16_t available = Serial.readBytes(usbBuffer, USB_BUFFER_SIZE);
 
-          ////////////////////////////////////////// STATE_START
-          if (state == STATE_START) {
-            // Start byte - Reepat start is fine
-            if (b == BYTE_START) {
-              for (uint8_t i = 0; i < FILENAME_STRING_SIZE; i++) {
-                filename[i] = 0x00;
-              };
-              filenameIndex = 0;
-            }
-            // Valid characters are a-z, 0-9, point 
-            else if ((b >= 'a' && b <= 'z') || (b >= '0' && b <= '9') || b == '.') {
-              filename[filenameIndex++] = b;
-              if (filenameIndex >= FILENAME_STRING_SIZE) {
-                //Error name too long
-                currentMode = ERROR;
-                return;
-              };
-            }
-            // Filename end character
-            else if (b == BYTE_SEPARATOR) {
-              if (filenameIndex == 0) {
-                // Error empty filename
-                currentMode = ERROR;
-                return;
-              };
-              // Change state
-              state = STATE_SIZE;
-              fileSizeIndex = 0;
-              fileSize = 0;
-            }
-            // Invalid character
-            else {
-              // Error bad filename
-              currentMode = ERROR;
-              return;
-            };
-          }
+          if (available) {
+            lastReceiveTime = millis();
+            serialUpdateConfigTimeStamp = millis();
+          };
 
-          ////////////////////////////////////////// STATE_SIZE
-          // We read 4 bytes as a uint32_t for file size
-          else if (state == STATE_SIZE) {
-            if (fileSizeIndex < 4) {
-              fileSize = (fileSize << 8) + b;
-              fileSizeIndex++;
-            }
-            else if (b == BYTE_SEPARATOR) {
-              state = STATE_CONTENT;
-              flashBufferIndex = 0;
-              escape = 0;
-              if (SerialFlash.exists(filename)) {
-                SerialFlash.remove(filename);  // It doesn't reclaim the space, but it does let you create a new file with the same name
-              };
-              // Create a new file and open it for writing
-              if (SerialFlash.create(filename, fileSize)) {
-                flashFile = SerialFlash.open(filename);
-                if (!flashFile) {
-                  // Error flash file open
+          for (uint16_t usbBufferIndex = 0; usbBufferIndex < available; usbBufferIndex++) {
+
+            uint8_t b = usbBuffer[usbBufferIndex];
+
+            ////////////////////////////////////////// STATE_START
+            if (state == STATE_START) {
+              // Start byte - Reepat start is fine
+              if (b == BYTE_START) {
+                for (uint8_t i = 0; i < FILENAME_STRING_SIZE; i++) {
+                  filename[i] = 0x00;
+                };
+                filenameIndex = 0;
+              }
+              // Valid characters are a-z, 0-9, point
+              else if ((b >= 'a' && b <= 'z') || (b >= '0' && b <= '9') || b == '.') {
+                filename[filenameIndex++] = b;
+                if (filenameIndex >= FILENAME_STRING_SIZE) {
+                  flushError();
                   currentMode = ERROR;
+                  presets[ERROR].update = true;
+                  #if defined(DEBUG_SERIAL_FLASH)
+                    Serial.printf("\nDEBUG_SERIAL_FLASH\tERROR_NAME_TO_LONG!");
+                  #endif
+                  return;
+                };
+              }
+              // Filename end character
+              else if (b == BYTE_SEPARATOR) {
+                if (filenameIndex == 0) {
+                  flushError();
+                  currentMode = ERROR;
+                  presets[ERROR].update = true;
+                  #if defined(DEBUG_SERIAL_FLASH)
+                    Serial.printf("\nDEBUG_SERIAL_FLASH\tERROR_EMPTY_FILENAME!");
+                  #endif
+                  return;
+                };
+                // Change state
+                state = STATE_SIZE;
+                fileSizeIndex = 0;
+                fileSize = 0;
+              }
+              else {
+                flushError();
+                currentMode = ERROR;
+                presets[ERROR].update = true;
+                #if defined(DEBUG_SERIAL_FLASH)
+                  Serial.printf("\nDEBUG_SERIAL_FLASH\tERROR_INVALID_FILENAME_CHARACTER!");
+                #endif
+                return;
+              };
+            }
+
+            ////////////////////////////////////////// STATE_SIZE
+            // We read 4 bytes as a uint32_t for file size
+            else if (state == STATE_SIZE) {
+              if (fileSizeIndex < 4) {
+                fileSize = (fileSize << 8) + b;
+                fileSizeIndex++;
+              }
+              else if (b == BYTE_SEPARATOR) {
+                state = STATE_CONTENT;
+                flashBufferIndex = 0;
+                escape = 0;
+                if (SerialFlash.exists(filename)) {
+                  SerialFlash.remove(filename);  // It doesn't reclaim the space, but it does let you create a new file with the same name
+                };
+                // Create a new file and open it for writing
+                if (SerialFlash.create(filename, fileSize)) {
+                  flashFile = SerialFlash.open(filename);
+                  if (!flashFile) {
+                    currentMode = ERROR;
+                    presets[ERROR].update = true;
+                    #if defined(DEBUG_SERIAL_FLASH)
+                      Serial.printf("\nDEBUG_SERIAL_FLASH\tERROR_FLASH_FILE_OPEN!");
+                    #endif
+                    return;
+                  };
+                }
+                else {
+                  currentMode = ERROR;
+                  presets[ERROR].update = true;
+                  #if defined(DEBUG_SERIAL_FLASH)
+                    Serial.printf("\nDEBUG_SERIAL_FLASH\tERROR_FLASH_FULL!");
+                  #endif
                   return;
                 };
               }
               else {
-                // Error flash create (no room left?)
+                // Error invalid length requested
                 currentMode = ERROR;
+                presets[ERROR].update = true;
+                #if defined(DEBUG_SERIAL_FLASH)
+                  Serial.printf("\nDEBUG_SERIAL_FLASH\tERROR_FLASH_FULL!");
+                #endif
                 return;
               };
             }
-            else {
-              // Error invalid length requested
-              currentMode = ERROR;
-              return;
-            };
-          }
 
-          ////////////////////////////////////////// STATE_CONTENT
-          else if (state == STATE_CONTENT) {
-            // Previous byte was escaped; unescape and add to buffer
-            if (escape) {
-              escape = 0;
-              flashBuffer[flashBufferIndex++] = b ^ 0x20;
-            }
-            // Escape the next byte
-            else if (b == BYTE_ESCAPE) {
-              //Serial.println("esc");
-              escape = 1;
-            }
-            // End of file
-            else if (b == BYTE_START) {
-              //Serial.println("End of file");
-              state = STATE_START;
-              flashFile.write(flashBuffer, flashBufferIndex);
-              flashFile.close();
-              flashBufferIndex = 0;
-            }
-            // Normal byte; add to buffer
-            else {
-              flashBuffer[flashBufferIndex++] = b;
-            };
-            // The buffer is filled; write to SD card
-            if (flashBufferIndex >= FLASH_BUFFER_SIZE) {
-              flashFile.write(flashBuffer, FLASH_BUFFER_SIZE);
-              flashBufferIndex = 0;
+            ////////////////////////////////////////// STATE_CONTENT
+            else if (state == STATE_CONTENT) {
+              // Previous byte was escaped; unescape and add to buffer
+              if (escape) {
+                escape = 0;
+                flashBuffer[flashBufferIndex++] = b ^ 0x20;
+              }
+              // Escape the next byte
+              else if (b == BYTE_ESCAPE) {
+                //Serial.println("esc");
+                escape = 1;
+              }
+              // End of file
+              else if (b == BYTE_START) {
+                //Serial.println("End of file");
+                state = STATE_START;
+                flashFile.write(flashBuffer, flashBufferIndex);
+                flashFile.close();
+                flashBufferIndex = 0;
+              }
+              // Normal byte; add to buffer
+              else {
+                flashBuffer[flashBufferIndex++] = b;
+              };
+              // The buffer is filled; write to SD card
+              if (flashBufferIndex >= FLASH_BUFFER_SIZE) {
+                flashFile.write(flashBuffer, FLASH_BUFFER_SIZE);
+                flashBufferIndex = 0;
+              };
             };
           };
         };
+        // Success!  Turn the LEDs off
+        digitalWrite(LED_PIN_D1, LOW);
+        digitalWrite(LED_PIN_D2, LOW);
       };
-      // Success!  Turn the LEDs off
-      digitalWrite(LED_PIN_D1, LOW);
-      digitalWrite(LED_PIN_D2, LOW);
     };
+    // Reboot!?
   };
 };
 
@@ -653,7 +606,7 @@ inline void usb_serial_update_config(void) {
 inline bool config_load_mapping_triggers(const JsonArray& config) {
   if (config.isNull()) {
     return false;
-  }
+  };
   mapping_triggers_alloc(config.size());
   for (uint8_t i = 0; i < mapp_trigs; i++) {
     mapp_trigsParams[i].rect.Xmin = config[i]["Xmin"];
@@ -661,9 +614,9 @@ inline bool config_load_mapping_triggers(const JsonArray& config) {
     mapp_trigsParams[i].rect.Ymin = config[i]["Ymin"];
     mapp_trigsParams[i].rect.Ymax = config[i]["Ymax"];
     mapp_trigsParams[i].note = config[i]["note"];
-  }
+  };
   return true;
-}
+};
 
 inline bool config_load_mapping_toggles(const JsonArray& config) {
   if (config.isNull()) {
@@ -792,10 +745,11 @@ inline bool config_load_mapping(const JsonObject& config) {
 inline void load_config(void) {
   
   if (!SerialFlash.begin(FLASH_CHIP_SELECT)) {
-#if defined(DEBUG_SERIAL_FLASH)
-    Serial.printf("\nDEBUG_SERIAL_FLASH\tERROR_CONNECTING_FLASH");
-#endif
+    #if defined(DEBUG_SERIAL_FLASH)
+      Serial.printf("\nDEBUG_SERIAL_FLASH\tERROR_CONNECTING_FLASH");
+    #endif
   currentMode = ERROR;
+  presets[ERROR].update = true;
   };
 
   uint8_t configData[1024];
@@ -806,19 +760,29 @@ inline void load_config(void) {
   if (error) {
     // Waiting for config file!
     // Load a default config file?
-    currentMode = UPDATE_CONFIG;
+    currentMode = ERROR;
+    presets[ERROR].update = true;
+    #if defined(DEBUG_SERIAL_FLASH)
+      Serial.printf("\nDEBUG_SERIAL_FLASH\tERROR_WAITING_FOR_GONFIG!");
+    #endif
+    return;
   };
   if (!config_load_mapping(config["mapping"])) {
     // Loading JSON config failed!
     currentMode = ERROR;
+    presets[ERROR].update = true;
+    #if defined(DEBUG_SERIAL_FLASH)
+      Serial.printf("\nDEBUG_SERIAL_FLASH\tERROR_LOADING_GONFIG_FAILED!");
+    #endif
+    return;
   };
   configFile.close();
 };
 
 void CONFIG_SETUP(void){
-  setup_leds();
-  setup_switches();
-  load_config();
+  leds_hardware_setup();
+  controls_hardware_setup();
+  //load_config();
 };
 
 void update_presets(){
@@ -826,11 +790,11 @@ void update_presets(){
   update_presets_usb_midi();
 #endif
 #if defined(__IMXRT1062__)  // Teensy 4.0 & 4.1
-  update_presets_buttons();
-  update_presets_encoder();
-  //update_presets_usb_midi();
-  usb_serial_update_presets();
-  if (UPDATE_CONFIG) usb_serial_update_config();
+  buttons_update_presets();
+  encoder_update_presets();
+  //usb_midi_update_presets();
+  //usb_serial_update_presets();
+  //usb_serial_update_config();
   update_leds();
 #endif
 };
