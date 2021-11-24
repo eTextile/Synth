@@ -55,9 +55,9 @@ image_t offsetFrane;                     // Memory allocation for offset frame v
 // Array to store all parameters used to configure the two 8:1 analog multiplexeurs
 // Each byte |ENA|A|B|C|ENA|A|B|C|
 uint8_t setDualCols[DUAL_COLS] = {
-#if defined(SET_ORIGIN_X)
-  0x33, 0x00, 0x11, 0x22, 0x44, 0x66, 0x77, 0x55
-#else
+  #if defined(SET_ORIGIN_X)
+ 0x33, 0x00, 0x11, 0x22, 0x44, 0x66, 0x77, 0x55
+  #else
   0x55, 0x77, 0x66, 0x44, 0x22, 0x11, 0x00, 0x33
 #endif
 };
@@ -66,20 +66,20 @@ uint8_t setDualCols[DUAL_COLS] = {
 #define SPI_HAS_TRANSACTION 0
 
 inline void setup_spi(void) {
-#if defined(__MK20DX256__)                                                // If using Teensy 3.2
+  #if defined(__MK20DX256__)                                                // If using Teensy 3.2
   pinMode(SS_PIN, OUTPUT);                                                // Set the Slave Select Pin as OUTPUT
   SPI.begin();                                                            // Start the SPI module
   SPI.beginTransaction(SPISettings(30000000, MSBFIRST, SPI_MODE0));       // 74HC595BQ Shift out register frequency is 100 MHz = 100000000 Hz
   digitalWrite(SS_PIN, LOW);                                              // Set latchPin LOW
   digitalWrite(SS_PIN, HIGH);
-#endif
-#if defined(__IMXRT1062__)                                                // If using Teensy 4.0 & 4.1
+  #endif
+  #if defined(__IMXRT1062__)                                                // If using Teensy 4.0 & 4.1
   pinMode(SS1_PIN, OUTPUT);                                               // Set the Slave Select Pin as OUTPUT
   SPI1.begin();                                                           // Start the SPI module
   SPI1.beginTransaction(SPISettings(30000000, MSBFIRST, SPI_MODE0));      // 74HC595BQ Shift out register frequency is 100 MHz = 100000000 Hz
   digitalWrite(SS1_PIN, LOW);                                             // Set latchPin LOW
   digitalWrite(SS1_PIN, HIGH);                                            // Set latchPin HIGH
-#endif
+  #endif
 };
 
 inline void setup_adc(void) {
@@ -126,28 +126,28 @@ void matrix_calibrate(void) {
     for (uint8_t i = 0; i < CALIBRATION_CYCLES; i++) {
       for (uint8_t col = 0; col < DUAL_COLS; col++) {         // ANNALOG_PINS [0-7] with [8-15]
 
-#if defined(SET_ORIGIN_Y)
+        #if defined(SET_ORIGIN_Y)
         uint16_t setRows = 0x1;                               // Reset to [0000 0000 0000 0001]
-#else
+        #else
         uint16_t setRows = 0x8000;                            // Reset to [1000 0000 0000 0000]
-#endif
+        #endif
         for (uint8_t row = 0; row < RAW_ROWS; row++) {        // DIGITAL_PINS [0-15]
-#if defined(__MK20DX256__)                                    // If using Teensy 3.2
+          #if defined(__MK20DX256__)                                    // If using Teensy 3.2
           digitalWrite(SS_PIN, LOW);                          // Set the Slave Select Pin LOW
           //SPI.transfer16(setRows);                          // Set up the two OUTPUT shift registers (FIXME)
           SPI.transfer((uint8_t)(setRows & 0xFF));            // Shift out one byte to setup one OUTPUT shift register
           SPI.transfer((uint8_t)((setRows >> 8) & 0xFF));     // Shift out one byte to setup one OUTPUT shift register
           SPI.transfer(setDualCols[col]);                     // Shift out one byte that setup the two INPUT 8:1 analog multiplexers
           digitalWrite(SS_PIN, HIGH);                         // Set the Slave Select Pin HIGH
-#endif
-#if defined(__IMXRT1062__)                                    // If using Teensy 4.0 & 4.1
+          #endif
+          #if defined(__IMXRT1062__)                                    // If using Teensy 4.0 & 4.1
           digitalWrite(SS1_PIN, LOW);                         // Set the Slave Select Pin LOW
           //SPI1.transfer16(setRows);                         // Set up the two OUTPUT shift registers (FIXME)
           SPI1.transfer((uint8_t)(setRows & 0xFF));           // Shift out one byte to setup one OUTPUT shift register
           SPI1.transfer((uint8_t)((setRows >> 8) & 0xFF));    // Shift out one byte to setup one OUTPUT shift register
           SPI1.transfer(setDualCols[col]);                    // Shift out one byte that setup the two INPUT 8:1 analog multiplexers
           digitalWrite(SS1_PIN, HIGH);                        // Set the Slave Select Pin HIGH
-#endif
+          #endif
           uint8_t indexA = row * RAW_COLS + col;              // Compute 1D array indexA
           uint8_t indexB = indexA + DUAL_COLS;                // Compute 1D array indexB
 
@@ -165,11 +165,11 @@ void matrix_calibrate(void) {
           uint8_t ADC1_val = result.result_adc1;
           if (ADC1_val > offsetArray[indexB]) offsetArray[indexB] = ADC1_val;
 
-#if defined(SET_ORIGIN_Y)
+          #if defined(SET_ORIGIN_Y)
           setRows = setRows << 1;
-#else
+          #else
           setRows = setRows >> 1;
-#endif
+          #endif
         };
       };
     };

@@ -32,17 +32,12 @@ preset_t presets[11] = {
   {  2, 60,  3, false, false, false, true, HIGH, HIGH,   0,   0, -1 },  // [6]  THRESHOLD      ARGS[minVal, maxVal, val, update, setupLeds, updateLed, ledsToggle, D1, D2, timeOn, timeOff, iter]
   {  0,  0,  0, false, false, false, true, HIGH,  LOW, 600, 600, -1 },  // [7]  MIDI_PLAY      ARGS[minVal, maxVal, val, update, setupLeds, updateLed, ledsToggle, D1, D2, timeOn, timeOff, iter]
   {  1,  7,  0, false, false, false, true, HIGH,  LOW, 150, 150, -1 },  // [8]  MIDI_LEARN     ARGS[minVal, maxVal, val, update, setupLeds, updateLed, ledsToggle, D1, D2, timeOn, timeOff, iter]
-  {  0,  0,  0, false, false, false, true, HIGH, HIGH, 600, 600, -1 },  // [9]  MAPPING_LIB    ARGS[minVal, maxVal, val, update, setupLeds, updateLed, ledsToggle, D1, D2, timeOn, timeOff, iter]
+  {  0,  0,  0, false, false, false, true,  LOW, HIGH, 600, 600, -1 },  // [9]  MAPPING_LIB    ARGS[minVal, maxVal, val, update, setupLeds, updateLed, ledsToggle, D1, D2, timeOn, timeOff, iter]
   {  0,  0,  0, false, false, false, true, HIGH, HIGH, 100, 100, 50 }   // [10] ERROR          ARGS[minVal, maxVal, val, update, setupLeds, updateLed, ledsToggle, D1, D2, timeOn, timeOff, iter]
 };
 
-// DEFAULT_MODE
-//uint8_t currentMode = LOAD_CONFIG;   // Init currentMode with LOAD_CONFIG
 uint8_t currentMode = CALIBRATE;   // Init currentMode with CALIBRATE
-//uint8_t lastMode = LINE_OUT;       // Init lastMode with LINE_OUT
-//uint8_t lastMode = BLOBS_MAPPING;  // Init lastMode with MIDI_MAPPING
-//uint8_t lastMode = MIDI_PLAY;      // Init lastMode with MIDI_PLAY
-uint8_t lastMode = MAPPING_LIB;      // Init lastMode with MIDI_PLAY
+uint8_t lastMode = MAPPING_LIB;     // Init currentMode with CALIBRATE
 
 // Her it should not compile if you didn't install the library
 // [Bounce2]: https://github.com/thomasfredericks/Bounce2
@@ -225,10 +220,13 @@ inline void leds_control_blink(preset_t* presets_ptr) {
           ledsIterCount = 0;
           presets_ptr->updateLeds = false;
           currentMode = lastMode;
+          presets[currentMode].setupLeds = true;
+          presets[currentMode].updateLeds = true;
+          presets[currentMode].update = true;
         };
       }
-      else{
-          ledsTimeStamp = millis();
+      else {
+        ledsTimeStamp = millis();
       };
     };
   };
