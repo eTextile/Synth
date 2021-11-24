@@ -6,10 +6,10 @@
 # but smaller 16MB ones should be faster).
 #
 # While the chip is being formatted, the LED (pin 13) will toggle at 1Hz rate.  When the formatting is
-# done, it flashes quickly (10Hz) for one second, then stays on solid. When nothing has been received
+# done, it flashes quickly (10Hz) for one second, then stays on solid.  When nothing has been received
 # for 3 seconds, the upload is assumed to be completed, and the light goes off.
 #
-# You can start this program immediately upon plugging in the Teensy. It will buffer and wait until
+# You can start this program immediately upon plugging in the Teensy.  It will buffer and wait until
 # the Teensy starts to read the serial data from USB.
 #
 ###################
@@ -17,7 +17,7 @@
 import serial, sys, os, time
 
 if (len(sys.argv) <= 2):
-	print("Usage: '" + sys.argv[0] + " <port> <files>' where:\n\t<port> is the USB port\n\t<files> is a list of files")
+	print("Usage: '" + sys.argv[0] + " <port> <files>' where:\n\t<port> is the TTY USB port connected to Drum Master\n\t<files> is a list of .RAW files (bash globs work).")
 	sys.exit()
 
 #Special bytes
@@ -26,7 +26,7 @@ BYTE_ESCAPE = "\x7d"
 BYTE_SEPARATOR = "\x7c"
 
 #Flash size (in MB).  Change this to match how much space you have on your chip.
-FLASH_SIZE = 128
+FLASH_SIZE = 16
 
 totalFileSize = 0;
 for i, filename in enumerate(sys.argv):
@@ -47,6 +47,7 @@ for i, filename in enumerate(sys.argv):
 		sys.stdout.write(filename)
 		sys.stdout.flush()
 		
+
 		f = open(filename, "rb")
 		fileLength = os.path.getsize(filename)
 		try:
@@ -58,14 +59,14 @@ for i, filename in enumerate(sys.argv):
 				encoded.append(byte)
 			#End of filename
 			encoded.append(BYTE_SEPARATOR)
-
+			
 			#File length (uint32_t)
 			encoded.append(chr((fileLength >> 24) & 0xFF));
 			encoded.append(chr((fileLength >> 16) & 0xFF));
 			encoded.append(chr((fileLength >> 8) & 0xFF));
 			encoded.append(chr((fileLength >> 0) & 0xFF));
 			encoded.append(BYTE_SEPARATOR)
-
+			
 			#Binary data, with escaping
 			for byte in f.read():
 				if byte == BYTE_START or byte == BYTE_ESCAPE:

@@ -19,20 +19,19 @@
 
 #define LOAD_CONFIG                0  // E256-LEDs: 
 #define UPDATE_CONFIG              1  // E256-LEDs:
-#define LINE_OUT                   2  // E256-LEDs: | 0 | 0 |
+#define CALIBRATE                  2  // E256-LEDs: 
 #define SIG_IN                     3  // E256-LEDs: | 1 | 0 |
 #define SIG_OUT                    4  // E256-LEDs: | 0 | 1 |
-#define THRESHOLD                  5  // E256-LEDs: | 1 | 1 |
-#define CALIBRATE                  6  // E256-LEDs: 
+#define LINE_OUT                   5  // E256-LEDs: | 0 | 0 |
+#define THRESHOLD                  6  // E256-LEDs: | 1 | 1 |
+#define MIDI_PLAY                  7  // Send all blobs values over USB using MIDI format
+#define MIDI_LEARN                 8  // Send separate blobs values over USB using MIDI format
+#define MAPPING_LIB                9  // E256-LEDs:
+#define ERROR                      10 // E256-LEDs:
 
-#define MIDI_LEARN                 7  // Send separate blobs values over USB using MIDI format
-#define MIDI_PLAY                  8  // Send all blobs values over USB using MIDI format
-#define MAPPING_LIB                9
-#define ERROR                      10
-
-#define RAW_MATRIX                 13
-#define INTERP_MATRIX              14
-#define ALL_OFF                    15
+#define RAW_MATRIX                 11
+#define INTERP_MATRIX              12
+#define ALL_OFF                    13
 
 // E256 HARDWARE CONSTANTES **DO NOT CHANGE**
 #if defined(__IMXRT1062__)
@@ -44,7 +43,8 @@
 #define ENCODER_PIN_B               9
 #endif
 
-#define BAUD_RATE                   230400
+//#define BAUD_RATE                   230400
+#define BAUD_RATE                   9600
 #define RAW_COLS                    16
 #define RAW_ROWS                    16
 #define RAW_FRAME                   (RAW_COLS * RAW_ROWS)
@@ -102,7 +102,7 @@ struct preset {
   int8_t iter;
 };
 
-extern preset_t presets[];        // Exposed local declaration see presets.cpp
+extern preset_t presets[];  // Exposed local declaration see presets.cpp
 
 void CONFIG_SETUP(void);
 void update_presets(void);

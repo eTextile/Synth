@@ -78,11 +78,11 @@ void matrix_interp(void) {
           for (uint8_t col = 0; col < SCALE_X; col++) {
             uint16_t index = indexA + indexB + indexC + col;
             interpFrameArray[index] = (uint8_t)lround(
-                                        rawPixA * IMAGE_GET_PIXEL_FAST(row_ptr_A, col) +
-                                        rawPixB * IMAGE_GET_PIXEL_FAST(row_ptr_B, col) +
-                                        rawPixC * IMAGE_GET_PIXEL_FAST(row_ptr_C, col) +
-                                        rawPixD * IMAGE_GET_PIXEL_FAST(row_ptr_D, col)
-                                      );
+              rawPixA * IMAGE_GET_PIXEL_FAST(row_ptr_A, col) +
+              rawPixB * IMAGE_GET_PIXEL_FAST(row_ptr_B, col) +
+              rawPixC * IMAGE_GET_PIXEL_FAST(row_ptr_C, col) +
+              rawPixD * IMAGE_GET_PIXEL_FAST(row_ptr_D, col)
+            );
           };
         };
       };
