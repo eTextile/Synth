@@ -17,16 +17,16 @@
 #define PROJECT                    "ETEXTILE-SYNTHESIZER"
 #define VERSION                    "1.0.9"
 
-#define LOAD_CONFIG                0  // E256-LEDs: 
-#define UPDATE_CONFIG              1  // E256-LEDs:
-#define CALIBRATE                  2  // E256-LEDs: 
-#define SIG_IN                     3  // E256-LEDs: | 1 | 0 |
-#define SIG_OUT                    4  // E256-LEDs: | 0 | 1 |
-#define LINE_OUT                   5  // E256-LEDs: | 0 | 0 |
-#define THRESHOLD                  6  // E256-LEDs: | 1 | 1 |
-#define MIDI_PLAY                  7  // Send all blobs values over USB using MIDI format
-#define MIDI_LEARN                 8  // Send separate blobs values over USB using MIDI format
-#define MAPPING_LIB                9  // E256-LEDs:
+#define SIG_IN                     0  // E256-LEDs: | 1 | 0 |
+#define SIG_OUT                    1  // E256-LEDs: | 0 | 1 |
+#define LINE_OUT                   2  // E256-LEDs: | 0 | 0 |
+#define THRESHOLD                  3  // E256-LEDs: | 1 | 1 |
+#define CALIBRATE                  4  // E256-LEDs: 
+#define MIDI_PLAY                  5  // Send all blobs values over USB using MIDI format
+#define MIDI_LEARN                 6  // Send separate blobs values over USB using MIDI format
+#define MAPPING_LIB                7  // E256-LEDs:
+#define LOAD_CONFIG                8  // E256-LEDs: 
+#define UPDATE_CONFIG              9  // E256-LEDs:
 #define ERROR                      10 // E256-LEDs:
 
 #define RAW_MATRIX                 11

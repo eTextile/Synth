@@ -23,16 +23,16 @@ Bounce BUTTON_L = Bounce();
 Bounce BUTTON_R = Bounce();
 
 preset_t presets[11] = {
-  {  0,  0,  0, false, false, false, true, HIGH, HIGH, 200, 500, -1 },  // [0]  LOAD_CONFIG    ARGS[minVal, maxVal, val, update, setupLeds, updateLed, ledsToggle, D1, D2, timeOn, timeOff, iter]
-  {  0,  0,  0, false, false, false, true, HIGH,  LOW, 150, 900, -1 },  // [1]  UPDATE_CONFIG  ARGS[minVal, maxVal, val, update, setupLeds, updateLed, ledsToggle, D1, D2, timeOn, timeOff, iter]
-  {  0,  0,  0, false, false, false, true, HIGH, HIGH,  40, 100,  6 },  // [2]  CALIBRATE      ARGS[minVal, maxVal, val, update, setupLeds, updateLed, ledsToggle, D1, D2, timeOn, timeOff, iter]
-  {  1, 50, 12, false, false, false, true, HIGH,  LOW,   0,   0, -1 },  // [3]  SIG_IN         ARGS[minVal, maxVal, val, update, setupLeds, updateLed, ledsToggle, D1, D2, timeOn, timeOff, iter]
-  {  1, 31, 17, false, false, false, true,  LOW, HIGH,   0,   0, -1 },  // [4]  SIG_OUT        ARGS[minVal, maxVal, val, update, setupLeds, updateLed, ledsToggle, D1, D2, timeOn, timeOff, iter]
-  { 13, 31, 29, false, false, false, true,  LOW,  LOW,   0,   0, -1 },  // [5]  LINE_OUT       ARGS[minVal, maxVal, val, update, setupLeds, updateLed, ledsToggle, D1, D2, timeOn, timeOff, iter]
-  {  2, 60,  3, false, false, false, true, HIGH, HIGH,   0,   0, -1 },  // [6]  THRESHOLD      ARGS[minVal, maxVal, val, update, setupLeds, updateLed, ledsToggle, D1, D2, timeOn, timeOff, iter]
-  {  0,  0,  0, false, false, false, true, HIGH,  LOW, 600, 600, -1 },  // [7]  MIDI_PLAY      ARGS[minVal, maxVal, val, update, setupLeds, updateLed, ledsToggle, D1, D2, timeOn, timeOff, iter]
-  {  1,  7,  0, false, false, false, true, HIGH,  LOW, 150, 150, -1 },  // [8]  MIDI_LEARN     ARGS[minVal, maxVal, val, update, setupLeds, updateLed, ledsToggle, D1, D2, timeOn, timeOff, iter]
-  {  0,  0,  0, false, false, false, true,  LOW, HIGH, 600, 600, -1 },  // [9]  MAPPING_LIB    ARGS[minVal, maxVal, val, update, setupLeds, updateLed, ledsToggle, D1, D2, timeOn, timeOff, iter]
+  {  1, 50, 12, false, false, false, true, HIGH,  LOW,   0,   0, -1 },  // [0]  SIG_IN         ARGS[minVal, maxVal, val, update, setupLeds, updateLed, ledsToggle, D1, D2, timeOn, timeOff, iter]
+  {  1, 31, 17, false, false, false, true,  LOW, HIGH,   0,   0, -1 },  // [1]  SIG_OUT        ARGS[minVal, maxVal, val, update, setupLeds, updateLed, ledsToggle, D1, D2, timeOn, timeOff, iter]
+  { 13, 31, 29, false, false, false, true,  LOW,  LOW,   0,   0, -1 },  // [2]  LINE_OUT       ARGS[minVal, maxVal, val, update, setupLeds, updateLed, ledsToggle, D1, D2, timeOn, timeOff, iter]
+  {  2, 60,  3, false, false, false, true, HIGH, HIGH,   0,   0, -1 },  // [3]  THRESHOLD      ARGS[minVal, maxVal, val, update, setupLeds, updateLed, ledsToggle, D1, D2, timeOn, timeOff, iter]
+  {  0,  0,  0, false, false, false, true, HIGH, HIGH,  40, 100,  6 },  // [4]  CALIBRATE      ARGS[minVal, maxVal, val, update, setupLeds, updateLed, ledsToggle, D1, D2, timeOn, timeOff, iter]
+  {  0,  0,  0, false, false, false, true, HIGH,  LOW, 600, 600, -1 },  // [5]  MIDI_PLAY      ARGS[minVal, maxVal, val, update, setupLeds, updateLed, ledsToggle, D1, D2, timeOn, timeOff, iter]
+  {  1,  7,  0, false, false, false, true, HIGH,  LOW, 150, 150, -1 },  // [6]  MIDI_LEARN     ARGS[minVal, maxVal, val, update, setupLeds, updateLed, ledsToggle, D1, D2, timeOn, timeOff, iter]
+  {  0,  0,  0, false, false, false, true,  LOW, HIGH, 600, 600, -1 },  // [7]  MAPPING_LIB    ARGS[minVal, maxVal, val, update, setupLeds, updateLed, ledsToggle, D1, D2, timeOn, timeOff, iter]
+  {  0,  0,  0, false, false, false, true, HIGH, HIGH, 200, 500, -1 },  // [8]  LOAD_CONFIG    ARGS[minVal, maxVal, val, update, setupLeds, updateLed, ledsToggle, D1, D2, timeOn, timeOff, iter]
+  {  0,  0,  0, false, false, false, true, HIGH,  LOW, 150, 900, -1 },  // [9]  UPDATE_CONFIG  ARGS[minVal, maxVal, val, update, setupLeds, updateLed, ledsToggle, D1, D2, timeOn, timeOff, iter]
   {  0,  0,  0, false, false, false, true, HIGH, HIGH, 100, 100, 50 }   // [10] ERROR          ARGS[minVal, maxVal, val, update, setupLeds, updateLed, ledsToggle, D1, D2, timeOn, timeOff, iter]
 };
 
@@ -94,7 +94,7 @@ inline void buttons_update_presets(void) {
   // [4]-SIG_OUT
   // [5]-THRESHOLD
   if (BUTTON_R.rose() && BUTTON_R.previousDuration() < LONG_HOLD) {
-    currentMode = ((currentMode + 1) % 4) + 2;   // Loop into the modes
+    currentMode = (currentMode + 1) % 4;   // Loop into the modes
     presets[currentMode].setupLeds = true;
     //presets[currentMode].updateLeds = true; 
     presets[currentMode].update = true;
@@ -467,12 +467,10 @@ inline void usb_serial_update_config(void) {
           }
           // Escape the next byte
           else if (b == BYTE_ESCAPE) {
-            //Serial.println("esc");
             escape = 1;
           }
           // End of file
           else if (b == BYTE_START) {
-            //Serial.println("End of file");
             state = STATE_START;
             flashFile.write(flashBuffer, flashBufferIndex);
             flashFile.close();
@@ -482,7 +480,7 @@ inline void usb_serial_update_config(void) {
           else {
             flashBuffer[flashBufferIndex++] = b;
           };
-          // The buffer is filled; write to SD card
+          // The buffer is filled; write to Flash
           if (flashBufferIndex >= FLASH_BUFFER_SIZE) {
             flashFile.write(flashBuffer, FLASH_BUFFER_SIZE);
             flashBufferIndex = 0;
