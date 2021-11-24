@@ -8,10 +8,6 @@
 #define __CONFIG_H__
 
 #include <Arduino.h>
-#include <Bounce2.h>                   // https://github.com/thomasfredericks/Bounce2
-
-#define ENCODER_OPTIMIZE_INTERRUPTS
-#include <Encoder.h>                   // https://github.com/PaulStoffregen/Encoder
 
 #define NAME                       "256"
 #define PROJECT                    "ETEXTILE-SYNTHESIZER"
@@ -26,7 +22,7 @@
 #define MIDI_LEARN                 6  // Send separate blobs values over USB using MIDI format
 #define MAPPING_LIB                7  // E256-LEDs:
 #define LOAD_CONFIG                8  // E256-LEDs: 
-#define UPDATE_CONFIG              9  // E256-LEDs:
+#define UPLOAD_CONFIG              9  // E256-LEDs:
 #define ERROR                      10 // E256-LEDs:
 
 #define RAW_MATRIX                 11
@@ -86,11 +82,8 @@
 extern uint8_t currentMode;   // Exposed local declaration see presets.cpp
 extern uint8_t lastMode;      // Exposed local declaration see presets.cpp
 
-typedef struct preset preset_t;
-struct preset {
-  uint8_t minVal;
-  uint8_t maxVal;
-  uint8_t val;
+typedef struct e256_mode e256_mode_t;
+struct e256_mode {
   boolean update;
   boolean setupLeds;
   boolean updateLeds;
@@ -99,7 +92,14 @@ struct preset {
   boolean D2;
   uint16_t timeOn;
   uint16_t timeOff;
-  int8_t iter;
+};
+
+typedef struct preset preset_t;
+struct preset {
+  e256_mode_t mode;
+  uint8_t minVal;
+  uint8_t maxVal;
+  uint8_t val;
 };
 
 extern preset_t presets[];  // Exposed local declaration see presets.cpp
