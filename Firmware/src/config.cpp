@@ -26,7 +26,7 @@ Bounce BUTTON_R = Bounce();
 e256_mode_t modes[10] = {
   { { HIGH,  LOW, false, false }, 200, 500, true, false }, // [0] LOAD_CONFIG
   { { HIGH, HIGH, false, false }, 150, 900, true, false }, // [1] UPLOAD_CONFIG
-  { { HIGH, HIGH, true,   true }, 200, 500, true,  true }, // [2] CALIBRATE
+  { { HIGH, HIGH, true,   true },  80,  80, true,  true }, // [2] CALIBRATE
   { { HIGH, LOW,  false, false }, 500, 500, true, false }, // [3] MIDI_PLAY
   { { HIGH, LOW,  false, false }, 150, 150, true, false }, // [4] MIDI_LEARN
   { { HIGH, LOW,  false, false }, 800, 800, true, false }, // [5] MAPPING_LIB
@@ -78,6 +78,7 @@ inline void buttons_update_presets(void) {
     lastMode = currentMode; // keep track of last Mode to set it back after calibration
     currentMode = CALIBRATE;
     modes[currentMode].leds.setup = true;
+    modes[currentMode].leds.update = true;
     modes[currentMode].run = true;
     ledsTimeStamp = millis();
     #if defined(DEBUG_BUTTONS)
@@ -90,6 +91,7 @@ inline void buttons_update_presets(void) {
     lastMode = currentMode; // keep track of last Mode to set it back after saving
     currentMode = UPLOAD_CONFIG;
     modes[currentMode].leds.setup = true;
+    modes[currentMode].leds.update = true;
     modes[currentMode].run = true;
     ledsTimeStamp = millis();
     #if defined(DEBUG_BUTTONS)
@@ -103,9 +105,9 @@ inline void buttons_update_presets(void) {
   // [4]-SIG_OUT
   // [5]-THRESHOLD
   if (BUTTON_R.rose() && BUTTON_R.previousDuration() < LONG_HOLD) {
-    currentPreset = (currentPreset+1) % 4;   // Loop into the modes
+    currentPreset = (currentPreset+1) % 4;   // Loop into the presets
     presets[currentPreset].leds.setup = true;
-    //presets[currentPreset].run = true;
+    presets[currentPreset].run = true;
     encoder.write(presets[currentPreset].val << 2);
     #if defined(DEBUG_BUTTONS)
     Serial.printf("\nDEBUG_BUTTONS\tBUTTON_R_SELECT_MODE:%d", currentPreset);
@@ -119,6 +121,7 @@ inline void buttons_update_presets(void) {
     if (currentMode == MIDI_PLAY) {
       currentMode = MIDI_LEARN;
       modes[currentMode].leds.setup = true;
+      modes[currentMode].leds.update = true;
       modes[currentMode].run = true;
       ledsTimeStamp = millis();
       #if defined(DEBUG_BUTTONS)
@@ -128,6 +131,7 @@ inline void buttons_update_presets(void) {
     else {
       currentMode = MIDI_PLAY;
       modes[currentMode].leds.setup = true;
+      modes[currentMode].leds.update = true;
       modes[currentMode].run = true;
       encoder.write(0x1);
       ledsTimeStamp = millis();
@@ -202,7 +206,6 @@ inline void leds_setup(void* struct_ptr){
     pinMode(LED_PIN_D2, OUTPUT);
     digitalWrite(LED_PIN_D1, leds->D1);
     digitalWrite(LED_PIN_D2, leds->D2);
-    leds->update = true;
   };
 };
 
