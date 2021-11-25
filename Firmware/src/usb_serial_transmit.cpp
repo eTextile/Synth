@@ -16,7 +16,7 @@
 uint32_t serialTransmitTimeStamp = 0;
 
 void USB_SERIAL_TRANSMIT_SETUP(void) {
-  Serial.begin(BAUD_RATE);
+  //Serial.begin(BAUD_RATE);
 };
 
 void usb_serial_handle_input(void) {

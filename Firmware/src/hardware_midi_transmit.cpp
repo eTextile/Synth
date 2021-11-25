@@ -62,16 +62,19 @@ void hardware_midi_transmit(void) {
   switch (currentMode) {
     case MAPPING_LIB:
       for (midiNode_t* node_ptr = (midiNode_t*)ITERATOR_START_FROM_HEAD(&midiOut); node_ptr != NULL; node_ptr = (midiNode_t*)ITERATOR_NEXT(node_ptr)) {
-      case midi::NoteOn:
-        MIDI.sendNoteOn(node_ptr->midiMsg.data1, node_ptr->midiMsg.data2, MIDI_OUTPUT_CHANNEL);     // Hardware send MIDI noteOn#endif
-      case midi::NoteOff:
-        MIDI.sendNoteOff(node_ptr->midiMsg.data1, node_ptr->midiMsg.data2, MIDI_OUTPUT_CHANNEL);     // Hardware send MIDI noteOff
-        break;
-      case midi::ControlChange:
-        MIDI.sendControlChange(node_ptr->midiMsg.data1, node_ptr->midiMsg.data2, MIDI_OUTPUT_CHANNEL);    // Hardware send MIDI control_change
-        break;
-      default:
-        break;
+        switch (node_ptr->midiMsg.status) {
+          case midi::NoteOn:
+            MIDI.sendNoteOn(node_ptr->midiMsg.data1, node_ptr->midiMsg.data2, MIDI_OUTPUT_CHANNEL);     // Hardware send MIDI noteOn#endif
+          case midi::NoteOff:
+            MIDI.sendNoteOff(node_ptr->midiMsg.data1, node_ptr->midiMsg.data2, MIDI_OUTPUT_CHANNEL);     // Hardware send MIDI noteOff
+            break;
+          case midi::ControlChange:
+            MIDI.sendControlChange(node_ptr->midiMsg.data1, node_ptr->midiMsg.data2, MIDI_OUTPUT_CHANNEL);    // Hardware send MIDI control_change
+            break;
+          default:
+            break;
+        };
       };
   };
 };
+

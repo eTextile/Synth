@@ -6,21 +6,19 @@
 */
 
 #include "usb_osc_transmit.h"
-
-#if defined(USB_OSC) || defined(USB_MTPDISK)
-
 #include "config.h"
-#include "presets.h"
 #include "llist.h"
+#include "scan.h"
+#include "interp.h"
 #include "blob.h"
 #include "midi_bus.h"
 
-#include <OSCBoards.h>              // https://github.com/CNMAT/OSC
-#include <OSCMessage.h>             // https://github.com/CNMAT/OSC
-#include <OSCBundle.h>              // https://github.com/CNMAT/OSC
-#include <SLIPEncodedUSBSerial.h>   // https://github.com/CNMAT/OSC
+#include <OSCBoards.h>
+#include <OSCMessage.h>
+#include <OSCBundle.h>
+#include <SLIPEncodedSerial.h>
 
-SLIPEncodedUSBSerial SLIPSerial(thisBoardsSerialUSB);
+SLIPEncodedSerial SLIPSerial(Serial1);
 
 #define OSC_TRANSMIT_INTERVAL 5
 unsigned long oscTransmitTimeStamp = 0;
@@ -77,7 +75,7 @@ void usb_osc_handle_input(OSCMessage & msg) {
       node_ptr->midiMsg.status = midi::Clock;          // Set the MIDI status
       node_ptr->midiMsg.data1 = msg.getInt(1);         // Set the MIDI note
       node_ptr->midiMsg.data2 = msg.getInt(2);         // Set the MIDI velocity
-      //node_ptr->midiMsg.channel = msg.getInt(3);       // Set the MIDI channel
+      //node_ptr->midiMsg.channel = msg.getInt(3);     // Set the MIDI channel
       llist_push_front(&midiIn, node_ptr);             // Add the node to the midiIn linked liste
       break;
     default:
@@ -108,25 +106,25 @@ void usb_osc_transmit(void) {
         SLIPSerial.endPacket();
       };
       break;
-    case BLOBS_PLAY:
+    case BLOBS_OSC:
       for (blob_t* blob_ptr = (blob_t*)ITERATOR_START_FROM_HEAD(&llist_blobs); blob_ptr != NULL; blob_ptr = (blob_t*)ITERATOR_NEXT(blob_ptr)) {
         if (blob_ptr->state) {
           if (!blob_ptr->lastState && blob_ptr->status == FREE) {
-#if defined(DEBUG_OSC_TRANSMIT)
-            Serial.printf("\nDEBUG_OSC_TRANSMIT: ON_%d", blob_ptr->UID);
-#else
+            #if defined(DEBUG_OSC_TRANSMIT)
+            Serial.printf("\nDEBUG_OSC_TRANSMIT\tON:%d", blob_ptr->UID);
+            #else
             OSCMessage msg("/ON");
             msg.add(blob_ptr->UID);
-            SLIPSerial.beginPacket(); // Send SLIP header
-            msg.send(SLIPSerial);     // Send the OSC bundle
-            SLIPSerial.endPacket();   // Send the SLIP end of packet
-#endif
+            SLIPSerial.beginPacket();
+            msg.send(SLIPSerial);
+            SLIPSerial.endPacket();
+            #endif
           } else {
             if (millis() - blob_ptr->transmitTimeStamp > OSC_TRANSMIT_INTERVAL) {
               blob_ptr->transmitTimeStamp = millis();
-#if defined(DEBUG_OSC_TRANSMIT)
-              Serial.printf("\nDEBUG_OSC_TRANSMIT: UPDATE_%d", blob_ptr->UID);
-#else
+              #if defined(DEBUG_OSC_TRANSMIT)
+              Serial.printf("\nDEBUG_OSC_TRANSMIT\tUPDATE:%d", blob_ptr->UID);
+              #else
               OSCMessage msg("/UPDATE");
               msg.add(blob_ptr->UID);
               msg.add(blob_ptr->centroid.X);
@@ -134,23 +132,23 @@ void usb_osc_transmit(void) {
               msg.add(blob_ptr->centroid.Z);
               msg.add(blob_ptr->box.W);
               msg.add(blob_ptr->box.H);
-              SLIPSerial.beginPacket(); // Send SLIP header
-              msg.send(SLIPSerial);     // Send the OSC bundle
-              SLIPSerial.endPacket();   // Send the SLIP end of packet
-#endif
+              SLIPSerial.beginPacket();
+              msg.send(SLIPSerial);
+              SLIPSerial.endPacket();
+              #endif
             };
           };
         } else {
           if (blob_ptr->lastState && blob_ptr->status == TO_REMOVE) {
-#if defined(DEBUG_OSC_TRANSMIT)
-            Serial.printf("\nDEBUG_OSC_TRANSMIT: OFF_%d", blob_ptr->UID);
-#else
+            #if defined(DEBUG_OSC_TRANSMIT)
+            Serial.printf("\nDEBUG_OSC_TRANSMIT\tOFF:%d", blob_ptr->UID);
+            #else
             OSCMessage msg("/OFF");
             msg.add(blob_ptr->UID);
-            SLIPSerial.beginPacket(); // Send SLIP header
-            msg.send(SLIPSerial);     // Send the OSC bundle
-            SLIPSerial.endPacket();   // Send the SLIP end of packet
-#endif
+            SLIPSerial.beginPacket();
+            msg.send(SLIPSerial);
+            SLIPSerial.endPacket();
+            #endif
           };
         };
       };
@@ -159,4 +157,3 @@ void usb_osc_transmit(void) {
       break;
   };
 };
-#endif

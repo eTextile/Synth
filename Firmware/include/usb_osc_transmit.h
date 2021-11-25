@@ -7,15 +7,11 @@
 #ifndef __USB_OSC_TRANSMIT_H__
 #define __USB_OSC_TRANSMIT_H__
 
-#if defined(USB_OSC) || defined(USB_MTPDISK)
-
-#include <OSCMessage.h>             // https://github.com/CNMAT/OSC
+#include <OSCMessage.h>
 
 void USB_OSC_TRANSMIT_SETUP(void);
 void usb_osc_read_input(void);
 void usb_osc_handle_input(OSCMessage &msg);
 void usb_osc_transmit(void);
-
-#endif
 
 #endif /*__USB_OSC_TRANSMIT_H__*/

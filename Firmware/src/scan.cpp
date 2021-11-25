@@ -120,8 +120,8 @@ void SCAN_SETUP(void) {
 // Rows are digital OUTPUT_PINS supplyed one by one sequentially with 3.3V
 void matrix_calibrate(void) {
 
-  if (presets[CALIBRATE].mode.update == true) {
-    presets[CALIBRATE].mode.update = false;
+  if (modes[CALIBRATE].run == true) {
+    modes[CALIBRATE].run = false;
 
     for (uint8_t i = 0; i < CALIBRATION_CYCLES; i++) {
       for (uint8_t col = 0; col < DUAL_COLS; col++) {         // ANNALOG_PINS [0-7] with [8-15]

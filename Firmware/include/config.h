@@ -13,21 +13,23 @@
 #define PROJECT                    "ETEXTILE-SYNTHESIZER"
 #define VERSION                    "1.0.9"
 
+#define LOAD_CONFIG                0  // E256-LEDs: 
+#define UPLOAD_CONFIG              1  // E256-LEDs:
+#define CALIBRATE                  2  // E256-LEDs: 
+#define MIDI_PLAY                  3  // Send all blobs values over USB using MIDI format
+#define MIDI_LEARN                 4  // Send separate blobs values over USB using MIDI format
+#define MAPPING_LIB                5  // E256-LEDs:
+#define BLOBS_OSC                  6
+#define RAW_MATRIX                 7
+#define INTERP_MATRIX              8
+#define ERROR                      9 // E256-LEDs:
+
+#define ALL_OFF                    10
+
 #define SIG_IN                     0  // E256-LEDs: | 1 | 0 |
 #define SIG_OUT                    1  // E256-LEDs: | 0 | 1 |
 #define LINE_OUT                   2  // E256-LEDs: | 0 | 0 |
 #define THRESHOLD                  3  // E256-LEDs: | 1 | 1 |
-#define CALIBRATE                  4  // E256-LEDs: 
-#define MIDI_PLAY                  5  // Send all blobs values over USB using MIDI format
-#define MIDI_LEARN                 6  // Send separate blobs values over USB using MIDI format
-#define MAPPING_LIB                7  // E256-LEDs:
-#define LOAD_CONFIG                8  // E256-LEDs: 
-#define UPLOAD_CONFIG              9  // E256-LEDs:
-#define ERROR                      10 // E256-LEDs:
-
-#define RAW_MATRIX                 11
-#define INTERP_MATRIX              12
-#define ALL_OFF                    13
 
 // E256 HARDWARE CONSTANTES **DO NOT CHANGE**
 #if defined(__IMXRT1062__)
@@ -39,8 +41,8 @@
 #define ENCODER_PIN_B               9
 #endif
 
-//#define BAUD_RATE                   230400
-#define BAUD_RATE                   9600
+#define BAUD_RATE                   230400
+//#define BAUD_RATE                   9600
 #define RAW_COLS                    16
 #define RAW_ROWS                    16
 #define RAW_FRAME                   (RAW_COLS * RAW_ROWS)
@@ -82,27 +84,35 @@
 extern uint8_t currentMode;   // Exposed local declaration see presets.cpp
 extern uint8_t lastMode;      // Exposed local declaration see presets.cpp
 
-typedef struct e256_mode e256_mode_t;
-struct e256_mode {
-  boolean update;
-  boolean setupLeds;
-  boolean updateLeds;
-  boolean ledsToggle;
+
+typedef struct leds leds_t;
+struct leds {
   boolean D1;
   boolean D2;
+  boolean setup;
+  boolean update;
+};
+
+typedef struct e256_mode e256_mode_t;
+struct e256_mode {
+  leds_t leds;
   uint16_t timeOn;
   uint16_t timeOff;
+  boolean toggle;
+  boolean run;
 };
 
 typedef struct preset preset_t;
 struct preset {
-  e256_mode_t mode;
+  leds_t leds;
   uint8_t minVal;
   uint8_t maxVal;
   uint8_t val;
+  boolean run;
 };
 
 extern preset_t presets[];  // Exposed local declaration see presets.cpp
+extern e256_mode modes[];  // Exposed local declaration see presets.cpp
 
 void CONFIG_SETUP(void);
 void update_presets(void);

@@ -26,10 +26,6 @@
 #if defined(USB_MIDI_SERIAL)
 #include "midi_bus.h"
 #include "usb_midi_transmit.h"
-#include "usb_serial_transmit.h"
-#endif
-#if defined(USB_OSC)
-#include "usb_serial_transmit.h"
 #include "usb_osc_transmit.h"
 #endif
 #if defined(HARDWARE_MIDI)
@@ -69,11 +65,9 @@ USB_OSC_TRANSMIT_SETUP();
 MTP_SPI_SETUP();
 USB_MIDI_TRANSMIT_SETUP();
 #endif
-#if defined(USB_SERIAL)
-USB_OSC_TRANSMIT_SETUP();
-#endif
 #if defined(USB_MIDI_SERIAL)
-USB_SERIAL_TRANSMIT_SETUP();
+//USB_SERIAL_TRANSMIT_SETUP();
+USB_OSC_TRANSMIT_SETUP();
 USB_MIDI_TRANSMIT_SETUP();
 CONFIG_SETUP();
 #endif
@@ -144,10 +138,7 @@ void loop() {
   usb_midi_transmit();
 #endif
 #if defined(USB_MIDI_SERIAL)
-  usb_midi_transmit();
-  usb_serial_transmit();
-#endif
-#if defined(USB_OSC)
+  //usb_midi_transmit();
   usb_osc_transmit();
 #endif
 #if defined(HARDWARE_MIDI)
