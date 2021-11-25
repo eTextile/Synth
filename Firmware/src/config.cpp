@@ -44,7 +44,6 @@ preset_t presets[4] = {
   { { HIGH, HIGH, false, false },  2, 60,  3, false }   // [3]  THRESHOLD
 };
 
-
 uint8_t currentMode = CALIBRATE;
 uint8_t lastMode = BLOBS_OSC;
 uint8_t currentPreset = THRESHOLD;
@@ -79,7 +78,6 @@ inline void buttons_update_presets(void) {
     lastMode = currentMode; // keep track of last Mode to set it back after calibration
     currentMode = CALIBRATE;
     modes[currentMode].leds.setup = true;
-    modes[currentMode].leds.update = true;
     modes[currentMode].run = true;
     ledsTimeStamp = millis();
     #if defined(DEBUG_BUTTONS)
@@ -92,8 +90,7 @@ inline void buttons_update_presets(void) {
     lastMode = currentMode; // keep track of last Mode to set it back after saving
     currentMode = UPLOAD_CONFIG;
     modes[currentMode].leds.setup = true;
-    modes[currentMode].leds.update = true;
-    //modes[currentMode].run = true;
+    modes[currentMode].run = true;
     ledsTimeStamp = millis();
     #if defined(DEBUG_BUTTONS)
     Serial.printf("\nDEBUG_BUTTONS\tBUTTON_L_UPDATE_CONFIG:%d", currentMode);
@@ -108,7 +105,6 @@ inline void buttons_update_presets(void) {
   if (BUTTON_R.rose() && BUTTON_R.previousDuration() < LONG_HOLD) {
     currentPreset = (currentPreset+1) % 4;   // Loop into the modes
     presets[currentPreset].leds.setup = true;
-    presets[currentPreset].leds.update = true; 
     //presets[currentPreset].run = true;
     encoder.write(presets[currentPreset].val << 2);
     #if defined(DEBUG_BUTTONS)
@@ -123,7 +119,6 @@ inline void buttons_update_presets(void) {
     if (currentMode == MIDI_PLAY) {
       currentMode = MIDI_LEARN;
       modes[currentMode].leds.setup = true;
-      modes[currentMode].leds.update = true;
       modes[currentMode].run = true;
       ledsTimeStamp = millis();
       #if defined(DEBUG_BUTTONS)
@@ -133,7 +128,6 @@ inline void buttons_update_presets(void) {
     else {
       currentMode = MIDI_PLAY;
       modes[currentMode].leds.setup = true;
-      modes[currentMode].leds.update = true;
       modes[currentMode].run = true;
       encoder.write(0x1);
       ledsTimeStamp = millis();
@@ -200,19 +194,22 @@ inline void usb_serial_update_presets(void) {
 };
 */
 
-inline void leds_setup(void* mode_ptr){
-  leds_t* mode = (leds_t*)mode_ptr;
-  if (mode->setup) {
-    mode->setup = false;
+inline void leds_setup(void* struct_ptr){
+  leds_t* leds = (leds_t*)struct_ptr;
+  if (leds->setup) {
+    leds->setup = false;
     pinMode(LED_PIN_D1, OUTPUT);
     pinMode(LED_PIN_D2, OUTPUT);
-    digitalWrite(LED_PIN_D1, mode->D1);
-    digitalWrite(LED_PIN_D2, mode->D2);
+    digitalWrite(LED_PIN_D1, leds->D1);
+    digitalWrite(LED_PIN_D2, leds->D2);
+    leds->update = true;
   };
 };
 
 inline void mode_leds_blink(e256_mode_t* mode_ptr) {
+  
   leds_setup(mode_ptr);
+  
   if (mode_ptr->leds.update) {
     if (millis() - ledsTimeStamp < mode_ptr->timeOn && mode_ptr->toggle == true ) {
       mode_ptr->toggle = false;
@@ -244,7 +241,9 @@ inline void mode_leds_blink(e256_mode_t* mode_ptr) {
 };
 
 inline void preset_leds_fade(preset_t* presets_ptr) {
+
   leds_setup(presets_ptr);
+  
   if (presets_ptr->leds.update) {
     presets_ptr->leds.update = false;
     uint8_t ledVal = constrain(map(presets_ptr->val, presets_ptr->minVal, presets_ptr->maxVal, 0, 255), 0, 255);

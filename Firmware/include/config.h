@@ -22,7 +22,7 @@
 #define BLOBS_OSC                  6
 #define RAW_MATRIX                 7
 #define INTERP_MATRIX              8
-#define ERROR                      9 // E256-LEDs:
+#define ERROR                      9  // E256-LEDs:
 
 #define ALL_OFF                    10
 
@@ -83,7 +83,6 @@
 
 extern uint8_t currentMode;   // Exposed local declaration see presets.cpp
 extern uint8_t lastMode;      // Exposed local declaration see presets.cpp
-
 
 typedef struct leds leds_t;
 struct leds {
