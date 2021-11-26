@@ -17,17 +17,17 @@ void SOUND_CARD_SETUP() {
 
 void update_levels(void) {
 
-  switch (currentMode) {
+  switch (currentLevel) {
     case LINE_OUT:
       // FONCTION : line_out level adjustment using rotary encoder // DEFAULT MODE
       // According to https://github.com/PaulStoffregen/Audio/blob/master/control_sgtl5000.cpp
       // LOWEST level is 31 (1.16 Volts p-p)
       // HIGHEST level is 13 (3.16 Volts p-p)
-      if (presets[LINE_OUT].run) {
-        presets[LINE_OUT].run = false;
+      if (levels[LINE_OUT].run) {
+        levels[LINE_OUT].run = false;
         AudioNoInterrupts();
-        //sgtl5000.dacVolume(presets_ptr[LINE_OUT].val);
-        //sgtl5000.volume(presets[LINE_OUT].val); // DO NOT WORK!?
+        //sgtl5000.dacVolume(levels_ptr[LINE_OUT].val);
+        //sgtl5000.volume(levels[LINE_OUT].val); // DO NOT WORK!?
         AudioInterrupts();
       }
       break;
@@ -36,11 +36,11 @@ void update_levels(void) {
       // According to https://githpresetub.com/PaulStoffregen/Audio/blob/master/control_sgtl5000.cpp
       // LOWEST level is 15 (0.24 Volts p-p)
       // HIGHEST level is 0 (3.12 Volts p-p)
-      if (presets[SIG_IN].run) {
-        presets[SIG_IN].run = false;
+      if (levels[SIG_IN].run) {
+        levels[SIG_IN].run = false;
         AudioNoInterrupts();
-        sgtl5000.lineInLevel(presets[SIG_IN].val);
-        //sgtl5000.micGain(presets[SIG_IN].val);
+        sgtl5000.lineInLevel(levels[SIG_IN].val);
+        //sgtl5000.micGain(levels[SIG_IN].val);
         AudioInterrupts();
       }
       break;
@@ -49,10 +49,10 @@ void update_levels(void) {
       // According to https://github.com/PaulStoffregen/Audio/blob/master/control_sgtl5000.cpp
       // LOWEST level is 31
       // HIGHEST level is 13
-      if (presets[SIG_OUT].run) {
-        presets[SIG_OUT].run = false;
+      if (levels[SIG_OUT].run) {
+        levels[SIG_OUT].run = false;
         AudioNoInterrupts();
-        sgtl5000.lineOutLevel(presets[SIG_OUT].val);
+        sgtl5000.lineOutLevel(levels[SIG_OUT].val);
         AudioInterrupts();
       };
       break;

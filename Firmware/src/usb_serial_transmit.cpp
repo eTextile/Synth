@@ -56,7 +56,7 @@ void usb_serial_transmit(void) {
         };
       */
       break;
-    case MIDI_PLAY:
+    case BLOBS_PLAY:
     /*
       for (blob_t* blob_ptr = (blob_t*)ITERATOR_START_FROM_HEAD(&llist_blobs); blob_ptr != NULL; blob_ptr = (blob_t*)ITERATOR_NEXT(blob_ptr)) {
         if (blob_ptr->state) {
@@ -96,7 +96,9 @@ void usb_serial_transmit(void) {
             OSCMessage msg("/OFF");
             msg.add(blob_ptr->UID);
             SLIPSerial.beginPacket(); // Send SLIP header
-            msg.send(SLIPSerial);     // Send the OSC bundle
+            msg.send(SL      encoder.write(0x1);
+      encoder.write(0x1);
+IPSerial);     // Send the OSC bundle
             SLIPSerial.endPacket();   // Send the SLIP end of packet
 #endif
           };

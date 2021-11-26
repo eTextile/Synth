@@ -49,7 +49,7 @@ void usb_midi_transmit(void) {
         //usbMIDI.send_now();
       };
       break;
-    case MIDI_PLAY:
+    case BLOBS_PLAY:
       // Send all blobs values over USB using MIDI format
       for (blob_t* blob_ptr = (blob_t*)ITERATOR_START_FROM_HEAD(&llist_blobs); blob_ptr != NULL; blob_ptr = (blob_t*)ITERATOR_NEXT(blob_ptr)) {
         if (blob_ptr->state) {
@@ -79,13 +79,13 @@ void usb_midi_transmit(void) {
         while (usbMIDI.read()); // Read and discard any incoming MIDI messages
       };
       break;
-    case MIDI_LEARN:
+    case BLOBS_LEARN:
         // Send separate blobs values using Control Change MIDI format
         // Send only the last blob that have been added to the sensor surface
         // Select blob's values according to the encoder position to allow the auto-mapping into Max4Live...
         if ((blob_t*)llist_blobs.tail_ptr != NULL) {
           blob_t* blob_ptr = (blob_t*)llist_blobs.tail_ptr;
-          switch (presets[MIDI_LEARN].val) {
+          switch (levels[BLOBS_LEARN].val) {
             case BS:
               if (blob_ptr->state) {
                 if (!blob_ptr->lastState) {

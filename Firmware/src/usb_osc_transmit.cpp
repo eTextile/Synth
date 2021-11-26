@@ -72,10 +72,11 @@ void usb_osc_transmit(void) {
         SLIPSerial.endPacket();
       };
       break;
-    case BLOBS_OSC:
+    case BLOBS_PLAY:
       for (blob_t* blob_ptr = (blob_t*)ITERATOR_START_FROM_HEAD(&llist_blobs); blob_ptr != NULL; blob_ptr = (blob_t*)ITERATOR_NEXT(blob_ptr)) {
         if (blob_ptr->state) {
-          if (!blob_ptr->lastState && blob_ptr->status == FREE) {
+          //if (!blob_ptr->lastState && blob_ptr->status == FREE) {
+          if (!blob_ptr->lastState) {
             #if defined(DEBUG_OSC_TRANSMIT)
             Serial.printf("\nDEBUG_OSC_TRANSMIT\tON:%d", blob_ptr->UID);
             #else
@@ -105,7 +106,7 @@ void usb_osc_transmit(void) {
             };
           };
         } else {
-          if (blob_ptr->lastState && blob_ptr->status == TO_REMOVE) {
+          //if (blob_ptr->lastState && blob_ptr->status == TO_REMOVE) {
             #if defined(DEBUG_OSC_TRANSMIT)
             Serial.printf("\nDEBUG_OSC_TRANSMIT\tOFF:%d", blob_ptr->UID);
             #else
@@ -115,9 +116,12 @@ void usb_osc_transmit(void) {
             msg.send(SLIPSerial);
             SLIPSerial.endPacket();
             #endif
-          };
+          //};
         };
       };
+      break;
+      case BLOBS_LEARN:
+      //TODO
       break;
     default:
       break;

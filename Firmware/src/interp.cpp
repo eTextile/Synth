@@ -45,16 +45,16 @@ void INTERP_SETUP(void) {
   };
 };
 
-inline void update_interpThreshold(preset_t* presets_ptr){
-  if (presets_ptr->leds.update){
-    presets_ptr->leds.update = false;
-    interpThreshold = constrain(presets_ptr->val - 4, 0, presets_ptr->maxVal);
+inline void update_interpThreshold(e256_level_t* levels_ptr){
+  if (levels_ptr->leds.update){
+    levels_ptr->leds.update = false;
+    interpThreshold = constrain(levels_ptr->val - 4, 0, levels_ptr->maxVal);
   };
 };
 
 // Bilinear interpolation
 void matrix_interp(void) {
-  update_interpThreshold(&presets[THRESHOLD]);
+  update_interpThreshold(&levels[THRESHOLD]);
   // Clear interpFrameArray
   memset((uint8_t*)interpFrameArray, 0, SIZEOF_FRAME);
   for (uint8_t rowPos = 0; rowPos < IRAW_ROWS; rowPos++) {

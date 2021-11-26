@@ -111,7 +111,7 @@ void loop() {
 #if defined(HARDWARE_MIDI)
   hardware_midi_read_input();
 #endif
-  update_presets();
+  update_config();
 #if defined(SOUND_CARD)
   update_levels();
 #endif
@@ -138,7 +138,7 @@ void loop() {
   usb_midi_transmit();
 #endif
 #if defined(USB_MIDI_SERIAL)
-  //usb_midi_transmit();
+  usb_midi_transmit();
   usb_osc_transmit();
 #endif
 #if defined(HARDWARE_MIDI)

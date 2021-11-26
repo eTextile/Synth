@@ -16,15 +16,14 @@
 #define LOAD_CONFIG                0  // E256-LEDs: 
 #define UPLOAD_CONFIG              1  // E256-LEDs:
 #define CALIBRATE                  2  // E256-LEDs: 
-#define MIDI_PLAY                  3  // Send all blobs values over USB using MIDI format
-#define MIDI_LEARN                 4  // Send separate blobs values over USB using MIDI format
+#define BLOBS_PLAY                 3  // Send all blobs values over USB using MIDI format
+#define BLOBS_LEARN                4  // Send separate blobs values over USB using MIDI format
 #define MAPPING_LIB                5  // E256-LEDs:
-#define BLOBS_OSC                  6
-#define RAW_MATRIX                 7
-#define INTERP_MATRIX              8
-#define ERROR                      9  // E256-LEDs:
+#define RAW_MATRIX                 6
+#define INTERP_MATRIX              7
+#define ERROR                      6  // E256-LEDs:
 
-#define ALL_OFF                    10
+#define ALL_OFF                    9
 
 #define SIG_IN                     0  // E256-LEDs: | 1 | 0 |
 #define SIG_OUT                    1  // E256-LEDs: | 0 | 1 |
@@ -81,8 +80,8 @@
 #define MIDI_INPUT_CHANNEL          1  // [1:15] Set the HARDWARE MIDI_INPUT channel
 #define MIDI_OUTPUT_CHANNEL         1  // [1:15] Set the HARDWARE MIDI_OUTPUT channel
 
-extern uint8_t currentMode;   // Exposed local declaration see presets.cpp
-extern uint8_t lastMode;      // Exposed local declaration see presets.cpp
+extern uint8_t currentMode;   // Exposed local declaration see config.cpp
+extern uint8_t currentLevel;
 
 typedef struct leds leds_t;
 struct leds {
@@ -101,8 +100,8 @@ struct e256_mode {
   boolean run;
 };
 
-typedef struct preset preset_t;
-struct preset {
+typedef struct e256_level e256_level_t;
+struct e256_level {
   leds_t leds;
   uint8_t minVal;
   uint8_t maxVal;
@@ -110,11 +109,10 @@ struct preset {
   boolean run;
 };
 
-extern preset_t presets[];  // Exposed local declaration see presets.cpp
-extern e256_mode modes[];  // Exposed local declaration see presets.cpp
+extern e256_level_t levels[];  // Exposed local declaration see config.cpp
+extern e256_mode_t modes[];  // Exposed local declaration see config.cpp
 
 void CONFIG_SETUP(void);
-void update_presets(void);
 void update_config(void);
 
 #endif /*__CONFIG_H__*/
