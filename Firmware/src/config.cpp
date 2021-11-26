@@ -24,7 +24,7 @@ Bounce BUTTON_R = Bounce();
 e256_mode_t modes[9] = {
   { { HIGH,  LOW, false, false }, 200, 500, true, false }, // [0] LOAD_CONFIG
   { { HIGH, HIGH, false, false }, 150, 900, true, false }, // [1] UPLOAD_CONFIG
-  { { HIGH, HIGH, true,   true },  80,  80, true,  true }, // [2] CALIBRATE
+  { { HIGH, HIGH, true,   true },  30,  30, true,  true }, // [2] CALIBRATE
   { { HIGH, LOW,  false, false }, 500, 500, true, false }, // [3] BLOBS_PLAY
   { { HIGH, LOW,  false, false }, 150, 150, true, false }, // [4] BLOBS_LEARN
   { { HIGH, LOW,  false, false }, 800, 800, true, false }, // [5] MAPPING_LIB
@@ -173,14 +173,16 @@ inline void update_encoder(void) {
 };
 
 // Generic function to update mmodes 
-inline void set_mode(e256_mode_t* modes_ptr, uint8_t value) {
+inline void set_mode(e256_level_t* levels_ptr, e256_mode_t* modes_ptr) {
+  levels_ptr->leds.update = false;
   modes_ptr->leds.setup = true;
   modes_ptr->leds.update = true;
   modes_ptr->run = true;
 };
 
 // Generic function to update levels 
-inline void set_level(e256_level_t* levels_ptr, uint8_t value) {
+inline void set_level(e256_mode_t* modes_ptr, e256_level_t* levels_ptr, uint8_t value) {
+  modes_ptr->leds.update = false;
   levels_ptr->val = constrain(value, levels_ptr->minVal, levels_ptr->maxVal);
   encoder.write(levels_ptr->val << 2);
   levels_ptr->leds.setup = true;
@@ -188,20 +190,19 @@ inline void set_level(e256_level_t* levels_ptr, uint8_t value) {
   levels_ptr->run = true;
 };
 
-inline void usb_set_mode(void){
+inline void usb_set_params(void) {
   for (midiNode_t* node_ptr = (midiNode_t*)ITERATOR_START_FROM_HEAD(&midiIn); node_ptr != NULL; node_ptr = (midiNode_t*)ITERATOR_NEXT(node_ptr)) {
-    currentMode = node_ptr->midiMsg.data1;
-    set_mode(&modes[node_ptr->midiMsg.data1], node_ptr->midiMsg.data2);
+    if (node_ptr->midiMsg.status == midi::ControlChange) {
+      currentLevel = node_ptr->midiMsg.data1;
+      set_level(&modes[currentMode], &levels[node_ptr->midiMsg.data1], node_ptr->midiMsg.data2);
+      ledsTimeStamp = millis();
+    }
+    else if (node_ptr->midiMsg.status == midi::ProgramChange) {
+      currentMode = node_ptr->midiMsg.data1;
+      set_mode(&levels[currentLevel], &modes[node_ptr->midiMsg.data1]);
+    };
+    llist_save_nodes(&midi_node_stack, &midiIn); // Save/rescure all midiOut nodes
   };
-  llist_save_nodes(&midi_node_stack, &midiIn); // Save/rescure all midiOut nodes
-};
-
-inline void usb_set_level(void) {
-  for (midiNode_t* node_ptr = (midiNode_t*)ITERATOR_START_FROM_HEAD(&midiIn); node_ptr != NULL; node_ptr = (midiNode_t*)ITERATOR_NEXT(node_ptr)) {
-    currentMode = node_ptr->midiMsg.data1;
-    set_level(&levels[node_ptr->midiMsg.data1], node_ptr->midiMsg.data2);
-  };
-  llist_save_nodes(&midi_node_stack, &midiIn); // Save/rescure all midiOut nodes
 };
 
 inline void leds_setup(void* struct_ptr){
@@ -216,9 +217,9 @@ inline void leds_setup(void* struct_ptr){
 };
 
 inline void blink_leds(e256_mode_t* mode_ptr) {
-  
-  leds_setup(mode_ptr);
-  
+
+    leds_setup(mode_ptr);
+
   if (mode_ptr->leds.update) {
     if (millis() - ledsTimeStamp < mode_ptr->timeOn && mode_ptr->toggle == true ) {
       mode_ptr->toggle = false;
@@ -243,6 +244,7 @@ inline void blink_leds(e256_mode_t* mode_ptr) {
         };
       }
       else {
+        mode_ptr->toggle = true;
         ledsTimeStamp = millis();
       };
     };
@@ -250,9 +252,9 @@ inline void blink_leds(e256_mode_t* mode_ptr) {
 };
 
 inline void fade_leds(e256_level_t* levels_ptr) {
-
-  leds_setup(levels_ptr);
   
+    leds_setup(levels_ptr);
+
   if (levels_ptr->leds.update) {
     levels_ptr->leds.update = false;
     uint8_t ledVal = constrain(map(levels_ptr->val, levels_ptr->minVal, levels_ptr->maxVal, 0, 255), 0, 255);
@@ -663,7 +665,6 @@ inline void load_config(void) {
     modes[currentMode].leds.setup = true;
     modes[currentMode].leds.update = true;
     modes[currentMode].run = true;
-    ledsTimeStamp = millis();
   }
   else{
       currentMode = ERROR;
@@ -681,17 +682,11 @@ void CONFIG_SETUP(void){
   load_config();
 };
 
-
 void update_config(){
-  
   update_buttons();
   update_encoder();
-
-  usb_set_mode();
-  usb_set_level();
-
+  usb_set_params();
   update_leds_blink();
   update_leds_fade();
-
   usb_serial_upload_config();
 };
