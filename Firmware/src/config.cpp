@@ -264,13 +264,11 @@ inline void fade_leds(e256_level_t* levels_ptr) {
 };
 
 // Update LEDs according to the mode and rotary encoder values
-inline void update_leds_fade(void) {
+inline void update_leds(void) {
   fade_leds(&levels[currentLevel]);
-};
-
-inline void update_leds_blink(void) {
   blink_leds(&modes[currentMode]);
 };
+
 
 //////////////////////////////////////// WRITE CONFIG
 //Using: /Synth/Software/Python/usb_config/rawfile-uploader.py
@@ -686,7 +684,6 @@ void update_config(){
   update_buttons();
   update_encoder();
   usb_set_params();
-  update_leds_blink();
-  update_leds_fade();
+  update_leds();
   usb_serial_upload_config();
 };
