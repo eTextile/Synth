@@ -33,6 +33,14 @@ struct midiNode {
 
 void MIDI_SETUP(void);
 
+inline void midi_getInput(uint8_t status, uint8_t note, uint8_t value){
+  midiNode_t* node_ptr = (midiNode_t*)llist_pop_front(&midi_node_stack);
+  node_ptr->midiMsg.status = status;
+  node_ptr->midiMsg.data1 = note;
+  node_ptr->midiMsg.data2 = value;
+  llist_push_front(&midiIn, node_ptr); 
+};
+
 inline void midi_sendOut(uint8_t status, uint8_t note, uint8_t value){
   midiNode_t* node_ptr = (midiNode_t*)llist_pop_front(&midi_node_stack);
   node_ptr->midiMsg.status = status;

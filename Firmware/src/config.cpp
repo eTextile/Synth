@@ -47,6 +47,7 @@ preset_t presets[4] = {
 uint8_t currentMode = CALIBRATE;
 uint8_t lastMode = BLOBS_OSC;
 uint8_t currentPreset = THRESHOLD;
+
 uint32_t ledsTimeStamp = 0;
 uint8_t ledsIterCount = 0;
 
@@ -105,6 +106,7 @@ inline void buttons_update_presets(void) {
   // [4]-SIG_OUT
   // [5]-THRESHOLD
   if (BUTTON_R.rose() && BUTTON_R.previousDuration() < LONG_HOLD) {
+    modes[currentMode].leds.update = false;
     currentPreset = (currentPreset+1) % 4;   // Loop into the presets
     presets[currentPreset].leds.setup = true;
     presets[currentPreset].run = true;

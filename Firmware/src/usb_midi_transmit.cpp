@@ -18,12 +18,7 @@
 unsigned long int usbTransmitTimeStamp = 0;
 
 void usb_midi_handle_cc(byte channel, byte control, byte value){
-  midiNode_t* node_ptr = (midiNode_t*)llist_pop_front(&midi_node_stack);  // Get a node from the MIDI nodes stack
-  node_ptr->midiMsg.status = midi::ControlChange;  // Set the MIDI status
-  node_ptr->midiMsg.data1 = control;               // Set the MIDI control
-  node_ptr->midiMsg.data2 = value;                 // Set the MIDI value
-  //node_ptr->midiMsg.channel = channel;           // Set the MIDI channel
-  llist_push_front(&midiIn, node_ptr);             // Add the node to the midiIn linked liste
+  midi_getInput(midi::ControlChange, control, value);
 };
 
 void USB_MIDI_TRANSMIT_SETUP(void) {
