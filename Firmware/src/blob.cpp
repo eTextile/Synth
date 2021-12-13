@@ -298,8 +298,7 @@ void matrix_find_blobs(void) {
 #endif
           blobIn_ptr->UID = minID;
           blobIn_ptr->state = true;
-          blobIn_ptr->lastState = false; // TO_REMOVE_LATER
-          //blobIn_ptr->status = TO_ADD; // TO_REMOVE_LATER
+          blobIn_ptr->lastState = false;
           blobIn_ptr->debounceTimeStamp = millis();
           minID++;
           break;
@@ -325,15 +324,12 @@ void matrix_find_blobs(void) {
       if (!found) {
         allDone = false;
         if ((millis() - blobOut_ptr->debounceTimeStamp) < DEBOUNCE_TIME) {
-          //blobOut_ptr->state = false; // TO_REMOVE_LATER
-          //blobOut_ptr->lastState = true; // TO_REMOVE_LATER
           blobOut_ptr->status = NOT_FOUND;
 #if defined(DEBUG_FIND_BLOBS)
           Serial.printf("\nDEBUG_FIND_BLOBS / Blob: %p in the **llist_blobs** linked list is NOT_FOUND(%d)", (lnode_t*)blobOut_ptr, blobOut_ptr->UID);
 #endif
         } else {
           blobOut_ptr->state = false;
-          //blobOut_ptr->lastState = true; // TO_REMOVE_LATER
           blobOut_ptr->status = TO_REMOVE;
 #if defined(DEBUG_FIND_BLOBS)
           Serial.printf("\nDEBUG_FIND_BLOBS / Blob: %p in the **llist_blobs** linked list taged TO_REMOVE(%d)", (lnode_t*)blobOut_ptr, blobOut_ptr->UID);

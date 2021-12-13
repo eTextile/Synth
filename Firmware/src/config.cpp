@@ -7,9 +7,9 @@
 #include "config.h"
 #include "interp.h"
 #include "midi_bus.h"
+#include "usb_midi_transmit.h"
 #include "mapping_lib.h"
 
-#include <ArduinoJson.h>
 #include <SerialFlash.h>
 #include <Bounce2.h>                   // https://github.com/thomasfredericks/Bounce2
 #define ENCODER_OPTIMIZE_INTERRUPTS
@@ -31,7 +31,7 @@ e256_mode_t modes[9] = {
   { { HIGH, HIGH, false, false }, 500, 500, true, false }, // [6] RAW_MATRIX
   { { HIGH, HIGH, false, false }, 500, 500, true, false }, // [7] INTERP_MATRIX
   { { HIGH, HIGH, false, false },  10,  10, true, false }  // [8] ERROR
-};  
+};
 
 // The levels below can be adjusted using E256 built-in encoder
 Encoder encoder(ENCODER_PIN_A, ENCODER_PIN_B);
@@ -89,7 +89,7 @@ inline void update_buttons(void) {
   // FONCTION: UPLOAD NEW CONFIG FILE (config.json)
   if (BUTTON_L.rose() && BUTTON_L.previousDuration() > LONG_HOLD) {
     lastMode = currentMode; // keep track of last Mode to set it back after saving
-    currentMode = UPLOAD_CONFIG;
+    currentMode = FLASH_CONFIG;
     modes[currentMode].leds.setup = true;
     modes[currentMode].leds.update = true;
     modes[currentMode].run = true;
@@ -143,7 +143,7 @@ inline void update_buttons(void) {
   };
 };
 
-// Values adjustment using rotary encoder
+// Levels values adjustment using rotary encoder
 inline boolean setLevel(e256_level_t* level_ptr) {
   uint8_t val = encoder.read() >> 2;
   if (val != level_ptr->val) {
@@ -218,7 +218,7 @@ inline void leds_setup(void* struct_ptr){
 
 inline void blink_leds(e256_mode_t* mode_ptr) {
 
-    leds_setup(mode_ptr);
+  leds_setup(mode_ptr);
 
   if (mode_ptr->leds.update) {
     if (millis() - ledsTimeStamp < mode_ptr->timeOn && mode_ptr->toggle == true ) {
@@ -253,7 +253,7 @@ inline void blink_leds(e256_mode_t* mode_ptr) {
 
 inline void fade_leds(e256_level_t* levels_ptr) {
   
-    leds_setup(levels_ptr);
+  leds_setup(levels_ptr);
 
   if (levels_ptr->leds.update) {
     levels_ptr->leds.update = false;
@@ -269,217 +269,47 @@ inline void update_leds(void) {
   blink_leds(&modes[currentMode]);
 };
 
+inline void flash_config(char* data, unsigned int size) {
 
-//////////////////////////////////////// WRITE CONFIG
-//Using: /Synth/Software/Python/usb_config/rawfile-uploader.py
-// $ python rawfile-uploader.py <port> config.json
-#define FLASH_CHIP_SELECT     6
-// Buffer sizes
-#define USB_BUFFER_SIZE       128
-#define FLASH_BUFFER_SIZE     4096
-// Max filename length (8.3 plus a null char terminator)
-#define FILENAME_STRING_SIZE  14
-// State machine
-#define STATE_START           0
-#define STATE_SIZE            1
-#define STATE_CONTENT         2
-// Special bytes in the communication protocol
-#define HAND_SHAKE            0x7f
-#define BYTE_START            0x7e
-#define BYTE_ESCAPE           0x7d
-#define BYTE_SEPARATOR        0x7c
-
-inline void flushError(void) {
-  uint32_t lastReceiveTime = millis();
-  char usbBuffer[USB_BUFFER_SIZE];
-  // We assume the serial receive part is finished when we have not received something for 3 seconds
-  while (Serial.available() || millis() < lastReceiveTime + 3000) {
-    if (Serial.readBytes(usbBuffer, USB_BUFFER_SIZE)) {
-      lastReceiveTime = millis();
-    };
-  };
-};
-
-inline void usb_serial_upload_config(void) {
-
-  if (modes[UPLOAD_CONFIG].run == true){
-    modes[UPLOAD_CONFIG].run = false;
-
+  if (modes[FLASH_CONFIG].run == true) {
+    modes[FLASH_CONFIG].run = false;
     if (!SerialFlash.begin(FLASH_CHIP_SELECT)) {
       currentMode = ERROR;
-      modes[currentMode].leds.setup = true;
-      modes[currentMode].leds.update = true;
       #if defined(DEBUG_SERIAL_FLASH)
-      Serial.printf("\nDEBUG_SERIAL_FLASH\tERROR_CONNECTING_FLASH");
+        Serial.printf("\nDEBUG_SERIAL_FLASH\tERROR_CONNECTING_FLASH");
       #endif
       return;
     };
-
     // Flash LED when flash is ready
     while (!SerialFlash.ready());
-    digitalWrite(LED_PIN_D1, HIGH);
-    digitalWrite(LED_PIN_D2, HIGH);
-    // Waiting for config file!
-    while (!Serial.available());
-    //Serial.read() == HAND_SHAKE
 
     SerialFlashFile flashFile;
-    uint8_t state = STATE_START;
-    uint8_t escape = 0;
-    uint8_t fileSizeIndex = 0;
-    uint32_t fileSize = 0;
 
-    char usbBuffer[USB_BUFFER_SIZE];
-    uint8_t flashBuffer[FLASH_BUFFER_SIZE];
-    char filename[FILENAME_STRING_SIZE];
-
-    uint16_t flashBufferIndex = 0;
-    uint8_t filenameIndex = 0;
-    uint32_t lastReceiveTime = millis();
-
-    // We assume the serial receive part is finished when we have not received something for 3 seconds
-    while (Serial.available() && (millis() - lastReceiveTime) < 3000) {
-
-      uint16_t available = Serial.readBytes(usbBuffer, USB_BUFFER_SIZE);
-      if (available) lastReceiveTime = millis();
-    
-      for (uint16_t index = 0; index < available; index++) {
-        uint8_t b = usbBuffer[index];
-        ////////////////////////////////////////// STATE_START
-        if (state == STATE_START) {
-          // Start byte - Reepat start is fine
-          if (b == BYTE_START) {
-            memset((char*)filename, 0, FILENAME_STRING_SIZE);
-            filenameIndex = 0;
-          }
-          // Valid characters are a-z, 0-9, point
-          else if ((b >= 'a' && b <= 'z') || (b >= '0' && b <= '9') || b == '.') {
-            filename[filenameIndex++] = b;
-            if (filenameIndex >= FILENAME_STRING_SIZE) {
-              flushError();
-              currentMode = ERROR;
-              modes[currentMode].leds.setup = true;
-              modes[currentMode].leds.update = true;
-              #if defined(DEBUG_SERIAL_FLASH)
-              Serial.printf("\nDEBUG_SERIAL_FLASH\tERROR_NAME_TO_LONG!");
-              #endif
-              return;
-            };
-          }
-          // Filename end character
-          else if (b == BYTE_SEPARATOR) {
-            if (filenameIndex == 0) {
-              flushError();
-              currentMode = ERROR;
-              modes[currentMode].leds.setup = true;
-              modes[currentMode].leds.update = true;
-              #if defined(DEBUG_SERIAL_FLASH)
-              Serial.printf("\nDEBUG_SERIAL_FLASH\tERROR_EMPTY_FILENAME!");
-              #endif
-              return;
-            };
-            // Change state
-            state = STATE_SIZE;
-            fileSizeIndex = 0;
-            fileSize = 0;
-          }
-          else {
-            flushError();
-            currentMode = ERROR;
-            modes[currentMode].leds.setup = true;
-            modes[currentMode].leds.update = true;
-            #if defined(DEBUG_SERIAL_FLASH)
-            Serial.printf("\nDEBUG_SERIAL_FLASH\tERROR_INVALID_FILENAME_CHARACTER!");
-            #endif
-            return;
-          };
-        }
-        ////////////////////////////////////////// STATE_SIZE
-        // We read 4 bytes as a uint32_t for file size
-        else if (state == STATE_SIZE) {
-          if (fileSizeIndex < 4) {
-            fileSize = (fileSize << 8) + b;
-            fileSizeIndex++;
-          }
-          else if (b == BYTE_SEPARATOR) {
-            state = STATE_CONTENT;
-            flashBufferIndex = 0;
-            escape = 0;
-            if (SerialFlash.exists(filename)) {
-              SerialFlash.remove(filename); // It doesn't reclaim the space, but it does let you create a new file with the same name
-            };
-            // Create a new file and open it for writing
-            if (SerialFlash.create(filename, fileSize)) {
-              flashFile = SerialFlash.open(filename);
-              if (!flashFile) {
-                flushError();
-                currentMode = ERROR;
-                modes[currentMode].leds.setup = true;
-                modes[currentMode].leds.update = true;
-                #if defined(DEBUG_SERIAL_FLASH)
-                Serial.printf("\nDEBUG_SERIAL_FLASH\tERROR_FLASH_FILE_OPEN!");
-                #endif
-                return;
-              };
-            }
-            else {
-              flushError();
-              currentMode = ERROR;
-              modes[currentMode].leds.setup = true;
-              modes[currentMode].leds.update = true;
-              #if defined(DEBUG_SERIAL_FLASH)
-              Serial.printf("\nDEBUG_SERIAL_FLASH\tERROR_FLASH_FULL!");
-              #endif
-              return;
-            };
-          }
-          else {
-            // Error invalid length requested
-            flushError();
-            currentMode = ERROR;
-            modes[currentMode].leds.setup = true;
-            modes[currentMode].leds.update = true;
-            #if defined(DEBUG_SERIAL_FLASH)
-            Serial.printf("\nDEBUG_SERIAL_FLASH\tERROR_FLASH_FULL!");
-            #endif
-            return;
-          };
-        }
-        ////////////////////////////////////////// STATE_CONTENT
-        else if (state == STATE_CONTENT) {
-          // Previous byte was escaped; unescape and add to buffer
-          if (escape) {
-            escape = 0;
-            flashBuffer[flashBufferIndex++] = b ^ 0x20;
-          }
-          // Escape the next byte
-          else if (b == BYTE_ESCAPE) {
-            escape = 1;
-          }
-          // End of file
-          else if (b == BYTE_START) {
-            state = STATE_START;
-            flashFile.write(flashBuffer, flashBufferIndex);
-            flashFile.close();
-            flashBufferIndex = 0;
-          }
-          // Normal byte; add to buffer
-          else {
-            flashBuffer[flashBufferIndex++] = b;
-          };
-          // The buffer is filled; write to Flash
-          if (flashBufferIndex >= FLASH_BUFFER_SIZE) {
-            flashFile.write(flashBuffer, FLASH_BUFFER_SIZE);
-            flashBufferIndex = 0;
-          };
-        };
-      };
+    if (SerialFlash.exists("config.json")) {
+      SerialFlash.remove("config.json"); // It doesn't reclaim the space, but it does let you create a new file with the same name
     };
-    // Success!  Turn the LEDs off
-    //digitalWrite(LED_PIN_D1, LOW);
-    //digitalWrite(LED_PIN_D2, LOW);
-    //currentMode = lastMode;
-    //_reboot_Teensyduino_();
+    // Create a new file and open it for writing
+    if (SerialFlash.create("config.json", size)) {
+      flashFile = SerialFlash.open("config.json");
+      if (!flashFile) {
+        currentMode = ERROR;
+        #if defined(DEBUG_SERIAL_FLASH)
+          Serial.printf("\nDEBUG_SERIAL_FLASH\tERROR_WHILE_OPEN_FLASH_FILE!");
+        #endif
+        return;
+      };
+    }
+    else {
+      currentMode = ERROR;
+      #if defined(DEBUG_SERIAL_FLASH)
+        Serial.printf("\nDEBUG_SERIAL_FLASH\tERROR_FLASH_FULL!");
+      #endif
+      return;
+    };
+    if (size < FLASH_BUFFER_SIZE) {
+      flashFile.write(data, size);
+      flashFile.close();
+    };
   };
 };
 
@@ -595,7 +425,7 @@ inline bool config_load_mapping_polygons(const JsonArray& config) {
   return true;
 };
 
-inline bool config_load_mapping(const JsonObject& config) {
+inline bool config_load_mapping(const JsonObject &config) {
   if (config.isNull()) {
     return false;
   };
@@ -623,17 +453,19 @@ inline bool config_load_mapping(const JsonObject& config) {
   return true;
 };
 
-inline void load_config(void) {
+inline void load_flash_config(void) {
+
   if (!SerialFlash.begin(FLASH_CHIP_SELECT)) {
     currentMode = ERROR;
     modes[currentMode].leds.setup = true;
     modes[currentMode].leds.update = true;
     #if defined(DEBUG_SERIAL_FLASH)
-    Serial.printf("\nDEBUG_SERIAL_FLASH\tERROR_CONNECTING_FLASH");
+      Serial.printf("\nDEBUG_SERIAL_FLASH\tERROR_CONNECTING_FLASH");
     #endif
     return;
   };
-  uint8_t configData[2048];
+
+  char configData[2048];
   SerialFlashFile configFile = SerialFlash.open("config.json");
 
   if (configFile) {  // true if the file exists
@@ -643,19 +475,15 @@ inline void load_config(void) {
     if (err) {
       // Load a default config file?
       currentMode = ERROR;
-      modes[currentMode].leds.setup = true;
-      modes[currentMode].leds.update = true;
       #if defined(DEBUG_SERIAL_FLASH)
-      Serial.printf("\nDEBUG_SERIAL_FLASH\tERROR_WAITING_FOR_GONFIG!\t%s", err.f_str());
+        Serial.printf("\nDEBUG_SERIAL_FLASH\tERROR_WAITING_FOR_GONFIG!\t%s", err.f_str());
       #endif
       return;
     };
     if (!config_load_mapping(config["mapping"])) {
       currentMode = ERROR;
-      modes[currentMode].leds.setup = true;
-      modes[currentMode].leds.update = true;
       #if defined(DEBUG_SERIAL_FLASH)
-      Serial.printf("\nDEBUG_SERIAL_FLASH\tERROR_LOADING_GONFIG_FAILED!");
+        Serial.printf("\nDEBUG_SERIAL_FLASH\tERROR_LOADING_GONFIG_FAILED!");
       #endif
       return;
     };
@@ -665,19 +493,19 @@ inline void load_config(void) {
     modes[currentMode].run = true;
   }
   else{
-      currentMode = ERROR;
-      modes[currentMode].leds.setup = true;
-      modes[currentMode].leds.update = true;
-      #if defined(DEBUG_SERIAL_FLASH)
+    currentMode = ERROR;
+    modes[currentMode].leds.setup = true;
+    modes[currentMode].leds.update = true;
+    #if defined(DEBUG_SERIAL_FLASH)
       Serial.printf("\nDEBUG_SERIAL_FLASH\tERROR_NO_CONFIG_FILE!");
-      #endif
+    #endif
   };
 };
 
 void CONFIG_SETUP(void){
   leds_hardware_setup();
   encoder_hardware_setup();
-  load_config();
+  load_flash_config();
 };
 
 void update_config(){
@@ -685,5 +513,5 @@ void update_config(){
   update_encoder();
   usb_set_params();
   update_leds();
-  usb_serial_upload_config();
+  flash_config(configData, configDataLength);
 };

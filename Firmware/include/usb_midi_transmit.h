@@ -7,6 +7,9 @@
 #ifndef __USB_MIDI_TRANSMIT_H__
 #define __USB_MIDI_TRANSMIT_H__
 
+extern char configData[]; 
+extern unsigned int configDataLength;
+
 void USB_MIDI_TRANSMIT_SETUP(void);
 void usb_midi_read_input(void);
 void usb_midi_transmit(void);

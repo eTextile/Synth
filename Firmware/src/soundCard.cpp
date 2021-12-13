@@ -15,12 +15,12 @@ void SOUND_CARD_SETUP() {
   //sgtl5000.inputSelect(AUDIO_INPUT_MIC);
 }
 
+// According to https://github.com/PaulStoffregen/Audio/blob/master/control_sgtl5000.cpp
 void update_levels(void) {
 
   switch (currentLevel) {
     case LINE_OUT:
       // FONCTION : line_out level adjustment using rotary encoder // DEFAULT MODE
-      // According to https://github.com/PaulStoffregen/Audio/blob/master/control_sgtl5000.cpp
       // LOWEST level is 31 (1.16 Volts p-p)
       // HIGHEST level is 13 (3.16 Volts p-p)
       if (levels[LINE_OUT].run) {
@@ -33,7 +33,6 @@ void update_levels(void) {
       break;
     case SIG_IN:
       // FONCTION : sig-in level adjustment using rotary encoder
-      // According to https://githpresetub.com/PaulStoffregen/Audio/blob/master/control_sgtl5000.cpp
       // LOWEST level is 15 (0.24 Volts p-p)
       // HIGHEST level is 0 (3.12 Volts p-p)
       if (levels[SIG_IN].run) {
@@ -46,7 +45,6 @@ void update_levels(void) {
       break;
     case SIG_OUT:
       // FONCTION : sig_out level adjustment using rotary encoder
-      // According to https://github.com/PaulStoffregen/Audio/blob/master/control_sgtl5000.cpp
       // LOWEST level is 31
       // HIGHEST level is 13
       if (levels[SIG_OUT].run) {

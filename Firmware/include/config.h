@@ -8,13 +8,24 @@
 #define __CONFIG_H__
 
 #include <Arduino.h>
+#include <ArduinoJson.h>
 
 #define NAME                       "256"
 #define PROJECT                    "ETEXTILE-SYNTHESIZER"
 #define VERSION                    "1.0.9"
 
+// State machine
+#define STATE_START                0
+#define STATE_SIZE                 1
+#define STATE_CONTENT              2
+// Special bytes in the communication protocol
+#define HAND_SHAKE                 0x7f
+#define BYTE_START                 0x7e
+#define BYTE_ESCAPE                0x7d
+#define BYTE_SEPARATOR             0x7c
+
 #define LOAD_CONFIG                0  // E256-LEDs: 
-#define UPLOAD_CONFIG              1  // E256-LEDs:
+#define FLASH_CONFIG               1  // E256-LEDs:
 #define CALIBRATE                  2  // E256-LEDs: 
 #define BLOBS_PLAY                 3  // Send all blobs values over USB using MIDI format
 #define BLOBS_LEARN                4  // Send separate blobs values over USB using MIDI format
@@ -38,10 +49,12 @@
 #define BUTTON_PIN_R                3
 #define ENCODER_PIN_A               22
 #define ENCODER_PIN_B               9
+#define FLASH_CHIP_SELECT           6
+#define FLASH_BUFFER_SIZE           4096
+#define FILENAME_STRING_SIZE        11 // config.json
 #endif
 
 #define BAUD_RATE                   230400
-//#define BAUD_RATE                   9600
 #define RAW_COLS                    16
 #define RAW_ROWS                    16
 #define RAW_FRAME                   (RAW_COLS * RAW_ROWS)
@@ -113,6 +126,7 @@ extern e256_level_t levels[];  // Exposed local declaration see config.cpp
 extern e256_mode_t modes[];  // Exposed local declaration see config.cpp
 
 void CONFIG_SETUP(void);
+bool config_load_mapping(const JsonObject &config);
 void update_config(void);
 
 #endif /*__CONFIG_H__*/
