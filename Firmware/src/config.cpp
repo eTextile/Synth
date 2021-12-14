@@ -80,7 +80,7 @@ inline void update_buttons(void) {
     #endif
   };
   // ACTION: BUTTON_L long press
-  // FONCTION: UPLOAD NEW CONFIG FILE (config.json)
+  // FONCTION: FLASH THE CONFIG FILE (config.json)
   if (BUTTON_L.rose() && BUTTON_L.previousDuration() > LONG_HOLD) {
     lastMode = currentMode; // keep track of last Mode to set it back after saving
     currentMode = FLASH_CONFIG;
@@ -280,13 +280,13 @@ void e256_systemExclusive(byte *data, unsigned int length){
   char configData[length - 2] = {0}; // SysEx messages start with 0xF0 and end with 0xF7
   memcpy(configData, data + 1, length - 2);
   
-  StaticJsonDocument<2048> configJson;
+  StaticJsonDocument<2048> config;
 
-  DeserializationError err = deserializeJson(configJson, data + sizeof(uint8_t));
+  DeserializationError err = deserializeJson(config, configData);
 
   if (err) {
     currentMode = ERROR;
-    usbMIDI.sendProgramChange(ERROR_CODE_33, MIDI_OUTPUT_CHANNEL); // ProgramChange(program, channel);
+    usbMIDI.sendProgramChange(ERROR_WAITING_FOR_GONFIG, MIDI_OUTPUT_CHANNEL); // ProgramChange(program, channel);
     usbMIDI.send_now();
     #if defined(DEBUG_MIDI_CONFIG)
       Serial.printf("\nDEBUG_MIDI_CONFIG\tERROR_WAITING_FOR_GONFIG!\t%s", err.f_str());
@@ -295,7 +295,7 @@ void e256_systemExclusive(byte *data, unsigned int length){
   };
   if (!config_load_mapping(config["mapping"])) {
     currentMode = ERROR;
-    usbMIDI.sendProgramChange(ERROR_CODE_34, MIDI_OUTPUT_CHANNEL); // ProgramChange(program, channel);
+    usbMIDI.sendProgramChange(ERROR_LOADING_GONFIG_FAILED, MIDI_OUTPUT_CHANNEL); // ProgramChange(program, channel);
     usbMIDI.send_now();
     #if defined(DEBUG_MIDI_CONFIG)
       Serial.printf("\nDEBUG_MIDI_CONFIG\tERROR_LOADING_GONFIG_FAILED!");
