@@ -5,28 +5,16 @@
 */
 
 #include "usb_midi_transmit.h"
-#include <ArduinoJson.h>
 #include "config.h"
 #include "scan.h"
 #include "llist.h"
 #include "blob.h"
 #include "midi_bus.h"
 
-#if defined(USB_MIDI) || defined(USB_MIDI_SERIAL) || defined(USB_MTPDISK_MIDI)
-
 #define MIDI_TRANSMIT_INTERVAL 500
 uint32_t usbTransmitTimeStamp = 0;
 
-char configData[FLASH_BUFFER_SIZE] = {0};
-unsigned int configDataLength = 0;
-
-void e256_programChange(byte channel, byte program){
-  midiNode_t* node_ptr = (midiNode_t*)llist_pop_front(&midi_node_stack);
-  node_ptr->midiMsg.status = midi::ProgramChange;
-  node_ptr->midiMsg.data1 = program;
-  llist_push_front(&midiIn, node_ptr);
-};
-
+/*
 void e256_noteOn(byte channel, byte note, byte velocity){
   midiNode_t* node_ptr = (midiNode_t*)llist_pop_front(&midi_node_stack);
   node_ptr->midiMsg.status = midi::NoteOn;
@@ -34,7 +22,8 @@ void e256_noteOn(byte channel, byte note, byte velocity){
   node_ptr->midiMsg.data2 = velocity;
   llist_push_front(&midiIn, node_ptr);
 };
-
+*/
+/*
 void e256_noteOff(byte channel, byte note, byte velocity){
   midiNode_t* node_ptr = (midiNode_t*)llist_pop_front(&midi_node_stack);
   node_ptr->midiMsg.status = midi::NoteOff;
@@ -42,55 +31,7 @@ void e256_noteOff(byte channel, byte note, byte velocity){
   node_ptr->midiMsg.data2 = velocity;
   llist_push_front(&midiIn, node_ptr);
 };
-
-void e256_controlChange(byte channel, byte control, byte value){
-  midiNode_t* node_ptr = (midiNode_t*)llist_pop_front(&midi_node_stack);
-  node_ptr->midiMsg.status = midi::ControlChange;
-  node_ptr->midiMsg.data1 = control;
-  node_ptr->midiMsg.data2 = value;
-  llist_push_front(&midiIn, node_ptr);
-};
-
-void printBytes(const byte *data, unsigned int size) {
-  while (size > 0) {
-    byte b = *data++;
-    if (b < 16) Serial.print('0');
-    Serial.print(b, HEX);
-    if (size > 1) Serial.print(' ');
-    size = size - 1;
-  };
-};
-
-void e256_systemExclusive(byte *data, unsigned int length){
-  #if defined(DEBUG_MIDI_CONFIG)
-    Serial.print("SysEx Message: ");
-    printBytes(data, length);
-    Serial.println();
-  #endif
-  configDataLength = length - 2; // SysEx messages start with 0xF0 and end with 0xF7
-  char configData[configDataLength];
-  memcpy(configData, data + 1, configDataLength);
-  StaticJsonDocument<2048> config;
-  DeserializationError err = deserializeJson(config, configData);
-  if (err) {
-    // Load a default config file?
-    currentMode = ERROR;
-    #if defined(DEBUG_MIDI_CONFIG)
-      Serial.printf("\nDEBUG_MIDI_CONFIG\tERROR_WAITING_FOR_GONFIG!\t%s", err.f_str());
-    #endif
-    return;
-  };
-  if (!config_load_mapping(config["mapping"])) {
-    currentMode = ERROR;
-    #if defined(DEBUG_MIDI_CONFIG)
-      Serial.printf("\nDEBUG_MIDI_CONFIG\tERROR_LOADING_GONFIG_FAILED!");
-    #endif
-    return;
-  };
-  modes[currentMode].leds.setup = true;
-  modes[currentMode].leds.update = true;
-  modes[currentMode].run = true;
-};
+*/
 
 void e256_clock(){
   Serial.println("Clock");
@@ -99,8 +40,8 @@ void e256_clock(){
 void USB_MIDI_TRANSMIT_SETUP(void) {
   usbMIDI.begin();
   usbMIDI.setHandleProgramChange(e256_programChange);
-  usbMIDI.setHandleNoteOn(e256_noteOn);
-  usbMIDI.setHandleNoteOff(e256_noteOff);
+  //usbMIDI.setHandleNoteOn(e256_noteOn);
+  //usbMIDI.setHandleNoteOff(e256_noteOff);
   usbMIDI.setHandleControlChange(e256_controlChange);
   usbMIDI.setHandleSystemExclusive(e256_systemExclusive);
   usbMIDI.setHandleClock(e256_clock);
@@ -146,6 +87,7 @@ void usb_midi_transmit(void) {
               usbMIDI.sendControlChange(BZ, constrain(blob_ptr->centroid.Z, 0, 127), blob_ptr->UID + 1);
               usbMIDI.sendControlChange(BW, blob_ptr->box.W, blob_ptr->UID + 1);
               usbMIDI.sendControlChange(BH, blob_ptr->box.H, blob_ptr->UID + 1);
+              usbMIDI.send_now();
             };
           };
         } else {
@@ -220,5 +162,3 @@ void usb_midi_transmit(void) {
       break;
   };
 };
-
-#endif

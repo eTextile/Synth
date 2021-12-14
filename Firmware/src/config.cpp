@@ -10,6 +10,7 @@
 #include "usb_midi_transmit.h"
 #include "mapping_lib.h"
 
+#include <ArduinoJson.h>
 #include <SerialFlash.h>
 #include <Bounce2.h>                   // https://github.com/thomasfredericks/Bounce2
 #define ENCODER_OPTIMIZE_INTERRUPTS
@@ -23,13 +24,13 @@ Bounce BUTTON_L = Bounce();
 Bounce BUTTON_R = Bounce();
 e256_mode_t modes[9] = {
   { { HIGH,  LOW, false, false }, 200, 500, true, false }, // [0] LOAD_CONFIG
-  { { HIGH, HIGH, false, false }, 150, 900, true, false }, // [1] UPLOAD_CONFIG
+  { { HIGH, HIGH, false, false }, 150, 900, true, false }, // [1] FLASH_CONFIG
   { { HIGH, HIGH, true,   true },  30,  30, true,  true }, // [2] CALIBRATE
   { { HIGH, LOW,  false, false }, 500, 500, true, false }, // [3] BLOBS_PLAY
   { { HIGH, LOW,  false, false }, 150, 150, true, false }, // [4] BLOBS_LEARN
   { { HIGH, LOW,  false, false }, 800, 800, true, false }, // [5] MAPPING_LIB
   { { HIGH, HIGH, false, false }, 500, 500, true, false }, // [6] RAW_MATRIX
-  { { HIGH, HIGH, false, false }, 500, 500, true, false }, // [7] INTERP_MATRIX
+  { { HIGH, HIGH, false, false }, 1000, 1000, true, false }, // [7] INTERP_MATRIX
   { { HIGH, HIGH, false, false },  10,  10, true, false }  // [8] ERROR
 };
 
@@ -54,18 +55,11 @@ uint8_t ledsIterCount = 0;
 // [Bounce2]: https://github.com/thomasfredericks/Bounce2
 // https://www.pjrc.com/teensy/interrupts.html
 // https://github.com/khoih-prog/Teensy_TimerInterrupt/blob/main/examples/SwitchDebounce/SwitchDebounce.ino
-inline void encoder_hardware_setup(void) {
+inline void setup_buttons(void) {
   BUTTON_L.attach(BUTTON_PIN_L, INPUT_PULLUP);  // Attach the debouncer to a pin with INPUT_PULLUP mode
   BUTTON_R.attach(BUTTON_PIN_R, INPUT_PULLUP);  // Attach the debouncer to a pin with INPUT_PULLUP mode
   BUTTON_L.interval(25);                        // Debounce interval of 25 millis
   BUTTON_R.interval(25);                        // Debounce interval of 25 millis
-};
-
-inline void leds_hardware_setup(void) {
-  pinMode(LED_PIN_D1, OUTPUT);
-  pinMode(LED_PIN_D2, OUTPUT);
-  digitalWrite(LED_PIN_D1, LOW);
-  digitalWrite(LED_PIN_D2, LOW);
 };
 
 // Selec the current mode and perform the matrix sensor calibration 
@@ -165,7 +159,7 @@ inline boolean setLevel(e256_level_t* level_ptr) {
   };
 };
 
-// Update levels [val] of each mode using the rotary encoder
+// Update levels[val] of each mode using the rotary encoder
 inline void update_encoder(void) {
   if (setLevel(&levels[currentLevel])) {
     levels[currentLevel].leds.update = true;
@@ -180,6 +174,11 @@ inline void set_mode(e256_level_t* levels_ptr, e256_mode_t* modes_ptr) {
   modes_ptr->run = true;
 };
 
+void e256_programChange(byte channel, byte program){
+  currentMode = program;
+  set_mode(&levels[currentLevel], &modes[program]);
+};
+
 // Generic function to update levels 
 inline void set_level(e256_mode_t* modes_ptr, e256_level_t* levels_ptr, uint8_t value) {
   modes_ptr->leds.update = false;
@@ -190,22 +189,13 @@ inline void set_level(e256_mode_t* modes_ptr, e256_level_t* levels_ptr, uint8_t 
   levels_ptr->run = true;
 };
 
-inline void usb_set_params(void) {
-  for (midiNode_t* node_ptr = (midiNode_t*)ITERATOR_START_FROM_HEAD(&midiIn); node_ptr != NULL; node_ptr = (midiNode_t*)ITERATOR_NEXT(node_ptr)) {
-    if (node_ptr->midiMsg.status == midi::ControlChange) {
-      currentLevel = node_ptr->midiMsg.data1;
-      set_level(&modes[currentMode], &levels[node_ptr->midiMsg.data1], node_ptr->midiMsg.data2);
-      ledsTimeStamp = millis();
-    }
-    else if (node_ptr->midiMsg.status == midi::ProgramChange) {
-      currentMode = node_ptr->midiMsg.data1;
-      set_mode(&levels[currentLevel], &modes[node_ptr->midiMsg.data1]);
-    };
-    llist_save_nodes(&midi_node_stack, &midiIn); // Save/rescure all midiOut nodes
-  };
+void e256_controlChange(byte channel, byte control, byte value){
+  currentLevel = value;
+  set_level(&modes[currentMode], &levels[control], value);
+  ledsTimeStamp = millis();
 };
 
-inline void leds_setup(void* struct_ptr){
+inline void setup_leds(void* struct_ptr){
   leds_t* leds = (leds_t*)struct_ptr;
   if (leds->setup) {
     leds->setup = false;
@@ -218,7 +208,7 @@ inline void leds_setup(void* struct_ptr){
 
 inline void blink_leds(e256_mode_t* mode_ptr) {
 
-  leds_setup(mode_ptr);
+  setup_leds(mode_ptr);
 
   if (mode_ptr->leds.update) {
     if (millis() - ledsTimeStamp < mode_ptr->timeOn && mode_ptr->toggle == true ) {
@@ -253,7 +243,7 @@ inline void blink_leds(e256_mode_t* mode_ptr) {
 
 inline void fade_leds(e256_level_t* levels_ptr) {
   
-  leds_setup(levels_ptr);
+  setup_leds(levels_ptr);
 
   if (levels_ptr->leds.update) {
     levels_ptr->leds.update = false;
@@ -269,12 +259,64 @@ inline void update_leds(void) {
   blink_leds(&modes[currentMode]);
 };
 
+void printBytes(const byte *data, unsigned int size) {
+  while (size > 0) {
+    byte b = *data++;
+    if (b < 16) Serial.print('0');
+    Serial.print(b, HEX);
+    if (size > 1) Serial.print(' ');
+    size = size - 1;
+  };
+};
+
+void e256_systemExclusive(byte *data, unsigned int length){
+
+  #if defined(DEBUG_MIDI_CONFIG)
+    Serial.print("SysEx Message: ");
+    printBytes(data, length);
+    Serial.println();
+  #endif
+
+  char configData[length - 2] = {0}; // SysEx messages start with 0xF0 and end with 0xF7
+  memcpy(configData, data + 1, length - 2);
+  
+  StaticJsonDocument<2048> configJson;
+
+  DeserializationError err = deserializeJson(configJson, data + sizeof(uint8_t));
+
+  if (err) {
+    currentMode = ERROR;
+    usbMIDI.sendProgramChange(ERROR_CODE_33, MIDI_OUTPUT_CHANNEL); // ProgramChange(program, channel);
+    usbMIDI.send_now();
+    #if defined(DEBUG_MIDI_CONFIG)
+      Serial.printf("\nDEBUG_MIDI_CONFIG\tERROR_WAITING_FOR_GONFIG!\t%s", err.f_str());
+    #endif
+    return;
+  };
+  if (!config_load_mapping(config["mapping"])) {
+    currentMode = ERROR;
+    usbMIDI.sendProgramChange(ERROR_CODE_34, MIDI_OUTPUT_CHANNEL); // ProgramChange(program, channel);
+    usbMIDI.send_now();
+    #if defined(DEBUG_MIDI_CONFIG)
+      Serial.printf("\nDEBUG_MIDI_CONFIG\tERROR_LOADING_GONFIG_FAILED!");
+    #endif
+    return;
+  };
+  modes[currentMode].leds.setup = true;
+  modes[currentMode].leds.update = true;
+  modes[currentMode].run = true;
+};
+
+
 inline void flash_config(char* data, unsigned int size) {
 
   if (modes[FLASH_CONFIG].run == true) {
     modes[FLASH_CONFIG].run = false;
+
     if (!SerialFlash.begin(FLASH_CHIP_SELECT)) {
       currentMode = ERROR;
+      usbMIDI.sendProgramChange(ERROR_CONNECTING_FLASH, MIDI_OUTPUT_CHANNEL); // ProgramChange(program, channel);
+      usbMIDI.send_now();
       #if defined(DEBUG_SERIAL_FLASH)
         Serial.printf("\nDEBUG_SERIAL_FLASH\tERROR_CONNECTING_FLASH");
       #endif
@@ -293,6 +335,8 @@ inline void flash_config(char* data, unsigned int size) {
       flashFile = SerialFlash.open("config.json");
       if (!flashFile) {
         currentMode = ERROR;
+        usbMIDI.sendProgramChange(ERROR_WHILE_OPEN_FLASH_FILE, MIDI_OUTPUT_CHANNEL); // ProgramChange(program, channel);
+        usbMIDI.send_now();
         #if defined(DEBUG_SERIAL_FLASH)
           Serial.printf("\nDEBUG_SERIAL_FLASH\tERROR_WHILE_OPEN_FLASH_FILE!");
         #endif
@@ -301,15 +345,20 @@ inline void flash_config(char* data, unsigned int size) {
     }
     else {
       currentMode = ERROR;
+      usbMIDI.sendProgramChange(ERROR_FLASH_FULL, MIDI_OUTPUT_CHANNEL); // ProgramChange(program, channel);
+      usbMIDI.send_now();
       #if defined(DEBUG_SERIAL_FLASH)
         Serial.printf("\nDEBUG_SERIAL_FLASH\tERROR_FLASH_FULL!");
       #endif
       return;
     };
-    if (size < FLASH_BUFFER_SIZE) {
+    if (size < FLASH_SIZE) {
       flashFile.write(data, size);
       flashFile.close();
-    };
+    } else {
+      usbMIDI.sendProgramChange(ERROR_FILE_TO_BIG, MIDI_OUTPUT_CHANNEL); // ProgramChange(program, channel);
+      usbMIDI.send_now();
+    }
   };
 };
 
@@ -453,12 +502,12 @@ inline bool config_load_mapping(const JsonObject &config) {
   return true;
 };
 
-inline void load_flash_config(void) {
+inline void load_config(void) {
 
   if (!SerialFlash.begin(FLASH_CHIP_SELECT)) {
     currentMode = ERROR;
-    modes[currentMode].leds.setup = true;
-    modes[currentMode].leds.update = true;
+    usbMIDI.sendProgramChange(ERROR_CONNECTING_FLASH, MIDI_OUTPUT_CHANNEL); // ProgramChange(program, channel);
+    usbMIDI.send_now();
     #if defined(DEBUG_SERIAL_FLASH)
       Serial.printf("\nDEBUG_SERIAL_FLASH\tERROR_CONNECTING_FLASH");
     #endif
@@ -475,6 +524,8 @@ inline void load_flash_config(void) {
     if (err) {
       // Load a default config file?
       currentMode = ERROR;
+      usbMIDI.sendProgramChange(ERROR_WAITING_FOR_GONFIG, MIDI_OUTPUT_CHANNEL); // ProgramChange(program, channel);
+      usbMIDI.send_now();
       #if defined(DEBUG_SERIAL_FLASH)
         Serial.printf("\nDEBUG_SERIAL_FLASH\tERROR_WAITING_FOR_GONFIG!\t%s", err.f_str());
       #endif
@@ -482,6 +533,8 @@ inline void load_flash_config(void) {
     };
     if (!config_load_mapping(config["mapping"])) {
       currentMode = ERROR;
+      usbMIDI.sendProgramChange(ERROR_LOADING_GONFIG_FAILED, MIDI_OUTPUT_CHANNEL); // ProgramChange(program, channel);
+      usbMIDI.send_now();
       #if defined(DEBUG_SERIAL_FLASH)
         Serial.printf("\nDEBUG_SERIAL_FLASH\tERROR_LOADING_GONFIG_FAILED!");
       #endif
@@ -494,8 +547,8 @@ inline void load_flash_config(void) {
   }
   else{
     currentMode = ERROR;
-    modes[currentMode].leds.setup = true;
-    modes[currentMode].leds.update = true;
+    usbMIDI.sendProgramChange(ERROR_NO_CONFIG_FILE, MIDI_OUTPUT_CHANNEL); // ProgramChange(program, channel);
+    usbMIDI.send_now();
     #if defined(DEBUG_SERIAL_FLASH)
       Serial.printf("\nDEBUG_SERIAL_FLASH\tERROR_NO_CONFIG_FILE!");
     #endif
@@ -503,15 +556,13 @@ inline void load_flash_config(void) {
 };
 
 void CONFIG_SETUP(void){
-  leds_hardware_setup();
-  encoder_hardware_setup();
-  load_flash_config();
+  setup_leds(&modes[currentMode]);
+  load_config();
 };
 
 void update_config(){
   update_buttons();
   update_encoder();
-  usb_set_params();
   update_leds();
   flash_config(configData, configDataLength);
 };

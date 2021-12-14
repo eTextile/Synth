@@ -8,21 +8,11 @@
 #define __CONFIG_H__
 
 #include <Arduino.h>
-#include <ArduinoJson.h>
 
 #define NAME                       "256"
 #define PROJECT                    "ETEXTILE-SYNTHESIZER"
 #define VERSION                    "1.0.9"
-
-// State machine
-#define STATE_START                0
-#define STATE_SIZE                 1
-#define STATE_CONTENT              2
-// Special bytes in the communication protocol
-#define HAND_SHAKE                 0x7f
-#define BYTE_START                 0x7e
-#define BYTE_ESCAPE                0x7d
-#define BYTE_SEPARATOR             0x7c
+#define SENSOR_UID                 1 // To add into the .json config file
 
 #define LOAD_CONFIG                0  // E256-LEDs: 
 #define FLASH_CONFIG               1  // E256-LEDs:
@@ -50,7 +40,7 @@
 #define ENCODER_PIN_A               22
 #define ENCODER_PIN_B               9
 #define FLASH_CHIP_SELECT           6
-#define FLASH_BUFFER_SIZE           4096
+#define FLASH_SIZE                  4096
 #define FILENAME_STRING_SIZE        11 // config.json
 #endif
 
@@ -93,6 +83,14 @@
 #define MIDI_INPUT_CHANNEL          1  // [1:15] Set the HARDWARE MIDI_INPUT channel
 #define MIDI_OUTPUT_CHANNEL         1  // [1:15] Set the HARDWARE MIDI_OUTPUT channel
 
+#define ERROR_WAITING_FOR_GONFIG     33
+#define ERROR_LOADING_GONFIG_FAILED  34
+#define ERROR_CONNECTING_FLASH       35
+#define ERROR_WHILE_OPEN_FLASH_FILE  36
+#define ERROR_FLASH_FULL             37
+#define ERROR_FILE_TO_BIG            38
+#define ERROR_NO_CONFIG_FILE         39
+
 extern uint8_t currentMode;   // Exposed local declaration see config.cpp
 extern uint8_t currentLevel;
 
@@ -126,7 +124,11 @@ extern e256_level_t levels[];  // Exposed local declaration see config.cpp
 extern e256_mode_t modes[];  // Exposed local declaration see config.cpp
 
 void CONFIG_SETUP(void);
-bool config_load_mapping(const JsonObject &config);
+
+void e256_programChange(byte channel, byte program);
+void e256_controlChange(byte channel, byte control, byte value);
+void e256_systemExclusive(byte *data, unsigned int length);
+
 void update_config(void);
 
 #endif /*__CONFIG_H__*/

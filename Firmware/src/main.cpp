@@ -9,31 +9,13 @@
 #include "scan.h"
 #include "interp.h"
 #include "blob.h"
+#include "midi_bus.h"
+#include "usb_midi_transmit.h"
 
-#if defined(USB_MTPDISK)
-#include "mtp_spi.h"
-#include "usb_osc_transmit.h"
-#endif
-#if defined(USB_MTPDISK_MIDI)
-#include "mtp_spi.h"
-#include "midi_bus.h"
-#include "usb_midi_transmit.h"
-#endif
-#if defined(USB_MIDI)
-#include "midi_bus.h"
-#include "usb_midi_transmit.h"
-#endif
-#if defined(USB_MIDI_SERIAL)
-#include "midi_bus.h"
-#include "usb_midi_transmit.h"
-#include "usb_osc_transmit.h"
-#endif
 #if defined(HARDWARE_MIDI)
-#include "midi_bus.h"
 #include "hardware_midi_transmit.h"
 #endif
 #if defined(MAPPING_LAYOUT)
-#include "midi_bus.h"
 #include "mapping_lib.h"
 #endif
 #if defined(PLAYER_FLASH)
@@ -57,20 +39,9 @@ void setup() {
   INTERP_SETUP();
   BLOB_SETUP();
   MIDI_SETUP();
-#if defined(USB_MTPDISK)
-  MTP_SPI_SETUP();
-  USB_OSC_TRANSMIT_SETUP();
-#endif
-#if defined(USB_MTPDISK_MIDI)
-  MTP_SPI_SETUP();
-  USB_MIDI_TRANSMIT_SETUP();
-#endif
-#if defined(USB_MIDI_SERIAL) || defined(USB_MIDI)
-  //USB_SERIAL_TRANSMIT_SETUP();
-  //USB_OSC_TRANSMIT_SETUP();
   USB_MIDI_TRANSMIT_SETUP();
   CONFIG_SETUP();
-#endif
+
 #if defined(HARDWARE_MIDI)
   HARDWARE_MIDI_TRANSMIT_SETUP();
 #endif
@@ -99,19 +70,11 @@ void setup() {
 };
 
 void loop() {
-#if defined(USB_MTPDISK) || defined(USB_MTPDISK_MIDI)
-  handle_mtp_spi();
-#endif
-#if defined(USB_MIDI) || defined(USB_MIDI_SERIAL) || defined(USB_MTPDISK_MIDI)
   usb_midi_read_input();
-#endif
-#if defined(USB_OSC)
-  usb_osc_read_input();
-#endif
+  update_config();
 #if defined(HARDWARE_MIDI)
   hardware_midi_read_input();
 #endif
-  update_config();
 #if defined(SOUND_CARD)
   update_levels();
 #endif
@@ -134,13 +97,7 @@ void loop() {
 #if defined(PLAYER_FLASH)
   player_flash();
 #endif
-#if defined(USB_MIDI) || defined(USB_MTPDISK_MIDI)
   usb_midi_transmit();
-#endif
-#if defined(USB_MIDI_SERIAL)
-  usb_midi_transmit();
-  usb_osc_transmit();
-#endif
 #if defined(HARDWARE_MIDI)
   hardware_midi_transmit();
 #endif

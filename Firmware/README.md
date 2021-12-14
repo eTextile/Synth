@@ -15,10 +15,7 @@ All Library dependencies are automatically installed using platformio.ini (lib_d
 ### Firmware main file
     /Synth/Firmware/src/main.cpp
 
-## USB_MTP_MIDI - prerequisite
-
 ### Install our customized Teensy platform variant in PlatformIO
-
 1. Go to "PIO Home"
 2. Click on "Platforms"
 3. Click on "Advanced Installation"
@@ -30,11 +27,13 @@ All Library dependencies are automatically installed using platformio.ini (lib_d
 - You must use the included power cable with an **5Volts AC/DC power Plug** or your laptop USB plug
 
 ### Program Synopsis
-The embedded Software is implementing **image analysis algorithms** on the E256 eTextile-matrix-sensor to design a new tactile interaction vocabulary.
-- **Bilinear interpolation** The 16x16 Analog pressure sensor values are interpolated with a bilinear algorithm
-- **Blob tracking** The interpolated pressure matrix sensor values are analyzed with a Connected Component Labelling algorithm
-- **Blob ID management** each blob is tracked in space and time using single chained linked list
-- **Blob shape and movement characterisation**: blobs coordinates, size and pressure
+- **Force image acquisition** 16x16 made with sinchronious Analogread
+- **Bilinear interpolation** the sensor force image is interpolated to 64x64 using bilinear algorithm
+- **Touch biasing** threshold adjustable depending on needed sensitivity
+- **Blob segmentation** the binary image is analyzed with a Connected Component Labelling algorithm
+- **Blob tracking** blob ID management (matching with previous frame)
+- **Blob shape and movement characterisation**: blobs coordinates, size, pressure, velocity
+- **Blob transmission** via MIDI over USB and MIDI over HARDWARE
 
 ### Benchmark
   - ADC_INPUT : 2500 FPS
@@ -47,14 +46,13 @@ The firmware is using a **platformio.ini** to select the needed fonctionnalites.
 
 ### Use the eTextile-Synthesizer as COMPUTER_INTERFACE
 - [USB_MIDI]: Transmit touch coordinates via USB_MIDI
-- [USB_MTP_MIDI]: Experimental
 - [HARDWARE_MIDI]: Transmit touch coordinates via HARDWARE_MIDI
-- [USB_OSC]: Transmit touch coordinates via USB_SLIP_OSC
 
 ### Use the eTextile-Synthesizer as STANDALONE device
-- [SYNTH_PLAYER] : Set the eTextile-Synthesizer as polyphonic synthesizer
-- [GRANULAR_PLAYER] : Set the eTextile-Synthesizer as 
-- [FLASH_PLAYER] : Set the eTextile-Synthesizer as 
+- [SYNTH_PLAYER]: set the eTextile-Synthesizer as polyphonic synthesizer
+- [GRANULAR_PLAYER]: 
+- [FLASH_PLAYER]: play audio files loded into the external flash memody 
+- [MOOG]: TODO
 
 ### Mapping functionality (IN_PROGRESS)
 - [MAPPING_LAYOUT]
