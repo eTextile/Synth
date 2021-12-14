@@ -269,99 +269,6 @@ void printBytes(const byte *data, unsigned int size) {
   };
 };
 
-void e256_systemExclusive(byte *data, unsigned int length){
-
-  #if defined(DEBUG_MIDI_CONFIG)
-    Serial.print("SysEx Message: ");
-    printBytes(data, length);
-    Serial.println();
-  #endif
-
-  char configData[length - 2] = {0}; // SysEx messages start with 0xF0 and end with 0xF7
-  memcpy(configData, data + 1, length - 2);
-  
-  StaticJsonDocument<2048> config;
-
-  DeserializationError err = deserializeJson(config, configData);
-
-  if (err) {
-    currentMode = ERROR;
-    usbMIDI.sendProgramChange(ERROR_WAITING_FOR_GONFIG, MIDI_OUTPUT_CHANNEL); // ProgramChange(program, channel);
-    usbMIDI.send_now();
-    #if defined(DEBUG_MIDI_CONFIG)
-      Serial.printf("\nDEBUG_MIDI_CONFIG\tERROR_WAITING_FOR_GONFIG!\t%s", err.f_str());
-    #endif
-    return;
-  };
-  if (!config_load_mapping(config["mapping"])) {
-    currentMode = ERROR;
-    usbMIDI.sendProgramChange(ERROR_LOADING_GONFIG_FAILED, MIDI_OUTPUT_CHANNEL); // ProgramChange(program, channel);
-    usbMIDI.send_now();
-    #if defined(DEBUG_MIDI_CONFIG)
-      Serial.printf("\nDEBUG_MIDI_CONFIG\tERROR_LOADING_GONFIG_FAILED!");
-    #endif
-    return;
-  };
-  modes[currentMode].leds.setup = true;
-  modes[currentMode].leds.update = true;
-  modes[currentMode].run = true;
-};
-
-
-inline void flash_config(char* data, unsigned int size) {
-
-  if (modes[FLASH_CONFIG].run == true) {
-    modes[FLASH_CONFIG].run = false;
-
-    if (!SerialFlash.begin(FLASH_CHIP_SELECT)) {
-      currentMode = ERROR;
-      usbMIDI.sendProgramChange(ERROR_CONNECTING_FLASH, MIDI_OUTPUT_CHANNEL); // ProgramChange(program, channel);
-      usbMIDI.send_now();
-      #if defined(DEBUG_SERIAL_FLASH)
-        Serial.printf("\nDEBUG_SERIAL_FLASH\tERROR_CONNECTING_FLASH");
-      #endif
-      return;
-    };
-    // Flash LED when flash is ready
-    while (!SerialFlash.ready());
-
-    SerialFlashFile flashFile;
-
-    if (SerialFlash.exists("config.json")) {
-      SerialFlash.remove("config.json"); // It doesn't reclaim the space, but it does let you create a new file with the same name
-    };
-    // Create a new file and open it for writing
-    if (SerialFlash.create("config.json", size)) {
-      flashFile = SerialFlash.open("config.json");
-      if (!flashFile) {
-        currentMode = ERROR;
-        usbMIDI.sendProgramChange(ERROR_WHILE_OPEN_FLASH_FILE, MIDI_OUTPUT_CHANNEL); // ProgramChange(program, channel);
-        usbMIDI.send_now();
-        #if defined(DEBUG_SERIAL_FLASH)
-          Serial.printf("\nDEBUG_SERIAL_FLASH\tERROR_WHILE_OPEN_FLASH_FILE!");
-        #endif
-        return;
-      };
-    }
-    else {
-      currentMode = ERROR;
-      usbMIDI.sendProgramChange(ERROR_FLASH_FULL, MIDI_OUTPUT_CHANNEL); // ProgramChange(program, channel);
-      usbMIDI.send_now();
-      #if defined(DEBUG_SERIAL_FLASH)
-        Serial.printf("\nDEBUG_SERIAL_FLASH\tERROR_FLASH_FULL!");
-      #endif
-      return;
-    };
-    if (size < FLASH_SIZE) {
-      flashFile.write(data, size);
-      flashFile.close();
-    } else {
-      usbMIDI.sendProgramChange(ERROR_FILE_TO_BIG, MIDI_OUTPUT_CHANNEL); // ProgramChange(program, channel);
-      usbMIDI.send_now();
-    }
-  };
-};
-
 //////////////////////////////////////// LOAD CONFIG
 inline bool config_load_mapping_triggers(const JsonArray& config) {
   if (config.isNull()) {
@@ -502,6 +409,48 @@ inline bool config_load_mapping(const JsonObject &config) {
   return true;
 };
 
+char configData[FLASH_SIZE];
+unsigned int configDataLength = 0;
+
+// Load config via MIDI system exclusive message
+void e256_systemExclusive(byte *data, unsigned int length){
+
+  #if defined(DEBUG_MIDI_CONFIG)
+    Serial.print("SysEx Message: ");
+    printBytes(data, length);
+    Serial.println();
+  #endif
+
+  configDataLength = length - 2; // SysEx messages start with 0xF0 and end with 0xF7
+  memcpy(configData, data + 1, configDataLength);
+  
+  StaticJsonDocument<2048> config;
+
+  DeserializationError err = deserializeJson(config, configData);
+
+  if (err) {
+    currentMode = ERROR;
+    usbMIDI.sendProgramChange(ERROR_WAITING_FOR_GONFIG, MIDI_OUTPUT_CHANNEL); // ProgramChange(program, channel);
+    usbMIDI.send_now();
+    #if defined(DEBUG_MIDI_CONFIG)
+      Serial.printf("\nDEBUG_MIDI_CONFIG\tERROR_WAITING_FOR_GONFIG!\t%s", err.f_str());
+    #endif
+    return;
+  };
+  if (!config_load_mapping(config["mapping"])) {
+    currentMode = ERROR;
+    usbMIDI.sendProgramChange(ERROR_LOADING_GONFIG_FAILED, MIDI_OUTPUT_CHANNEL); // ProgramChange(program, channel);
+    usbMIDI.send_now();
+    #if defined(DEBUG_MIDI_CONFIG)
+      Serial.printf("\nDEBUG_MIDI_CONFIG\tERROR_LOADING_GONFIG_FAILED!");
+    #endif
+    return;
+  };
+  modes[currentMode].leds.setup = true;
+  modes[currentMode].leds.update = true;
+  modes[currentMode].run = true;
+};
+
 inline void load_config(void) {
 
   if (!SerialFlash.begin(FLASH_CHIP_SELECT)) {
@@ -552,6 +501,60 @@ inline void load_config(void) {
     #if defined(DEBUG_SERIAL_FLASH)
       Serial.printf("\nDEBUG_SERIAL_FLASH\tERROR_NO_CONFIG_FILE!");
     #endif
+  };
+};
+
+inline void flash_config(char* data, unsigned int size) {
+
+  if (modes[FLASH_CONFIG].run == true) {
+    modes[FLASH_CONFIG].run = false;
+
+    if (!SerialFlash.begin(FLASH_CHIP_SELECT)) {
+      currentMode = ERROR;
+      usbMIDI.sendProgramChange(ERROR_CONNECTING_FLASH, MIDI_OUTPUT_CHANNEL); // ProgramChange(program, channel);
+      usbMIDI.send_now();
+      #if defined(DEBUG_SERIAL_FLASH)
+        Serial.printf("\nDEBUG_SERIAL_FLASH\tERROR_CONNECTING_FLASH");
+      #endif
+      return;
+    };
+    // Flash LED when flash is ready
+    while (!SerialFlash.ready());
+
+    SerialFlashFile flashFile;
+
+    if (SerialFlash.exists("config.json")) {
+      SerialFlash.remove("config.json"); // It doesn't reclaim the space, but it does let you create a new file with the same name
+    };
+    // Create a new file and open it for writing
+    if (SerialFlash.create("config.json", size)) {
+      flashFile = SerialFlash.open("config.json");
+      if (!flashFile) {
+        currentMode = ERROR;
+        usbMIDI.sendProgramChange(ERROR_WHILE_OPEN_FLASH_FILE, MIDI_OUTPUT_CHANNEL); // ProgramChange(program, channel);
+        usbMIDI.send_now();
+        #if defined(DEBUG_SERIAL_FLASH)
+          Serial.printf("\nDEBUG_SERIAL_FLASH\tERROR_WHILE_OPEN_FLASH_FILE!");
+        #endif
+        return;
+      };
+    }
+    else {
+      currentMode = ERROR;
+      usbMIDI.sendProgramChange(ERROR_FLASH_FULL, MIDI_OUTPUT_CHANNEL); // ProgramChange(program, channel);
+      usbMIDI.send_now();
+      #if defined(DEBUG_SERIAL_FLASH)
+        Serial.printf("\nDEBUG_SERIAL_FLASH\tERROR_FLASH_FULL!");
+      #endif
+      return;
+    };
+    if (size < FLASH_SIZE) {
+      flashFile.write(data, size);
+      flashFile.close();
+    } else {
+      usbMIDI.sendProgramChange(ERROR_FILE_TO_BIG, MIDI_OUTPUT_CHANNEL); // ProgramChange(program, channel);
+      usbMIDI.send_now();
+    }
   };
 };
 
