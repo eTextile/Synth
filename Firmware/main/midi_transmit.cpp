@@ -29,10 +29,20 @@ void llist_midi_init(llist_t* llist_ptr, midiNode_t* nodeArray_ptr, const int no
   };
 };
 
+void e256_controlChange(byte channel, byte control, byte value){
+   midiNode_t* node_ptr = (midiNode_t*)llist_pop_front(&midi_node_stack);  // Get a node from the MIDI nodes stack
+   node_ptr->midiMsg.status = midi::ControlChange;  // Set the MIDI status
+   node_ptr->midiMsg.data1 = control;               // Set the MIDI note
+   node_ptr->midiMsg.data2 = value;                 // Set the MIDI velocity
+   //node_ptr->midiMsg.channel = midiMsg.channel;   // Set the MIDI channel
+   llist_push_front(&midiIn, node_ptr);             // Add the node to the midiIn linked liste
+};
+
 void MIDI_TRANSMIT_SETUP(void) {
 #if MIDI_TRANSMIT
   usbMIDI.begin();
-  usbMIDI.setHandleMessage(handle_midi_input);
+  //usbMIDI.setHandleMessage(handle_midi_input);
+  usbMIDI.setHandleControlChange(e256_controlChange);
 #endif
 #if MIDI_HARDWARE
   MIDI.begin(MIDI_INPUT_CHANNEL); // Launch MIDI and listen to channel 1

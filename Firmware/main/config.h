@@ -20,7 +20,7 @@
 #define OSC_TRANSMIT             0  // [0:1] Set the eTextile-Synthesizer as USB SLIP_OSC divice - DO NOT FORGET: Arduino/Touls/USB_Type/Serial
 
 #define MIDI_TRANSMIT            1  // [0:1] Set the eTextile-Synthesizer as USB_MIDI divice - DO NOT FORGET: Arduino/Touls/USB_Type/MIDI
-#define MIDI_HARDWARE            1  // [0:1] Set the eTextile-Synthesizer as HARDWARE_MIDI divice - DO NOT FORGET: Arduino/Touls/USB_Type/MIDI
+#define MIDI_HARDWARE            0  // [0:1] Set the eTextile-Synthesizer as HARDWARE_MIDI divice - DO NOT FORGET: Arduino/Touls/USB_Type/MIDI
 #define MIDI_INPUT_CHANNEL       1  // [1:15] Set the HARDWARE MIDI_INPUT channel
 #define MIDI_OUTPUT_CHANNEL      1  // [1:15] Set the HARDWARE MIDI_OUTPUT channel
 
@@ -29,7 +29,7 @@
 #define PLAYER_GRANULAR          0  // [0:1] Set the eTextile-Synthesizer as STANDALONE divice
 #define PLAYER_FLASH             0  // [0:1] Set the eTextile-Synthesizer as STANDALONE divice
 
-#define MAPPING_LAYOUT           1  // [0:1] Enable MIDI mapping functionality
+#define MAPPING_LAYOUT           0  // [0:1] Enable MIDI mapping functionality
 #define GRID_LAYOUT_MIDI_IN      0  // [0:1] 
 #define GRID_LAYOUT_DEFAULT      0  // [0:1] 
 #define GRID_LAYOUT_HARMONIC     1  // [0:1] 
