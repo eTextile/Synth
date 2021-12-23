@@ -54,7 +54,7 @@ inline void update_interpThreshold(e256_level_t* levels_ptr){
 
 // Bilinear interpolation
 void matrix_interp(void) {
-  update_interpThreshold(&levels[THRESHOLD]);
+  update_interpThreshold(&e256_ctr.levels[THRESHOLD]);
   // Clear interpFrameArray
   memset((uint8_t*)interpFrameArray, 0, SIZEOF_FRAME);
   for (uint8_t rowPos = 0; rowPos < IRAW_ROWS; rowPos++) {

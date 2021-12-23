@@ -4,11 +4,14 @@
   This work is licensed under Creative Commons Attribution-ShareAlike 4.0 International license, see the LICENSE file for details.
 */
 
-#ifndef __USB_MIDI_TRANSMIT_H__
-#define __USB_MIDI_TRANSMIT_H__
+#ifndef __ALLOCATE_H__
+#define __ALLOCATE_H__
 
-void USB_MIDI_TRANSMIT_SETUP(void);
-void usb_midi_read_input(void);
-void usb_midi_transmit(void);
+#include <Arduino.h>
 
-#endif /*__USB_MIDI_TRANSMIT_H__*/
+extern char* config_ptr;
+extern uint16_t configLength;
+
+char* allocate(char* data_ptr, unsigned int size);
+
+#endif /*__ALLOCATE_H__*/

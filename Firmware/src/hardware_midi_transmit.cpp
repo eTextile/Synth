@@ -59,7 +59,7 @@ void hardware_midi_handle_input(const midi::Message<128u> &midiMsg) {
 };
 
 void hardware_midi_transmit(void) {
-  switch (currentMode) {
+  switch (playMode) {
     case MAPPING_LIB:
       for (midiNode_t* node_ptr = (midiNode_t*)ITERATOR_START_FROM_HEAD(&midiOut); node_ptr != NULL; node_ptr = (midiNode_t*)ITERATOR_NEXT(node_ptr)) {
         switch (node_ptr->midiMsg.status) {

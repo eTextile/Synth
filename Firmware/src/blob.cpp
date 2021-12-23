@@ -73,7 +73,7 @@ void matrix_find_blobs(void) {
 
     for (uint8_t posX = (posY % X_STRIDE); posX < NEW_COLS; posX += X_STRIDE) {
       if (!IMAGE_GET_PIXEL_FAST(bmp_row_ptr_A, posX) &&
-          PIXEL_THRESHOLD(IMAGE_GET_PIXEL_FAST(row_ptr_A, posX), levels[THRESHOLD].val)
+          PIXEL_THRESHOLD(IMAGE_GET_PIXEL_FAST(row_ptr_A, posX), e256_ctr.levels[THRESHOLD].val)
          ) {
 
         uint8_t oldX = posX;
@@ -98,13 +98,13 @@ void matrix_find_blobs(void) {
 
           while ((left > 0) &&
                  !IMAGE_GET_PIXEL_FAST(bmp_row_ptr_B, left - 1) &&
-                 PIXEL_THRESHOLD(IMAGE_GET_PIXEL_FAST(row_ptr_B, left - 1), levels[THRESHOLD].val)
+                 PIXEL_THRESHOLD(IMAGE_GET_PIXEL_FAST(row_ptr_B, left - 1), e256_ctr.levels[THRESHOLD].val)
                 ) {
             left--;
           };
           while (right < (NEW_COLS - 1) &&
                  !IMAGE_GET_PIXEL_FAST(bmp_row_ptr_B, right + 1) &&
-                 PIXEL_THRESHOLD(IMAGE_GET_PIXEL_FAST(row_ptr_B, right + 1), levels[THRESHOLD].val)
+                 PIXEL_THRESHOLD(IMAGE_GET_PIXEL_FAST(row_ptr_B, right + 1), e256_ctr.levels[THRESHOLD].val)
                 ) {
             right++;
           };
@@ -139,7 +139,7 @@ void matrix_find_blobs(void) {
               for (uint8_t i = top_left; i <= right; i++) {
 
                 if ((!IMAGE_GET_PIXEL_FAST(bmp_row_ptr_B, i))
-                    && (PIXEL_THRESHOLD(IMAGE_GET_PIXEL_FAST(row_ptr_B, i), levels[THRESHOLD].val))) {
+                    && (PIXEL_THRESHOLD(IMAGE_GET_PIXEL_FAST(row_ptr_B, i), e256_ctr.levels[THRESHOLD].val))) {
 
                   xylr_t* context = (xylr_t*)llist_pop_front(&llist_context_stack);
                   context->x = posX;
@@ -167,7 +167,7 @@ void matrix_find_blobs(void) {
             for (uint8_t i = bot_left; i <= right; i++) {
 
               if (!IMAGE_GET_PIXEL_FAST(bmp_row_ptr_B, i) &&
-                  PIXEL_THRESHOLD(IMAGE_GET_PIXEL_FAST(row_ptr_B, i), levels[THRESHOLD].val)) {
+                  PIXEL_THRESHOLD(IMAGE_GET_PIXEL_FAST(row_ptr_B, i), e256_ctr.levels[THRESHOLD].val)) {
 
                 xylr_t* context = (xylr_t*)llist_pop_front(&llist_context_stack);
                 context->x = posX;
@@ -213,7 +213,7 @@ void matrix_find_blobs(void) {
           blob_t* blob_ptr = (blob_t*)llist_pop_front(&llist_blobs_stack);
           blob_ptr->centroid.X = constrain(blob_cx / blob_pixels, X_MIN, X_MAX) - X_MIN ;
           blob_ptr->centroid.Y = constrain(blob_cy / blob_pixels, Y_MIN, Y_MAX) - Y_MIN;
-          blob_ptr->centroid.Z = blob_depth - levels[THRESHOLD].val;
+          blob_ptr->centroid.Z = blob_depth - e256_ctr.levels[THRESHOLD].val;
           blob_ptr->box.W = (blob_x2 - blob_x1);
           blob_ptr->box.H = blob_height;
           llist_push_front(&llist_blobs_temp, blob_ptr);
