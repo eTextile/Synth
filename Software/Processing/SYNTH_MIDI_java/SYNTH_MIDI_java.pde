@@ -7,7 +7,7 @@
 // Import librarys    
 // http://www.smallbutdigital.com/projects/themidibus/
 // https://docs.oracle.com/javase/7/docs/api/javax/sound/midi/MidiMessage.html
-
+  
 import themidibus.*;
 import javax.sound.midi.MidiMessage;
 import javax.sound.midi.ShortMessage;

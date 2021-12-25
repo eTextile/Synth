@@ -11,9 +11,9 @@
 #include "ofxMidi.h" // https://github.com/danomatika/ofxMidi
 #include "ofxGui.h"  //
 
-#define POROJECT_NAME         "ETEXTILE-SYNTH"
-#define MIDI_PORT_NAME        "E256"
-#define VERSION               "1.0.7"
+#define NAME                  "256"
+#define PROJECT               "ETEXTILE-SYNTHESIZER"
+#define VERSION               "1.0.9"
 
 #define RAW_COLS              16
 #define RAW_ROWS              16
@@ -22,18 +22,22 @@
 #define NEW_ROWS              (RAW_ROWS * 4)
 #define NEW_FRAME             (NEW_COLS * NEW_ROWS)
 
-#define LINE_OUT              0 // LED | 0 | 0 |
-#define SIG_IN                1 // LED | 1 | 0 |
-#define SIG_OUT               2 // LED | 0 | 1 |
-#define THRESHOLD             3 // LED | 1 | 1 |
-#define CALIBRATE             4
-#define SAVE                  5
-#define BLOBS_PLAY            6
-#define BLOBS_LEARN           7
-#define BLOBS_MAPPING         8
-#define RAW_MATRIX            9
-#define INTERP_MATRIX         10
-#define ALL_OFF               11
+#define LOAD_CONFIG           0  // E256-LEDs:
+#define UPLOAD_CONFIG         1  // E256-LEDs:
+#define CALIBRATE             2  // E256-LEDs:
+#define BLOBS_PLAY            3  // Send all blobs values over USB using MIDI format
+#define BLOBS_LEARN           4  // Send separate blobs values over USB using MIDI format
+#define MAPPING_LIB           5  // E256-LEDs:
+#define RAW_MATRIX            6
+#define INTERP_MATRIX         7
+#define ERROR                 6  // E256-LEDs:
+
+#define ALL_OFF               9
+
+#define SIG_IN                0  // E256-LEDs: | 1 | 0 |
+#define SIG_OUT               1  // E256-LEDs: | 0 | 1 |
+#define LINE_OUT              2  // E256-LEDs: | 0 | 0 |
+#define THRESHOLD             3  // E256-LEDs: | 1 | 1 |
 
 #define MIDI_OUTPUT_CHANNEL   1  // [1:15] Set the MIDI_OUTPUT channel
 

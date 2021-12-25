@@ -11,6 +11,7 @@
 #include "blob.h"
 #include "midi_bus.h"
 #include "allocate.h"
+#include <ArduinoJson.h>
 
 #define MIDI_TRANSMIT_INTERVAL 500
 uint32_t usbTransmitTimeStamp = 0;
@@ -34,16 +35,16 @@ void e256_noteOff(byte channel, byte note, byte velocity){
 };
 */
 
-inline void usb_set_level(e256_control_t *ctr_ptr, uint8_t level, uint8_t value) {
+inline void usb_set_level(e256_control_t *ctr_ptr, uint8_t levelMode, uint8_t value) {
   setup_leds(ctr_ptr->levels);
   ctr_ptr->levels[playMode].leds.update = false;
-  ctr_ptr->levels[level].val = value;
-  e256_encoder.write(ctr_ptr->levels[level].val << 2);
-  ctr_ptr->levels[level].leds.setup = true;
-  ctr_ptr->levels[level].leds.update = true;
-  ctr_ptr->levels[level].run = true;
+  ctr_ptr->levels[levelMode].val = value;
+  ctr_ptr->encoder->write(ctr_ptr->levels[levelMode].val << 2);
+  ctr_ptr->levels[levelMode].leds.setup = true;
+  ctr_ptr->levels[levelMode].leds.update = true;
+  ctr_ptr->levels[levelMode].run = true;
   #if defined(DEBUG_LEVELS)
-    Serial.printf("\nDEBUG_USB_LEVELS:%d", levelMode;
+    Serial.printf("\nDEBUG_USB_LEVEL_MODE:%d", (ctr_ptr->levels[levelMode].val << 2));
   #endif
 };
 
@@ -52,7 +53,33 @@ void e256_controlChange(byte channel, byte control, byte value){
 };
 
 void e256_programChange(byte channel, byte program){
-  set_mode(&e256_ctr, program);
+  //set_mode(&e256_ctr, program);
+};
+
+// 
+boolean load_config(char* data_ptr){
+
+  StaticJsonDocument<2048> config;
+  DeserializationError err = deserializeJson(config, data_ptr);
+
+  if (err) {
+    playMode = ERROR;
+    usbMIDI.sendProgramChange(ERROR_WAITING_FOR_GONFIG, MIDI_OUTPUT_CHANNEL); // ProgramChange(program, channel);
+    usbMIDI.send_now();
+    #if defined(DEBUG_MIDI_CONFIG)
+      Serial.printf("\nDEBUG_MIDI_CONFIG\tERROR_WAITING_FOR_GONFIG!\t%s", err.f_str());
+    #endif
+    return false;
+  };
+  if (!config_load_mapping(config["mapping"])) {
+    playMode = ERROR;
+    usbMIDI.sendProgramChange(ERROR_LOADING_GONFIG_FAILED, MIDI_OUTPUT_CHANNEL); // ProgramChange(program, channel);
+    usbMIDI.send_now();
+    #if defined(DEBUG_MIDI_CONFIG)
+      Serial.printf("\nDEBUG_MIDI_CONFIG\tERROR_LOADING_GONFIG_FAILED!");
+    #endif
+    return true;
+  };
 };
 
 inline void printBytes(const byte* data_ptr, unsigned int size) {

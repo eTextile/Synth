@@ -8,14 +8,14 @@
 #define __CONFIG_H__
 
 #include <Arduino.h>
-#include <ArduinoJson.h>
 #define ENCODER_OPTIMIZE_INTERRUPTS
-#include <Encoder.h>                   // https://github.com/PaulStoffregen/Encoder
+#include <Encoder.h>                 // https://github.com/PaulStoffregen/Encoder
+#include <ArduinoJson.h>
 
 #define NAME                         "256"
 #define PROJECT                      "ETEXTILE-SYNTHESIZER"
 #define VERSION                      "1.0.9"
-#define SENSOR_UID                   1 // To add into the .json config file
+#define SENSOR_UID                   1  // Unique sensor ID
 
 #define LOAD_CONFIG                  0  // E256-LEDs: 
 #define FLASH_CONFIG                 1  // E256-LEDs:
@@ -120,11 +120,13 @@ struct e256_level {
 
 typedef struct e256_control e256_control_t;
 struct e256_control {
+  Encoder* encoder;
   e256_mode_t* modes;
   e256_level_t* levels;
 };
 
-extern Encoder e256_encoder;
+extern uint16_t configLength;
+
 extern e256_control_t e256_ctr;
 
 extern  uint8_t playMode;
@@ -137,10 +139,10 @@ extern  uint8_t ledsIterCount;
 void CONFIG_SETUP(void);
 void setup_leds(void* struct_ptr);
 
-void set_mode(e256_control* control, uint8_t mode);
-void set_level(e256_control* control, uint8_t level);
+//void set_mode(e256_control* control_ptr, uint8_t mode);
 
-boolean load_config(char* data_ptr);
+bool config_load_mapping(const JsonObject &config);
+
 void update_config(void);
 
 #endif /*__CONFIG_H__*/

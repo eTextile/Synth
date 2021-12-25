@@ -1,7 +1,6 @@
 #include "allocate.h"
 
 char* config_ptr = NULL;
-uint16_t configLength = 0;
 
 char* allocate(char* data_ptr, unsigned int size) {
   if (config_ptr == NULL){

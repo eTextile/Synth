@@ -10,7 +10,6 @@
 #include <Arduino.h>
 
 extern char* config_ptr;
-extern uint16_t configLength;
 
 char* allocate(char* data_ptr, unsigned int size);
 

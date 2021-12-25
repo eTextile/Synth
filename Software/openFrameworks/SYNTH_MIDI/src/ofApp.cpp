@@ -40,7 +40,7 @@ void ofApp::setup() {
   midiInput.clear();
   midiInputCopy.clear();
 
-  midiOut.sendControlChange(MIDI_OUTPUT_CHANNEL, BLOBS_PLAY, 1);
+  midiOut.sendProgramChange(MIDI_OUTPUT_CHANNEL, BLOBS_PLAY);
 
   // 16 * 16
   for (int y = 0; y < RAW_ROWS; y++) {
@@ -214,7 +214,7 @@ void ofApp::E256_setTreshold(int & tresholdValue) {
 void ofApp::E256_setCaliration() {
   lastMode = mode;
   mode = CALIBRATE;
-  midiOut.sendControlChange(MIDI_OUTPUT_CHANNEL, CALIBRATE, 1);
+  midiOut.sendProgramChange(MIDI_OUTPUT_CHANNEL, CALIBRATE);
   mode = lastMode;
 };
 
@@ -222,12 +222,12 @@ void ofApp::E256_setCaliration() {
 void ofApp::E256_getBlobs(bool & val) {
   if (val == true) {
     mode = BLOBS_PLAY;
-    midiOut.sendControlChange(MIDI_OUTPUT_CHANNEL, BLOBS_PLAY, 1);
+    midiOut.sendProgramChange(MIDI_OUTPUT_CHANNEL, BLOBS_PLAY);
     midiInput.clear();
     midiInputCopy.clear();
   } else {
     mode = BLOBS_LEARN;
-    midiOut.sendControlChange(MIDI_OUTPUT_CHANNEL, BLOBS_LEARN, 1);
+    midiOut.sendProgramChange(MIDI_OUTPUT_CHANNEL, BLOBS_LEARN);
     midiInput.clear();
     midiInputCopy.clear();
   };
@@ -238,13 +238,12 @@ void ofApp::E256_getBlobs(bool & val) {
 void ofApp::E256_getRaw(bool & val) {
   if (val == true) {
     mode = RAW_MATRIX;
-    midiOut.sendControlChange(MIDI_OUTPUT_CHANNEL, RAW_MATRIX, 1);
-    midiOut.sendControlChange(MIDI_OUTPUT_CHANNEL, RAW_MATRIX, 1);
+    midiOut.sendProgramChange(MIDI_OUTPUT_CHANNEL, RAW_MATRIX);
     midiInput.clear();
     midiInputCopy.clear();
   } else {
     mode = ALL_OFF;
-    midiOut.sendControlChange(MIDI_OUTPUT_CHANNEL, ALL_OFF, 1);
+    midiOut.sendProgramChange(MIDI_OUTPUT_CHANNEL, ALL_OFF);
     midiInput.clear();
     midiInputCopy.clear();
   };
