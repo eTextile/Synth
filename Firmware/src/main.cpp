@@ -55,8 +55,7 @@ void setup() {
   SOUND_CARD_SETUP();
 #endif
 #if defined(PLAYER_SYNTH)
-  //PLAYER_SYNTH_SETUP();
-  PLAYER_SYNTH2_SETUP();
+  PLAYER_SYNTH_SETUP();
 #endif
 #if defined(PLAYER_SYNTH2)
   PLAYER_SYNTH2_SETUP();

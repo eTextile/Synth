@@ -85,7 +85,7 @@ void setup_leds(void* struct_ptr){
   };
 };
 
-inline void set_mode(e256_control_t* ctr_ptr, uint8_t mode) {
+inline void set_mode(e256_control_t* ctr_ptr, const uint8_t mode) {
   ledsTimeStamp = millis();
   ledsIterCount = 0;
   lastMode = playMode;
@@ -144,7 +144,7 @@ inline void update_buttons(e256_control_t* ctr_ptr) {
   // [4]-SIG_OUT
   // [5]-THRESHOLD
   if (BUTTON_R.rose() && BUTTON_R.previousDuration() < LONG_HOLD) {
-    levelMode = (levelMode++) % 4; // Loop into the levels
+    levelMode = (levelMode + 1) % 4; // Loop into the levels
     set_level(ctr_ptr);
   };
 };
