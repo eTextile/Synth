@@ -13,7 +13,7 @@ median_t filter[MAX_BLOBS];
 // resets all internal counters
 void RUNING_MEDIAN_SETUP(void) {
   for (uint8_t i = 0; i < MAX_BLOBS; i++) {
-    for (uint8_t j = 0; j < MEDIAN_WINDOW; j++) {
+    for (uint8_t j = 0; j < M_WINDOW; j++) {
       filter[i].X_sort[j] = j;
       filter[i].Y_sort[j] = j;
       filter[i].Z_sort[j] = j;
@@ -32,9 +32,9 @@ void runing_median(void) {
       filter[blob_ptr->UID].index = 1; // Circular buffer runing index
     };
 
-#if defined(DEBUG_MEDIAN)
-    //Serial.printf("\nCOUNT_%d\tINDEX_%d", filter[0].count, filter[0].index);
-#endif
+    #if defined(DEBUG_MEDIAN)
+      //Serial.printf("\nCOUNT_%d\tINDEX_%d", filter[0].count, filter[0].index);
+    #endif
     // Add the new values to the input runing buffer
     filter[blob_ptr->UID].X_rawVal[filter[blob_ptr->UID].index] = blob_ptr->centroid.X;
     //filter[blob_ptr->UID].Y_rawVal[filter[blob_ptr->UID].index] = blob_ptr->centroid.Y;
@@ -51,12 +51,12 @@ void runing_median(void) {
       filter[blob_ptr->UID].X_sort[j] = tempIndex;
     };
 
-#if defined(DEBUG_MEDIAN)
-    Serial.printf("\nDEBUG_MEDIAN : ");
-    for (uint8_t i = 0; i <= filter[0].count; i++) {
-      Serial.printf("\t%d_%f", filter[0].X_sort[i], filter[0].X_rawVal[i]);
-    }
-#endif
+    #if defined(DEBUG_MEDIAN)
+      Serial.printf("\nDEBUG_MEDIAN : ");
+      for (uint8_t i = 0; i <= filter[0].count; i++) {
+       Serial.printf("\t%d_%f", filter[0].X_sort[i], filter[0].X_rawVal[i]);
+      }
+    #endif
 /*
     // Get sorted element
     if (filter[blob_ptr->UID].count == 0) {
@@ -87,8 +87,6 @@ void runing_median(void) {
     } else {
       filter[blob_ptr->UID].index++;
     }
-    
     if (filter[blob_ptr->UID].count < M_WINDOW) filter[blob_ptr->UID].count++;
-
   };
 };

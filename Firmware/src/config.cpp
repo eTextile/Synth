@@ -29,30 +29,30 @@ Bounce BUTTON_R = Bounce();
 Encoder e256_e(ENCODER_PIN_A, ENCODER_PIN_B);
 
 e256_mode_t e256_m[9] = {
-  { { HIGH,  LOW, false, false }, 200, 500, true, false },    // [0] LOAD_CONFIG
-  { { HIGH, HIGH, false, false }, 150, 900, true, false },    // [1] FLASH_CONFIG
-  { { HIGH, HIGH, true,   true },  30,  30, true,  true },    // [2] CALIBRATE
-  { { HIGH, LOW,  false, false }, 500, 500, true, false },    // [3] BLOBS_PLAY
-  { { HIGH, LOW,  false, false }, 150, 150, true, false },    // [4] BLOBS_LEARN
-  { { HIGH, LOW,  false, false }, 800, 800, true, false },    // [5] MAPPING_LIB
-  { { HIGH, HIGH, false, false }, 500, 500, true, false },    // [6] RAW_MATRIX
-  { { HIGH, HIGH, false, false }, 1000, 1000, true, false },  // [7] INTERP_MATRIX
-  { { HIGH, HIGH, false, false },  10,  10, true, false }     // [8] ERROR
+  { { HIGH,  LOW, false }, 200, 500, true, false },    // [0] LOAD_CONFIG
+  { { HIGH, HIGH, false }, 150, 900, true, false },    // [1] FLASH_CONFIG
+  { { HIGH, HIGH, true  },  30,  30, true,  true },    // [2] CALIBRATE
+  { { HIGH, LOW,  false }, 500, 500, true, false },    // [3] BLOBS_PLAY
+  { { HIGH, LOW,  false }, 150, 150, true, false },    // [4] BLOBS_LEARN
+  { { HIGH, LOW,  false }, 800, 800, true, false },    // [5] MAPPING_LIB
+  { { HIGH, HIGH, false }, 500, 500, true, false },    // [6] RAW_MATRIX
+  { { HIGH, HIGH, false }, 1000, 1000, true, false },  // [7] INTERP_MATRIX
+  { { HIGH, HIGH, false },  10,  10, true, false }     // [8] ERROR
 };
 
 e256_level_t e256_l[4] = {
-  { { HIGH,  LOW, false, false },  1, 50, 12, false },  // [0]  SIG_IN     
-  { {  LOW, HIGH, false, false },  1, 31, 17, false },  // [1]  SIG_OUT    
-  { {  LOW,  LOW, false, false }, 13, 31, 29, false },  // [2]  LINE_OUT
-  { { HIGH, HIGH, false, false },  2, 60,  3, false }   // [3]  THRESHOLD
+  { { HIGH,  LOW, false },  1, 50, 12, false },  // [0]  SIG_IN     
+  { {  LOW, HIGH, false },  1, 31, 17, false },  // [1]  SIG_OUT    
+  { {  LOW,  LOW, false }, 13, 31, 29, false },  // [2]  LINE_OUT
+  { { HIGH, HIGH, false },  2, 60,  3, false }   // [3]  THRESHOLD
 };
 
 uint16_t configLength = 0;
 
 e256_control_t e256_ctr = {
-  &e256_e,  // encoder_ptr
-  e256_m,   // modes_ptr
-  e256_l    // levels_ptr
+  &e256_e,    // encoder_ptr
+  &e256_m[0], // modes_ptr
+  &e256_l[0]  // levels_ptr
 };
 
 uint8_t playMode = CALIBRATE;
@@ -75,56 +75,52 @@ inline void setup_buttons(void) {
 
 void setup_leds(void* struct_ptr){
   leds_t* leds = (leds_t*)struct_ptr;
-  if (leds->setup) {
-    leds->setup = false;
-    pinMode(LED_PIN_D1, OUTPUT);
-    pinMode(LED_PIN_D2, OUTPUT);
-    digitalWrite(LED_PIN_D1, leds->D1);
-    digitalWrite(LED_PIN_D2, leds->D2);
-    Serial.printf("\nDEBUG_SET_LEDS:%d_%d", leds->D1, leds->D2);
-  };
+  pinMode(LED_PIN_D1, OUTPUT);
+  pinMode(LED_PIN_D2, OUTPUT);
+  digitalWrite(LED_PIN_D1, leds->D1);
+  digitalWrite(LED_PIN_D2, leds->D2);
+  #if defined(DEBUG_MODES)
+    Serial.printf("\nDEBUG_SETUP_LEDS:%d_%d", leds->D1, leds->D2);
+  #endif
 };
 
-inline void set_mode(e256_control_t* ctr_ptr, const uint8_t mode) {
+void set_mode(uint8_t mode) {
   ledsTimeStamp = millis();
   ledsIterCount = 0;
   lastMode = playMode;
   playMode = mode;
-  setup_leds(&ctr_ptr->modes[playMode]);
-  ctr_ptr->levels[levelMode].leds.update = false;
-  ctr_ptr->modes[playMode].leds.setup = true;
-  ctr_ptr->modes[playMode].leds.update = true;
-  ctr_ptr->modes[playMode].run = true;
+  e256_ctr.levels[levelMode].leds.update = false;
+  setup_leds(&e256_ctr.modes[playMode]);
+  e256_ctr.modes[playMode].leds.update = true;
+  e256_ctr.modes[playMode].run = true;
   #if defined(DEBUG_MODES)
     Serial.printf("\nDEBUG_SET_MODE:%d", playMode);
   #endif
 };
 
-inline void set_level(e256_control_t* ctr_ptr) {
-  setup_leds(&ctr_ptr->modes[playMode]);
-  ctr_ptr->levels[playMode].leds.update = false;
-  ctr_ptr->encoder->write(ctr_ptr->levels[levelMode].val << 2);
-  ctr_ptr->levels[levelMode].leds.setup = true;
-  ctr_ptr->levels[levelMode].leds.update = true;
-  ctr_ptr->levels[levelMode].run = true;
+void set_level(e256_level_t* level_ptr, uint8_t level) {
+  e256_ctr.modes[playMode].leds.update = false;
+  e256_ctr.encoder->write(level << 2);
+  setup_leds(&e256_ctr.levels[levelMode]);
+  level_ptr->run = true;
   #if defined(DEBUG_LEVELS)
-    Serial.printf("\nDEBUG_SET_LEVEL:%d_%d", levelMode, (ctr_ptr->levels[levelMode].val << 2));
+    Serial.printf("\nDEBUG_SET_LEVEL:%d_%d", levelMode, level);
   #endif
 };
 
 // Selec the current mode and perform the matrix sensor calibration 
-inline void update_buttons(e256_control_t* ctr_ptr) {
+inline void update_buttons(void) {
   BUTTON_L.update();
   BUTTON_R.update();
   // ACTION: BUTTON_L short press
   // FONCTION: CALIBRATE THE SENSOR MATRIX
   if (BUTTON_L.rose() && BUTTON_L.previousDuration() < LONG_HOLD) {
-    set_mode(ctr_ptr, CALIBRATE);
+    set_mode(CALIBRATE);
   };
   // ACTION: BUTTON_L long press
   // FONCTION: FLASH THE CONFIG FILE (config.json)
   if (BUTTON_L.rose() && BUTTON_L.previousDuration() > LONG_HOLD) {
-    set_mode(ctr_ptr, FLASH_CONFIG);
+    set_mode(FLASH_CONFIG);
   };
   // ACTION: BUTTON_R long press
   // FONCTION_A: MIDI_PLAY (send all blob values over MIDI format)
@@ -132,9 +128,9 @@ inline void update_buttons(e256_control_t* ctr_ptr) {
   // LEDs: blink alternately, slow for playing mode and fast or learning mode
   if (BUTTON_R.rose() && BUTTON_R.previousDuration() > LONG_HOLD) {
     if (playMode == BLOBS_PLAY) {
-      set_mode(ctr_ptr, BLOBS_LEARN);
+      set_mode(BLOBS_LEARN);
     } else {
-      set_mode(ctr_ptr, BLOBS_PLAY);
+      set_mode(BLOBS_PLAY);
     };
   };
   // ACTION: BUTTON_R short press
@@ -144,25 +140,26 @@ inline void update_buttons(e256_control_t* ctr_ptr) {
   // [4]-SIG_OUT
   // [5]-THRESHOLD
   if (BUTTON_R.rose() && BUTTON_R.previousDuration() < LONG_HOLD) {
-    levelMode = (levelMode + 1) % 4; // Loop into the levels
-    set_level(ctr_ptr);
+    levelMode = (levelMode + 1) % 4; // Loop into level modes
+    set_level(&e256_ctr.levels[levelMode], e256_ctr.levels[levelMode].val);
   };
 };
 
 // Levels values adjustment using rotary encoder
-inline boolean read_encoder(e256_control_t* ctr_ptr) {
-  uint8_t val = ctr_ptr->encoder->read() >> 2;
-  if (val != ctr_ptr->levels[levelMode].val) {
-    if (val > ctr_ptr->levels[levelMode].maxVal) {
-      ctr_ptr->encoder->write(ctr_ptr->levels[levelMode].maxVal << 2);
+inline boolean read_encoder(e256_level_t* level_ptr) {
+  uint8_t val = e256_ctr.encoder->read() >> 2;
+  if (val != level_ptr->val) {
+    if (val > level_ptr->maxVal) {
+      e256_ctr.encoder->write(level_ptr->maxVal << 2);
       return false;
     }
-    else if (val < ctr_ptr->levels[levelMode].minVal) {
-      ctr_ptr->encoder->write(ctr_ptr->levels[levelMode].minVal << 2);
+    else if (val < level_ptr->minVal) {
+      e256_ctr.encoder->write(level_ptr->minVal << 2);
       return false;
     }
     else {
-      ctr_ptr->levels[levelMode].val = val;
+      level_ptr->val = val;
+      level_ptr->leds.update = true;
       return true;
     };
   }
@@ -172,9 +169,9 @@ inline boolean read_encoder(e256_control_t* ctr_ptr) {
 };
 
 // Update levels[val] of each mode using the rotary encoder
-inline void update_encoder(e256_control_t* ctr_ptr) {
-  if (read_encoder(ctr_ptr)) {
-    set_level(ctr_ptr);
+inline void update_encoder() {
+  if (read_encoder(&e256_ctr.levels[levelMode])) {
+    set_level(&e256_ctr.levels[levelMode], e256_ctr.levels[levelMode].val);
   };
 };
 
@@ -197,33 +194,30 @@ inline void blink_leds(e256_mode_t* mode_ptr) {
           ledsIterCount++;
         }
         else {
-          ledsIterCount = 0;
           mode_ptr->leds.update = false;
           playMode = lastMode;
         };
       }
       else {
-        mode_ptr->toggle = true;
         ledsTimeStamp = millis();
       };
     };
   };
 };
 
-inline void fade_leds(e256_level_t* levels_ptr) {
-  setup_leds(levels_ptr);
-  if (levels_ptr->leds.update) {
-    levels_ptr->leds.update = false;
-    uint8_t ledVal = constrain(map(levels_ptr->val, levels_ptr->minVal, levels_ptr->maxVal, 0, 255), 0, 255);
+inline void fade_leds(e256_level_t* level_ptr) {
+  if (level_ptr->leds.update) {
+    level_ptr->leds.update = false;
+    uint8_t ledVal = constrain(map(level_ptr->val, level_ptr->minVal, level_ptr->maxVal, 0, 255), 0, 255);
     analogWrite(LED_PIN_D1, abs(255 - ledVal));
     analogWrite(LED_PIN_D2, ledVal);
   };
 };
 
 // Update LEDs according to the mode and rotary encoder values
-inline void update_leds(e256_control_t* ctr_ptr) {
-  fade_leds(&ctr_ptr->levels[levelMode]);
-  blink_leds(&ctr_ptr->modes[playMode]);
+inline void update_leds(void) {
+  fade_leds(&e256_ctr.levels[levelMode]);
+  blink_leds(&e256_ctr.modes[playMode]);
 };
 
 //////////////////////////////////////// LOAD CONFIG
@@ -368,11 +362,11 @@ bool config_load_mapping(const JsonObject &config) {
 
 inline void load_flash_config() {
   if (!SerialFlash.begin(FLASH_CHIP_SELECT)) {
-    set_mode(&e256_ctr, ERROR);
+    set_mode(ERROR);
     usbMIDI.sendProgramChange(ERROR_CONNECTING_FLASH, MIDI_OUTPUT_CHANNEL); // ProgramChange(program, channel);
     usbMIDI.send_now();
-    #if defined(DEBUG_SERIAL_FLASH)
-      Serial.printf("\nDEBUG_SERIAL_FLASH\tERROR_CONNECTING_FLASH");
+    #if defined(DEBUG_LOAD_FLASH_CONFIG)
+      Serial.printf("\nDEBUG_LOAD_FLASH_CONFIG\tERROR_CONNECTING_FLASH");
     #endif
     return;
   };
@@ -385,43 +379,43 @@ inline void load_flash_config() {
     DeserializationError err = deserializeJson(config, config_ptr);
     if (err) {
       // Load a default config file?
-      set_mode(&e256_ctr, ERROR);
+      set_mode(ERROR);
       usbMIDI.sendProgramChange(ERROR_WAITING_FOR_GONFIG, MIDI_OUTPUT_CHANNEL); // ProgramChange(program, channel);
       usbMIDI.send_now();
-      #if defined(DEBUG_SERIAL_FLASH)
-        Serial.printf("\nDEBUG_SERIAL_FLASH\tERROR_WAITING_FOR_GONFIG!\t%s", err.f_str());
+      #if defined(DEBUG_LOAD_FLASH_CONFIG)
+        Serial.printf("\nDEBUG_LOAD_FLASH_CONFIG\tERROR_WAITING_FOR_GONFIG!\t%s", err.f_str());
       #endif
       return;
     };
     if (!config_load_mapping(config["mapping"])) {
-      set_mode(&e256_ctr, ERROR);
+      set_mode(ERROR);
       usbMIDI.sendProgramChange(ERROR_LOADING_GONFIG_FAILED, MIDI_OUTPUT_CHANNEL); // ProgramChange(program, channel);
       usbMIDI.send_now();
-      #if defined(DEBUG_SERIAL_FLASH)
-        Serial.printf("\nDEBUG_SERIAL_FLASH\tERROR_LOADING_GONFIG_FAILED!");
+      #if defined(DEBUG_LOAD_FLASH_CONFIG)
+        Serial.printf("\nDEBUG_LOAD_FLASH_CONFIG\tERROR_LOADING_GONFIG_FAILED!");
       #endif
       return;
     };
     configFile.close();
-    set_mode(&e256_ctr, MAPPING_LIB);
+    set_mode(MAPPING_LIB);
   }
   else{
-    set_mode(&e256_ctr, ERROR);
+    set_mode(ERROR);
     usbMIDI.sendProgramChange(ERROR_NO_CONFIG_FILE, MIDI_OUTPUT_CHANNEL); // ProgramChange(program, channel);
     usbMIDI.send_now();
-    #if defined(DEBUG_SERIAL_FLASH)
-      Serial.printf("\nDEBUG_SERIAL_FLASH\tERROR_NO_CONFIG_FILE!");
+    #if defined(DEBUG_LOAD_FLASH_CONFIG)
+      Serial.printf("\nDEBUG_LOAD_FLASH_CONFIG\tERROR_NO_CONFIG_FILE!");
     #endif
   };
 };
 
 inline void flash_config(char* data_ptr, unsigned int size) {
   if (!SerialFlash.begin(FLASH_CHIP_SELECT)) {
-    set_mode(&e256_ctr, ERROR);
+    set_mode(ERROR);
     usbMIDI.sendProgramChange(ERROR_CONNECTING_FLASH, MIDI_OUTPUT_CHANNEL); // ProgramChange(program, channel);
     usbMIDI.send_now();
-    #if defined(DEBUG_SERIAL_FLASH)
-      Serial.printf("\nDEBUG_SERIAL_FLASH\tERROR_CONNECTING_FLASH");
+    #if defined(DEBUG_FLASH_CONFIG)
+      Serial.printf("\nDEBUG_FLASH_CONFIG\tERROR_CONNECTING_FLASH");
     #endif
     return;
   };
@@ -435,21 +429,21 @@ inline void flash_config(char* data_ptr, unsigned int size) {
   if (SerialFlash.create("config.json", size)) {
     flashFile = SerialFlash.open("config.json");
     if (!flashFile) {
-      set_mode(&e256_ctr, ERROR);
+      set_mode(ERROR);
       usbMIDI.sendProgramChange(ERROR_WHILE_OPEN_FLASH_FILE, MIDI_OUTPUT_CHANNEL); // ProgramChange(program, channel);
       usbMIDI.send_now();
-      #if defined(DEBUG_SERIAL_FLASH)
-        Serial.printf("\nDEBUG_SERIAL_FLASH\tERROR_WHILE_OPEN_FLASH_FILE!");
+      #if defined(DEBUG_FLASH_CONFIG)
+        Serial.printf("\nDEBUG_FLASH_CONFIG\tERROR_WHILE_OPEN_FLASH_FILE!");
       #endif
       return;
     };
   }
   else {
-    set_mode(&e256_ctr, ERROR);
+    set_mode(ERROR);
     usbMIDI.sendProgramChange(ERROR_FLASH_FULL, MIDI_OUTPUT_CHANNEL); // ProgramChange(program, channel);
     usbMIDI.send_now();
-    #if defined(DEBUG_SERIAL_FLASH)
-      Serial.printf("\nDEBUG_SERIAL_FLASH\tERROR_FLASH_FULL!");
+    #if defined(DEBUG_FLASH_CONFIG)
+      Serial.printf("\nDEBUG_FLASH_CONFIG\tERROR_FLASH_FULL!");
     #endif
     return;
   };
@@ -457,18 +451,20 @@ inline void flash_config(char* data_ptr, unsigned int size) {
     flashFile.write(data_ptr, size);
     flashFile.close();
   } else {
+    set_mode(ERROR);
     usbMIDI.sendProgramChange(ERROR_FILE_TO_BIG, MIDI_OUTPUT_CHANNEL); // ProgramChange(program, channel);
     usbMIDI.send_now();
   };
 };
 
 void CONFIG_SETUP(void){
+  setup_buttons();
   //load_flash_config();
 };
 
 void update_config(void){
-  update_buttons(&e256_ctr);
-  update_encoder(&e256_ctr);
-  update_leds(&e256_ctr);
+  update_buttons();
+  update_encoder();
+  update_leds();
   //flash_config(config_ptr, configLength);
 };

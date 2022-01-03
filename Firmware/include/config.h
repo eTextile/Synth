@@ -8,24 +8,24 @@
 #define __CONFIG_H__
 
 #include <Arduino.h>
-#define ENCODER_OPTIMIZE_INTERRUPTS
+//#define ENCODER_OPTIMIZE_INTERRUPTS
 #include <Encoder.h>                 // https://github.com/PaulStoffregen/Encoder
 #include <ArduinoJson.h>
 
 #define NAME                         "256"
 #define PROJECT                      "ETEXTILE-SYNTHESIZER"
 #define VERSION                      "1.0.9"
-#define SENSOR_UID                   1  // Unique sensor ID
+#define SENSOR_UID                   (uint8_t)1  // Unique sensor ID
 
-#define LOAD_CONFIG                  0  // E256-LEDs: 
-#define FLASH_CONFIG                 1  // E256-LEDs:
-#define CALIBRATE                    2  // E256-LEDs: 
-#define BLOBS_PLAY                   3  // Send all blobs values over USB using MIDI format
-#define BLOBS_LEARN                  4  // Send separate blobs values over USB using MIDI format
-#define MAPPING_LIB                  5  // E256-LEDs:
-#define RAW_MATRIX                   6
-#define INTERP_MATRIX                7
-#define ERROR                        6  // E256-LEDs:
+#define LOAD_CONFIG                  (uint8_t)0  // E256-LEDs: 
+#define FLASH_CONFIG                 (uint8_t)1  // E256-LEDs:
+#define CALIBRATE                    (uint8_t)2  // E256-LEDs: 
+#define BLOBS_PLAY                   (uint8_t)3  // Send all blobs values over USB using MIDI format
+#define BLOBS_LEARN                  (uint8_t)4  // Send blobs values separatly over USB using MIDI format
+#define MAPPING_LIB                  (uint8_t)5  // E256-LEDs:
+#define RAW_MATRIX                   (uint8_t)6  // 
+#define INTERP_MATRIX                (uint8_t)7  //
+#define ERROR                        (uint8_t)6  // E256-LEDs:
 
 #define ALL_OFF                      9
 
@@ -43,7 +43,7 @@
 #define FILENAME_STRING_SIZE         11 // config.json
 
 #define MAPPING_CONFIG               127
-#define AUDIO_FILE                   128
+//#define AUDIO_FILE                   128
 
 #define BAUD_RATE                    230400
 #define RAW_COLS                     16
@@ -96,7 +96,6 @@ typedef struct leds leds_t;
 struct leds {
   boolean D1;
   boolean D2;
-  boolean setup;
   boolean update;
 };
 
@@ -129,17 +128,18 @@ extern uint16_t configLength;
 
 extern e256_control_t e256_ctr;
 
-extern  uint8_t playMode;
-extern  uint8_t lastMode;
-extern  uint8_t levelMode;
- 
-extern  uint32_t ledsTimeStamp;
-extern  uint8_t ledsIterCount;
+extern uint8_t playMode;
+extern uint8_t lastMode;
+extern uint8_t levelMode;
+
+extern uint32_t ledsTimeStamp;
+extern uint8_t ledsIterCount;
 
 void CONFIG_SETUP(void);
 void setup_leds(void* struct_ptr);
 
-//void set_mode(e256_control* control_ptr, uint8_t mode);
+void set_mode(uint8_t mode);
+void set_level(e256_level_t* level_ptr, uint8_t level);
 
 bool config_load_mapping(const JsonObject &config);
 

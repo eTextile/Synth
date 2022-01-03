@@ -44,15 +44,15 @@ void mapping_triggers_update(void) {
           blob_ptr->centroid.Y < mapp_trigsParams[i].rect.Ymax) {
         if (!blob_ptr->lastState) {
           midi_sendOut(midi::NoteOn, mapp_trigsParams[i].note, 127);
-#if defined(DEBUG_MAPPING)
-          Serial.printf("\nDEBUG_MAPPING_TRIGGERS\tID:%d\tNOTE_ON:%d", i, mapp_trigParams[i].note);
-#endif
+          #if defined(DEBUG_MAPPING)
+            Serial.printf("\nDEBUG_MAPPING_TRIGGERS\tID:%d\tNOTE_ON:%d", i, mapp_trigParams[i].note);
+          #endif
         }
         else if (!blob_ptr->state) {
           midi_sendOut(midi::NoteOff, mapp_trigsParams[i].note, 0);
-#if defined(DEBUG_MAPPING)
-          Serial.printf("\nDEBUG_MAPPING_TRIGGERS\tID;%d\tNOTE_OFF:%d", i, mapp_trigParams[i].note);
-#endif
+          #if defined(DEBUG_MAPPING)
+            Serial.printf("\nDEBUG_MAPPING_TRIGGERS\tID;%d\tNOTE_OFF:%d", i, mapp_trigParams[i].note);
+          #endif
         };
       };
     };
@@ -84,18 +84,18 @@ void mapping_toggles_update(void) {
           blob_ptr->centroid.Y > mapp_togsParams[i].rect.Ymin &&
           blob_ptr->centroid.Y < mapp_togsParams[i].rect.Ymax) {
         if (!blob_ptr->lastState) {
-#if defined(DEBUG_MAPPING)
-          Serial.printf("\nDEBUG_MAPPING_TOGGLES\tID:%d\tNOTE_ON:%d", i, toggleParam[i].note);
-#else
-          midi_sendOut(midi::NoteOff, mapp_togsParams[i].note, 127);
-#endif
+          #if defined(DEBUG_MAPPING)
+            Serial.printf("\nDEBUG_MAPPING_TOGGLES\tID:%d\tNOTE_ON:%d", i, toggleParam[i].note);
+          #else
+            midi_sendOut(midi::NoteOff, mapp_togsParams[i].note, 127);
+          #endif
         };
         if (!blob_ptr->state) {
-#if defined(DEBUG_MAPPING)
-          Serial.printf("\nDEBUG_MAPPING_TOGGLES\tID:%d\tNOTE_OFF:%d", i, toggleParam[i].note);
-#else
-          midi_sendOut(midi::NoteOff, mapp_togsParams[i].note, 0);
-#endif
+          #if defined(DEBUG_MAPPING)
+            Serial.printf("\nDEBUG_MAPPING_TOGGLES\tID:%d\tNOTE_OFF:%d", i, toggleParam[i].note);
+          #else
+            midi_sendOut(midi::NoteOff, mapp_togsParams[i].note, 0);
+          #endif
         };
       };
     };
@@ -130,11 +130,11 @@ void mapping_vSliders_update(void) {
         uint8_t val = round(map(blob_ptr->centroid.Y, mapp_vSlidersParams[i].rect.Ymin, mapp_vSlidersParams[i].rect.Ymax, 0, 127)); // [0:127]
         if (val != mapp_vSliders_lastVal[i]) {
           mapp_vSliders_lastVal[i] = val;
-#if defined(DEBUG_MAPPING)
-          Serial.printf("\nDEBUG_MAPPING_VSLIDER\tID:%d\tVal:%d", i, val);
-#else
-          midi_sendOut(midi::ControlChange, mapp_vSlidersParams[i].CC, val);
-#endif
+          #if defined(DEBUG_MAPPING)
+            Serial.printf("\nDEBUG_MAPPING_VSLIDER\tID:%d\tVal:%d", i, val);
+          #else
+            midi_sendOut(midi::ControlChange, mapp_vSlidersParams[i].CC, val);
+          #endif
         };
         break;
       };
@@ -170,11 +170,11 @@ void mapping_hSliders_update(void) {
         uint8_t val = round(map(blob_ptr->centroid.X, mapp_hSlidersParams[i].rect.Xmin, mapp_hSlidersParams[i].rect.Xmax, 0, 127)); // [0:127]
         if (val != mapp_hSliders_lastVal[i]) {
           mapp_hSliders_lastVal[i] = val;
-#if defined(DEBUG_MAPPING)
-          Serial.printf("\nDEBUG_MAPPING_HSLIDER\tID:%d\tVal:%d", i, val);
-#else
-          midi_sendOut(midi::ControlChange, mapp_hSlidersParams[i].CC, val);
-#endif
+          #if defined(DEBUG_MAPPING)
+            Serial.printf("\nDEBUG_MAPPING_HSLIDER\tID:%d\tVal:%d", i, val);
+          #else
+            midi_sendOut(midi::ControlChange, mapp_hSlidersParams[i].CC, val);
+          #endif
         };
         break;
       };
@@ -220,12 +220,12 @@ void mapping_circles_update(void) {
         } else {
           theta = atanf(posY / posX);
         }
-#if defined(DEBUG_MAPPING)
-        Serial.printf("\nDEBUG_MAPPING_CIRCLES:\tCircleID:\t%d\tradius:\t%fTheta:\t%f", i, radius, theta);
-#else
-        midi_sendOut(midi::ControlChange, mapp_circlesParams[i].CCr, radius);
-        midi_sendOut(midi::ControlChange, mapp_circlesParams[i].CCt, theta);
-#endif
+        #if defined(DEBUG_MAPPING)
+          Serial.printf("\nDEBUG_MAPPING_CIRCLES:\tCircleID:\t%d\tradius:\t%fTheta:\t%f", i, radius, theta);
+        #else
+          midi_sendOut(midi::ControlChange, mapp_circlesParams[i].CCr, radius);
+          midi_sendOut(midi::ControlChange, mapp_circlesParams[i].CCt, theta);
+        #endif
       };
     };
   };
@@ -255,36 +255,36 @@ void mapping_touchpads_update(void) {
           blob_ptr->centroid.Y > mapp_touchpadsParams[i].rect.Ymin &&
           blob_ptr->centroid.Y < mapp_touchpadsParams[i].rect.Ymax) {
         if (mapp_touchpadsParams[i].CCx) {
-#if defined(DEBUG_MAPPING)
-          Serial.printf("\nDEBUG_MAPPING_TOUCHPAD\tMIDI_CCx:%d\tVAL:%d", mapp_touchpadsParams[i].CCx, round(map(blob_ptr->centroid.X, mapp_touchpadsParams[i].rect.Xmin, mapp_touchpadsParams[i].rect.Xmax, 0, 127)));
-#else
-        midi_sendOut(midi::ControlChange, mapp_touchpadsParams[i].CCx, 
-          round(map(blob_ptr->centroid.X, mapp_touchpadsParams[i].rect.Xmin, mapp_touchpadsParams[i].rect.Xmax, 0, 127)));
-#endif
+          #if defined(DEBUG_MAPPING)
+            Serial.printf("\nDEBUG_MAPPING_TOUCHPAD\tMIDI_CCx:%d\tVAL:%d", mapp_touchpadsParams[i].CCx, round(map(blob_ptr->centroid.X, mapp_touchpadsParams[i].rect.Xmin, mapp_touchpadsParams[i].rect.Xmax, 0, 127)));
+          #else
+            midi_sendOut(midi::ControlChange, mapp_touchpadsParams[i].CCx, 
+            round(map(blob_ptr->centroid.X, mapp_touchpadsParams[i].rect.Xmin, mapp_touchpadsParams[i].rect.Xmax, 0, 127)));
+          #endif
         };
         if (mapp_touchpadsParams[i].CCy) {
-#if defined(DEBUG_MAPPING)
-          Serial.printf("\nDEBUG_MAPPING_TOUCHPAD\tMIDI_CCy:%d\tVAL:%d", mapp_touchpadsParams[i].CCy, round(map(blob_ptr->centroid.Y, mapp_touchpadsParams[i].rect.Ymin, mapp_touchpadsParams[i].rect.Ymax, 0, 127)));
-#else
-          midi_sendOut(midi::ControlChange, mapp_touchpadsParams[i].CCy, 
+          #if defined(DEBUG_MAPPING)
+            Serial.printf("\nDEBUG_MAPPING_TOUCHPAD\tMIDI_CCy:%d\tVAL:%d", mapp_touchpadsParams[i].CCy, round(map(blob_ptr->centroid.Y, mapp_touchpadsParams[i].rect.Ymin, mapp_touchpadsParams[i].rect.Ymax, 0, 127)));
+          #else
+            midi_sendOut(midi::ControlChange, mapp_touchpadsParams[i].CCy, 
             round(map(blob_ptr->centroid.X, mapp_touchpadsParams[i].rect.Xmin, mapp_touchpadsParams[i].rect.Xmax, 0, 127)));
-#endif
+          #endif
         };
         if (mapp_touchpadsParams[i].CCz) {
-#if defined(DEBUG_MAPPING)
-          Serial.printf("\nDEBUG_MAPPING_TOUCHPAD\tMIDI_CCz:%d\tVAL:%d", mapp_touchpadsParams[i].CCz, map(blob_ptr->centroid.Z, 0, 255, 0, 127));
-#else
-          midi_sendOut(midi::ControlChange, mapp_touchpadsParams[i].CCz, 
+          #if defined(DEBUG_MAPPING)
+            Serial.printf("\nDEBUG_MAPPING_TOUCHPAD\tMIDI_CCz:%d\tVAL:%d", mapp_touchpadsParams[i].CCz, map(blob_ptr->centroid.Z, 0, 255, 0, 127));
+          #else
+            midi_sendOut(midi::ControlChange, mapp_touchpadsParams[i].CCz, 
             map(blob_ptr->centroid.Z, 0, 255, 0, 127));
-#endif
+          #endif
         };
         if (mapp_touchpadsParams[i].CCs) {
-#if defined(DEBUG_MAPPING)
-          Serial.printf("\nDEBUG_MAPPING_TOUCHPAD\tMIDI_CCs:%d\tVAL:%d", mapp_touchpadsParams[i].CCs, map(blob_ptr->box.W * blob_ptr->box.H, BLOB_MIN_PIX, BLOB_MAX_PIX, 0, 127));
-#else
-          midi_sendOut(midi::ControlChange, mapp_touchpadsParams[i].CCs, 
+          #if defined(DEBUG_MAPPING)
+            Serial.printf("\nDEBUG_MAPPING_TOUCHPAD\tMIDI_CCs:%d\tVAL:%d", mapp_touchpadsParams[i].CCs, map(blob_ptr->box.W * blob_ptr->box.H, BLOB_MIN_PIX, BLOB_MAX_PIX, 0, 127));
+          #else
+            midi_sendOut(midi::ControlChange, mapp_touchpadsParams[i].CCs, 
             map(blob_ptr->box.W * blob_ptr->box.H, BLOB_MIN_PIX, BLOB_MAX_PIX, 0, 127));
-#endif
+          #endif
         };
         //...
       };
@@ -316,7 +316,6 @@ void MAPPING_POLYGONS_SETUP(void) {
       y1 = mapp_polygonsParams[p].vertices[v1].y;
       x2 = mapp_polygonsParams[p].vertices[v2].x;
       y2 = mapp_polygonsParams[p].vertices[v2].y;
-
       if (y2 == y1) {
         mapp_polygonsParams[p].c[v1] = x1;
         mapp_polygonsParams[p].m[v1] = 0;
@@ -335,7 +334,6 @@ void mapping_polygons_update(void) {
     bool odd_nodes = false;
     uint8_t p = 0;
     int i, j = (mapp_polygonsParams[p].vertices_cnt - 1);
-
     for (p = 0; p < mapp_polygons; p++) {
       odd_nodes = false;
       for (i = 0; i < mapp_polygonsParams[p].vertices_cnt; i++) {
@@ -349,19 +347,19 @@ void mapping_polygons_update(void) {
         j = i;
       };
       if (odd_nodes) {
-          // TODO: get the max width & max height and scale it to [0-1]
-#if defined(DEBUG_MAPPING)
-    Serial.printf("\nDEBUG_MAPPING_POLYGONS\tPoint %f %f is inside polygon %d\n", blob_ptr->centroid.X, blob_ptr->centroid.Y, p);
-#else
-
-#endif
+        // TODO: get the max width & max height and scale it to [0-1]
+        #if defined(DEBUG_MAPPING)
+          Serial.printf("\nDEBUG_MAPPING_POLYGONS\tPoint %f %f is inside polygon %d\n", blob_ptr->centroid.X, blob_ptr->centroid.Y, p);
+        #else
+        //
+        #endif
         break;
       };
     };
     if (p == mapp_polygons) {
-#if defined(DEBUG_MAPPING)
-      printf("\nDEBUG_MAPPING_POLYGONS\tPoint %f %f does not lie within any polygon\n", blob_ptr->centroid.X, blob_ptr->centroid.Y);
-#endif
+      #if defined(DEBUG_MAPPING)
+        printf("\nDEBUG_MAPPING_POLYGONS\tPoint %f %f does not lie within any polygon\n", blob_ptr->centroid.X, blob_ptr->centroid.Y);
+      #endif
     };
   };
 };
@@ -390,15 +388,15 @@ void MAPPING_GRID_SETUP(void) {
       mapping_grid_keys[keyPos].rect.Xmax = mapping_grid_keys[keyPos].rect.Xmin + KEY_SIZE_X;
       mapping_grid_keys[keyPos].rect.Ymin = row * KEY_SIZE_Y + (row + 1) * GRID_GAP;
       mapping_grid_keys[keyPos].rect.Ymax = mapping_grid_keys[keyPos].rect.Ymin + KEY_SIZE_Y;
-#if defined(DEBUG_MAPPING)
-      Serial.printf("\nDEBUG_MAPPING_GRID\tkey:%d\t_Xmin:%f\t_Xmax:%f\t_Ymin:%f\t_Ymax:%f",
-                    keyPos,
-                    key[keyPos].rect.Xmin,
-                    key[keyPos].rect.Xmax,
-                    key[keyPos].rect.Ymin,
-                    key[keyPos].rect.Ymax
-                   );
-#endif
+      #if defined(DEBUG_MAPPING)
+        Serial.printf("\nDEBUG_MAPPING_GRID\tkey:%d\t_Xmin:%f\t_Xmax:%f\t_Ymin:%f\t_Ymax:%f",
+          keyPos,
+          key[keyPos].rect.Xmin,
+          key[keyPos].rect.Xmax,
+          key[keyPos].rect.Ymin,
+          key[keyPos].rect.Ymax
+        );
+      #endif
     };
   };
 };
@@ -422,27 +420,27 @@ void mapping_grid_update(void) {
             blob_ptr->centroid.Y < key[keyPress].rect.Ymax) {
         */
         if (lastKeyPress[blob_ptr->UID] != -1) {                                  // Test if the blob was touching another key
-#if defined(DEBUG_MAPPING)
-          Serial.printf("\nDEBUG_MAPPING_GRID\tBLOB_ID:%d\tKEY_SLIDING_OFF:%d", blob_ptr->UID, lastKeyPress[blob_ptr->UID]);
-#else
-          midi_sendOut(midi::NoteOff, lastKeyPress[blob_ptr->UID], 0);
-#endif
+          #if defined(DEBUG_MAPPING)
+            Serial.printf("\nDEBUG_MAPPING_GRID\tBLOB_ID:%d\tKEY_SLIDING_OFF:%d", blob_ptr->UID, lastKeyPress[blob_ptr->UID]);
+          #else
+            midi_sendOut(midi::NoteOff, lastKeyPress[blob_ptr->UID], 0);
+          #endif
           lastKeyPress[blob_ptr->UID] = -1;                                       // RAZ last key pressed value
         };
-#if defined(DEBUG_MAPPING)
-        Serial.printf("\nDEBUG_MAPPING_GRID\tBLOB_ID:%d\tKEY_PRESS:%d", blob_ptr->UID, gridLayout[keyPress]);
-#else
-        midi_sendOut(midi::NoteOn, gridLayout[keyPress], 127);
-#endif
+        #if defined(DEBUG_MAPPING)
+          Serial.printf("\nDEBUG_MAPPING_GRID\tBLOB_ID:%d\tKEY_PRESS:%d", blob_ptr->UID, gridLayout[keyPress]);
+        #else
+          midi_sendOut(midi::NoteOn, gridLayout[keyPress], 127);
+        #endif
         lastKeyPress[blob_ptr->UID] = gridLayout[keyPress];                       // Keep track of last key pressed to switch it OFF when sliding
       };
     }
     else { // if !blob_ptr->state
-#if defined(DEBUG_MAPPING)
-      Serial.printf("\nDEBUG_MAPPING_GRID\tBLOB_ID:%d\tKEY_UP:%d", blob_ptr->UID, lastKeyPress[blob_ptr->UID]);
-#else
-      midi_sendOut(midi::NoteOff, lastKeyPress[blob_ptr->UID], 0);
-#endif
+      #if defined(DEBUG_MAPPING)
+        Serial.printf("\nDEBUG_MAPPING_GRID\tBLOB_ID:%d\tKEY_UP:%d", blob_ptr->UID, lastKeyPress[blob_ptr->UID]);
+      #else
+        midi_sendOut(midi::NoteOff, lastKeyPress[blob_ptr->UID], 0);
+      #endif
       lastKeyPress[blob_ptr->UID] = -1;                                           // RAZ last key pressed value
     };
   };
@@ -497,7 +495,7 @@ void mapping_grid_populate(void) {
 ///////////////////////////////////////////////
               /*__C_SLIDERS__*/ 
 ///////////////////////////////////////////////
-// https://live.staticflickr.com/65535/50866229007_398065fd9a_k_d.jpg
+// https://www.flickr.com/photos/maurin/50866229007/in/dateposted-public/
 // CIRCULAR_SLIDERS_CONSTANTS
 #define CS_TRACKS         4
 #define CS_SLIDERS        7
@@ -553,20 +551,20 @@ void mapping_cSliders_update(void) {
       } else {
         theta = atanf(posY / posX);
       }
-#if defined(DEBUG_MAPPING)
-      Serial.printf("\nDEBUG_MAPPING_CSLIDER\tRADIUS:%f\tTHETA:%f", radius, theta);
-#endif
+      #if defined(DEBUG_MAPPING)
+        Serial.printf("\nDEBUG_MAPPING_CSLIDER\tRADIUS:%f\tTHETA:%f", radius, theta);
+      #endif
       if (blob_ptr->state) {
         if (!blob_ptr->lastState) {
           for (uint8_t id = cTrack[track].index; id < cTrack[track].index + cTrack[track].sliders; id++) {
             if (theta > mapp_cSliders[id].thetaMin && theta < mapp_cSliders[id].thetaMax) {
               mapp_cSliders_ptr[blob_ptr->UID] = &mapp_cSliders[id]; // Record pointer to slider
               uint8_t sliderVal = (uint8_t)map(theta, mapp_cSliders[id].thetaMin, mapp_cSliders[id].thetaMax, 0, 127);
-#if defined(DEBUG_MAPPING)
-              Serial.printf("\nDEBUG_MAPPING_CSLIDER\tSLIDER_ID:%d\tRADIUS:%f\tTHETA:%f\tVAL:%d", id, radius, theta, sliderVal);
-#else
-              midi_sendOut(midi::ControlChange, id, sliderVal);
-#endif
+              #if defined(DEBUG_MAPPING)
+                Serial.printf("\nDEBUG_MAPPING_CSLIDER\tSLIDER_ID:%d\tRADIUS:%f\tTHETA:%f\tVAL:%d", id, radius, theta, sliderVal);
+              #else
+                midi_sendOut(midi::ControlChange, id, sliderVal);
+              #endif
             };
           };
         }
@@ -576,12 +574,11 @@ void mapping_cSliders_update(void) {
             if (theta > cSlider_ptr->thetaMin && theta < cSlider_ptr->thetaMax) {
               uint8_t sliderVal = (uint8_t)map(theta, cSlider_ptr->thetaMin, cSlider_ptr->thetaMax, 0, 127);
               if (sliderVal != cSlider_ptr->lastVal) {
-#if defined(DEBUG_MAPPING)
-                Serial.printf("\nDEBUG_MAPPING_CSLIDER\tSLIDER_ID:%d\tRADIUS:%f\tTHETA:%f\tVAL:%d", id, radius, theta, sliderVal);
-#else
-                midi_sendOut(midi::ControlChange, cSlider_ptr->id,
-                  (uint8_t)map(theta, cSlider_ptr->thetaMin, cSlider_ptr->thetaMax, 0, 127));
-#endif
+                #if defined(DEBUG_MAPPING)
+                  Serial.printf("\nDEBUG_MAPPING_CSLIDER\tSLIDER_ID:%d\tRADIUS:%f\tTHETA:%f\tVAL:%d", id, radius, theta, sliderVal);
+                #else
+                  midi_sendOut(midi::ControlChange, cSlider_ptr->id, (uint8_t)map(theta, cSlider_ptr->thetaMin, cSlider_ptr->thetaMax, 0, 127));
+                #endif
               };
             };
           };

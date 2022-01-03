@@ -35,25 +35,12 @@ void e256_noteOff(byte channel, byte note, byte velocity){
 };
 */
 
-inline void usb_set_level(e256_control_t *ctr_ptr, uint8_t levelMode, uint8_t value) {
-  setup_leds(ctr_ptr->levels);
-  ctr_ptr->levels[playMode].leds.update = false;
-  ctr_ptr->levels[levelMode].val = value;
-  ctr_ptr->encoder->write(ctr_ptr->levels[levelMode].val << 2);
-  ctr_ptr->levels[levelMode].leds.setup = true;
-  ctr_ptr->levels[levelMode].leds.update = true;
-  ctr_ptr->levels[levelMode].run = true;
-  #if defined(DEBUG_LEVELS)
-    Serial.printf("\nDEBUG_USB_LEVEL_MODE:%d", (ctr_ptr->levels[levelMode].val << 2));
-  #endif
-};
-
 void e256_controlChange(byte channel, byte control, byte value){
-  usb_set_level(&e256_ctr, control, value);
+  set_level(&e256_ctr.levels[control], value);
 };
 
 void e256_programChange(byte channel, byte program){
-  //set_mode(&e256_ctr, program);
+  //set_mode(program);
 };
 
 // 
@@ -63,7 +50,7 @@ boolean load_config(char* data_ptr){
   DeserializationError err = deserializeJson(config, data_ptr);
 
   if (err) {
-    playMode = ERROR;
+    set_mode(ERROR);
     usbMIDI.sendProgramChange(ERROR_WAITING_FOR_GONFIG, MIDI_OUTPUT_CHANNEL); // ProgramChange(program, channel);
     usbMIDI.send_now();
     #if defined(DEBUG_MIDI_CONFIG)
@@ -72,7 +59,7 @@ boolean load_config(char* data_ptr){
     return false;
   };
   if (!config_load_mapping(config["mapping"])) {
-    playMode = ERROR;
+    set_mode(ERROR);
     usbMIDI.sendProgramChange(ERROR_LOADING_GONFIG_FAILED, MIDI_OUTPUT_CHANNEL); // ProgramChange(program, channel);
     usbMIDI.send_now();
     #if defined(DEBUG_MIDI_CONFIG)
@@ -99,12 +86,13 @@ void e256_systemExclusive(byte* data_ptr, unsigned int length){
     printBytes(data_ptr, length);
     Serial.println();
   #endif
-  char identifier = *data_ptr + (2*sizeof(byte));
+  byte identifier = *data_ptr + (2*sizeof(byte));
   if (identifier == MAPPING_CONFIG){
     configLength = length - 2;
     config_ptr = allocate((char*)data_ptr, configLength);
     strcpy(config_ptr, (char*)data_ptr);
     load_config(config_ptr);
+    set_mode(MAPPING_LIB);
   };
 };
 
