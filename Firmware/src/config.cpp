@@ -459,7 +459,7 @@ inline void flash_config(char* data_ptr, unsigned int size) {
 
 void CONFIG_SETUP(void){
   setup_buttons();
-  //load_flash_config();
+  load_flash_config();
 };
 
 void update_config(void){

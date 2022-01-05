@@ -40,10 +40,11 @@
 
 #define FLASH_CHIP_SELECT            6
 #define FLASH_SIZE                   4096
-#define FILENAME_STRING_SIZE         11 // config.json
+//#define FILENAME_STRING_SIZE       11 // config.json
 
 #define MAPPING_CONFIG               127
-//#define AUDIO_FILE                   128
+#define SYNTH_CONFIG                 128 // TODO
+#define AUDIO_FILE                   129 // TODO
 
 #define BAUD_RATE                    230400
 #define RAW_COLS                     16

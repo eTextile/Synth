@@ -40,7 +40,7 @@ void e256_controlChange(byte channel, byte control, byte value){
 };
 
 void e256_programChange(byte channel, byte program){
-  //set_mode(program);
+  set_mode(program);
 };
 
 // 
@@ -80,20 +80,28 @@ inline void printBytes(const byte* data_ptr, unsigned int size) {
 };
 
 // Load config via MIDI system exclusive message
-void e256_systemExclusive(byte* data_ptr, unsigned int length){
+void e256_systemExclusive(uint8_t* data_ptr, unsigned int length){
   #if defined(DEBUG_MIDI_CONFIG)
     Serial.print("SysEx Message: ");
     printBytes(data_ptr, length);
     Serial.println();
   #endif
-  byte identifier = *data_ptr + (2*sizeof(byte));
-  if (identifier == MAPPING_CONFIG){
-    configLength = length - 2;
+  uint8_t* identifier = data_ptr + 2 * sizeof(uint8_t);
+  uint8_t* data_ptr = data_ptr + 3 * sizeof(uint8_t);
+
+  if (*identifier == MAPPING_CONFIG){
+    configLength = length - 3;
     config_ptr = allocate((char*)data_ptr, configLength);
     strcpy(config_ptr, (char*)data_ptr);
     load_config(config_ptr);
     set_mode(MAPPING_LIB);
-  };
+  }
+  else if (*identifier == AUDIO_FILE) {
+    // TODO
+  }
+  else {
+    // Unknown system exclusive message
+  }
 };
 
 void e256_clock(){
