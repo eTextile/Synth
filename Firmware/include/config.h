@@ -1,6 +1,6 @@
 /*
   This file is part of the eTextile-Synthesizer project - http://synth.eTextile.org
-  Copyright (c) 2014- Maurin Donneaud <maurin@etextile.org>
+  Copyright (c) 2014-2022 Maurin Donneaud <maurin@etextile.org>
   This work is licensed under Creative Commons Attribution-ShareAlike 4.0 International license, see the LICENSE file for details.
 */
 
@@ -17,7 +17,7 @@
 #define VERSION                      "1.0.9"
 #define SENSOR_UID                   (uint8_t)1  // Unique sensor ID
 
-#define LOAD_CONFIG                  (uint8_t)0  // E256-LEDs: 
+#define LOAD_CONFIG                  (uint8_t)0  // E256-LEDs:
 #define FLASH_CONFIG                 (uint8_t)1  // E256-LEDs:
 #define CALIBRATE                    (uint8_t)2  // E256-LEDs: 
 #define BLOBS_PLAY                   (uint8_t)3  // Send all blobs values over USB using MIDI format
@@ -43,8 +43,7 @@
 //#define FILENAME_STRING_SIZE       11 // config.json
 
 #define MAPPING_CONFIG               127
-#define SYNTH_CONFIG                 128 // TODO
-#define AUDIO_FILE                   129 // TODO
+#define AUDIO_FILE                   128 // TODO
 
 #define BAUD_RATE                    230400
 #define RAW_COLS                     16
@@ -137,10 +136,10 @@ extern uint32_t ledsTimeStamp;
 extern uint8_t ledsIterCount;
 
 void CONFIG_SETUP(void);
-void setup_leds(void* struct_ptr);
 
+void setup_leds(uint8_t mode);
 void set_mode(uint8_t mode);
-void set_level(e256_level_t* level_ptr, uint8_t level);
+void set_level(uint8_t control, uint8_t level);
 
 bool config_load_mapping(const JsonObject &config);
 

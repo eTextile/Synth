@@ -1,6 +1,6 @@
 /*
   This file is part of the eTextile-Synthesizer project - http://synth.eTextile.org
-  Copyright (c) 2014- Maurin Donneaud <maurin@etextile.org>
+  Copyright (c) 2014-2022 Maurin Donneaud <maurin@etextile.org>
   This work is licensed under Creative Commons Attribution-ShareAlike 4.0 International license, see the LICENSE file for details.
 */
 
@@ -56,7 +56,11 @@ e256_control_t e256_ctr = {
 };
 
 uint8_t playMode = CALIBRATE;
-uint8_t lastMode = MAPPING_LIB;
+
+uint8_t lastMode = BLOBS_PLAY;
+//uint8_t lastMode = RAW_MATRIX;
+//uint8_t lastMode = MAPPING_LIB;
+
 uint8_t levelMode = THRESHOLD;
  
 uint32_t ledsTimeStamp = 0;
@@ -73,8 +77,8 @@ inline void setup_buttons(void) {
   BUTTON_R.interval(25);                        // Debounce interval of 25 millis
 };
 
-void setup_leds(void* struct_ptr){
-  leds_t* leds = (leds_t*)struct_ptr;
+void setup_leds(uint8_t mode){
+  leds_t* leds = &e256_ctr.levels[mode].leds;
   pinMode(LED_PIN_D1, OUTPUT);
   pinMode(LED_PIN_D2, OUTPUT);
   digitalWrite(LED_PIN_D1, leds->D1);
@@ -90,7 +94,7 @@ void set_mode(uint8_t mode) {
   lastMode = playMode;
   playMode = mode;
   e256_ctr.levels[levelMode].leds.update = false;
-  setup_leds(&e256_ctr.modes[playMode]);
+  setup_leds(playMode);
   e256_ctr.modes[playMode].leds.update = true;
   e256_ctr.modes[playMode].run = true;
   #if defined(DEBUG_MODES)
@@ -98,11 +102,11 @@ void set_mode(uint8_t mode) {
   #endif
 };
 
-void set_level(e256_level_t* level_ptr, uint8_t level) {
+void set_level(uint8_t control, uint8_t level) {
   e256_ctr.modes[playMode].leds.update = false;
   e256_ctr.encoder->write(level << 2);
-  setup_leds(&e256_ctr.levels[levelMode]);
-  level_ptr->run = true;
+  setup_leds(levelMode);
+  e256_ctr.levels[control].run = true;
   #if defined(DEBUG_LEVELS)
     Serial.printf("\nDEBUG_SET_LEVEL:%d_%d", levelMode, level);
   #endif
@@ -141,7 +145,7 @@ inline void update_buttons(void) {
   // [5]-THRESHOLD
   if (BUTTON_R.rose() && BUTTON_R.previousDuration() < LONG_HOLD) {
     levelMode = (levelMode + 1) % 4; // Loop into level modes
-    set_level(&e256_ctr.levels[levelMode], e256_ctr.levels[levelMode].val);
+    set_level(levelMode, e256_ctr.levels[levelMode].val);
   };
 };
 
@@ -171,7 +175,7 @@ inline boolean read_encoder(e256_level_t* level_ptr) {
 // Update levels[val] of each mode using the rotary encoder
 inline void update_encoder() {
   if (read_encoder(&e256_ctr.levels[levelMode])) {
-    set_level(&e256_ctr.levels[levelMode], e256_ctr.levels[levelMode].val);
+    set_level(levelMode, e256_ctr.levels[levelMode].val);
   };
 };
 
@@ -459,7 +463,8 @@ inline void flash_config(char* data_ptr, unsigned int size) {
 
 void CONFIG_SETUP(void){
   setup_buttons();
-  load_flash_config();
+  set_mode(BLOBS_PLAY);
+  //load_flash_config();
 };
 
 void update_config(void){
