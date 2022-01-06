@@ -11,7 +11,6 @@
 #include "blob.h"
 #include "midi_bus.h"
 #include "allocate.h"
-#include <ArduinoJson.h>
 
 #define MIDI_TRANSMIT_INTERVAL 500
 uint32_t usbTransmitTimeStamp = 0;
@@ -43,30 +42,12 @@ void e256_programChange(byte channel, byte program){
   set_mode(program);
 };
 
-// 
-boolean load_config(char* data_ptr){
-
-  StaticJsonDocument<2048> config;
-  DeserializationError err = deserializeJson(config, data_ptr);
-
-  if (err) {
-    set_mode(ERROR);
-    usbMIDI.sendProgramChange(ERROR_WAITING_FOR_GONFIG, MIDI_OUTPUT_CHANNEL); // ProgramChange(program, channel);
-    usbMIDI.send_now();
-    #if defined(DEBUG_MIDI_CONFIG)
-      Serial.printf("\nDEBUG_MIDI_CONFIG\tERROR_WAITING_FOR_GONFIG!\t%s", err.f_str());
-    #endif
-    return false;
-  };
-  if (!config_load_mapping(config["mapping"])) {
-    set_mode(ERROR);
-    usbMIDI.sendProgramChange(ERROR_LOADING_GONFIG_FAILED, MIDI_OUTPUT_CHANNEL); // ProgramChange(program, channel);
-    usbMIDI.send_now();
-    #if defined(DEBUG_MIDI_CONFIG)
-      Serial.printf("\nDEBUG_MIDI_CONFIG\tERROR_LOADING_GONFIG_FAILED!");
-    #endif
-    return true;
-  };
+void error(uint8_t err){
+  usbMIDI.sendProgramChange(err, MIDI_OUTPUT_CHANNEL); // ProgramChange(program, channel);
+  usbMIDI.send_now();
+  #if defined(DEBUG_CONFIG)
+    Serial.printf("\nCONFIG_ERROR\t%d", err);
+  #endif
 };
 
 inline void printBytes(const byte* data_ptr, unsigned int size) {
@@ -88,9 +69,11 @@ void e256_systemExclusive(uint8_t* data_ptr, unsigned int length){
   #endif
   uint8_t* identifier = data_ptr + 2 * sizeof(uint8_t);
   data_ptr += 3 * sizeof(uint8_t);
+  uint16_t data_length = length - 3;
 
   if (*identifier == MAPPING_CONFIG){
     configLength = length - 3;
+
     config_ptr = allocate((char*)data_ptr, configLength);
     strcpy(config_ptr, (char*)data_ptr);
     load_config(config_ptr);

@@ -8,24 +8,25 @@
 #define __CONFIG_H__
 
 #include <Arduino.h>
-//#define ENCODER_OPTIMIZE_INTERRUPTS
+
+#define ENCODER_OPTIMIZE_INTERRUPTS
 #include <Encoder.h>                 // https://github.com/PaulStoffregen/Encoder
-#include <ArduinoJson.h>
 
 #define NAME                         "256"
 #define PROJECT                      "ETEXTILE-SYNTHESIZER"
 #define VERSION                      "1.0.9"
-#define SENSOR_UID                   (uint8_t)1  // Unique sensor ID
+#define SENSOR_UID                   1  // Unique sensor ID
 
-#define LOAD_CONFIG                  (uint8_t)0  // E256-LEDs:
-#define FLASH_CONFIG                 (uint8_t)1  // E256-LEDs:
-#define CALIBRATE                    (uint8_t)2  // E256-LEDs: 
-#define BLOBS_PLAY                   (uint8_t)3  // Send all blobs values over USB using MIDI format
-#define BLOBS_LEARN                  (uint8_t)4  // Send blobs values separatly over USB using MIDI format
-#define MAPPING_LIB                  (uint8_t)5  // E256-LEDs:
-#define RAW_MATRIX                   (uint8_t)6  // 
-#define INTERP_MATRIX                (uint8_t)7  //
-#define ERROR                        (uint8_t)6  // E256-LEDs:
+#define CALIBRATE                    2  //  
+#define BLOBS_PLAY                   3  // Send all blobs values over USB using MIDI format
+#define BLOBS_LEARN                  4  // Send blobs values separatly over USB using MIDI format
+#define MAPPING_LIB                  5  // 
+#define RAW_MATRIX                   6  // 
+#define INTERP_MATRIX                7  //
+
+#define LOAD_CONFIG                  0  // E256-LEDs:
+#define FLASH_CONFIG                 1  // E256-LEDs:
+#define ERROR                        6  // E256-LEDs:
 
 #define ALL_OFF                      9
 
@@ -117,14 +118,14 @@ struct e256_level {
   boolean run;
 };
 
+extern uint16_t configLength;
+
 typedef struct e256_control e256_control_t;
 struct e256_control {
   Encoder* encoder;
   e256_mode_t* modes;
   e256_level_t* levels;
 };
-
-extern uint16_t configLength;
 
 extern e256_control_t e256_ctr;
 
@@ -137,11 +138,9 @@ extern uint8_t ledsIterCount;
 
 void CONFIG_SETUP(void);
 
-void setup_leds(uint8_t mode);
 void set_mode(uint8_t mode);
-void set_level(uint8_t control, uint8_t level);
-
-bool config_load_mapping(const JsonObject &config);
+void set_level(uint8_t level, uint8_t value);
+void load_config(char* data_ptr);
 
 void update_config(void);
 

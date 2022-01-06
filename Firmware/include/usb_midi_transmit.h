@@ -7,7 +7,12 @@
 #ifndef __USB_MIDI_TRANSMIT_H__
 #define __USB_MIDI_TRANSMIT_H__
 
+#include <Arduino.h>
+
 void USB_MIDI_TRANSMIT_SETUP(void);
+
+void error(uint8_t err);
+
 void usb_midi_read_input(void);
 void usb_midi_transmit(void);
 

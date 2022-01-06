@@ -11,6 +11,7 @@
 #include "allocate.h"
 #include "mapping_lib.h"
 
+#include <ArduinoJson.h>
 #include <SerialFlash.h>
 #include <Bounce2.h>
 
@@ -56,11 +57,9 @@ e256_control_t e256_ctr = {
 };
 
 uint8_t playMode = CALIBRATE;
-
 uint8_t lastMode = BLOBS_PLAY;
 //uint8_t lastMode = RAW_MATRIX;
 //uint8_t lastMode = MAPPING_LIB;
-
 uint8_t levelMode = THRESHOLD;
  
 uint32_t ledsTimeStamp = 0;
@@ -83,9 +82,6 @@ void setup_leds(uint8_t mode){
   pinMode(LED_PIN_D2, OUTPUT);
   digitalWrite(LED_PIN_D1, leds->D1);
   digitalWrite(LED_PIN_D2, leds->D2);
-  #if defined(DEBUG_MODES)
-    Serial.printf("\nDEBUG_SETUP_LEDS:%d_%d", leds->D1, leds->D2);
-  #endif
 };
 
 void set_mode(uint8_t mode) {
@@ -94,21 +90,21 @@ void set_mode(uint8_t mode) {
   lastMode = playMode;
   playMode = mode;
   e256_ctr.levels[levelMode].leds.update = false;
-  setup_leds(playMode);
-  e256_ctr.modes[playMode].leds.update = true;
-  e256_ctr.modes[playMode].run = true;
+  setup_leds(mode);
+  e256_ctr.modes[mode].leds.update = true;
+  e256_ctr.modes[mode].run = true;
   #if defined(DEBUG_MODES)
-    Serial.printf("\nDEBUG_SET_MODE:%d", playMode);
+    Serial.printf("\nDEBUG_SET_MODE:%d", mode);
   #endif
 };
 
-void set_level(uint8_t control, uint8_t level) {
+void set_level(uint8_t level, uint8_t value) {
+  e256_ctr.encoder->write(value << 2);
   e256_ctr.modes[playMode].leds.update = false;
-  e256_ctr.encoder->write(level << 2);
-  setup_leds(levelMode);
-  e256_ctr.levels[control].run = true;
+  setup_leds(level);
+  e256_ctr.levels[level].run = true;
   #if defined(DEBUG_LEVELS)
-    Serial.printf("\nDEBUG_SET_LEVEL:%d_%d", levelMode, level);
+    Serial.printf("\nDEBUG_SET_LEVEL:%d_%d", level, value);
   #endif
 };
 
@@ -150,20 +146,20 @@ inline void update_buttons(void) {
 };
 
 // Levels values adjustment using rotary encoder
-inline boolean read_encoder(e256_level_t* level_ptr) {
+inline boolean read_encoder(uint8_t level) {
   uint8_t val = e256_ctr.encoder->read() >> 2;
-  if (val != level_ptr->val) {
-    if (val > level_ptr->maxVal) {
-      e256_ctr.encoder->write(level_ptr->maxVal << 2);
+  if (val != e256_ctr.levels[level].val) {
+    if (val > e256_ctr.levels[level].maxVal) {
+      e256_ctr.encoder->write(e256_ctr.levels[level].maxVal << 2);
       return false;
     }
-    else if (val < level_ptr->minVal) {
-      e256_ctr.encoder->write(level_ptr->minVal << 2);
+    else if (val < e256_ctr.levels[level].minVal) {
+      e256_ctr.encoder->write(e256_ctr.levels[level].minVal << 2);
       return false;
     }
     else {
-      level_ptr->val = val;
-      level_ptr->leds.update = true;
+      e256_ctr.levels[level].val = val;
+      e256_ctr.levels[level].leds.update = true;
       return true;
     };
   }
@@ -172,33 +168,33 @@ inline boolean read_encoder(e256_level_t* level_ptr) {
   };
 };
 
-// Update levels[val] of each mode using the rotary encoder
+// Update levels[level] of each mode using the rotary encoder
 inline void update_encoder() {
-  if (read_encoder(&e256_ctr.levels[levelMode])) {
+  if (read_encoder(levelMode)) {
     set_level(levelMode, e256_ctr.levels[levelMode].val);
   };
 };
 
-inline void blink_leds(e256_mode_t* mode_ptr) {
-  if (mode_ptr->leds.update) {
-    if (millis() - ledsTimeStamp < mode_ptr->timeOn && mode_ptr->toggle == true ) {
-      mode_ptr->toggle = false;
-      digitalWrite(LED_PIN_D1, mode_ptr->leds.D1);
-      digitalWrite(LED_PIN_D2, mode_ptr->leds.D2);
+inline void blink_leds(uint8_t mode) {
+  if (e256_ctr.modes[mode].leds.update) {
+    if (millis() - ledsTimeStamp < e256_ctr.modes[mode].timeOn && e256_ctr.modes[mode].toggle == true ) {
+      e256_ctr.modes[mode].toggle = false;
+      digitalWrite(LED_PIN_D1, e256_ctr.modes[mode].leds.D1);
+      digitalWrite(LED_PIN_D2, e256_ctr.modes[mode].leds.D2);
     }
-    else if (millis() - ledsTimeStamp > mode_ptr->timeOn && mode_ptr->toggle == false) {
-      mode_ptr->toggle = true;
-      digitalWrite(LED_PIN_D1, !mode_ptr->leds.D1);
-      digitalWrite(LED_PIN_D2, !mode_ptr->leds.D2);
+    else if (millis() - ledsTimeStamp > e256_ctr.modes[mode].timeOn && e256_ctr.modes[mode].toggle == false) {
+      e256_ctr.modes[mode].toggle = true;
+      digitalWrite(LED_PIN_D1, !e256_ctr.modes[mode].leds.D1);
+      digitalWrite(LED_PIN_D2, !e256_ctr.modes[mode].leds.D2);
     }
-    else if (millis() - ledsTimeStamp > mode_ptr->timeOn + mode_ptr->timeOff) {
+    else if (millis() - ledsTimeStamp > e256_ctr.modes[mode].timeOn + e256_ctr.modes[mode].timeOff) {
       if (playMode == CALIBRATE) {
         if (ledsIterCount < CALIBRATE_ITER) {
           ledsTimeStamp = millis();
           ledsIterCount++;
         }
         else {
-          mode_ptr->leds.update = false;
+          e256_ctr.modes[mode].leds.update = false;
           playMode = lastMode;
         };
       }
@@ -209,10 +205,10 @@ inline void blink_leds(e256_mode_t* mode_ptr) {
   };
 };
 
-inline void fade_leds(e256_level_t* level_ptr) {
-  if (level_ptr->leds.update) {
-    level_ptr->leds.update = false;
-    uint8_t ledVal = constrain(map(level_ptr->val, level_ptr->minVal, level_ptr->maxVal, 0, 255), 0, 255);
+inline void fade_leds(uint8_t level) {
+  if (e256_ctr.levels[level].leds.update) {
+    e256_ctr.levels[level].leds.update = false;
+    uint8_t ledVal = constrain(map(e256_ctr.levels[level].val, e256_ctr.levels[level].minVal, e256_ctr.levels[level].maxVal, 0, 255), 0, 255);
     analogWrite(LED_PIN_D1, abs(255 - ledVal));
     analogWrite(LED_PIN_D2, ledVal);
   };
@@ -220,8 +216,8 @@ inline void fade_leds(e256_level_t* level_ptr) {
 
 // Update LEDs according to the mode and rotary encoder values
 inline void update_leds(void) {
-  fade_leds(&e256_ctr.levels[levelMode]);
-  blink_leds(&e256_ctr.modes[playMode]);
+  fade_leds(levelMode);
+  blink_leds(playMode);
 };
 
 //////////////////////////////////////// LOAD CONFIG
@@ -364,14 +360,20 @@ bool config_load_mapping(const JsonObject &config) {
   return true;
 };
 
+void load_config(char* data_ptr) {
+  StaticJsonDocument<2048> config;
+  DeserializationError err = deserializeJson(config, data_ptr);
+  if (err) {
+    error(ERROR_WAITING_FOR_GONFIG);
+  };
+  if (!config_load_mapping(config["mapping"])) {
+    error(ERROR_LOADING_GONFIG_FAILED);
+  };
+};
+
 inline void load_flash_config() {
   if (!SerialFlash.begin(FLASH_CHIP_SELECT)) {
-    set_mode(ERROR);
-    usbMIDI.sendProgramChange(ERROR_CONNECTING_FLASH, MIDI_OUTPUT_CHANNEL); // ProgramChange(program, channel);
-    usbMIDI.send_now();
-    #if defined(DEBUG_LOAD_FLASH_CONFIG)
-      Serial.printf("\nDEBUG_LOAD_FLASH_CONFIG\tERROR_CONNECTING_FLASH");
-    #endif
+    error(ERROR_CONNECTING_FLASH);
     return;
   };
   SerialFlashFile configFile = SerialFlash.open("config.json");
@@ -383,47 +385,26 @@ inline void load_flash_config() {
     DeserializationError err = deserializeJson(config, config_ptr);
     if (err) {
       // Load a default config file?
-      set_mode(ERROR);
-      usbMIDI.sendProgramChange(ERROR_WAITING_FOR_GONFIG, MIDI_OUTPUT_CHANNEL); // ProgramChange(program, channel);
-      usbMIDI.send_now();
-      #if defined(DEBUG_LOAD_FLASH_CONFIG)
-        Serial.printf("\nDEBUG_LOAD_FLASH_CONFIG\tERROR_WAITING_FOR_GONFIG!\t%s", err.f_str());
-      #endif
+      error(ERROR_WAITING_FOR_GONFIG);
       return;
     };
     if (!config_load_mapping(config["mapping"])) {
-      set_mode(ERROR);
-      usbMIDI.sendProgramChange(ERROR_LOADING_GONFIG_FAILED, MIDI_OUTPUT_CHANNEL); // ProgramChange(program, channel);
-      usbMIDI.send_now();
-      #if defined(DEBUG_LOAD_FLASH_CONFIG)
-        Serial.printf("\nDEBUG_LOAD_FLASH_CONFIG\tERROR_LOADING_GONFIG_FAILED!");
-      #endif
+      error(ERROR_LOADING_GONFIG_FAILED);
       return;
     };
     configFile.close();
     set_mode(MAPPING_LIB);
   }
-  else{
-    set_mode(ERROR);
-    usbMIDI.sendProgramChange(ERROR_NO_CONFIG_FILE, MIDI_OUTPUT_CHANNEL); // ProgramChange(program, channel);
-    usbMIDI.send_now();
-    #if defined(DEBUG_LOAD_FLASH_CONFIG)
-      Serial.printf("\nDEBUG_LOAD_FLASH_CONFIG\tERROR_NO_CONFIG_FILE!");
-    #endif
+  else {
+    error(ERROR_NO_CONFIG_FILE);
   };
 };
 
 inline void flash_config(char* data_ptr, unsigned int size) {
   if (!SerialFlash.begin(FLASH_CHIP_SELECT)) {
-    set_mode(ERROR);
-    usbMIDI.sendProgramChange(ERROR_CONNECTING_FLASH, MIDI_OUTPUT_CHANNEL); // ProgramChange(program, channel);
-    usbMIDI.send_now();
-    #if defined(DEBUG_FLASH_CONFIG)
-      Serial.printf("\nDEBUG_FLASH_CONFIG\tERROR_CONNECTING_FLASH");
-    #endif
+    error(ERROR_CONNECTING_FLASH);
     return;
   };
-  // Flash LED when flash is ready
   while (!SerialFlash.ready());
   SerialFlashFile flashFile;
   if (SerialFlash.exists("config.json")) {
@@ -433,31 +414,19 @@ inline void flash_config(char* data_ptr, unsigned int size) {
   if (SerialFlash.create("config.json", size)) {
     flashFile = SerialFlash.open("config.json");
     if (!flashFile) {
-      set_mode(ERROR);
-      usbMIDI.sendProgramChange(ERROR_WHILE_OPEN_FLASH_FILE, MIDI_OUTPUT_CHANNEL); // ProgramChange(program, channel);
-      usbMIDI.send_now();
-      #if defined(DEBUG_FLASH_CONFIG)
-        Serial.printf("\nDEBUG_FLASH_CONFIG\tERROR_WHILE_OPEN_FLASH_FILE!");
-      #endif
+      error(ERROR_WHILE_OPEN_FLASH_FILE);
       return;
     };
   }
   else {
-    set_mode(ERROR);
-    usbMIDI.sendProgramChange(ERROR_FLASH_FULL, MIDI_OUTPUT_CHANNEL); // ProgramChange(program, channel);
-    usbMIDI.send_now();
-    #if defined(DEBUG_FLASH_CONFIG)
-      Serial.printf("\nDEBUG_FLASH_CONFIG\tERROR_FLASH_FULL!");
-    #endif
+    error(ERROR_FLASH_FULL);
     return;
   };
   if (size < FLASH_SIZE) {
     flashFile.write(data_ptr, size);
     flashFile.close();
   } else {
-    set_mode(ERROR);
-    usbMIDI.sendProgramChange(ERROR_FILE_TO_BIG, MIDI_OUTPUT_CHANNEL); // ProgramChange(program, channel);
-    usbMIDI.send_now();
+    error(ERROR_FILE_TO_BIG);
   };
 };
 
