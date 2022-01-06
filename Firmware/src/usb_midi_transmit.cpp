@@ -1,6 +1,6 @@
 /*
   This file is part of the eTextile-Synthesizer project - http://synth.eTextile.org
-  Copyright (c) 2014- Maurin Donneaud <maurin@etextile.org>
+  Copyright (c) 2014-2022 Maurin Donneaud <maurin@etextile.org>
   This work is licensed under Creative Commons Attribution-ShareAlike 4.0 International license, see the LICENSE file for details.
 */
 
@@ -36,7 +36,7 @@ void e256_noteOff(byte channel, byte note, byte velocity){
 */
 
 void e256_controlChange(byte channel, byte control, byte value){
-  set_level(&e256_ctr.levels[control], value);
+  set_level(control, value);
 };
 
 void e256_programChange(byte channel, byte program){
@@ -87,7 +87,7 @@ void e256_systemExclusive(uint8_t* data_ptr, unsigned int length){
     Serial.println();
   #endif
   uint8_t* identifier = data_ptr + 2 * sizeof(uint8_t);
-  uint8_t* data_ptr = data_ptr + 3 * sizeof(uint8_t);
+  data_ptr += 3 * sizeof(uint8_t);
 
   if (*identifier == MAPPING_CONFIG){
     configLength = length - 3;
