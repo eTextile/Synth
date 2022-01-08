@@ -15,7 +15,7 @@
 #include "blob.h"
 #include "median.h"
 
-#define LIFO_NODES          512           // Set the maximum nodes number
+#define LIFO_NODES          512          // Set the maximum nodes number
 #define X_STRIDE            4             // Speed up X scanning
 #define Y_STRIDE            2             // Speed up Y scanning
 #define DEBOUNCE_TIME       50            // Avioding undesired bouncing effect when taping on the sensor or sliding.
@@ -23,8 +23,8 @@
 uint8_t bitmapArray[NEW_FRAME] = {0};     // Store (64*64) binary values
 xylr_t lifoArray[LIFO_NODES] = {0};       // Store lifo nodes
 blob_t blobArray[MAX_BLOBS] = {0};        // Store blobs
-velocity_t blobVelocity[MAX_BLOBS] = {0}; // Store XY & Z blobs velocity
-point_t lastCoord[MAX_BLOBS] = {0};       // Store last blobs coordinates 
+//velocity_t blobVelocity[MAX_BLOBS] = {0}; // Store XY & Z blobs velocity
+//point_t lastCoord[MAX_BLOBS] = {0};       // Store last blobs coordinates 
 
 llist_t llist_context_stack;              // Free nodes stack
 llist_t llist_context;                    // Used nodes
@@ -239,9 +239,9 @@ void matrix_find_blobs(void) {
         blobOut_ptr->lastState = false;
         llist_extract_node(&llist_blobs, prevBlob_ptr, blobOut_ptr);
         llist_push_front(&llist_blobs_stack, blobOut_ptr);
-#if defined(DEBUG_FIND_BLOBS)
-        Serial.printf("\nDEBUG_FIND_BLOBS / Blob: %p removed from **llist_blobs**", (lnode_t*)blobOut_ptr);
-#endif
+        #if defined(DEBUG_FIND_BLOBS)
+          Serial.printf("\nDEBUG_FIND_BLOBS / Blob: %p removed from **llist_blobs**", (lnode_t*)blobOut_ptr);
+        #endif
         break;
       };
       prevBlob_ptr = blobOut_ptr;
@@ -267,10 +267,10 @@ void matrix_find_blobs(void) {
     // If the distance between curent blob and last blob position is less than minDist:
     // Give the nearestBlob UID to the input blob.
     if (minDist < 4) {
-#if defined(DEBUG_FIND_BLOBS)
-      //Serial.printf("\nDEBUG_FIND_BLOBS / the minimum distance between blobs from llist_blobs_temp & llist_blobs is: %f ", minDist);
-      Serial.printf("\nDEBUG_FIND_BLOBS / Found corresponding blob: %p in the **llist_blobs**", (lnode_t*)nearestBlob_ptr);
-#endif
+      #if defined(DEBUG_FIND_BLOBS)
+        //Serial.printf("\nDEBUG_FIND_BLOBS / the minimum distance between blobs from llist_blobs_temp & llist_blobs is: %f ", minDist);
+        Serial.printf("\nDEBUG_FIND_BLOBS / Found corresponding blob: %p in the **llist_blobs**", (lnode_t*)nearestBlob_ptr);
+      #endif
       blobIn_ptr->debounceTimeStamp = millis();
       blobIn_ptr->UID = nearestBlob_ptr->UID;
       blobIn_ptr->state = true;
@@ -284,18 +284,18 @@ void matrix_find_blobs(void) {
         boolean isFree = true;
         for (blob_t* blobOut_ptr = (blob_t*)ITERATOR_START_FROM_HEAD(&llist_blobs); blobOut_ptr != NULL; blobOut_ptr = (blob_t*)ITERATOR_NEXT(blobOut_ptr)) {
           if (blobOut_ptr->UID == minID) {
-#if defined(DEBUG_FIND_BLOBS)
-            Serial.printf("\nDEBUG_FIND_BLOBS / USED_ID: %d ", minID);
-#endif
+            #if defined(DEBUG_FIND_BLOBS)
+              Serial.printf("\nDEBUG_FIND_BLOBS / USED_ID: %d ", minID);
+            #endif
             isFree = false;
             minID++;
             break;
           };
         };
         if (isFree) {
-#if defined(DEBUG_FIND_BLOBS)
-          Serial.printf("\nDEBUG_FIND_BLOBS / Found new blob and select ID: %d", minID);
-#endif
+          #if defined(DEBUG_FIND_BLOBS)
+            Serial.printf("\nDEBUG_FIND_BLOBS / Found new blob and select ID: %d", minID);
+          #endif
           blobIn_ptr->UID = minID;
           blobIn_ptr->state = true;
           blobIn_ptr->lastState = false;
@@ -325,15 +325,15 @@ void matrix_find_blobs(void) {
         allDone = false;
         if ((millis() - blobOut_ptr->debounceTimeStamp) < DEBOUNCE_TIME) {
           blobOut_ptr->status = NOT_FOUND;
-#if defined(DEBUG_FIND_BLOBS)
-          Serial.printf("\nDEBUG_FIND_BLOBS / Blob: %p in the **llist_blobs** linked list is NOT_FOUND(%d)", (lnode_t*)blobOut_ptr, blobOut_ptr->UID);
-#endif
+          #if defined(DEBUG_FIND_BLOBS)
+            Serial.printf("\nDEBUG_FIND_BLOBS / Blob: %p in the **llist_blobs** linked list is NOT_FOUND(%d)", (lnode_t*)blobOut_ptr, blobOut_ptr->UID);
+          #endif
         } else {
           blobOut_ptr->state = false;
           blobOut_ptr->status = TO_REMOVE;
-#if defined(DEBUG_FIND_BLOBS)
-          Serial.printf("\nDEBUG_FIND_BLOBS / Blob: %p in the **llist_blobs** linked list taged TO_REMOVE(%d)", (lnode_t*)blobOut_ptr, blobOut_ptr->UID);
-#endif
+          #if defined(DEBUG_FIND_BLOBS)
+            Serial.printf("\nDEBUG_FIND_BLOBS / Blob: %p in the **llist_blobs** linked list taged TO_REMOVE(%d)", (lnode_t*)blobOut_ptr, blobOut_ptr->UID);
+          #endif
         };
         llist_extract_node(&llist_blobs, prevBlob_ptr, blobOut_ptr);
         llist_push_front(&llist_blobs_temp, blobOut_ptr);
@@ -346,12 +346,12 @@ void matrix_find_blobs(void) {
     };
   };
 
-  llist_swap_llist(&llist_blobs, &llist_blobs_temp);             // Swap outputBlobs linked list nodes with inputBlobs linked list nodes
+  llist_swap_llist(&llist_blobs, &llist_blobs_temp);       // Swap outputBlobs linked list nodes with inputBlobs linked list nodes
   llist_save_nodes(&llist_blobs_stack, &llist_blobs_temp); // Save/rescure all nodes from the temporay blobs Linked list
 
-#if defined(RUNING_MEDIAN)
-  runing_median();
-#endif
+  #if defined(RUNING_MEDIAN)
+    runing_median();
+  #endif
 
 #if defined(VELOCITY)
 for (blob_t* blob_ptr = (blob_t*)ITERATOR_START_FROM_HEAD(&llist_blobs); blob_ptr != NULL; blob_ptr = (blob_t*)ITERATOR_NEXT(blob_ptr)) {
@@ -402,10 +402,10 @@ for (blob_t* blob_ptr = (blob_t*)ITERATOR_START_FROM_HEAD(&llist_blobs); blob_pt
                   blob_ptr->velocity.Z
                  );
   };
-#endif
-#if defined(DEBUG_FIND_BLOBS)
-  if ((lnode_t*)llist_blobs_temp.head_ptr != NULL) {
-    Serial.printf("\n___________DEBUG_FIND_BLOBS / END_OF_FRAME");
-  }
-#endif
+  #endif
+  #if defined(DEBUG_FIND_BLOBS)
+    if ((lnode_t*)llist_blobs_temp.head_ptr != NULL) {
+      Serial.printf("\n___________DEBUG_FIND_BLOBS / END_OF_FRAME");
+    }
+  #endif
 };

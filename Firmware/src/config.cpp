@@ -32,10 +32,10 @@ Encoder e256_e(ENCODER_PIN_A, ENCODER_PIN_B);
 e256_mode_t e256_m[9] = {
   { { HIGH,  LOW, false }, 200, 500, true, false },    // [0] LOAD_CONFIG
   { { HIGH, HIGH, false }, 150, 900, true, false },    // [1] FLASH_CONFIG
-  { { HIGH, HIGH, true  },  30,  30, true,  true },    // [2] CALIBRATE
-  { { HIGH, LOW,  false }, 500, 500, true, false },    // [3] BLOBS_PLAY
-  { { HIGH, LOW,  false }, 150, 150, true, false },    // [4] BLOBS_LEARN
-  { { HIGH, LOW,  false }, 800, 800, true, false },    // [5] MAPPING_LIB
+  { {  LOW,  LOW, false },  30,  30, true, false },    // [2] CALIBRATE
+  { { HIGH,  LOW, false }, 500, 500, true, false },    // [3] BLOBS_PLAY
+  { { HIGH,  LOW, false }, 150, 150, true, false },    // [4] BLOBS_LEARN
+  { { HIGH,  LOW, false }, 800, 800, true, false },    // [5] MAPPING_LIB
   { { HIGH, HIGH, false }, 500, 500, true, false },    // [6] RAW_MATRIX
   { { HIGH, HIGH, false }, 1000, 1000, true, false },  // [7] INTERP_MATRIX
   { { HIGH, HIGH, false },  10,  10, true, false }     // [8] ERROR
@@ -48,22 +48,22 @@ e256_level_t e256_l[4] = {
   { { HIGH, HIGH, false },  2, 60,  3, false }   // [3]  THRESHOLD
 };
 
-uint16_t configLength = 0;
-
 e256_control_t e256_ctr = {
   &e256_e,    // encoder_ptr
   &e256_m[0], // modes_ptr
   &e256_l[0]  // levels_ptr
 };
 
-uint8_t playMode = CALIBRATE;
-uint8_t lastMode = BLOBS_PLAY;
-//uint8_t lastMode = RAW_MATRIX;
-//uint8_t lastMode = MAPPING_LIB;
+uint8_t playMode = BLOBS_PLAY;
+//uint8_t playMode = RAW_MATRIX;
+//uint8_t playMode = MAPPING_LIB;
+uint8_t lastMode = NULL;
 uint8_t levelMode = THRESHOLD;
- 
+
 uint32_t ledsTimeStamp = 0;
 uint8_t ledsIterCount = 0;
+
+uint16_t configSize = 0;
 
 // Her it should not compile if you didn't install the library
 // [Bounce2]: https://github.com/thomasfredericks/Bounce2
@@ -94,7 +94,7 @@ void set_mode(uint8_t mode) {
   e256_ctr.modes[mode].leds.update = true;
   e256_ctr.modes[mode].run = true;
   #if defined(DEBUG_MODES)
-    Serial.printf("\nDEBUG_SET_MODE:%d", mode);
+    Serial.printf("\nSET_MODE:%d", mode);
   #endif
 };
 
@@ -104,7 +104,7 @@ void set_level(uint8_t level, uint8_t value) {
   setup_leds(level);
   e256_ctr.levels[level].run = true;
   #if defined(DEBUG_LEVELS)
-    Serial.printf("\nDEBUG_SET_LEVEL:%d_%d", level, value);
+    Serial.printf("\nSET_LEVEL:%d_%d", level, value);
   #endif
 };
 
@@ -369,6 +369,7 @@ void load_config(char* data_ptr) {
   if (!config_load_mapping(config["mapping"])) {
     error(ERROR_LOADING_GONFIG_FAILED);
   };
+  set_mode(MAPPING_LIB);
 };
 
 inline void load_flash_config() {
@@ -378,9 +379,9 @@ inline void load_flash_config() {
   };
   SerialFlashFile configFile = SerialFlash.open("config.json");
   if (configFile) { // true if the file exists
-    configLength = configFile.size();
-    config_ptr = allocate(config_ptr, configLength);
-    configFile.read(config_ptr, configLength);
+    configSize = configFile.size();
+    config_ptr = allocate(config_ptr, configSize);
+    configFile.read(config_ptr, configSize);
     StaticJsonDocument<2048> config;
     DeserializationError err = deserializeJson(config, config_ptr);
     if (err) {
@@ -432,7 +433,7 @@ inline void flash_config(char* data_ptr, unsigned int size) {
 
 void CONFIG_SETUP(void){
   setup_buttons();
-  set_mode(BLOBS_PLAY);
+  set_mode(CALIBRATE);
   //load_flash_config();
 };
 

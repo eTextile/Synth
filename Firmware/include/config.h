@@ -67,7 +67,7 @@
 #define WIDTH                        (X_MAX - X_MIN)
 #define HEIGHT                       (Y_MAX - Y_MIN)
 
-#define MAX_BLOBS                    8     // [0:7] How many blobs can be tracked at the same time
+#define MAX_BLOBS                    32    // [0:7] How many blobs can be tracked at the same time
 #define MAX_TRIGGERS                 16
 #define MAX_TOGGLES                  16
 #define MAX_HSLIDERS                 8
@@ -118,7 +118,7 @@ struct e256_level {
   boolean run;
 };
 
-extern uint16_t configLength;
+extern uint16_t configSize;
 
 typedef struct e256_control e256_control_t;
 struct e256_control {
@@ -132,9 +132,6 @@ extern e256_control_t e256_ctr;
 extern uint8_t playMode;
 extern uint8_t lastMode;
 extern uint8_t levelMode;
-
-extern uint32_t ledsTimeStamp;
-extern uint8_t ledsIterCount;
 
 void CONFIG_SETUP(void);
 

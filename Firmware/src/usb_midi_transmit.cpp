@@ -12,7 +12,7 @@
 #include "midi_bus.h"
 #include "allocate.h"
 
-#define MIDI_TRANSMIT_INTERVAL 500
+#define MIDI_TRANSMIT_INTERVAL 15
 uint32_t usbTransmitTimeStamp = 0;
 
 /*
@@ -62,19 +62,18 @@ inline void printBytes(const byte* data_ptr, unsigned int size) {
 
 // Load config via MIDI system exclusive message
 void e256_systemExclusive(uint8_t* data_ptr, unsigned int length){
-  #if defined(DEBUG_MIDI_CONFIG)
+  #if defined(DEBUG_CONFIG)
     Serial.print("SysEx Message: ");
     printBytes(data_ptr, length);
     Serial.println();
   #endif
   uint8_t* identifier = data_ptr + 2 * sizeof(uint8_t);
   data_ptr += 3 * sizeof(uint8_t);
-  uint16_t data_length = length - 3;
 
   if (*identifier == MAPPING_CONFIG){
-    configLength = length - 3;
+    configSize = length - 3;
 
-    config_ptr = allocate((char*)data_ptr, configLength);
+    config_ptr = allocate((char*)data_ptr, configSize);
     strcpy(config_ptr, (char*)data_ptr);
     load_config(config_ptr);
     set_mode(MAPPING_LIB);
@@ -111,17 +110,18 @@ void usb_midi_transmit(void) {
     case RAW_MATRIX:
       if (millis() - usbTransmitTimeStamp > MIDI_TRANSMIT_INTERVAL) {
         usbTransmitTimeStamp = millis();
-        usbMIDI.sendSysEx(RAW_FRAME, rawFrame.pData, false, 0);
+        usbMIDI.sendSysEx(RAW_FRAME, rawFrame.pData);
         usbMIDI.send_now();
+        while (usbMIDI.read()); // Read and discard any incoming MIDI messages
       };
       break;
     case INTERP_MATRIX:
       if (millis() - usbTransmitTimeStamp > MIDI_TRANSMIT_INTERVAL) {
         usbTransmitTimeStamp = millis();
-        // NOT_WORKING > You can use OSC insted of MIDI!
-        // See https://forum.pjrc.com/threads/28282-How-big-is-the-MIDI-receive-buffer
+        // NOT_WORKING: see https://forum.pjrc.com/threads/28282-How-big-is-the-MIDI-receive-buffer
         //usbMIDI.sendSysEx(NEW_FRAME, interpFrame.pData, false, 0);
         //usbMIDI.send_now();
+        //while (usbMIDI.read()); // Read and discard any incoming MIDI messages
       };
       break;
     case BLOBS_PLAY:
@@ -131,7 +131,6 @@ void usb_midi_transmit(void) {
           if (!blob_ptr->lastState) {
             usbMIDI.sendNoteOn(blob_ptr->UID + 1, 1, BS); // sendNoteOn(note, velocity, channel);
             usbMIDI.send_now();
-            //while (usbMIDI.read()); // Read and discard any incoming MIDI messages
           } else {
             if (millis() - blob_ptr->transmitTimeStamp > MIDI_TRANSMIT_INTERVAL) {
               blob_ptr->transmitTimeStamp = millis();
@@ -148,14 +147,13 @@ void usb_midi_transmit(void) {
           if (blob_ptr->lastState && blob_ptr->status != NOT_FOUND) {
             usbMIDI.sendNoteOff(blob_ptr->UID + 1, 0, BS); // sendNoteOff(note, velocity, channel);
             usbMIDI.send_now();
-            //while (usbMIDI.read()); // Read and discard any incoming MIDI messages
           };
         };
-        //usbMIDI.send_now();
         while (usbMIDI.read()); // Read and discard any incoming MIDI messages
       };
       break;
     case BLOBS_LEARN:
+        /*
         // Send separate blobs values using Control Change MIDI format
         // Send only the last blob that have been added to the sensor surface
         // Select blob's values according to the encoder position to allow the auto-mapping into Max4Live...
@@ -173,10 +171,10 @@ void usb_midi_transmit(void) {
               };
               break;
             case BX:
-              usbMIDI.sendControlChange(blob_ptr->UID + 1, (uint8_t)round(map(blob_ptr->centroid.X, 0.0, X_MAX - X_MIN , 0, 127)), BX);
+              usbMIDI.sendControlChange(blob_ptr->UID + 1, (uint8_t)round(map(blob_ptr->centroid.X, 0, X_MAX - X_MIN , 0, 127)), BX);
               break;
             case BY:
-              usbMIDI.sendControlChange(blob_ptr->UID + 1, (uint8_t)round(map(blob_ptr->centroid.Y, 0.0, X_MAX - X_MIN, 0, 127)), BY);
+              usbMIDI.sendControlChange(blob_ptr->UID + 1, (uint8_t)round(map(blob_ptr->centroid.Y, 0, X_MAX - X_MIN, 0, 127)), BY);
               break;
             case BZ:
               usbMIDI.sendControlChange(blob_ptr->UID + 1, constrain(blob_ptr->centroid.Z, 0, 127), BZ);
@@ -191,6 +189,7 @@ void usb_midi_transmit(void) {
               break;
           };
         };
+      */
       break;
     case MAPPING_LIB:
       for (midiNode_t* node_ptr = (midiNode_t*)ITERATOR_START_FROM_HEAD(&midiOut); node_ptr != NULL; node_ptr = (midiNode_t*)ITERATOR_NEXT(node_ptr)) {
