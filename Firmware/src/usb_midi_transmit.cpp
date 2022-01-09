@@ -15,7 +15,6 @@
 #define MIDI_TRANSMIT_INTERVAL 15
 uint32_t usbTransmitTimeStamp = 0;
 
-/*
 void e256_noteOn(byte channel, byte note, byte velocity){
   midiNode_t* node_ptr = (midiNode_t*)llist_pop_front(&midi_node_stack);
   node_ptr->midiMsg.status = midi::NoteOn;
@@ -23,8 +22,7 @@ void e256_noteOn(byte channel, byte note, byte velocity){
   node_ptr->midiMsg.data2 = velocity;
   llist_push_front(&midiIn, node_ptr);
 };
-*/
-/*
+
 void e256_noteOff(byte channel, byte note, byte velocity){
   midiNode_t* node_ptr = (midiNode_t*)llist_pop_front(&midi_node_stack);
   node_ptr->midiMsg.status = midi::NoteOff;
@@ -32,7 +30,6 @@ void e256_noteOff(byte channel, byte note, byte velocity){
   node_ptr->midiMsg.data2 = velocity;
   llist_push_front(&midiIn, node_ptr);
 };
-*/
 
 void e256_controlChange(byte channel, byte control, byte value){
   set_level(control, value);
@@ -93,8 +90,8 @@ void e256_clock(){
 void USB_MIDI_TRANSMIT_SETUP(void) {
   usbMIDI.begin();
   usbMIDI.setHandleProgramChange(e256_programChange);
-  //usbMIDI.setHandleNoteOn(e256_noteOn);
-  //usbMIDI.setHandleNoteOff(e256_noteOff);
+  usbMIDI.setHandleNoteOn(e256_noteOn);
+  usbMIDI.setHandleNoteOff(e256_noteOff);
   usbMIDI.setHandleControlChange(e256_controlChange);
   usbMIDI.setHandleSystemExclusive(e256_systemExclusive);
   usbMIDI.setHandleClock(e256_clock);
@@ -151,45 +148,6 @@ void usb_midi_transmit(void) {
         };
         while (usbMIDI.read()); // Read and discard any incoming MIDI messages
       };
-      break;
-    case BLOBS_LEARN:
-        /*
-        // Send separate blobs values using Control Change MIDI format
-        // Send only the last blob that have been added to the sensor surface
-        // Select blob's values according to the encoder position to allow the auto-mapping into Max4Live...
-        if ((blob_t*)llist_blobs.tail_ptr != NULL) {
-          blob_t* blob_ptr = (blob_t*)llist_blobs.tail_ptr;
-          switch (e256_ctr.levels[BLOBS_LEARN].val) {
-            case BS:
-              if (blob_ptr->state) {
-                if (!blob_ptr->lastState) {
-                  usbMIDI.sendNoteOn(blob_ptr->UID + 1, 1, BS); // sendNoteOn(note, velocity, channel);
-                };
-              }
-              else {
-                usbMIDI.sendNoteOn(blob_ptr->UID + 1, 0, BS); // sendNoteOn(note, velocity, channel);
-              };
-              break;
-            case BX:
-              usbMIDI.sendControlChange(blob_ptr->UID + 1, (uint8_t)round(map(blob_ptr->centroid.X, 0, X_MAX - X_MIN , 0, 127)), BX);
-              break;
-            case BY:
-              usbMIDI.sendControlChange(blob_ptr->UID + 1, (uint8_t)round(map(blob_ptr->centroid.Y, 0, X_MAX - X_MIN, 0, 127)), BY);
-              break;
-            case BZ:
-              usbMIDI.sendControlChange(blob_ptr->UID + 1, constrain(blob_ptr->centroid.Z, 0, 127), BZ);
-              break;
-            case BW:
-              usbMIDI.sendControlChange(blob_ptr->UID + 1, blob_ptr->box.W, BW);
-              break;
-            case BH:
-              usbMIDI.sendControlChange(blob_ptr->UID + 1, blob_ptr->box.H, BH);
-              break;
-            default:
-              break;
-          };
-        };
-      */
       break;
     case MAPPING_LIB:
       for (midiNode_t* node_ptr = (midiNode_t*)ITERATOR_START_FROM_HEAD(&midiOut); node_ptr != NULL; node_ptr = (midiNode_t*)ITERATOR_NEXT(node_ptr)) {

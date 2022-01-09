@@ -304,7 +304,7 @@ uint8_t gridLayout[GRID_KEYS] = {
 #endif
 
 #if defined(GRID_LAYOUT_FREQ)
-    const float gridLayout[GRID_KEYS] = {
+  const float gridLayout[GRID_KEYS] = {
 #endif
 
       Gd7, F7,  A7_, Fd7, Ad7, G7,  B7,  Gd7, C8,  A7_, Cd8, Ad7, D8,  B7,

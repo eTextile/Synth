@@ -259,7 +259,8 @@ void mapping_touchpads_update(void) {
             Serial.printf("\nDEBUG_MAPPING_TOUCHPAD\tMIDI_CCx:%d\tVAL:%d", mapp_touchpadsParams[i].CCx, round(map(blob_ptr->centroid.X, mapp_touchpadsParams[i].rect.Xmin, mapp_touchpadsParams[i].rect.Xmax, 0, 127)));
           #else
             midi_sendOut(midi::ControlChange, mapp_touchpadsParams[i].CCx, 
-            round(map(blob_ptr->centroid.X, mapp_touchpadsParams[i].rect.Xmin, mapp_touchpadsParams[i].rect.Xmax, 0, 127)));
+            round(map(blob_ptr->centroid.X, mapp_touchpadsParams[i].rect.Xmin,
+            mapp_touchpadsParams[i].rect.Xmax, 0, 127)));
           #endif
         };
         if (mapp_touchpadsParams[i].CCy) {
@@ -267,7 +268,8 @@ void mapping_touchpads_update(void) {
             Serial.printf("\nDEBUG_MAPPING_TOUCHPAD\tMIDI_CCy:%d\tVAL:%d", mapp_touchpadsParams[i].CCy, round(map(blob_ptr->centroid.Y, mapp_touchpadsParams[i].rect.Ymin, mapp_touchpadsParams[i].rect.Ymax, 0, 127)));
           #else
             midi_sendOut(midi::ControlChange, mapp_touchpadsParams[i].CCy, 
-            round(map(blob_ptr->centroid.X, mapp_touchpadsParams[i].rect.Xmin, mapp_touchpadsParams[i].rect.Xmax, 0, 127)));
+            round(map(blob_ptr->centroid.X, mapp_touchpadsParams[i].rect.Xmin,
+            mapp_touchpadsParams[i].rect.Xmax, 0, 127)));
           #endif
         };
         if (mapp_touchpadsParams[i].CCz) {
@@ -559,12 +561,6 @@ void mapping_cSliders_update(void) {
           for (uint8_t id = cTrack[track].index; id < cTrack[track].index + cTrack[track].sliders; id++) {
             if (theta > mapp_cSliders[id].thetaMin && theta < mapp_cSliders[id].thetaMax) {
               mapp_cSliders_ptr[blob_ptr->UID] = &mapp_cSliders[id]; // Record pointer to slider
-              uint8_t sliderVal = (uint8_t)map(theta, mapp_cSliders[id].thetaMin, mapp_cSliders[id].thetaMax, 0, 127);
-              #if defined(DEBUG_MAPPING)
-                Serial.printf("\nDEBUG_MAPPING_CSLIDER\tSLIDER_ID:%d\tRADIUS:%f\tTHETA:%f\tVAL:%d", id, radius, theta, sliderVal);
-              #else
-                midi_sendOut(midi::ControlChange, id, sliderVal);
-              #endif
             };
           };
         }
@@ -572,12 +568,13 @@ void mapping_cSliders_update(void) {
           cSlider_t* cSlider_ptr = mapp_cSliders_ptr[blob_ptr->UID];
           if (cSlider_ptr != NULL) {
             if (theta > cSlider_ptr->thetaMin && theta < cSlider_ptr->thetaMax) {
-              uint8_t sliderVal = (uint8_t)map(theta, cSlider_ptr->thetaMin, cSlider_ptr->thetaMax, 0, 127);
-              if (sliderVal != cSlider_ptr->lastVal) {
+              if (theta != cSlider_ptr->lastVal) {
+                cSlider_ptr->lastVal = theta;
+                uint8_t sliderVal = (uint8_t)map(theta, cSlider_ptr->thetaMin, cSlider_ptr->thetaMax, 0, 127);
                 #if defined(DEBUG_MAPPING)
                   Serial.printf("\nDEBUG_MAPPING_CSLIDER\tSLIDER_ID:%d\tRADIUS:%f\tTHETA:%f\tVAL:%d", id, radius, theta, sliderVal);
                 #else
-                  midi_sendOut(midi::ControlChange, cSlider_ptr->id, (uint8_t)map(theta, cSlider_ptr->thetaMin, cSlider_ptr->thetaMax, 0, 127));
+                  midi_sendOut(midi::ControlChange, cSlider_ptr->id, sliderVal);
                 #endif
               };
             };

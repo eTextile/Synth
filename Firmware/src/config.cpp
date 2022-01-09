@@ -34,11 +34,10 @@ e256_mode_t e256_m[9] = {
   { { HIGH, HIGH, false }, 150, 900, true, false },    // [1] FLASH_CONFIG
   { {  LOW,  LOW, false },  30,  30, true, false },    // [2] CALIBRATE
   { { HIGH,  LOW, false }, 500, 500, true, false },    // [3] BLOBS_PLAY
-  { { HIGH,  LOW, false }, 150, 150, true, false },    // [4] BLOBS_LEARN
-  { { HIGH,  LOW, false }, 800, 800, true, false },    // [5] MAPPING_LIB
-  { { HIGH, HIGH, false }, 500, 500, true, false },    // [6] RAW_MATRIX
-  { { HIGH, HIGH, false }, 1000, 1000, true, false },  // [7] INTERP_MATRIX
-  { { HIGH, HIGH, false },  10,  10, true, false }     // [8] ERROR
+  { { HIGH,  LOW, false }, 800, 800, true, false },    // [4] MAPPING_LIB
+  { { HIGH, HIGH, false }, 500, 500, true, false },    // [5] RAW_MATRIX
+  { { HIGH, HIGH, false }, 1000, 1000, true, false },  // [6] INTERP_MATRIX
+  { { HIGH, HIGH, false },  10,  10, true, false }     // [7] ERROR
 };
 
 e256_level_t e256_l[4] = {
@@ -127,11 +126,7 @@ inline void update_buttons(void) {
   // FONCTION_B: MIDI_LEARN (send blob values separately for Max4Live MIDI_LEARN)
   // LEDs: blink alternately, slow for playing mode and fast or learning mode
   if (BUTTON_R.rose() && BUTTON_R.previousDuration() > LONG_HOLD) {
-    if (playMode == BLOBS_PLAY) {
-      set_mode(BLOBS_LEARN);
-    } else {
-      set_mode(BLOBS_PLAY);
-    };
+    set_mode(BLOBS_PLAY);
   };
   // ACTION: BUTTON_R short press
   // FONCTION: SELECT_MODE
@@ -307,12 +302,12 @@ inline bool config_load_mapping_touchpads(const JsonArray& config) {
     mapp_touchpadsParams[i].rect.Xmax = config[i]["Xmax"];
     mapp_touchpadsParams[i].rect.Ymin = config[i]["Ymin"];
     mapp_touchpadsParams[i].rect.Ymax = config[i]["Ymax"];
-    mapp_touchpadsParams[i].CCx = config[i]["CCx"];     // X axis MIDI cChange mapping
-    mapp_touchpadsParams[i].CCy = config[i]["CCy"];     // X axis MIDI cChange mapping
-    mapp_touchpadsParams[i].CCz = config[i]["CCz"];     // X axis MIDI cChange mapping
-    mapp_touchpadsParams[i].CCs = config[i]["CCs"];     // XY size MIDI cChange mapping
-    mapp_touchpadsParams[i].CCxyv = config[i]["CCxyv"]; // XY velocity MIDI cChange mapping
-    mapp_touchpadsParams[i].CCzv = config[i]["CCzv"];   // XY velocity MIDI cChange mapping
+    mapp_touchpadsParams[i].CCx = config[i]["CCx"];     // Blob X axis MIDI cChange mapping
+    mapp_touchpadsParams[i].CCy = config[i]["CCy"];     // Blob Y axis MIDI cChange mapping
+    mapp_touchpadsParams[i].CCz = config[i]["CCz"];     // Blob Z axis MIDI cChange mapping
+    mapp_touchpadsParams[i].CCs = config[i]["CCs"];     // Blob state MIDI cChange mapping
+    mapp_touchpadsParams[i].CCvxy = config[i]["CCvxy"]; // Blob XY velocity MIDI cChange mapping
+    mapp_touchpadsParams[i].CCvz = config[i]["CCvz"];   // Blob Z velocity MIDI cChange mapping
  };
   return true;
 };

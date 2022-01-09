@@ -62,12 +62,12 @@ struct Key {
 typedef struct touchpad touchpad_t;
 struct touchpad {
   rect_t rect;
-  uint8_t CCx;    // X axis MIDI cChange mapping
-  uint8_t CCy;    // X axis MIDI cChange mapping
-  uint8_t CCz;    // X axis MIDI cChange mapping
-  uint8_t CCs;    // XY size MIDI cChange mapping
-  uint8_t CCxyv;  // XY velocity MIDI cChange mapping
-  uint8_t CCzv;   // XY velocity MIDI cChange mapping
+  uint8_t CCx;    // Blob X axis MIDI cChange mapping
+  uint8_t CCy;    // Blob Y axis MIDI cChange mapping
+  uint8_t CCz;    // Blob Z axis MIDI cChange mapping
+  uint8_t CCs;    // Blob state MIDI cChange mapping
+  uint8_t CCvxy;  // Blob XY velocity MIDI cChange mapping
+  uint8_t CCvz;   // Blob Z velocity MIDI cChange mapping
 };
 
 typedef struct vSlider vSlider_t;
