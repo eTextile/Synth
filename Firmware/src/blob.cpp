@@ -15,7 +15,7 @@
 #include "blob.h"
 #include "median.h"
 
-#define LIFO_NODES          512          // Set the maximum nodes number
+#define LIFO_NODES          512           // Set the maximum nodes number
 #define X_STRIDE            4             // Speed up X scanning
 #define Y_STRIDE            2             // Speed up Y scanning
 #define DEBOUNCE_TIME       50            // Avioding undesired bouncing effect when taping on the sensor or sliding.

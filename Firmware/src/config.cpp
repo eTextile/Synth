@@ -54,9 +54,7 @@ e256_control_t e256_ctr = {
 };
 
 uint8_t playMode = BLOBS_PLAY;
-//uint8_t playMode = RAW_MATRIX;
-//uint8_t playMode = MAPPING_LIB;
-uint8_t lastMode = NULL;
+uint8_t lastMode = BLOBS_PLAY;
 uint8_t levelMode = THRESHOLD;
 
 uint32_t ledsTimeStamp = 0;

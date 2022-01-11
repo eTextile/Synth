@@ -67,7 +67,7 @@ void e256_systemExclusive(uint8_t* data_ptr, unsigned int length){
   uint8_t* identifier = data_ptr + 2 * sizeof(uint8_t);
   data_ptr += 3 * sizeof(uint8_t);
 
-  if (*identifier == MAPPING_CONFIG){
+  if (*identifier == SYSEX_CONF){
     configSize = length - 3;
 
     config_ptr = allocate((char*)data_ptr, configSize);
@@ -75,7 +75,7 @@ void e256_systemExclusive(uint8_t* data_ptr, unsigned int length){
     load_config(config_ptr);
     set_mode(MAPPING_LIB);
   }
-  else if (*identifier == AUDIO_FILE) {
+  else if (*identifier == SYSEX_SOUND) {
     // TODO
   }
   else {

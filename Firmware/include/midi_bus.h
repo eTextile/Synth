@@ -12,10 +12,11 @@
 #include <MIDI.h>  // https://github.com/FortySevenEffects/arduino_midi_library > https://github.com/PaulStoffregen/MIDI
 using namespace midi;
 
-extern llist_t midi_node_stack;  // Exposed local declaration see midi_transmit.cpp
-extern llist_t midiIn;           // Exposed local declaration see midi_transmit.cpp
-extern llist_t midiOut;          // Exposed local declaration see midi_transmit.cpp
-extern llist_t midiChord;        // Exposed local declaration see midi_transmit.cpp
+// Exposed local declarations see midi_transmit.cpp
+extern llist_t midi_node_stack;
+extern llist_t midiIn;
+extern llist_t midiOut;
+extern llist_t midiChord;
 
 typedef struct midiMsg midiMsg_t;
 struct midiMsg {
@@ -33,8 +34,7 @@ struct midiNode {
 
 inline void midi_sendOut(uint8_t status, uint8_t note, uint8_t value){
   midiNode_t* node_ptr = (midiNode_t*)llist_pop_front(&midi_node_stack);
-
-  node_ptr->midiMsg.status = status; // Comande byte: MSB:status & LSB:channel
+  node_ptr->midiMsg.status = status; // status/comande byte: MSB:status & LSB:channel
   node_ptr->midiMsg.data1 = note;
   node_ptr->midiMsg.data2 = value;
   llist_push_front(&midiOut, node_ptr);

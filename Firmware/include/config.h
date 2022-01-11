@@ -19,10 +19,9 @@
 
 #define CALIBRATE                    2  //  
 #define BLOBS_PLAY                   3  // Send all blobs values over USB using MIDI format
-#define BLOBS_LEARN                  4  // Send blobs values separatly over USB using MIDI format
-#define MAPPING_LIB                  5  // 
-#define RAW_MATRIX                   6  // 
-#define INTERP_MATRIX                7  //
+#define MAPPING_LIB                  4  // 
+#define RAW_MATRIX                   5  // 
+#define INTERP_MATRIX                6  //
 
 #define LOAD_CONFIG                  0  // E256-LEDs:
 #define FLASH_CONFIG                 1  // E256-LEDs:
@@ -43,8 +42,8 @@
 #define FLASH_SIZE                   4096
 //#define FILENAME_STRING_SIZE       11 // config.json
 
-#define MAPPING_CONFIG               127
-#define AUDIO_FILE                   128 // TODO
+#define SYSEX_CONF                   0x7C
+#define SYSEX_SOUND                  0x6C
 
 #define BAUD_RATE                    230400
 #define RAW_COLS                     16
