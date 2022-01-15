@@ -8,7 +8,6 @@
 #define __CONFIG_H__
 
 #include <Arduino.h>
-
 #define ENCODER_OPTIMIZE_INTERRUPTS
 #include <Encoder.h>                 // https://github.com/PaulStoffregen/Encoder
 
@@ -23,11 +22,15 @@
 #define RAW_MATRIX                   5  // 
 #define INTERP_MATRIX                6  //
 
+#define ALLOC_DONE                   10
+#define LOAD_DONE                    11
+
+#define ALLOC_MODE                   0xC9
+#define LOAD_MODE                    0XCB
+
 #define LOAD_CONFIG                  0  // E256-LEDs:
 #define FLASH_CONFIG                 1  // E256-LEDs:
 #define ERROR                        6  // E256-LEDs:
-
-#define ALL_OFF                      9
 
 #define SIG_IN                       0  // E256-LEDs: | 1 | 0 |
 #define SIG_OUT                      1  // E256-LEDs: | 0 | 1 |
@@ -37,10 +40,8 @@
 // E256 HARDWARE CONSTANTES **DO NOT CHANGE**
 #define LED_PIN_D1                   5
 #define LED_PIN_D2                   4
-
 #define FLASH_CHIP_SELECT            6
 #define FLASH_SIZE                   4096
-//#define FILENAME_STRING_SIZE       11 // config.json
 
 #define SYSEX_CONF                   0x7C
 #define SYSEX_SOUND                  0x6C
@@ -91,6 +92,7 @@
 #define ERROR_FLASH_FULL             37
 #define ERROR_FILE_TO_BIG            38
 #define ERROR_NO_CONFIG_FILE         39
+#define ERROR_UNKNOWN_SYSEX          40
 
 typedef struct leds leds_t;
 struct leds {
@@ -136,7 +138,7 @@ void CONFIG_SETUP(void);
 
 void set_mode(uint8_t mode);
 void set_level(uint8_t level, uint8_t value);
-void load_config(char* data_ptr);
+void load_config(uint8_t* data_ptr);
 
 void update_config(void);
 

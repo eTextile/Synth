@@ -47,41 +47,90 @@ void error(uint8_t err){
   #endif
 };
 
-inline void printBytes(const byte* data_ptr, unsigned int size) {
+inline void printBytes(const uint8_t* data_ptr, uint16_t size) {
+  Serial.printf("\nSysEx length: %d", size);
+  Serial.printf("\nSysEx message: ");
   while (size > 0) {
     byte b = *data_ptr++;
-    if (b < 16) Serial.print('0');
     Serial.print(b, HEX);
-    if (size > 1) Serial.print(' ');
-    size = size - 1;
+    Serial.print(' ');
+    size--;
   };
 };
 
 // Load config via MIDI system exclusive message
-void e256_systemExclusive(uint8_t* data_ptr, unsigned int length){
+// [ SYSEX_BEGIN, SYSEX_ID, MODE, CONFIG_SIZE, SYSEX_END ] 
+// ALLOC_DONE
+// [ SYSEX_BEGIN, SYSEX_ID, MODE, IDENTIFIER, DATA, SYSEX_END ]
+// LOAD_DONE
+
+uint16_t midiBuffer = 290;
+uint8_t* config_ptr = NULL;
+uint16_t configSize = 0;
+
+uint8_t* chunk_ptr = NULL;
+uint8_t chunks = 0;
+uint8_t chunkCount = 0;
+uint16_t chunkSize = 0;
+
+uint8_t lastChunk = 0;
+uint16_t lastChunkSize = 0;
+
+void e256_systemExclusive(const uint8_t* data_ptr, uint16_t length, boolean complete){
+
   #if defined(DEBUG_CONFIG)
-    Serial.print("SysEx Message: ");
     printBytes(data_ptr, length);
-    Serial.println();
   #endif
-  uint8_t* identifier = data_ptr + 2 * sizeof(uint8_t);
-  data_ptr += 3 * sizeof(uint8_t);
 
-  if (*identifier == SYSEX_CONF){
-    configSize = length - 3;
+  uint8_t loadMode = *(data_ptr + 2); // [ ALLOCATE_MODE - LOAD_MODE ]
 
-    config_ptr = allocate((char*)data_ptr, configSize);
-    strcpy(config_ptr, (char*)data_ptr);
-    load_config(config_ptr);
-    set_mode(MAPPING_LIB);
+  if (loadMode == ALLOC_MODE){
+    configSize = *(data_ptr + 3);
+    config_ptr = malloc(configSize);
+    chunk_ptr = config_ptr;
+    chunks = (uint8_t)((configSize + 5) / midiBuffer);
+    lastChunkSize = (configSize + 5) % midiBuffer;
+    lastChunkSize != 0 ? chunks++ : NULL;
+    chunkCount = 0;
+    usbMIDI.sendProgramChange(ALLOC_DONE, MIDI_OUTPUT_CHANNEL); // ProgramChange(program, channel);
+    usbMIDI.send_now();
   }
-  else if (*identifier == SYSEX_SOUND) {
-    // TODO
-  }
-  else {
-    // Unknown system exclusive message
-  }
+
+  else if (loadMode == LOAD_MODE){
+
+    uint8_t identifier = *(data_ptr + 3);
+    
+    if (identifier == SYSEX_CONF){
+      if (chunks == 1) { // Only one chunk to load
+        memcpy(config_ptr, data_ptr += 4, configSize);
+      }
+      else if (chunkCount == 0  && chunks > 1) { // First chunk
+        chunkSize = midiBuffer - 4;
+        memcpy(chunk_ptr, data_ptr += 4, chunkSize);
+        chunk_ptr += midiBuffer;
+        chunkCount++;
+      }
+      else if (chunkCount < chunks - 1){ // Middle chunks
+        chunkSize = midiBuffer;
+        memcpy(chunk_ptr, data_ptr, chunkSize);
+        chunk_ptr += midiBuffer;
+        chunkCount++;
+      } else { // LastSYSEX_ID chunk
+        chunkSize = lastChunkSize - 1;
+        memcpy(chunk_ptr, data_ptr, chunkSize);
+      }
+    }
+    else if (identifier == SYSEX_SOUND) {
+      // TODO: copy to flash
+      usbMIDI.sendProgramChange(LOAD_DONE, MIDI_OUTPUT_CHANNEL);
+      usbMIDI.send_now();
+    }
+    else {
+      usbMIDI.sendProgramChange(ERROR_UNKNOWN_SYSEX, MIDI_OUTPUT_CHANNEL);
+      usbMIDI.send_now();
+  };  
 };
+
 
 void e256_clock(){
   Serial.println("Clock");

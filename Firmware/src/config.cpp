@@ -353,7 +353,7 @@ bool config_load_mapping(const JsonObject &config) {
   return true;
 };
 
-void load_config(char* data_ptr) {
+void load_config(uint8_t* data_ptr) {
   StaticJsonDocument<2048> config;
   DeserializationError err = deserializeJson(config, data_ptr);
   if (err) {
