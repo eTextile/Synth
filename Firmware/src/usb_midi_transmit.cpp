@@ -65,15 +65,14 @@ inline void printBytes(const uint8_t* data_ptr, uint16_t size) {
 // LOAD_DONE
 
 uint16_t midiBuffer = 290;
-uint8_t* config_ptr = NULL;
-uint16_t configSize = 0;
+uint8_t* tmp_config_ptr = NULL;
+uint16_t tmp_configSize = 0;
 
 uint8_t* chunk_ptr = NULL;
 uint8_t chunks = 0;
 uint8_t chunkCount = 0;
-uint16_t chunkSize = 0;
 
-uint8_t lastChunk = 0;
+uint16_t chunkSize = 0;
 uint16_t lastChunkSize = 0;
 
 void e256_systemExclusive(const uint8_t* data_ptr, uint16_t length, boolean complete){
@@ -85,12 +84,12 @@ void e256_systemExclusive(const uint8_t* data_ptr, uint16_t length, boolean comp
   uint8_t loadMode = *(data_ptr + 2); // [ ALLOCATE_MODE - LOAD_MODE ]
 
   if (loadMode == ALLOC_MODE){
-    configSize = *(data_ptr + 3);
-    config_ptr = malloc(configSize);
-    chunk_ptr = config_ptr;
-    chunks = (uint8_t)((configSize + 5) / midiBuffer);
-    lastChunkSize = (configSize + 5) % midiBuffer;
-    lastChunkSize != 0 ? chunks++ : NULL;
+    tmp_configSize = *(data_ptr + 3);
+    tmp_config_ptr = (uint8_t*) malloc(tmp_configSize);
+    chunk_ptr = tmp_config_ptr;
+    chunks = (uint8_t)((tmp_configSize + 5) / midiBuffer);
+    lastChunkSize = (tmp_configSize + 5) % midiBuffer;
+    if (lastChunkSize != 0) chunks++;
     chunkCount = 0;
     usbMIDI.sendProgramChange(ALLOC_DONE, MIDI_OUTPUT_CHANNEL); // ProgramChange(program, channel);
     usbMIDI.send_now();
@@ -102,7 +101,7 @@ void e256_systemExclusive(const uint8_t* data_ptr, uint16_t length, boolean comp
     
     if (identifier == SYSEX_CONF){
       if (chunks == 1) { // Only one chunk to load
-        memcpy(config_ptr, data_ptr += 4, configSize);
+        memcpy(tmp_config_ptr, data_ptr += 4, tmp_configSize);
       }
       else if (chunkCount == 0  && chunks > 1) { // First chunk
         chunkSize = midiBuffer - 4;
@@ -115,7 +114,7 @@ void e256_systemExclusive(const uint8_t* data_ptr, uint16_t length, boolean comp
         memcpy(chunk_ptr, data_ptr, chunkSize);
         chunk_ptr += midiBuffer;
         chunkCount++;
-      } else { // LastSYSEX_ID chunk
+      } else { // Last chunk
         chunkSize = lastChunkSize - 1;
         memcpy(chunk_ptr, data_ptr, chunkSize);
       }
@@ -128,7 +127,8 @@ void e256_systemExclusive(const uint8_t* data_ptr, uint16_t length, boolean comp
     else {
       usbMIDI.sendProgramChange(ERROR_UNKNOWN_SYSEX, MIDI_OUTPUT_CHANNEL);
       usbMIDI.send_now();
-  };  
+    };  
+  };
 };
 
 
