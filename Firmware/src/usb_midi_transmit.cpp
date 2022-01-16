@@ -117,7 +117,7 @@ void e256_systemExclusive(const uint8_t* data_ptr, uint16_t length, boolean comp
       } else { // Last chunk
         chunkSize = lastChunkSize - 1;
         memcpy(chunk_ptr, data_ptr, chunkSize);
-      }
+      };
     }
     else if (identifier == SYSEX_SOUND) {
       // TODO: copy to flash

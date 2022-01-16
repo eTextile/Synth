@@ -25,8 +25,8 @@
 #define ALLOC_DONE                   10
 #define LOAD_DONE                    11
 
-#define ALLOC_MODE                   0xC9
-#define LOAD_MODE                    0XCB
+#define ALLOC_MODE                   0x64
+#define LOAD_MODE                    0X65
 
 #define LOAD_CONFIG                  0  // E256-LEDs:
 #define FLASH_CONFIG                 1  // E256-LEDs:
