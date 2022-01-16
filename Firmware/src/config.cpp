@@ -357,17 +357,17 @@ void load_config(uint8_t* data_ptr) {
   StaticJsonDocument<2048> config;
   DeserializationError err = deserializeJson(config, data_ptr);
   if (err) {
-    error(ERROR_WAITING_FOR_GONFIG);
+    midiInfo(ERROR_WAITING_FOR_GONFIG);
   };
   if (!config_load_mapping(config["mapping"])) {
-    error(ERROR_LOADING_GONFIG_FAILED);
+    midiInfo(ERROR_LOADING_GONFIG_FAILED);
   };
   set_mode(MAPPING_LIB);
 };
 
 inline void load_flash_config() {
   if (!SerialFlash.begin(FLASH_CHIP_SELECT)) {
-    error(ERROR_CONNECTING_FLASH);
+    midiInfo(ERROR_CONNECTING_FLASH);
     return;
   };
   SerialFlashFile configFile = SerialFlash.open("config.json");
@@ -379,24 +379,24 @@ inline void load_flash_config() {
     DeserializationError err = deserializeJson(config, config_ptr);
     if (err) {
       // Load a default config file?
-      error(ERROR_WAITING_FOR_GONFIG);
+      midiInfo(ERROR_WAITING_FOR_GONFIG);
       return;
     };
     if (!config_load_mapping(config["mapping"])) {
-      error(ERROR_LOADING_GONFIG_FAILED);
+      midiInfo(ERROR_LOADING_GONFIG_FAILED);
       return;
     };
     configFile.close();
     set_mode(MAPPING_LIB);
   }
   else {
-    error(ERROR_NO_CONFIG_FILE);
+    midiInfo(ERROR_NO_CONFIG_FILE);
   };
 };
 
 inline void flash_config(char* data_ptr, unsigned int size) {
   if (!SerialFlash.begin(FLASH_CHIP_SELECT)) {
-    error(ERROR_CONNECTING_FLASH);
+    midiInfo(ERROR_CONNECTING_FLASH);
     return;
   };
   while (!SerialFlash.ready());
@@ -408,19 +408,19 @@ inline void flash_config(char* data_ptr, unsigned int size) {
   if (SerialFlash.create("config.json", size)) {
     flashFile = SerialFlash.open("config.json");
     if (!flashFile) {
-      error(ERROR_WHILE_OPEN_FLASH_FILE);
+      midiInfo(ERROR_WHILE_OPEN_FLASH_FILE);
       return;
     };
   }
   else {
-    error(ERROR_FLASH_FULL);
+    midiInfo(ERROR_FLASH_FULL);
     return;
   };
   if (size < FLASH_SIZE) {
     flashFile.write(data_ptr, size);
     flashFile.close();
   } else {
-    error(ERROR_FILE_TO_BIG);
+    midiInfo(ERROR_FILE_TO_BIG);
   };
 };
 
