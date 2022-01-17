@@ -66,7 +66,6 @@ inline void printBytes(const uint8_t* data_ptr, uint16_t size) {
 #define SYSEX_BUFFER  290
 
 boolean sysEx_alloc = true;
-boolean sysEx_load = false;
 
 uint8_t sysEx_identifier = 0;
 uint16_t sysEx_dataSize = 0;
@@ -89,8 +88,8 @@ void e256_systemExclusive(const uint8_t* data_ptr, uint16_t length, boolean comp
     sysEx_identifier = *(data_ptr + 2);
     sysEx_dataSize = *(data_ptr + 3) << 7 | *(data_ptr + 4);    
     sysEx_chunk_ptr = sysEx_data_ptr = (uint8_t*) malloc(sysEx_dataSize);
-    sysEx_chunks = (uint8_t)((sysEx_dataSize + 5) / SYSEX_BUFFER);
-    sysEx_lastChunkSize = (sysEx_dataSize + 5) % SYSEX_BUFFER;
+    sysEx_chunks = (uint8_t)((sysEx_dataSize + 3) / SYSEX_BUFFER);
+    sysEx_lastChunkSize = (sysEx_dataSize + 3) % SYSEX_BUFFER;
     if (sysEx_lastChunkSize != 0) sysEx_chunks++;
     sysEx_chunkCount = 0;
     midiInfo(ALLOC_DONE);
@@ -105,7 +104,8 @@ void e256_systemExclusive(const uint8_t* data_ptr, uint16_t length, boolean comp
       #endif
       sysEx_chunkSize = SYSEX_BUFFER - 2; // Removing header size
       memcpy(sysEx_chunk_ptr, data_ptr += 2, sysEx_chunkSize);
-      sysEx_chunk_ptr += SYSEX_BUFFER;
+      //sysEx_chunk_ptr += (sysEx_chunkSize + 1);
+      sysEx_chunk_ptr += sysEx_chunkSize;
       sysEx_chunkCount++;
     }
     else if (sysEx_chunkCount < sysEx_chunks - 1){ // Middle chunks
@@ -114,7 +114,8 @@ void e256_systemExclusive(const uint8_t* data_ptr, uint16_t length, boolean comp
       #endif
       sysEx_chunkSize = SYSEX_BUFFER;
       memcpy(sysEx_chunk_ptr, data_ptr, sysEx_chunkSize);
-      sysEx_chunk_ptr += SYSEX_BUFFER;
+      //sysEx_chunk_ptr += (sysEx_chunkSize + 1);
+      sysEx_chunk_ptr += sysEx_chunkSize;
       sysEx_chunkCount++;
     }
     else { // Last chunk
@@ -123,25 +124,24 @@ void e256_systemExclusive(const uint8_t* data_ptr, uint16_t length, boolean comp
       #endif
       sysEx_chunkSize = sysEx_lastChunkSize - 1; // Removing footer size
       memcpy(sysEx_chunk_ptr, data_ptr, sysEx_chunkSize);
-      sysEx_load = true;
-    };
-  };
-  
-  if (sysEx_load){
-    sysEx_load = false;
-    if (sysEx_identifier == SYSEX_CONF) {
-      load_config(sysEx_data_ptr);
-      midiInfo(LOAD_DONE);
-      sysEx_alloc = true;
-    }
-    else if (sysEx_identifier == SYSEX_SOUND){
-      //TODO
-      midiInfo(LOAD_DONE);
-      sysEx_alloc = true;
-    }
-    else {
-      midiInfo(ERROR_UNKNOWN_SYSEX);
-      sysEx_alloc = true;
+      
+      if (sysEx_identifier == SYSEX_CONF) {
+
+        printBytes(sysEx_data_ptr, sysEx_dataSize); // DEBUG
+
+        load_config(sysEx_data_ptr);
+        midiInfo(LOAD_DONE);
+        sysEx_alloc = true;
+      }
+      else if (sysEx_identifier == SYSEX_SOUND){
+        //TODO
+        midiInfo(LOAD_DONE);
+        sysEx_alloc = true;
+      }
+      else {
+        midiInfo(ERROR_UNKNOWN_SYSEX);
+        sysEx_alloc = true;
+      };
     };
   };
 };
