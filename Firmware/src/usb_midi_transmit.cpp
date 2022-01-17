@@ -79,10 +79,6 @@ uint8_t* sysEx_chunk_ptr = NULL;
 
 void e256_systemExclusive(const uint8_t* data_ptr, uint16_t length, boolean complete){
 
-  #if defined(DEBUG_CONFIG)
-    printBytes(data_ptr, length);
-  #endif
-
   if (sysEx_alloc){
     sysEx_alloc = false;
     sysEx_identifier = *(data_ptr + 2);
@@ -96,39 +92,28 @@ void e256_systemExclusive(const uint8_t* data_ptr, uint16_t length, boolean comp
   }
   else {
     if (sysEx_chunks == 1) { // Only one chunk to load
-      memcpy(sysEx_chunk_ptr, data_ptr += 2, sysEx_dataSize);
+      memcpy(sysEx_chunk_ptr, data_ptr + 2, sysEx_dataSize);
     }
     else if (sysEx_chunkCount == 0 && sysEx_chunks > 1) { // First chunk
-      #if defined(DEBUG_CONFIG)
-        Serial.printf("\nCONFIG_firstChunk:%d", sysEx_chunkCount);
-      #endif
       sysEx_chunkSize = SYSEX_BUFFER - 2; // Removing header size
-      memcpy(sysEx_chunk_ptr, data_ptr += 2, sysEx_chunkSize);
-      //sysEx_chunk_ptr += (sysEx_chunkSize + 1);
+      memcpy(sysEx_chunk_ptr, data_ptr + 2, sysEx_chunkSize);
       sysEx_chunk_ptr += sysEx_chunkSize;
       sysEx_chunkCount++;
     }
     else if (sysEx_chunkCount < sysEx_chunks - 1){ // Middle chunks
-      #if defined(DEBUG_CONFIG)
-        Serial.printf("\nCONFIG_middleChunk:%d", sysEx_chunkCount);
-      #endif
       sysEx_chunkSize = SYSEX_BUFFER;
       memcpy(sysEx_chunk_ptr, data_ptr, sysEx_chunkSize);
-      //sysEx_chunk_ptr += (sysEx_chunkSize + 1);
       sysEx_chunk_ptr += sysEx_chunkSize;
       sysEx_chunkCount++;
     }
     else { // Last chunk
-      #if defined(DEBUG_CONFIG)
-        Serial.printf("\nCONFIG_lastChunk:%d", sysEx_chunkCount);
-      #endif
       sysEx_chunkSize = sysEx_lastChunkSize - 1; // Removing footer size
       memcpy(sysEx_chunk_ptr, data_ptr, sysEx_chunkSize);
       
       if (sysEx_identifier == SYSEX_CONF) {
-
-        printBytes(sysEx_data_ptr, sysEx_dataSize); // DEBUG
-
+        #if defined(DEBUG_CONFIG)
+          printBytes(sysEx_data_ptr, sysEx_dataSize);
+        #endif
         load_config(sysEx_data_ptr);
         midiInfo(LOAD_DONE);
         sysEx_alloc = true;
