@@ -43,23 +43,22 @@ void midiInfo(uint8_t err){
   usbMIDI.sendProgramChange(err, MIDI_OUTPUT_CHANNEL); // ProgramChange(program, channel);
   usbMIDI.send_now();
   #if defined(DEBUG_CONFIG)
-    Serial.printf("\nCONFIG_ERROR:\t%d", err);
+    Serial.printf("\nMIDI_MSG:\t%d", err);
   #endif
 };
 
 inline void printBytes(const uint8_t* data_ptr, uint16_t size) {
   Serial.printf("\nSysEx length: %d", size);
-  Serial.printf("\nSysEx message: ");
+  Serial.printf("\nSysEx message:");
   while (size > 0) {
     byte b = *data_ptr++;
-    Serial.print(b, HEX);
-    Serial.print(' ');
+    Serial.printf(" %x", b);
     size--;
   };
 };
 
 // Load config via MIDI system exclusive message
-// [ SYSEX_BEGIN, SYSEX_ID, SYSEX_IDENTIFIER, SYSEX_DATA_SIZE, SYSEX_END ] 
+// [ SYSEX_BEGIN, SYSEX_ID, SYSEX_IDENTIFIER, SYSEX_SIZE_MSB, SYSEX_SIZE_LSB, SYSEX_END ]
 // ALLOC_DONE
 // [ SYSEX_BEGIN, SYSEX_ID, SYSEX_DATA, SYSEX_END ]
 // LOAD_DONE
@@ -88,25 +87,24 @@ void e256_systemExclusive(const uint8_t* data_ptr, uint16_t length, boolean comp
   if (sysEx_alloc){
     sysEx_alloc = false;
     sysEx_identifier = *(data_ptr + 2);
-    sysEx_dataSize = *(data_ptr + 3);
+    sysEx_dataSize = *(data_ptr + 3) << 7 | *(data_ptr + 4);    
     sysEx_chunk_ptr = sysEx_data_ptr = (uint8_t*) malloc(sysEx_dataSize);
     sysEx_chunks = (uint8_t)((sysEx_dataSize + 5) / SYSEX_BUFFER);
     sysEx_lastChunkSize = (sysEx_dataSize + 5) % SYSEX_BUFFER;
     if (sysEx_lastChunkSize != 0) sysEx_chunks++;
     sysEx_chunkCount = 0;
-    usbMIDI.sendProgramChange(ALLOC_DONE, MIDI_OUTPUT_CHANNEL); // ProgramChange(program, channel);
-    usbMIDI.send_now();
+    midiInfo(ALLOC_DONE);
   }
   else {
     if (sysEx_chunks == 1) { // Only one chunk to load
-      memcpy(sysEx_chunk_ptr, data_ptr += 4, sysEx_dataSize);
+      memcpy(sysEx_chunk_ptr, data_ptr += 2, sysEx_dataSize);
     }
     else if (sysEx_chunkCount == 0 && sysEx_chunks > 1) { // First chunk
       #if defined(DEBUG_CONFIG)
         Serial.printf("\nCONFIG_firstChunk:%d", sysEx_chunkCount);
       #endif
-      sysEx_chunkSize = SYSEX_BUFFER - 4; // Removing header
-      memcpy(sysEx_chunk_ptr, data_ptr += 4, sysEx_chunkSize);
+      sysEx_chunkSize = SYSEX_BUFFER - 2; // Removing header size
+      memcpy(sysEx_chunk_ptr, data_ptr += 2, sysEx_chunkSize);
       sysEx_chunk_ptr += SYSEX_BUFFER;
       sysEx_chunkCount++;
     }
@@ -123,7 +121,7 @@ void e256_systemExclusive(const uint8_t* data_ptr, uint16_t length, boolean comp
       #if defined(DEBUG_CONFIG)
         Serial.printf("\nCONFIG_lastChunk:%d", sysEx_chunkCount);
       #endif
-      sysEx_chunkSize = sysEx_lastChunkSize - 1; // Removing footer
+      sysEx_chunkSize = sysEx_lastChunkSize - 1; // Removing footer size
       memcpy(sysEx_chunk_ptr, data_ptr, sysEx_chunkSize);
       sysEx_load = true;
     };
