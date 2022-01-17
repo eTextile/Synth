@@ -13,6 +13,9 @@ void USB_MIDI_TRANSMIT_SETUP(void);
 
 void midiInfo(uint8_t err);
 
+extern uint16_t sysEx_dataSize;
+extern uint8_t* sysEx_data_ptr;
+
 void usb_midi_read_input(void);
 void usb_midi_transmit(void);
 

@@ -20,7 +20,7 @@
 #define ENCODER_PIN_A     22
 #define ENCODER_PIN_B     9
 #define LONG_HOLD         1500
-#define CALIBRATE_ITER    10
+#define BLINK_ITER        10
 
 // The modes below can be selected using E256 built-in switches
 Bounce BUTTON_L = Bounce();
@@ -31,7 +31,7 @@ Encoder e256_e(ENCODER_PIN_A, ENCODER_PIN_B);
 
 e256_mode_t e256_m[9] = {
   { { HIGH,  LOW, false }, 200, 500, true, false },    // [0] LOAD_CONFIG
-  { { HIGH, HIGH, false }, 150, 900, true, false },    // [1] FLASH_CONFIG
+  { { HIGH, HIGH, false },  50,  50, true, false },    // [1] FLASH_CONFIG
   { {  LOW,  LOW, false },  30,  30, true, false },    // [2] CALIBRATE
   { { HIGH,  LOW, false }, 500, 500, true, false },    // [3] BLOBS_PLAY
   { { HIGH,  LOW, false }, 800, 800, true, false },    // [4] MAPPING_LIB
@@ -60,6 +60,7 @@ uint8_t levelMode = THRESHOLD;
 uint32_t ledsTimeStamp = 0;
 uint8_t ledsIterCount = 0;
 
+uint8_t* config_ptr = NULL;
 uint16_t configSize = 0;
 
 // Her it should not compile if you didn't install the library
@@ -105,6 +106,37 @@ void set_level(uint8_t level, uint8_t value) {
   #endif
 };
 
+inline void flash_config(uint8_t* data_ptr, unsigned int size) {
+  if (!SerialFlash.begin(FLASH_CHIP_SELECT)) {
+    midiInfo(ERROR_CONNECTING_FLASH);
+    return;
+  };
+  while (!SerialFlash.ready());
+  SerialFlashFile flashFile;
+  if (SerialFlash.exists("config.json")) {
+    SerialFlash.remove("config.json"); // It doesn't reclaim the space, but it does let you create a new file with the same name
+  };
+  // Create a new file and open it for writing
+  if (SerialFlash.create("config.json", size)) {
+    flashFile = SerialFlash.open("config.json");
+    if (!flashFile) {
+      midiInfo(ERROR_WHILE_OPEN_FLASH_FILE);
+      return;
+    };
+  }
+  else {
+    midiInfo(ERROR_FLASH_FULL);
+    return;
+  };
+  if (size < FLASH_SIZE) {
+    flashFile.write(data_ptr, size);
+    flashFile.close();
+    midiInfo(FLASH_CONFIG_DONE);
+  } else {
+    midiInfo(ERROR_FILE_TO_BIG);
+  };
+};
+
 // Selec the current mode and perform the matrix sensor calibration 
 inline void update_buttons(void) {
   BUTTON_L.update();
@@ -117,6 +149,7 @@ inline void update_buttons(void) {
   // ACTION: BUTTON_L long press
   // FONCTION: FLASH THE CONFIG FILE (config.json)
   if (BUTTON_L.rose() && BUTTON_L.previousDuration() > LONG_HOLD) {
+    flash_config(sysEx_data_ptr, sysEx_dataSize);
     set_mode(FLASH_CONFIG);
   };
   // ACTION: BUTTON_R long press
@@ -181,8 +214,8 @@ inline void blink_leds(uint8_t mode) {
       digitalWrite(LED_PIN_D2, !e256_ctr.modes[mode].leds.D2);
     }
     else if (millis() - ledsTimeStamp > e256_ctr.modes[mode].timeOn + e256_ctr.modes[mode].timeOff) {
-      if (playMode == CALIBRATE) {
-        if (ledsIterCount < CALIBRATE_ITER) {
+      if (playMode == CALIBRATE || playMode == FLASH_CONFIG) {
+        if (ledsIterCount < BLINK_ITER) {
           ledsTimeStamp = millis();
           ledsIterCount++;
         }
@@ -361,7 +394,9 @@ void load_config(uint8_t* data_ptr) {
   };
   if (!config_load_mapping(config["mapping"])) {
     midiInfo(ERROR_LOADING_GONFIG_FAILED);
+    return;
   };
+  midiInfo(LOAD_DONE);
   set_mode(MAPPING_LIB);
 };
 
@@ -375,64 +410,21 @@ inline void load_flash_config() {
     configSize = configFile.size();
     config_ptr = allocate(config_ptr, configSize);
     configFile.read(config_ptr, configSize);
-    StaticJsonDocument<2048> config;
-    DeserializationError err = deserializeJson(config, config_ptr);
-    if (err) {
-      // Load a default config file?
-      midiInfo(ERROR_WAITING_FOR_GONFIG);
-      return;
-    };
-    if (!config_load_mapping(config["mapping"])) {
-      midiInfo(ERROR_LOADING_GONFIG_FAILED);
-      return;
-    };
-    configFile.close();
-    set_mode(MAPPING_LIB);
+    load_config(config_ptr);
   }
   else {
     midiInfo(ERROR_NO_CONFIG_FILE);
   };
 };
 
-inline void flash_config(char* data_ptr, unsigned int size) {
-  if (!SerialFlash.begin(FLASH_CHIP_SELECT)) {
-    midiInfo(ERROR_CONNECTING_FLASH);
-    return;
-  };
-  while (!SerialFlash.ready());
-  SerialFlashFile flashFile;
-  if (SerialFlash.exists("config.json")) {
-    SerialFlash.remove("config.json"); // It doesn't reclaim the space, but it does let you create a new file with the same name
-  };
-  // Create a new file and open it for writing
-  if (SerialFlash.create("config.json", size)) {
-    flashFile = SerialFlash.open("config.json");
-    if (!flashFile) {
-      midiInfo(ERROR_WHILE_OPEN_FLASH_FILE);
-      return;
-    };
-  }
-  else {
-    midiInfo(ERROR_FLASH_FULL);
-    return;
-  };
-  if (size < FLASH_SIZE) {
-    flashFile.write(data_ptr, size);
-    flashFile.close();
-  } else {
-    midiInfo(ERROR_FILE_TO_BIG);
-  };
-};
-
 void CONFIG_SETUP(void){
   setup_buttons();
   set_mode(CALIBRATE);
-  //load_flash_config();
+  load_flash_config();
 };
 
 void update_config(void){
   update_buttons();
   update_encoder();
   update_leds();
-  //flash_config(config_ptr, configLength);
 };

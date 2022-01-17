@@ -30,7 +30,6 @@
 
 #define LOAD_CONFIG                  0  // E256-LEDs:
 #define FLASH_CONFIG                 1  // E256-LEDs:
-#define ERROR                        6  // E256-LEDs:
 
 #define SIG_IN                       0  // E256-LEDs: | 1 | 0 |
 #define SIG_OUT                      1  // E256-LEDs: | 0 | 1 |
@@ -85,6 +84,8 @@
 #define MIDI_INPUT_CHANNEL           1  // [1:15] Set the HARDWARE MIDI_INPUT channel
 #define MIDI_OUTPUT_CHANNEL          1  // [1:15] Set the HARDWARE MIDI_OUTPUT channel
 
+#define FLASH_CONFIG_DONE            30
+
 #define ERROR_WAITING_FOR_GONFIG     33
 #define ERROR_LOADING_GONFIG_FAILED  34
 #define ERROR_CONNECTING_FLASH       35
@@ -93,6 +94,7 @@
 #define ERROR_FILE_TO_BIG            38
 #define ERROR_NO_CONFIG_FILE         39
 #define ERROR_UNKNOWN_SYSEX          40
+
 
 typedef struct leds leds_t;
 struct leds {

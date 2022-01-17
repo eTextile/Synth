@@ -9,8 +9,6 @@
 
 #include <Arduino.h>
 
-extern char* config_ptr;
-
-char* allocate(char* data_ptr, unsigned int size);
+uint8_t* allocate(uint8_t* data_ptr, uint16_t size);
 
 #endif /*__ALLOCATE_H__*/

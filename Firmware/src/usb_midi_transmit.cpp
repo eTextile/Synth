@@ -39,11 +39,11 @@ void e256_programChange(byte channel, byte program){
   set_mode(program);
 };
 
-void midiInfo(uint8_t err){
-  usbMIDI.sendProgramChange(err, MIDI_OUTPUT_CHANNEL); // ProgramChange(program, channel);
+void midiInfo(uint8_t msg){
+  usbMIDI.sendProgramChange(msg, MIDI_OUTPUT_CHANNEL); // ProgramChange(program, channel);
   usbMIDI.send_now();
   #if defined(DEBUG_CONFIG)
-    Serial.printf("\nMIDI_MSG:\t%d", err);
+    Serial.printf("\nMIDI_MSG:\t%d", msg);
   #endif
 };
 
@@ -83,7 +83,8 @@ void e256_systemExclusive(const uint8_t* data_ptr, uint16_t length, boolean comp
     sysEx_alloc = false;
     sysEx_identifier = *(data_ptr + 2);
     sysEx_dataSize = *(data_ptr + 3) << 7 | *(data_ptr + 4);    
-    sysEx_chunk_ptr = sysEx_data_ptr = (uint8_t*) malloc(sysEx_dataSize);
+    //sysEx_chunk_ptr = sysEx_data_ptr = (uint8_t*) malloc(sysEx_dataSize);
+    sysEx_chunk_ptr = sysEx_data_ptr = allocate(sysEx_data_ptr, sysEx_dataSize);
     sysEx_chunks = (uint8_t)((sysEx_dataSize + 3) / SYSEX_BUFFER);
     sysEx_lastChunkSize = (sysEx_dataSize + 3) % SYSEX_BUFFER;
     if (sysEx_lastChunkSize != 0) sysEx_chunks++;
@@ -115,7 +116,6 @@ void e256_systemExclusive(const uint8_t* data_ptr, uint16_t length, boolean comp
           printBytes(sysEx_data_ptr, sysEx_dataSize);
         #endif
         load_config(sysEx_data_ptr);
-        midiInfo(LOAD_DONE);
         sysEx_alloc = true;
       }
       else if (sysEx_identifier == SYSEX_SOUND){

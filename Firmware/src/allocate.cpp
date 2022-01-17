@@ -1,13 +1,11 @@
 #include "allocate.h"
 
-char* config_ptr = NULL;
-
-char* allocate(char* data_ptr, unsigned int size) {
-  if (config_ptr == NULL){
-    config_ptr = (char*) malloc(size);
-    return config_ptr;
+uint8_t* allocate(uint8_t* data_ptr, uint16_t size) {
+  if (data_ptr == NULL){
+    data_ptr = (uint8_t*) malloc(size);
+    return data_ptr;
     } else {
-    config_ptr = (char*) realloc(config_ptr, size);
-    return config_ptr;
+    data_ptr = (uint8_t*) realloc(data_ptr, size);
+    return data_ptr;
   };
 };
