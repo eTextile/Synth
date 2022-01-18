@@ -70,14 +70,13 @@ void setup() {
 
 void loop() {
   usb_midi_read_input();
-  update_config();
+  update_controls();
 #if defined(HARDWARE_MIDI)
   hardware_midi_read_input();
 #endif
 #if defined(SOUND_CARD)
   update_levels();
 #endif
-  matrix_calibrate();
   matrix_scan();
   matrix_interp();
   matrix_find_blobs();

@@ -12,9 +12,6 @@
 #include "midi_bus.h"
 #include "allocate.h"
 
-#define MIDI_TRANSMIT_INTERVAL 15
-uint32_t usbTransmitTimeStamp = 0;
-
 void e256_noteOn(byte channel, byte note, byte velocity){
   midiNode_t* node_ptr = (midiNode_t*)llist_pop_front(&midi_node_stack);
   node_ptr->midiMsg.status = midi::NoteOn;
@@ -36,7 +33,12 @@ void e256_controlChange(byte channel, byte control, byte value){
 };
 
 void e256_programChange(byte channel, byte program){
-  set_mode(program);
+  uint8_t state_offset = 10;
+  if (program < 10){
+      set_mode(program);
+    } else {
+      set_state(program - state_offset);
+  };
 };
 
 void midiInfo(uint8_t msg){
@@ -89,7 +91,7 @@ void e256_systemExclusive(const uint8_t* data_ptr, uint16_t length, boolean comp
     sysEx_lastChunkSize = (sysEx_dataSize + 3) % SYSEX_BUFFER;
     if (sysEx_lastChunkSize != 0) sysEx_chunks++;
     sysEx_chunkCount = 0;
-    midiInfo(ALLOC_DONE);
+    midiInfo(DONE_USBMIDI_CONFIG_ALLOC);
   }
   else {
     if (sysEx_chunks == 1) { // Only one chunk to load
@@ -110,21 +112,23 @@ void e256_systemExclusive(const uint8_t* data_ptr, uint16_t length, boolean comp
     else { // Last chunk
       sysEx_chunkSize = sysEx_lastChunkSize - 1; // Removing footer size
       memcpy(sysEx_chunk_ptr, data_ptr, sysEx_chunkSize);
-      
+
       if (sysEx_identifier == SYSEX_CONF) {
         #if defined(DEBUG_CONFIG)
           printBytes(sysEx_data_ptr, sysEx_dataSize);
         #endif
-        load_config(sysEx_data_ptr);
+        load_config(sysEx_data_ptr, DONE_USBMIDI_CONFIG_LOAD);
         sysEx_alloc = true;
       }
       else if (sysEx_identifier == SYSEX_SOUND){
         //TODO
-        midiInfo(LOAD_DONE);
+        midiInfo(DONE_USBMIDI_SOUND_LOAD);
+        set_state(DONE_ACTION);
         sysEx_alloc = true;
       }
       else {
         midiInfo(ERROR_UNKNOWN_SYSEX);
+        set_state(ERROR);
         sysEx_alloc = true;
       };
     };
@@ -150,7 +154,11 @@ void usb_midi_read_input(void) {
   while (usbMIDI.read(MIDI_INPUT_CHANNEL)); // Read and discard any incoming MIDI messages
 };
 
+#define MIDI_TRANSMIT_INTERVAL 10
+
 void usb_midi_transmit(void) {
+  static uint32_t usbTransmitTimeStamp = 0;
+
   switch (playMode) {
     case RAW_MATRIX:
       if (millis() - usbTransmitTimeStamp > MIDI_TRANSMIT_INTERVAL) {

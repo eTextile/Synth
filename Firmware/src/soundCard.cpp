@@ -23,8 +23,8 @@ void update_levels(void) {
       // FONCTION : line_out level adjustment using rotary encoder // DEFAULT MODE
       // LOWEST level is 31 (1.16 Volts p-p)
       // HIGHEST level is 13 (3.16 Volts p-p)
-      if (e256_ctr.levels[LINE_OUT].run) {
-        e256_ctr.levels[LINE_OUT].run = false;
+      if (e256_ctr.levels[LINE_OUT].update) {
+        e256_ctr.levels[LINE_OUT].update = false;
         AudioNoInterrupts();
         //sgtl5000.dacVolume(levels_ptr[LINE_OUT].val);
         //sgtl5000.volume(levels[LINE_OUT].val); // DO NOT WORK!?
@@ -35,8 +35,8 @@ void update_levels(void) {
       // FONCTION : sig-in level adjustment using rotary encoder
       // LOWEST level is 15 (0.24 Volts p-p)
       // HIGHEST level is 0 (3.12 Volts p-p)
-      if (e256_ctr.levels[SIG_IN].run) {
-        e256_ctr.levels[SIG_IN].run = false;
+      if (e256_ctr.levels[SIG_IN].update) {
+        e256_ctr.levels[SIG_IN].update = false;
         AudioNoInterrupts();
         sgtl5000.lineInLevel(e256_ctr.levels[SIG_IN].val);
         //sgtl5000.micGain(levels[SIG_IN].val);
@@ -47,8 +47,8 @@ void update_levels(void) {
       // FONCTION : sig_out level adjustment using rotary encoder
       // LOWEST level is 31
       // HIGHEST level is 13
-      if (e256_ctr.levels[SIG_OUT].run) {
-        e256_ctr.levels[SIG_OUT].run = false;
+      if (e256_ctr.levels[SIG_OUT].update) {
+        e256_ctr.levels[SIG_OUT].update = false;
         AudioNoInterrupts();
         sgtl5000.lineOutLevel(e256_ctr.levels[SIG_OUT].val);
         AudioInterrupts();
