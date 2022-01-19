@@ -33,8 +33,8 @@ void e256_controlChange(byte channel, byte control, byte value){
 };
 
 void e256_programChange(byte channel, byte program){
-  uint8_t state_offset = 10;
-  if (program < 10){
+  const uint8_t state_offset = 10;
+  if (program < state_offset){
       set_mode(program);
     } else {
       set_state(program - state_offset);
@@ -65,8 +65,6 @@ inline void printBytes(const uint8_t* data_ptr, uint16_t size) {
 // [ SYSEX_BEGIN, SYSEX_ID, SYSEX_DATA, SYSEX_END ]
 // LOAD_DONE
 
-#define SYSEX_BUFFER  290
-
 boolean sysEx_alloc = true;
 
 uint8_t sysEx_identifier = 0;
@@ -80,15 +78,13 @@ uint16_t sysEx_lastChunkSize = 0;
 uint8_t* sysEx_chunk_ptr = NULL;
 
 void e256_systemExclusive(const uint8_t* data_ptr, uint16_t length, boolean complete){
-
   if (sysEx_alloc){
     sysEx_alloc = false;
     sysEx_identifier = *(data_ptr + 2);
     sysEx_dataSize = *(data_ptr + 3) << 7 | *(data_ptr + 4);    
-    //sysEx_chunk_ptr = sysEx_data_ptr = (uint8_t*) malloc(sysEx_dataSize);
     sysEx_chunk_ptr = sysEx_data_ptr = allocate(sysEx_data_ptr, sysEx_dataSize);
-    sysEx_chunks = (uint8_t)((sysEx_dataSize + 3) / SYSEX_BUFFER);
-    sysEx_lastChunkSize = (sysEx_dataSize + 3) % SYSEX_BUFFER;
+    sysEx_chunks = (uint8_t)((sysEx_dataSize + 3) / USB_MIDI_SYSEX_MAX);
+    sysEx_lastChunkSize = (sysEx_dataSize + 3) % USB_MIDI_SYSEX_MAX;
     if (sysEx_lastChunkSize != 0) sysEx_chunks++;
     sysEx_chunkCount = 0;
     midiInfo(DONE_USBMIDI_CONFIG_ALLOC);
@@ -98,13 +94,13 @@ void e256_systemExclusive(const uint8_t* data_ptr, uint16_t length, boolean comp
       memcpy(sysEx_chunk_ptr, data_ptr + 2, sysEx_dataSize);
     }
     else if (sysEx_chunkCount == 0 && sysEx_chunks > 1) { // First chunk
-      sysEx_chunkSize = SYSEX_BUFFER - 2; // Removing header size
+      sysEx_chunkSize = USB_MIDI_SYSEX_MAX - 2; // Removing header size
       memcpy(sysEx_chunk_ptr, data_ptr + 2, sysEx_chunkSize);
       sysEx_chunk_ptr += sysEx_chunkSize;
       sysEx_chunkCount++;
     }
     else if (sysEx_chunkCount < sysEx_chunks - 1){ // Middle chunks
-      sysEx_chunkSize = SYSEX_BUFFER;
+      sysEx_chunkSize = USB_MIDI_SYSEX_MAX;
       memcpy(sysEx_chunk_ptr, data_ptr, sysEx_chunkSize);
       sysEx_chunk_ptr += sysEx_chunkSize;
       sysEx_chunkCount++;
@@ -121,9 +117,9 @@ void e256_systemExclusive(const uint8_t* data_ptr, uint16_t length, boolean comp
         sysEx_alloc = true;
       }
       else if (sysEx_identifier == SYSEX_SOUND){
-        //TODO
-        midiInfo(DONE_USBMIDI_SOUND_LOAD);
-        set_state(DONE_ACTION);
+        // TODO
+        //midiInfo(DONE_USBMIDI_SOUND_LOAD);
+        //set_state(DONE_ACTION);
         sysEx_alloc = true;
       }
       else {
@@ -155,6 +151,7 @@ void usb_midi_read_input(void) {
 };
 
 #define MIDI_TRANSMIT_INTERVAL 10
+uint8_t blobValues[6] = {0}; 
 
 void usb_midi_transmit(void) {
   static uint32_t usbTransmitTimeStamp = 0;
@@ -171,7 +168,7 @@ void usb_midi_transmit(void) {
     case INTERP_MATRIX:
       if (millis() - usbTransmitTimeStamp > MIDI_TRANSMIT_INTERVAL) {
         usbTransmitTimeStamp = millis();
-        // NOT_WORKING: see https://forum.pjrc.com/threads/28282-How-big-is-the-MIDI-receive-buffer
+        //USB_MIDI_SYSEX_MAX = 290;
         //usbMIDI.sendSysEx(NEW_FRAME, interpFrame.pData, false, 0);
         //usbMIDI.send_now();
         //while (usbMIDI.read()); // Read and discard any incoming MIDI messages
@@ -183,23 +180,33 @@ void usb_midi_transmit(void) {
         if (blob_ptr->state) {
           if (!blob_ptr->lastState) {
             usbMIDI.sendNoteOn(blob_ptr->UID + 1, 1, BS); // sendNoteOn(note, velocity, channel);
-            usbMIDI.send_now();
+            //usbMIDI.send_now();
           } else {
             if (millis() - blob_ptr->transmitTimeStamp > MIDI_TRANSMIT_INTERVAL) {
               blob_ptr->transmitTimeStamp = millis();
+              /*
               // usbMIDI.sendControlChange(control, value, channel);
-              usbMIDI.sendControlChange(BX, (uint8_t)round(map(blob_ptr->centroid.X, 0, X_MAX - X_MIN, 0, 127)), blob_ptr->UID + 1);
-              usbMIDI.sendControlChange(BY, (uint8_t)round(map(blob_ptr->centroid.Y, 0, X_MAX - X_MIN, 0, 127)), blob_ptr->UID + 1);
+              usbMIDI.sendControlChange(BX, (uint8_t)round(map(blob_ptr->centroid.X, 0, WIDTH, 0, 127)), blob_ptr->UID + 1);
+              usbMIDI.sendControlChange(BY, (uint8_t)round(map(blob_ptr->centroid.Y, 0, HEIGHT, 0, 127)), blob_ptr->UID + 1);
               usbMIDI.sendControlChange(BZ, constrain(blob_ptr->centroid.Z, 0, 127), blob_ptr->UID + 1);
               usbMIDI.sendControlChange(BW, blob_ptr->box.W, blob_ptr->UID + 1);
               usbMIDI.sendControlChange(BH, blob_ptr->box.H, blob_ptr->UID + 1);
               usbMIDI.send_now();
+              */
+              blobValues[0] = blob_ptr->UID + 1;
+              blobValues[1] = (uint8_t)round(map(blob_ptr->centroid.X, 0, WIDTH, 0, 127));
+              blobValues[2] = (uint8_t)round(map(blob_ptr->centroid.Y, 0, HEIGHT, 0, 127));
+              blobValues[3] = constrain(blob_ptr->centroid.Z, 0, 127);
+              blobValues[4] = blob_ptr->box.W;
+              blobValues[5] = blob_ptr->box.H;
+              usbMIDI.sendSysEx(6, blobValues);
+              usbMIDI.send_now(); 
             };
           };
         } else {
           if (blob_ptr->lastState && blob_ptr->status != NOT_FOUND) {
             usbMIDI.sendNoteOff(blob_ptr->UID + 1, 0, BS); // sendNoteOff(note, velocity, channel);
-            usbMIDI.send_now();
+            //usbMIDI.send_now();
           };
         };
         while (usbMIDI.read()); // Read and discard any incoming MIDI messages

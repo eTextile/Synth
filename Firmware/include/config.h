@@ -71,14 +71,14 @@
 #define MIDI_OUTPUT_CHANNEL          1  // [1:15] Set the HARDWARE MIDI_OUTPUT channel
 #define SYSEX_CONF                   0x7C
 #define SYSEX_SOUND                  0x6C
-
+// VERBOSITY
 #define DONE_FLASH_CONFIG_ALLOC      16
 #define DONE_FLASH_CONFIG_LOAD       17
 #define DONE_FLASH_CONFIG_WRITE      18
 #define DONE_USBMIDI_CONFIG_ALLOC    19
 #define DONE_USBMIDI_CONFIG_LOAD     20
 #define DONE_USBMIDI_SOUND_LOAD      21
-
+// ERROR CODES
 #define ERROR_WAITING_FOR_GONFIG     33
 #define ERROR_LOADING_GONFIG_FAILED  34
 #define ERROR_CONNECTING_FLASH       35
