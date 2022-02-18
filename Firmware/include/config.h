@@ -32,6 +32,10 @@
 // E256 HARDWARE CONSTANTS
 #define LED_PIN_D1                   5
 #define LED_PIN_D2                   4
+#define BUTTON_PIN_L                 2
+#define BUTTON_PIN_R                 3
+#define ENCODER_PIN_A                22
+#define ENCODER_PIN_B                9
 #define FLASH_CHIP_SELECT            6
 #define FLASH_SIZE                   4096
 #define BAUD_RATE                    230400
@@ -56,6 +60,10 @@
 #define IIPi                         (float)(2 * PI)
 #define IIIPiII                      (float)(3 * PI) / 2
 #define PiII                         (float)(PI / 2)
+#define LONG_HOLD                    1500
+#define BLINK_ITER                   10
+#define MIDI_TRANSMIT_INTERVAL       50
+
 // E256 MAPPING_LIB CONSTANTS
 #define MAX_BLOBS                    32    // [0:7] How many blobs can be tracked at the same time
 #define MAX_TRIGGERS                 16

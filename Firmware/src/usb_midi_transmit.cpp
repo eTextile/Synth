@@ -33,11 +33,33 @@ void e256_controlChange(byte channel, byte control, byte value){
 };
 
 void e256_programChange(byte channel, byte program){
-  const uint8_t state_offset = 10;
-  if (program < state_offset){
-      set_mode(program);
-    } else {
-      set_state(program - state_offset);
+  //Serial.printf("\ne256_programChange: %d_%d", channel, program);
+  // BUG with usbMIDI.setHandleProgramChange()
+  switch (channel){
+  case 1: // CHANNEL 1 -> MODE
+    switch (program){
+    case RAW_MATRIX:
+      set_mode(RAW_MATRIX);
+      break;
+    case BLOBS_PLAY:
+      set_mode(BLOBS_PLAY);
+      break;
+    case MAPPING_LIB:
+      set_mode(MAPPING_LIB);
+      break;
+    };
+  case 2: // CHANNEL 2 -> STATE
+    switch (program){
+    case CALIBRATE:
+      matrix_calibrate();
+      break;
+    case DONE_ACTION:
+      set_state(DONE_ACTION);
+      break;
+    case ERROR:
+      set_state(ERROR);
+      break;
+    };
   };
 };
 
@@ -150,7 +172,6 @@ void usb_midi_read_input(void) {
   while (usbMIDI.read(MIDI_INPUT_CHANNEL)); // Read and discard any incoming MIDI messages
 };
 
-#define MIDI_TRANSMIT_INTERVAL 10
 uint8_t blobValues[6] = {0}; 
 
 void usb_midi_transmit(void) {
@@ -180,7 +201,7 @@ void usb_midi_transmit(void) {
         if (blob_ptr->state) {
           if (!blob_ptr->lastState) {
             usbMIDI.sendNoteOn(blob_ptr->UID + 1, 1, BS); // sendNoteOn(note, velocity, channel);
-            //usbMIDI.send_now();
+            usbMIDI.send_now();
           } else {
             if (millis() - blob_ptr->transmitTimeStamp > MIDI_TRANSMIT_INTERVAL) {
               blob_ptr->transmitTimeStamp = millis();
@@ -200,13 +221,13 @@ void usb_midi_transmit(void) {
               blobValues[4] = blob_ptr->box.W;
               blobValues[5] = blob_ptr->box.H;
               usbMIDI.sendSysEx(6, blobValues);
-              usbMIDI.send_now(); 
+              //usbMIDI.send_now(); 
             };
           };
         } else {
           if (blob_ptr->lastState && blob_ptr->status != NOT_FOUND) {
             usbMIDI.sendNoteOff(blob_ptr->UID + 1, 0, BS); // sendNoteOff(note, velocity, channel);
-            //usbMIDI.send_now();
+            usbMIDI.send_now();
           };
         };
         while (usbMIDI.read()); // Read and discard any incoming MIDI messages

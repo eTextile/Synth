@@ -16,13 +16,6 @@
 #include <SerialFlash.h>
 #include <Bounce2.h>
 
-#define BUTTON_PIN_L      2
-#define BUTTON_PIN_R      3
-#define ENCODER_PIN_A     22
-#define ENCODER_PIN_B     9
-#define LONG_HOLD         1500
-#define BLINK_ITER        10
-
 // The modes below can be selected using E256 built-in switches
 Bounce BUTTON_L = Bounce();
 Bounce BUTTON_R = Bounce();
@@ -31,10 +24,10 @@ Bounce BUTTON_R = Bounce();
 Encoder e256_e(ENCODER_PIN_A, ENCODER_PIN_B);
 
 e256_mode_t e256_m[4] = {
-  { { HIGH,  LOW, false }, 500, 500, true },  // [0] BLOBS_PLAY
-  { { HIGH,  LOW, false }, 800, 800, true },  // [1] MAPPING_LIB
-  { { HIGH, HIGH, false }, 400, 400, true },  // [2] RAW_MATRIX
-  { { HIGH, HIGH, false }, 1000, 1000, true } // [3] INTERP_MATRIX
+  { { HIGH,  LOW, false }, 500, 700, true },   // [0] RAW_MATRIX
+  { { HIGH,  LOW, false }, 800, 800, true },   // [1] INTERP_MATRIX
+  { { HIGH, HIGH, false }, 400, 1000, true },  // [2] BLOBS_PLAY
+  { { HIGH, HIGH, false }, 1000, 1000, true }  // [3] MAPPING
 };
 
 e256_level_t e256_l[4] = {
@@ -45,9 +38,9 @@ e256_level_t e256_l[4] = {
 };
 
 e256_state_t e256_s[4] = {
-  { { HIGH,  LOW, false },  150, 100, 4 }, // [0] DONE_ACTION
-  { {  LOW,  LOW, false },  20,  20, 6  }, // [1] CALIBRATE
-  { { HIGH,  LOW, false },  25,  25, 10 }  // [2] ERROR
+  { {  LOW, LOW, false },  20,  20, 6  }, // [0] CALIBRATE
+  { { HIGH, LOW, false },  150, 100, 4 }, // [1] DONE_ACTION
+  { { HIGH, LOW, false },  25,  25, 10 }  // [2] ERROR
 };
 
 e256_control_t e256_ctr = {

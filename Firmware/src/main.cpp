@@ -9,6 +9,7 @@
 #include "scan.h"
 #include "interp.h"
 #include "blob.h"
+#include "median.h"
 #include "midi_bus.h"
 #include "usb_midi_transmit.h"
 

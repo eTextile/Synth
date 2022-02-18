@@ -37,7 +37,7 @@ void runing_median(void) {
     #endif
     // Add the new values to the input runing buffer
     filter[blob_ptr->UID].X_rawVal[filter[blob_ptr->UID].index] = blob_ptr->centroid.X;
-    //filter[blob_ptr->UID].Y_rawVal[filter[blob_ptr->UID].index] = blob_ptr->centroid.Y;
+    filter[blob_ptr->UID].Y_rawVal[filter[blob_ptr->UID].index] = blob_ptr->centroid.Y;
     //filter[blob_ptr->UID].Z_rawVal[filter[blob_ptr->UID].index] = blob_ptr->centroid.Z;
 
     // Sort the [X] values
@@ -51,37 +51,49 @@ void runing_median(void) {
       filter[blob_ptr->UID].X_sort[j] = tempIndex;
     };
 
+
+    // Sort the [Y] values
+    for (uint8_t i = 1; i <= filter[blob_ptr->UID].count; i++) {
+      uint8_t j = i;
+      uint8_t tempIndex = filter[blob_ptr->UID].Y_sort[j];
+      while ((j > 0) && (filter[blob_ptr->UID].Y_rawVal[tempIndex] < filter[blob_ptr->UID].Y_rawVal[filter[blob_ptr->UID].Y_sort[j - 1]])) {
+        filter[blob_ptr->UID].Y_sort[j] = filter[blob_ptr->UID].Y_sort[j - 1];
+        j--;
+      };
+      filter[blob_ptr->UID].X_sort[j] = tempIndex;
+    };
+
     #if defined(DEBUG_MEDIAN)
       Serial.printf("\nDEBUG_MEDIAN : ");
       for (uint8_t i = 0; i <= filter[0].count; i++) {
-       Serial.printf("\t%d_%f", filter[0].X_sort[i], filter[0].X_rawVal[i]);
+       Serial.printf("\t%d_%d_%f", i, filter[0].X_sort[i], filter[0].X_rawVal[i]);
       }
     #endif
-/*
+
     // Get sorted element
     if (filter[blob_ptr->UID].count == 0) {
     }
     else if (filter[blob_ptr->UID].count == 1) {
       blob_ptr->centroid.X = filter[blob_ptr->UID].X_rawVal[1];
-      //blob_ptr->centroid.Y = filter[blob_ptr->UID].Y_rawVal[1];
+      blob_ptr->centroid.Y = filter[blob_ptr->UID].Y_rawVal[1];
       //blob_ptr->centroid.Z = filter[blob_ptr->UID].Z_rawVal[1];
     }
     else if (filter[blob_ptr->UID].count == 2) {
       blob_ptr->centroid.X = filter[blob_ptr->UID].X_rawVal[1];
-      //blob_ptr->centroid.Y = filter[blob_ptr->UID].Y_rawVal[1];
+      blob_ptr->centroid.Y = filter[blob_ptr->UID].Y_rawVal[1];
       //blob_ptr->centroid.Z = filter[blob_ptr->UID].Z_rawVal[1];
     }
     else if (filter[blob_ptr->UID].count == 3) {
       blob_ptr->centroid.X = filter[blob_ptr->UID].X_rawVal[1];
-      //blob_ptr->centroid.Y = filter[blob_ptr->UID].Y_rawVal[1];
+      blob_ptr->centroid.Y = filter[blob_ptr->UID].Y_rawVal[1];
       //blob_ptr->centroid.Z = filter[blob_ptr->UID].Z_rawVal[1];
     }
     else if (filter[blob_ptr->UID].count >= 4) {
       blob_ptr->centroid.X  = filter[blob_ptr->UID].X_rawVal[2];
-      //blob_ptr->centroid.Y  = filter[blob_ptr->UID].Y_rawVal[2];
+      blob_ptr->centroid.Y  = filter[blob_ptr->UID].Y_rawVal[2];
       //blob_ptr->centroid.Z  = filter[blob_ptr->UID].Z_rawVal[2];
     };
-*/
+
     if (filter[blob_ptr->UID].index >= M_WINDOW) {
       filter[blob_ptr->UID].index = 0;
     } else {

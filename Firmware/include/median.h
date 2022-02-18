@@ -23,7 +23,7 @@ struct median {
   uint8_t Z_rawVal[M_WINDOW];  // Blob Y centroid input values
   uint8_t Z_sort[M_WINDOW];    // Sorted index Array
   uint8_t count;
-  uint8_t index;
+  uint8_t index;               // Circular buffer index
 };
 
 void RUNING_MEDIAN_SETUP(void);
