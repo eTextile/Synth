@@ -24,7 +24,7 @@ uint8_t bitmapArray[NEW_FRAME] = {0};     // Store (64*64) binary values
 xylr_t lifoArray[LIFO_NODES] = {0};       // Store lifo nodes
 blob_t blobArray[MAX_BLOBS] = {0};        // Store blobs
 //velocity_t blobVelocity[MAX_BLOBS] = {0}; // Store XY & Z blobs velocity
-//point_t lastCoord[MAX_BLOBS] = {0};       // Store last blobs coordinates 
+//vertrice_t lastCoord[MAX_BLOBS] = {0};       // Store last blobs coordinates 
 
 llist_t llist_context_stack;              // Free nodes stack
 llist_t llist_context;                    // Used nodes

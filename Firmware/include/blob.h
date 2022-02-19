@@ -76,8 +76,8 @@ struct xylr {
   uint8_t b_l;
 };
 
-typedef struct point point_t;
-struct point {
+typedef struct vertrice vertrice_t;
+struct vertrice {
   float   X;
   float   Y;
   uint8_t Z;
@@ -113,7 +113,7 @@ struct blob {
   boolean state;
   boolean lastState;
   box_t box;
-  point_t centroid;
+  vertrice_t centroid;
   velocity_t velocity;
 };
 

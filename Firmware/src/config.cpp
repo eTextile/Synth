@@ -254,10 +254,10 @@ inline bool config_load_mapping_triggers(const JsonArray& config) {
   };
   mapping_triggers_alloc(config.size());
   for (uint8_t i = 0; i < mapp_trigs; i++) {
-    mapp_trigsParams[i].rect.Xmin = config[i]["Xmin"];
-    mapp_trigsParams[i].rect.Xmax = config[i]["Xmax"];
-    mapp_trigsParams[i].rect.Ymin = config[i]["Ymin"];
-    mapp_trigsParams[i].rect.Ymax = config[i]["Ymax"];
+    mapp_trigsParams[i].rect.from.x = config[i]["Xmin"];
+    mapp_trigsParams[i].rect.to.x = config[i]["Xmax"];
+    mapp_trigsParams[i].rect.from.y = config[i]["Ymin"];
+    mapp_trigsParams[i].rect.to.y = config[i]["Ymax"];
     mapp_trigsParams[i].note = config[i]["note"];
   };
   return true;
@@ -269,10 +269,10 @@ inline bool config_load_mapping_toggles(const JsonArray& config) {
   }
   mapping_toggles_alloc(config.size());
   for (uint8_t i = 0; i < mapp_togs; i++) {
-    mapp_togsParams[i].rect.Xmin = config[i]["Xmin"];
-    mapp_togsParams[i].rect.Xmax = config[i]["Xmax"];
-    mapp_togsParams[i].rect.Ymin = config[i]["Ymin"];
-    mapp_togsParams[i].rect.Ymax = config[i]["Ymax"];
+    mapp_togsParams[i].rect.from.x = config[i]["Xmin"];
+    mapp_togsParams[i].rect.to.x = config[i]["Xmax"];
+    mapp_togsParams[i].rect.from.y = config[i]["Ymin"];
+    mapp_togsParams[i].rect.to.y = config[i]["Ymax"];
     mapp_togsParams[i].note = config[i]["note"];
   }
   return true;
@@ -284,10 +284,10 @@ inline bool config_load_mapping_vSliders(const JsonArray& config) {
   };
   mapping_vSliders_alloc(config.size());
   for (uint8_t i = 0; i < mapp_vSliders; i++) {
-    mapp_vSlidersParams[i].rect.Xmin = config[i]["Xmin"];
-    mapp_vSlidersParams[i].rect.Xmax = config[i]["Xmax"];
-    mapp_vSlidersParams[i].rect.Ymin = config[i]["Ymin"];
-    mapp_vSlidersParams[i].rect.Ymax = config[i]["Ymax"];
+    mapp_vSlidersParams[i].rect.from.x = config[i]["Xmin"];
+    mapp_vSlidersParams[i].rect.to.x = config[i]["Xmax"];
+    mapp_vSlidersParams[i].rect.from.y = config[i]["Ymin"];
+    mapp_vSlidersParams[i].rect.to.y = config[i]["Ymax"];
     mapp_vSlidersParams[i].CC = config[i]["CC"];
   };
   return true;
@@ -299,10 +299,10 @@ inline bool config_load_mapping_hSliders(const JsonArray& config) {
   };
   mapping_hSliders_alloc(config.size());
   for (uint8_t i = 0; i < mapp_hSliders; i++) {
-    mapp_hSlidersParams[i].rect.Xmin = config[i]["Xmin"];
-    mapp_hSlidersParams[i].rect.Xmax = config[i]["Xmax"];
-    mapp_hSlidersParams[i].rect.Ymin = config[i]["Ymin"];
-    mapp_hSlidersParams[i].rect.Ymax = config[i]["Ymax"];
+    mapp_hSlidersParams[i].rect.from.x = config[i]["Xmin"];
+    mapp_hSlidersParams[i].rect.to.x = config[i]["Xmax"];
+    mapp_hSlidersParams[i].rect.from.y = config[i]["Ymin"];
+    mapp_hSlidersParams[i].rect.to.y = config[i]["Ymax"];
     mapp_hSlidersParams[i].CC = config[i]["CC"];
   };
   return true;
@@ -330,10 +330,10 @@ inline bool config_load_mapping_touchpads(const JsonArray& config) {
   };
   mapping_touchpads_alloc(config.size());
   for (uint8_t i = 0; i < mapp_touchpads; i++) {
-    mapp_touchpadsParams[i].rect.Xmin = config[i]["Xmin"];
-    mapp_touchpadsParams[i].rect.Xmax = config[i]["Xmax"];
-    mapp_touchpadsParams[i].rect.Ymin = config[i]["Ymin"];
-    mapp_touchpadsParams[i].rect.Ymax = config[i]["Ymax"];
+    mapp_touchpadsParams[i].rect.from.x = config[i]["Xmin"];
+    mapp_touchpadsParams[i].rect.to.x = config[i]["Xmax"];
+    mapp_touchpadsParams[i].rect.from.y = config[i]["Ymin"];
+    mapp_touchpadsParams[i].rect.to.y = config[i]["Ymax"];
     mapp_touchpadsParams[i].CCx = config[i]["CCx"];     // Blob X axis MIDI cChange mapping
     mapp_touchpadsParams[i].CCy = config[i]["CCy"];     // Blob Y axis MIDI cChange mapping
     mapp_touchpadsParams[i].CCz = config[i]["CCz"];     // Blob Z axis MIDI cChange mapping
@@ -350,10 +350,10 @@ inline bool config_load_mapping_polygons(const JsonArray& config) {
   };
   mapping_polygons_alloc(config.size());
   for (uint8_t i = 0; i < mapp_polygons; i++) {
-    mapp_polygonsParams[i].vertices_cnt = config[i]["cnt"];
+    mapp_polygonsParams[i].point_cnt = config[i]["cnt"];
     for (uint8_t j = 0; j < config[i]["cnt"]; j++) {
-      mapp_polygonsParams[i].vertices[j].x = (float)config[i]["vertrices"][j]["X"];
-      mapp_polygonsParams[i].vertices[j].y = (float)config[i]["vertrices"][j]["Y"];
+      mapp_polygonsParams[i].point[j].x = (float)config[i]["point"][j]["X"];
+      mapp_polygonsParams[i].point[j].y = (float)config[i]["point"][j]["Y"];
     };
   };
   return true;

@@ -72,7 +72,7 @@
 #define MAX_VSLIDERS                 8
 #define MAX_CIRCLES                  9
 #define MAX_TOUCHPADS                4
-#define MAX_VERTICES                 8
+#define MAX_POLYGON_POINT            128
 #define MAX_POLYGONS                 8
 // E256 MIDI CONSTANTS
 #define MIDI_INPUT_CHANNEL           1  // [1:15] Set the HARDWARE MIDI_INPUT channel

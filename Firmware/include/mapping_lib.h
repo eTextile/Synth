@@ -30,26 +30,24 @@ struct circle {
     //float lasttheta;
 };
 
-typedef struct vertice vertice_t;
-struct vertice {
+typedef struct point point_t;
+struct point {
     float x;
     float y;
 };
 
 typedef struct polygon polygon_t;
 struct polygon {
-    uint8_t vertices_cnt;
-    vertice_t vertices[MAX_VERTICES];
-    float m[MAX_VERTICES];
-    float c[MAX_VERTICES];
+    uint8_t point_cnt;
+    point_t point[MAX_POLYGON_POINT];
+    float m[MAX_POLYGON_POINT];
+    float c[MAX_POLYGON_POINT];
 };
 
 typedef struct rect rect_t;
 struct rect {
-  float Xmin;
-  float Xmax;
-  float Ymin;
-  float Ymax;
+  point_t from;
+  point_t to;
 };
 
 typedef struct Key Key_t;

@@ -38,10 +38,10 @@ void mapping_triggers_update(void) {
   for (blob_t* blob_ptr = (blob_t*)ITERATOR_START_FROM_HEAD(&llist_blobs); blob_ptr != NULL; blob_ptr = (blob_t*)ITERATOR_NEXT(blob_ptr)) {
     for (uint8_t i = 0; i < mapp_trigs; i++) {
       // Test if the blob is within the key limits
-      if (blob_ptr->centroid.X > mapp_trigsParams[i].rect.Xmin &&
-          blob_ptr->centroid.X < mapp_trigsParams[i].rect.Xmax &&
-          blob_ptr->centroid.Y > mapp_trigsParams[i].rect.Ymin &&
-          blob_ptr->centroid.Y < mapp_trigsParams[i].rect.Ymax) {
+      if (blob_ptr->centroid.X > mapp_trigsParams[i].rect.from.x &&
+          blob_ptr->centroid.X < mapp_trigsParams[i].rect.to.x &&
+          blob_ptr->centroid.Y > mapp_trigsParams[i].rect.from.y &&
+          blob_ptr->centroid.Y < mapp_trigsParams[i].rect.to.y) {
         if (!blob_ptr->lastState) {
           midi_sendOut(midi::NoteOn, mapp_trigsParams[i].note, 127);
           #if defined(DEBUG_MAPPING)
@@ -79,10 +79,10 @@ void mapping_toggles_update(void) {
   for (blob_t* blob_ptr = (blob_t*)ITERATOR_START_FROM_HEAD(&llist_blobs); blob_ptr != NULL; blob_ptr = (blob_t*)ITERATOR_NEXT(blob_ptr)) {
     for (uint8_t i = 0; i < mapp_togs; i++) {
       // Test if the blob is within the key limits
-      if (blob_ptr->centroid.X > mapp_togsParams[i].rect.Xmin &&
-          blob_ptr->centroid.X < mapp_togsParams[i].rect.Xmax &&
-          blob_ptr->centroid.Y > mapp_togsParams[i].rect.Ymin &&
-          blob_ptr->centroid.Y < mapp_togsParams[i].rect.Ymax) {
+      if (blob_ptr->centroid.X > mapp_togsParams[i].rect.from.x &&
+          blob_ptr->centroid.X < mapp_togsParams[i].rect.to.x &&
+          blob_ptr->centroid.Y > mapp_togsParams[i].rect.from.y &&
+          blob_ptr->centroid.Y < mapp_togsParams[i].rect.to.y) {
         if (!blob_ptr->lastState) {
           #if defined(DEBUG_MAPPING)
             Serial.printf("\nDEBUG_MAPPING_TOGGLES\tID:%d\tNOTE_ON:%d", i, toggleParam[i].note);
@@ -123,11 +123,11 @@ void MAPPING_VSLIDERS_SETUP(void) {
 void mapping_vSliders_update(void) {
   for (blob_t* blob_ptr = (blob_t*)ITERATOR_START_FROM_HEAD(&llist_blobs); blob_ptr != NULL; blob_ptr = (blob_t*)ITERATOR_NEXT(blob_ptr)) {
     for (uint8_t i = 0; i < mapp_vSliders; i++) {
-      if (blob_ptr->centroid.X > mapp_vSlidersParams[i].rect.Xmin &&
-          blob_ptr->centroid.X < mapp_vSlidersParams[i].rect.Xmax &&
-          blob_ptr->centroid.Y > mapp_vSlidersParams[i].rect.Ymin &&
-          blob_ptr->centroid.Y < mapp_vSlidersParams[i].rect.Ymax) {
-        uint8_t val = round(map(blob_ptr->centroid.Y, mapp_vSlidersParams[i].rect.Ymin, mapp_vSlidersParams[i].rect.Ymax, 0, 127)); // [0:127]
+      if (blob_ptr->centroid.X > mapp_vSlidersParams[i].rect.from.x &&
+          blob_ptr->centroid.X < mapp_vSlidersParams[i].rect.to.x &&
+          blob_ptr->centroid.Y > mapp_vSlidersParams[i].rect.from.y &&
+          blob_ptr->centroid.Y < mapp_vSlidersParams[i].rect.to.y) {
+        uint8_t val = round(map(blob_ptr->centroid.Y, mapp_vSlidersParams[i].rect.from.y, mapp_vSlidersParams[i].rect.to.y, 0, 127)); // [0:127]
         if (val != mapp_vSliders_lastVal[i]) {
           mapp_vSliders_lastVal[i] = val;
           #if defined(DEBUG_MAPPING)
@@ -163,11 +163,11 @@ void MAPPING_HSLIDERS_SETUP(void) {
 void mapping_hSliders_update(void) {
   for (blob_t* blob_ptr = (blob_t*)ITERATOR_START_FROM_HEAD(&llist_blobs); blob_ptr != NULL; blob_ptr = (blob_t*)ITERATOR_NEXT(blob_ptr)) {
     for (uint8_t i = 0; i < mapp_hSliders; i++) {
-      if (blob_ptr->centroid.X > mapp_hSlidersParams[i].rect.Xmin &&
-          blob_ptr->centroid.X < mapp_hSlidersParams[i].rect.Xmax &&
-          blob_ptr->centroid.Y > mapp_hSlidersParams[i].rect.Ymin &&
-          blob_ptr->centroid.Y < mapp_hSlidersParams[i].rect.Ymax) {
-        uint8_t val = round(map(blob_ptr->centroid.X, mapp_hSlidersParams[i].rect.Xmin, mapp_hSlidersParams[i].rect.Xmax, 0, 127)); // [0:127]
+      if (blob_ptr->centroid.X > mapp_hSlidersParams[i].rect.from.x &&
+          blob_ptr->centroid.X < mapp_hSlidersParams[i].rect.to.x &&
+          blob_ptr->centroid.Y > mapp_hSlidersParams[i].rect.from.y &&
+          blob_ptr->centroid.Y < mapp_hSlidersParams[i].rect.to.y) {
+        uint8_t val = round(map(blob_ptr->centroid.X, mapp_hSlidersParams[i].rect.from.x, mapp_hSlidersParams[i].rect.to.x, 0, 127)); // [0:127]
         if (val != mapp_hSliders_lastVal[i]) {
           mapp_hSliders_lastVal[i] = val;
           #if defined(DEBUG_MAPPING)
@@ -250,26 +250,26 @@ void MAPPING_TOUCHPADS_SETUP(void){
 void mapping_touchpads_update(void) {
   for (blob_t* blob_ptr = (blob_t*)ITERATOR_START_FROM_HEAD(&llist_blobs); blob_ptr != NULL; blob_ptr = (blob_t*)ITERATOR_NEXT(blob_ptr)) {
     for (uint8_t i = 0; i < mapp_touchpads; i++) {
-      if (blob_ptr->centroid.X > mapp_touchpadsParams[i].rect.Xmin &&
-          blob_ptr->centroid.X < mapp_touchpadsParams[i].rect.Xmax &&
-          blob_ptr->centroid.Y > mapp_touchpadsParams[i].rect.Ymin &&
-          blob_ptr->centroid.Y < mapp_touchpadsParams[i].rect.Ymax) {
+      if (blob_ptr->centroid.X > mapp_touchpadsParams[i].rect.from.x &&
+          blob_ptr->centroid.X < mapp_touchpadsParams[i].rect.to.x &&
+          blob_ptr->centroid.Y > mapp_touchpadsParams[i].rect.from.y &&
+          blob_ptr->centroid.Y < mapp_touchpadsParams[i].rect.to.y) {
         if (mapp_touchpadsParams[i].CCx) {
           #if defined(DEBUG_MAPPING)
-            Serial.printf("\nDEBUG_MAPPING_TOUCHPAD\tMIDI_CCx:%d\tVAL:%d", mapp_touchpadsParams[i].CCx, round(map(blob_ptr->centroid.X, mapp_touchpadsParams[i].rect.Xmin, mapp_touchpadsParams[i].rect.Xmax, 0, 127)));
+            Serial.printf("\nDEBUG_MAPPING_TOUCHPAD\tMIDI_CCx:%d\tVAL:%d", mapp_touchpadsParams[i].CCx, round(map(blob_ptr->centroid.X, mapp_touchpadsParams[i].rect.from.x, mapp_touchpadsParams[i].rect.to.x, 0, 127)));
           #else
             midi_sendOut(midi::ControlChange, mapp_touchpadsParams[i].CCx, 
-            round(map(blob_ptr->centroid.X, mapp_touchpadsParams[i].rect.Xmin,
-            mapp_touchpadsParams[i].rect.Xmax, 0, 127)));
+            round(map(blob_ptr->centroid.X, mapp_touchpadsParams[i].rect.from.x,
+            mapp_touchpadsParams[i].rect.to.x, 0, 127)));
           #endif
         };
         if (mapp_touchpadsParams[i].CCy) {
           #if defined(DEBUG_MAPPING)
-            Serial.printf("\nDEBUG_MAPPING_TOUCHPAD\tMIDI_CCy:%d\tVAL:%d", mapp_touchpadsParams[i].CCy, round(map(blob_ptr->centroid.Y, mapp_touchpadsParams[i].rect.Ymin, mapp_touchpadsParams[i].rect.Ymax, 0, 127)));
+            Serial.printf("\nDEBUG_MAPPING_TOUCHPAD\tMIDI_CCy:%d\tVAL:%d", mapp_touchpadsParams[i].CCy, round(map(blob_ptr->centroid.Y, mapp_touchpadsParams[i].rect.from.y, mapp_touchpadsParams[i].rect.to.y, 0, 127)));
           #else
             midi_sendOut(midi::ControlChange, mapp_touchpadsParams[i].CCy, 
-            round(map(blob_ptr->centroid.X, mapp_touchpadsParams[i].rect.Xmin,
-            mapp_touchpadsParams[i].rect.Xmax, 0, 127)));
+            round(map(blob_ptr->centroid.X, mapp_touchpadsParams[i].rect.from.x,
+            mapp_touchpadsParams[i].rect.to.x, 0, 127)));
           #endif
         };
         if (mapp_touchpadsParams[i].CCz) {
@@ -310,14 +310,14 @@ void mapping_polygons_alloc(uint8_t count) {
 // For line equation y = mx + c, we pre-compute m and c for all edges of a given polygon
 void MAPPING_POLYGONS_SETUP(void) {
   uint8_t p = 0;
-  uint8_t v1, v2 = (mapp_polygonsParams[p].vertices_cnt - 1);
+  uint8_t v1, v2 = (mapp_polygonsParams[p].point_cnt - 1);
   float x1, x2, y1, y2;
   for (p = 0; p < mapp_polygons; p++) {
-    for (v1 = 0; v1 < mapp_polygonsParams[p].vertices_cnt; v1++) {
-      x1 = mapp_polygonsParams[p].vertices[v1].x;
-      y1 = mapp_polygonsParams[p].vertices[v1].y;
-      x2 = mapp_polygonsParams[p].vertices[v2].x;
-      y2 = mapp_polygonsParams[p].vertices[v2].y;
+    for (v1 = 0; v1 < mapp_polygonsParams[p].point_cnt; v1++) {
+      x1 = mapp_polygonsParams[p].point[v1].x;
+      y1 = mapp_polygonsParams[p].point[v1].y;
+      x2 = mapp_polygonsParams[p].point[v2].x;
+      y2 = mapp_polygonsParams[p].point[v2].y;
       if (y2 == y1) {
         mapp_polygonsParams[p].c[v1] = x1;
         mapp_polygonsParams[p].m[v1] = 0;
@@ -335,14 +335,14 @@ void mapping_polygons_update(void) {
   for (blob_t* blob_ptr = (blob_t*)ITERATOR_START_FROM_HEAD(&llist_blobs); blob_ptr != NULL; blob_ptr = (blob_t*)ITERATOR_NEXT(blob_ptr)) {
     bool odd_nodes = false;
     uint8_t p = 0;
-    int i, j = (mapp_polygonsParams[p].vertices_cnt - 1);
+    int i, j = (mapp_polygonsParams[p].point_cnt - 1);
     for (p = 0; p < mapp_polygons; p++) {
       odd_nodes = false;
-      for (i = 0; i < mapp_polygonsParams[p].vertices_cnt; i++) {
-        //float X1 = mapp_polygonsParams[p].vertices[i].x;
-        float Y1 = mapp_polygonsParams[p].vertices[i].y;
-        //float X2 = mapp_polygonsParams[p].vertices[j].x;
-        float Y2 = mapp_polygonsParams[p].vertices[j].y;
+      for (i = 0; i < mapp_polygonsParams[p].point_cnt; i++) {
+        //float X1 = mapp_polygonsParams[p].point[i].x;
+        float Y1 = mapp_polygonsParams[p].point[i].y;
+        //float X2 = mapp_polygonsParams[p].point[j].x;
+        float Y2 = mapp_polygonsParams[p].point[j].y;
         if ((Y1 < blob_ptr->centroid.Y && Y2 >= blob_ptr->centroid.Y) || (Y2 < blob_ptr->centroid.Y && Y1 >= blob_ptr->centroid.Y)) {
           odd_nodes ^= ((blob_ptr->centroid.Y * mapp_polygonsParams[p].m[i] + mapp_polygonsParams[p].c[i]) < blob_ptr->centroid.X);
         };
@@ -386,17 +386,17 @@ void MAPPING_GRID_SETUP(void) {
     uint8_t rowPos = row * GRID_COLS;
     for (uint8_t col = 0; col < GRID_COLS; col++) {
       uint8_t keyPos = rowPos + col;
-      mapping_grid_keys[keyPos].rect.Xmin = col * KEY_SIZE_X + (col + 1) * GRID_GAP;
-      mapping_grid_keys[keyPos].rect.Xmax = mapping_grid_keys[keyPos].rect.Xmin + KEY_SIZE_X;
-      mapping_grid_keys[keyPos].rect.Ymin = row * KEY_SIZE_Y + (row + 1) * GRID_GAP;
-      mapping_grid_keys[keyPos].rect.Ymax = mapping_grid_keys[keyPos].rect.Ymin + KEY_SIZE_Y;
+      mapping_grid_keys[keyPos].rect.from.x = col * KEY_SIZE_X + (col + 1) * GRID_GAP;
+      mapping_grid_keys[keyPos].rect.to.x = mapping_grid_keys[keyPos].rect.from.x + KEY_SIZE_X;
+      mapping_grid_keys[keyPos].rect.from.y = row * KEY_SIZE_Y + (row + 1) * GRID_GAP;
+      mapping_grid_keys[keyPos].rect.to.y = mapping_grid_keys[keyPos].rect.from.y + KEY_SIZE_Y;
       #if defined(DEBUG_MAPPING)
         Serial.printf("\nDEBUG_MAPPING_GRID\tkey:%d\t_Xmin:%f\t_Xmax:%f\t_Ymin:%f\t_Ymax:%f",
           keyPos,
-          key[keyPos].rect.Xmin,
-          key[keyPos].rect.Xmax,
-          key[keyPos].rect.Ymin,
-          key[keyPos].rect.Ymax
+          key[keyPos].rect.from.x,
+          key[keyPos].rect.to.x,
+          key[keyPos].rect.from.y,
+          key[keyPos].rect.to.y
         );
       #endif
     };
@@ -416,10 +416,10 @@ void mapping_grid_update(void) {
       if (gridLayout[keyPress] != lastKeyPress[blob_ptr->UID]) {                  // Test if the blob is touching a new key
         /*
           // Test if the blob is within the key limits <-- This is too slow!
-          if (blob_ptr->centroid.X > key[keyPress].rect.Xmin &&
-            blob_ptr->centroid.X < key[keyPress].rect.Xmax &&
-            blob_ptr->centroid.Y > key[keyPress].rect.Ymin &&
-            blob_ptr->centroid.Y < key[keyPress].rect.Ymax) {
+          if (blob_ptr->centroid.X > key[keyPress].rect.from.x &&
+            blob_ptr->centroid.X < key[keyPress].rect.to.x &&
+            blob_ptr->centroid.Y > key[keyPress].rect.from.y &&
+            blob_ptr->centroid.Y < key[keyPress].rect.to.y) {
         */
         if (lastKeyPress[blob_ptr->UID] != -1) {                                  // Test if the blob was touching another key
           #if defined(DEBUG_MAPPING)
