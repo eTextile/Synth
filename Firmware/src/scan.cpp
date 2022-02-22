@@ -116,9 +116,14 @@ void SCAN_SETUP(void) {
   offsetFrane.numRows = RAW_ROWS;
 };
 
+void matrix_raz(void){
+  memset((uint8_t*)offsetArray, 0, RAW_FRAME);
+};
+
 // Columns are analog INPUT_PINS reded two by two
 // Rows are digital OUTPUT_PINS supplyed one by one sequentially with 3.3V
 void matrix_calibrate(void) {
+  matrix_raz();
   for (uint8_t i = 0; i < CALIBRATION_CYCLES; i++) {
     for (uint8_t col = 0; col < DUAL_COLS; col++) {         // ANNALOG_PINS [0-7] with [8-15]
 
