@@ -13,7 +13,7 @@
 
 extern AudioControlSGTL5000  sgtl5000;
 
-void SOUND_CARD_SETUP(void);
+void sound_card_setup(void);
 void update_levels(void);
 
 #endif /*__SOUND_CARD_H__*/

@@ -9,7 +9,7 @@
 
 #include "midi_bus.h"
 
-void HARDWARE_MIDI_TRANSMIT_SETUP(void);
+void hardware_midi_transmit_setup(void);
 
 void hardware_midi_read_input(void);
 void hardware_midi_handle_input(const midi::Message<128u> &midiMsg);

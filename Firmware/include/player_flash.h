@@ -7,7 +7,7 @@
 #ifndef __PLAYER_FLASH_H__
 #define __PLAYER_FLASH_H__
 
-void PLAYER_FLASH_SETUP(void);
+void player_flash_setup(void);
 void player_flash(void);
 
 #endif /*__PLAYER_FLASH__*/

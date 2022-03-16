@@ -8,7 +8,7 @@
 
 AudioControlSGTL5000  sgtl5000;
 
-void SOUND_CARD_SETUP() {
+void sound_card_setup() {
   AudioMemory(100);
   sgtl5000.enable();
   sgtl5000.inputSelect(AUDIO_INPUT_LINEIN);

@@ -91,7 +91,7 @@ void ofApp::update() {
   for (size_t j = 0; j < midiInputCopy.size(); j++) {
     ofxMidiMessage &message = midiInputCopy[j];
     switch (mode) {
-      case RAW_MATRIX:
+      case MATRIX_MODE_RAW:
         if (message.status == MIDI_SYSEX) {
           for (int k = 0; k < RAW_FRAME; k++) {
             ofPoint point = rawDataMesh.getVertex(k);           // Get the point coordinates
@@ -164,7 +164,7 @@ void ofApp::draw() {
   const int BLOB_SCALE = 10;
 
   switch (mode) {
-    case RAW_MATRIX:
+    case MATRIX_MODE_RAW:
       ofPushMatrix();
       ofSetLineWidth(1);
       ofRotateDeg(30, 1, 0, 0);
@@ -237,8 +237,8 @@ void ofApp::E256_getBlobs(bool & val) {
 // 16*16 matrix row data request
 void ofApp::E256_getRaw(bool & val) {
   if (val == true) {
-    mode = RAW_MATRIX;
-    midiOut.sendProgramChange(MIDI_OUTPUT_CHANNEL, RAW_MATRIX);
+    mode = MATRIX_MODE_RAW;
+    midiOut.sendProgramChange(MIDI_OUTPUT_CHANNEL, MATRIX_MODE_RAW);
     midiInput.clear();
     midiInputCopy.clear();
   } else {

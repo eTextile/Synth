@@ -86,7 +86,7 @@ synth_t allSynth[MAX_BLOBS] = {
   {&wf_8, &fm_8, &fade_8, &mix_2}
 };
 
-void PLAYER_SYNTH_SETUP(void) {
+void player_synth_setup(void) {
   for (int i = 0; i < MAX_BLOBS; i++) {
     allSynth[i].fade->fadeOut(0);
     allSynth[i].wf->begin(WAVEFORM_SINE);

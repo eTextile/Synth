@@ -124,7 +124,7 @@ extern polygon_t *mapp_polygonsParams;
 void mapping_polygons_alloc(uint8_t count);
 
 
-void MAPPING_LIB_SETUP(void);
+void mapping_lib_setup(void);
 
 void MAPPING_TRIGGERS_SETUP(void);
 void MAPPING_TOGGLES_SETUP(void);

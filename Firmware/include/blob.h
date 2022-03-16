@@ -117,7 +117,7 @@ struct blob {
   velocity_t velocity;
 };
 
-void BLOB_SETUP(void);
+void blob_setup(void);
 void matrix_find_blobs(void);
 
 #endif /*__BLOB_H__*/

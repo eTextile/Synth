@@ -28,8 +28,8 @@
 #define BLOBS_PLAY            3  // Send all blobs values over USB using MIDI format
 #define BLOBS_LEARN           4  // Send separate blobs values over USB using MIDI format
 #define MAPPING_LIB           5  // E256-LEDs:
-#define RAW_MATRIX            6
-#define INTERP_MATRIX         7
+#define MATRIX_MODE_RAW       6
+#define MATRIX_MODE_INTERP    7
 #define ERROR                 6  // E256-LEDs:
 
 #define ALL_OFF               9

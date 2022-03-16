@@ -26,7 +26,7 @@ struct median {
   uint8_t index;               // Circular buffer index
 };
 
-void RUNING_MEDIAN_SETUP(void);
+void running_median_setup(void);
 void runing_median(void);
 
 #endif /*__MEDIAN_H__*/

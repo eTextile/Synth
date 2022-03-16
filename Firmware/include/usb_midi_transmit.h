@@ -12,7 +12,7 @@
 extern uint16_t sysEx_dataSize;
 extern uint8_t* sysEx_data_ptr;
 
-void USB_MIDI_TRANSMIT_SETUP(void);
+void usb_midi_transmit_setup(void);
 
 void midiInfo(uint8_t err);
 

@@ -3,7 +3,7 @@
 
 ### Requirements
 - **eTextile-Synthesizer PCB** & **Teensy 4.0**
-- **Arduino IDE**: Arduino 1.8.16 [DOWNLOAD](https://www.arduino.cc/en/Main/Software)
+- **Arduino IDE**: Arduino 1.8.19 [DOWNLOAD](https://www.arduino.cc/en/Main/Software)
 - **Visual Studio Code**: [DOWNLOAD](https://visualstudio.microsoft.com/fr/)
 - **platform.io extension**: [DOWNLOAD](https://platform.io/)
 - **platform.io additional board**: Teensy 4.0
@@ -15,7 +15,7 @@ All Library dependencies are automatically installed using platformio.ini (lib_d
 ### Firmware main file
     /Synth/Firmware/src/main.cpp
 
-### Install our customized Teensy platform variant in PlatformIO
+### Install Teensy platform in PlatformIO
 1. Go to "PIO Home"
 2. Click on "Platforms"
 3. Click on "Advanced Installation"
@@ -46,7 +46,7 @@ The firmware is using a **platformio.ini** to select the needed fonctionnalites.
 
 ### Use the eTextile-Synthesizer as COMPUTER_INTERFACE
 - [USB_MIDI]: Transmit touch coordinates via USB_MIDI
-- [HARDWARE_MIDI]: Transmit touch coordinates via HARDWARE_MIDI
+- [HARDWARE_MIDI]: Transmit touch coordinates via MIDI hardware (mini-jack-TRS-A)
 
 ### Use the eTextile-Synthesizer as STANDALONE device
 - [SYNTH_PLAYER]: set the eTextile-Synthesizer as polyphonic synthesizer
@@ -55,7 +55,7 @@ The firmware is using a **platformio.ini** to select the needed fonctionnalites.
 - [MOOG]: TODO
 
 ### Mapping functionality (IN_PROGRESS)
-- [MAPPING_LAYOUT]
+- [MAPPING_MODE]
   - [GRID_LAYOUT_MIDI_IN]
   - [GRID_LAYOUT_DEFAULT]
   - [GRID_LAYOUT_HARMONIC]
@@ -76,3 +76,5 @@ WARRANTIES, see LICENSE.txt included in the eTextile-Synthesizer project folder.
 - **Teensy Synthesizer** / Open source
     - [MicroDexed](https://www.parasitstudio.de/)
     - [Dexed - FM Plugin Synth](https://github.com/asb2m10/dexed)
+  mapping_lib_update();
+  mapping_lib_update();

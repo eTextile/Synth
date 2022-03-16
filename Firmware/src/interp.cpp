@@ -29,7 +29,7 @@ image_t interpFrame;                       // Interpolated frame values
     Pre-compute the four coefficient values for all interpolated output matrix positions
 */
 
-void INTERP_SETUP(void) {
+void interp_setup(void) {
   interpFrame.pData = &interpFrameArray[0];
   interpFrame.numCols = NEW_COLS;
   interpFrame.numRows = NEW_ROWS;

@@ -46,7 +46,7 @@ inline void llist_blob_init(llist_t* llist_ptr, blob_t* nodesArray_ptr, const in
   };
 };
 
-void BLOB_SETUP(void) {
+void blob_setup(void) {
   llist_lifo_init(&llist_context_stack, &lifoArray[0], LIFO_NODES); // Add X nodes to the llist_context_stack
   llist_blob_init(&llist_blobs_stack, &blobArray[0], MAX_BLOBS);    // Add X nodes to the llist_blobs_stack
   llist_raz(&llist_context);

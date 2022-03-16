@@ -38,20 +38,29 @@ void e256_programChange(byte channel, byte program){
   switch (channel){
   case 1: // CHANNEL 1 -> MODE
     switch (program){
-    case RAW_MATRIX:
-      set_mode(RAW_MATRIX);
+    case MATRIX_MODE_RAW:
+      set_mode(MATRIX_MODE_RAW);
       break;
-    case BLOBS_PLAY:
-      set_mode(BLOBS_PLAY);
+    case MATRIX_MODE_INTERP:
+      set_mode(MATRIX_MODE_INTERP);
       break;
-    case MAPPING_LIB:
-      set_mode(MAPPING_LIB);
+    case MAPPING_MODE:
+      set_mode(MAPPING_MODE);
       break;
+    case EDIT_MODE:
+      set_mode(EDIT_MODE);
+      break;
+    case PLAY_MODE:
+      set_mode(PLAY_MODE);
+    break;
     };
   case 2: // CHANNEL 2 -> STATE
     switch (program){
     case CALIBRATE:
       matrix_calibrate();
+      break;
+    case CONFIG:
+      set_state(CONFIG);
       break;
     case DONE_ACTION:
       set_state(DONE_ACTION);
@@ -157,7 +166,7 @@ void e256_clock(){
   Serial.println("Clock");
 };
 
-void USB_MIDI_TRANSMIT_SETUP(void) {
+void usb_midi_transmit_setup(void) {
   usbMIDI.begin();
   usbMIDI.setHandleProgramChange(e256_programChange);
   usbMIDI.setHandleNoteOn(e256_noteOn);
@@ -177,8 +186,8 @@ uint8_t blobValues[6] = {0};
 void usb_midi_transmit(void) {
   static uint32_t usbTransmitTimeStamp = 0;
 
-  switch (playMode) {
-    case RAW_MATRIX:
+  switch (e256_mode) {
+    case MATRIX_MODE_RAW:
       if (millis() - usbTransmitTimeStamp > MIDI_TRANSMIT_INTERVAL) {
         usbTransmitTimeStamp = millis();
         usbMIDI.sendSysEx(RAW_FRAME, rawFrame.pData);
@@ -186,7 +195,7 @@ void usb_midi_transmit(void) {
         while (usbMIDI.read()); // Read and discard any incoming MIDI messages
       };
       break;
-    case INTERP_MATRIX:
+    case MATRIX_MODE_INTERP:
       if (millis() - usbTransmitTimeStamp > MIDI_TRANSMIT_INTERVAL) {
         usbTransmitTimeStamp = millis();
         //USB_MIDI_SYSEX_MAX = 290;
@@ -195,7 +204,7 @@ void usb_midi_transmit(void) {
         //while (usbMIDI.read()); // Read and discard any incoming MIDI messages
       };
       break;
-    case BLOBS_PLAY:
+    case EDIT_MODE:
       // Send all blobs values over USB using MIDI format
       for (blob_t* blob_ptr = (blob_t*)ITERATOR_START_FROM_HEAD(&llist_blobs); blob_ptr != NULL; blob_ptr = (blob_t*)ITERATOR_NEXT(blob_ptr)) {
         if (blob_ptr->state) {
@@ -217,7 +226,7 @@ void usb_midi_transmit(void) {
               blobValues[0] = blob_ptr->UID + 1;
               blobValues[1] = (uint8_t)round(map(blob_ptr->centroid.X, 0, WIDTH, 0, 127));
               blobValues[2] = (uint8_t)round(map(blob_ptr->centroid.Y, 0, HEIGHT, 0, 127));
-              blobValues[3] = constrain(blob_ptr->centroid.Z, 0, 127);
+              blobValues[3] = blob_ptr->centroid.Z;
               blobValues[4] = blob_ptr->box.W;
               blobValues[5] = blob_ptr->box.H;
               usbMIDI.sendSysEx(6, blobValues);
@@ -233,7 +242,7 @@ void usb_midi_transmit(void) {
         while (usbMIDI.read()); // Read and discard any incoming MIDI messages
       };
       break;
-    case MAPPING_LIB:
+    case PLAY_MODE:
       for (midiNode_t* node_ptr = (midiNode_t*)ITERATOR_START_FROM_HEAD(&midiOut); node_ptr != NULL; node_ptr = (midiNode_t*)ITERATOR_NEXT(node_ptr)) {
         switch (node_ptr->midiMsg.status) {
           case midi::NoteOn:

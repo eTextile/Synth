@@ -29,7 +29,7 @@ AudioPlaySerialflashRaw   playFlashRaw;
 AudioConnection           patchCord1(playFlashRaw, 0, i2s_OUT, 0);
 AudioConnection           patchCord2(playFlashRaw, 0, i2s_OUT, 1);
 
-void PLAYER_FLASH_SETUP(void) {
+void player_flash_setup(void) {
   while (!SerialFlash.begin(6));
 }
 

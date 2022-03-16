@@ -7,7 +7,7 @@
 #ifndef __PLAYER_GRANULAR_H__
 #define __PLAYER_GRANULAR_H__
 
-void PLAYER_GRANULAR_SETUP(void);
+void player_granular_setup(void);
 void player_granular(void);
 
 #endif /*__PLAYER_GRANULAR_H__*/

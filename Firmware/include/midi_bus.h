@@ -40,6 +40,6 @@ inline void midi_sendOut(uint8_t status, uint8_t note, uint8_t value){
   llist_push_front(&midiOut, node_ptr);
 };
 
-void MIDI_SETUP(void);
+void midi_setup(void);
 
 #endif /*__MIDI_BUS_H__*/

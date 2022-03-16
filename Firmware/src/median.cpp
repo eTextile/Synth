@@ -11,7 +11,7 @@
 median_t filter[MAX_BLOBS];
 
 // resets all internal counters
-void RUNING_MEDIAN_SETUP(void) {
+void running_median_setup(void) {
   for (uint8_t i = 0; i < MAX_BLOBS; i++) {
     for (uint8_t j = 0; j < M_WINDOW; j++) {
       filter[i].X_sort[j] = j;

@@ -22,7 +22,7 @@ inline void llist_midi_init(llist_t* llist_ptr, midiNode_t* nodeArray_ptr, const
   };
 };
 
-void MIDI_SETUP(void) {
+void midi_setup(void) {
     llist_midi_init(&midi_node_stack, &midiNodeArray[0], MIDI_NODES); // Add X nodes to the midi_node_stack
     llist_raz(&midiIn);
     llist_raz(&midiOut);

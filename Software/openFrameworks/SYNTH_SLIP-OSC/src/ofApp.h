@@ -29,8 +29,8 @@
 #define BLOBS_PLAY            6
 #define BLOBS_LEARN           7
 #define BLOBS_MAPPING         8
-#define RAW_MATRIX            9
-#define INTERP_MATRIX         10
+#define MATRIX_MODE_RAW       9
+#define MATRIX_MODE_INTERP    10
 #define ALL_OFF               11
 
 #define CONTROL_CHANGE        176 //0xB0

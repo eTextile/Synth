@@ -6,7 +6,7 @@
 
 #include "mapping_lib.h"
 
-void MAPPING_LIB_SETUP(){
+void mapping_lib_setup(){
   MAPPING_TRIGGERS_SETUP();
   MAPPING_TOGGLES_SETUP();
   MAPPING_VSLIDERS_SETUP();

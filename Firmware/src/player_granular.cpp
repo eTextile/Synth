@@ -28,7 +28,7 @@ AudioConnection         patchCord3(granular, 0, i2s_OUT, 1);
 #define GRANULAR_MEMORY_SIZE 12800  // Enough for 290 ms at 44.1 kHz
 int16_t granularMemory[GRANULAR_MEMORY_SIZE] = {0};
 
-void PLAYER_GRANULAR_SETUP(void) {
+void player_granular_setup(void) {
   granular.begin(&granularMemory[0], GRANULAR_MEMORY_SIZE);  // [ARGS](buffer_ptr, buffer_size)
 };
 

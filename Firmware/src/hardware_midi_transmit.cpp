@@ -11,7 +11,7 @@
 
 MIDI_CREATE_INSTANCE(HardwareSerial, Serial3, MIDI);
 
-void HARDWARE_MIDI_TRANSMIT_SETUP(void) {
+void hardware_midi_transmit_setup(void) {
   MIDI.begin(MIDI_INPUT_CHANNEL); // Launch MIDI and listen to channel 1
   MIDI.setHandleMessage(hardware_midi_handle_input);
 };
@@ -58,23 +58,19 @@ void hardware_midi_handle_input(const midi::Message<128u> &midiMsg) {
   };
 };
 
-void hardware_midi_transmit(void) {
-  switch (playMode) {
-    case MAPPING_LIB:
-      for (midiNode_t* node_ptr = (midiNode_t*)ITERATOR_START_FROM_HEAD(&midiOut); node_ptr != NULL; node_ptr = (midiNode_t*)ITERATOR_NEXT(node_ptr)) {
-        switch (node_ptr->midiMsg.status) {
-          case midi::NoteOn:
-            MIDI.sendNoteOn(node_ptr->midiMsg.data1, node_ptr->midiMsg.data2, MIDI_OUTPUT_CHANNEL);     // Hardware send MIDI noteOn#endif
-          case midi::NoteOff:
-            MIDI.sendNoteOff(node_ptr->midiMsg.data1, node_ptr->midiMsg.data2, MIDI_OUTPUT_CHANNEL);     // Hardware send MIDI noteOff
-            break;
-          case midi::ControlChange:
-            MIDI.sendControlChange(node_ptr->midiMsg.data1, node_ptr->midiMsg.data2, MIDI_OUTPUT_CHANNEL);    // Hardware send MIDI control_change
-            break;
-          default:
-            break;
-        };
-      };
+void hardware_midi_transmit(void){
+  for (midiNode_t *node_ptr = (midiNode_t *)ITERATOR_START_FROM_HEAD(&midiOut); node_ptr != NULL; node_ptr = (midiNode_t *)ITERATOR_NEXT(node_ptr)){
+    switch (node_ptr->midiMsg.status){
+    case midi::NoteOn:
+      MIDI.sendNoteOn(node_ptr->midiMsg.data1, node_ptr->midiMsg.data2, MIDI_OUTPUT_CHANNEL); // Hardware send MIDI noteOn#endif
+    case midi::NoteOff:
+      MIDI.sendNoteOff(node_ptr->midiMsg.data1, node_ptr->midiMsg.data2, MIDI_OUTPUT_CHANNEL); // Hardware send MIDI noteOff
+      break;
+    case midi::ControlChange:
+      MIDI.sendControlChange(node_ptr->midiMsg.data1, node_ptr->midiMsg.data2, MIDI_OUTPUT_CHANNEL); // Hardware send MIDI control_change
+      break;
+    default:
+      break;
+    };
   };
 };
-

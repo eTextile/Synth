@@ -93,9 +93,9 @@ void ofApp::update(void) {
   for (size_t i = 0; i < OSCMessages.size(); i++) {
     ofxOscMessage OSCmsg = OSCMessages[i];
     switch (mode) {
-      case RAW_MATRIX:
+      case MATRIX_MODE_RAW:
         if (OSCmsg.getAddress() == "/RAW") {
-          ofLogNotice("ofApp::OSCSerialDevice") << "RAW_MATRIX_OSCmsg" << OSCmsg;
+          ofLogNotice("ofApp::OSCSerialDevice") << "MATRIX_MODE_RAW_OSCmsg" << OSCmsg;
           for (int k = 0; k < RAW_FRAME; k++) {
             ofPoint point = rawDataMesh.getVertex(k);           // Get the point coordinates
             point.z = (float)OSCmsg.getArgAsInt(k);             // Change the z-coordinates
@@ -169,7 +169,7 @@ void ofApp::draw(void) {
   const int BLOB_SCALE = 5;
 
   switch (mode) {
-    case RAW_MATRIX:
+    case MATRIX_MODE_RAW:
       ofPushMatrix();
       ofSetLineWidth(1);
       ofRotateDeg(30, 1, 0, 0);
@@ -217,7 +217,7 @@ void ofApp::draw(void) {
 // E256 matrix sensor - MATRIX RAW DATA REQUEST START
 // 16*16 matrix row data request
 void ofApp::E256_rawDataRequestStart(bool & val) {
-  mode = RAW_MATRIX;
+  mode = MATRIX_MODE_RAW;
 };
 // E256 matrix sensor - INTERPOLATED DATA REQUEST START
 void ofApp::E256_interpDataRequestStart(bool & val) {
@@ -253,7 +253,7 @@ void ofApp::E256_rawDataRequest(void) {
   ofxOscMessage OSCmsg;
   OSCmsg.setAddress("/CONTROL");
   OSCmsg.addIntArg(CONTROL_CHANGE);
-  OSCmsg.addIntArg(RAW_MATRIX);
+  OSCmsg.addIntArg(MATRIX_MODE_RAW);
   serialDevice.send(OSCmsg);
 };
 
