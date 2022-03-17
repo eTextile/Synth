@@ -31,15 +31,17 @@
 unsigned long fpsTimeStamp = 0;
 uint16_t fps = 0;
 
-void setup() {
+void setup(){
+  hardware_setup();
   scan_setup();
   interp_setup();
   blob_setup();
   midi_bus_setup();
-  config_setup();
-  mapping_lib_setup();
+  // config_setup();
+  // mapping_lib_setup();
   usb_midi_transmit_setup();
   hardware_midi_transmit_setup();
+  set_mode(e256_mode);
 
 #if defined(RUNING_MEDIAN)
   running_median_setup();
@@ -50,7 +52,7 @@ void setup() {
 #if defined(PLAYER_SYNTH)
   player_synth_setup();
 #endif
-#if defined(PLAYER_SYNTH2)
+#if defined(interp_setup)
   player_synth2_setup();
 #endif
 #if defined(PLAYER_FLASH)
@@ -61,7 +63,7 @@ void setup() {
 #endif
 };
 
-void loop() {
+void loop(){
   matrix_scan();
   matrix_interp();
   matrix_find_blobs();
@@ -82,32 +84,36 @@ void loop() {
   player_flash();
 #endif
 
-update_controls();
+  update_controls();
 
-switch (e256_mode){
+  switch (e256_mode){
   case STANDALONE_MODE:
     hardware_midi_read_input();
-    mapping_lib_update();
+    // mapping_lib_update();
     hardware_midi_transmit();
-  break;
-  case EDIT_MODE || PLAY_MODE:
+    break;
+  case MATRIX_MODE_RAW || MATRIX_MODE_INTERP:
     usb_midi_read_input();
     usb_midi_transmit();
-  break;
+    break;
+  case EDIT_MODE:
+    usb_midi_read_input();
+    usb_midi_transmit();
+    break;
   case PLAY_MODE:
     usb_midi_read_input();
-    mapping_lib_update();
+    // mapping_lib_update();
     usb_midi_transmit();
-  break;
-}
+    break;
+  }
 
 #if defined(DEBUG_FPS)
-  if (millis() - fpsTimeStamp >= 1000) {
+  if (millis() - fpsTimeStamp >= 1000){
     fpsTimeStamp = millis();
     Serial.printf("\nFPS:%d", fps);
-    //Serial.printf("\nFPS:%d\tCPU:%f\tMEM:%f", fps, AudioProcessorUsageMax(), AudioMemoryUsageMax());
-    //AudioProcessorUsageMaxReset();
-    //AudioMemoryUsageMaxReset();
+    // Serial.printf("\nFPS:%d\tCPU:%f\tMEM:%f", fps, AudioProcessorUsageMax(), AudioMemoryUsageMax());
+    // AudioProcessorUsageMaxReset();
+    // AudioMemoryUsageMaxReset();
     fps = 0;
   };
   fps++;

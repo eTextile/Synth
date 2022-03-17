@@ -33,7 +33,7 @@ void e256_controlChange(byte channel, byte control, byte value){
 };
 
 void e256_programChange(byte channel, byte program){
-  //Serial.printf("\ne256_programChange: %d_%d", channel, program);
+  Serial.printf("\ne256_programChange: %d_%d", channel, program);
   // BUG with usbMIDI.setHandleProgramChange()
   switch (channel){
   case 1: // CHANNEL 1 -> MODE
@@ -59,8 +59,8 @@ void e256_programChange(byte channel, byte program){
     case CALIBRATE:
       matrix_calibrate();
       break;
-    case CONFIG:
-      set_state(CONFIG);
+    case GET_CONFIG:
+      set_state(GET_CONFIG);
       break;
     case DONE_ACTION:
       set_state(DONE_ACTION);
@@ -100,14 +100,15 @@ uint16_t sysEx_dataSize = 0;
 uint8_t* sysEx_data_ptr = NULL;
 
 void e256_systemExclusive(const uint8_t* data_ptr, uint16_t length, boolean complete){
+  
   static boolean sysEx_alloc = true;
+  static uint8_t* sysEx_chunk_ptr = NULL;
+  static uint16_t sysEx_lastChunkSize = 0;
+  static uint8_t sysEx_chunks = 0;
+  static uint8_t sysEx_chunkCount = 0;
 
   uint8_t sysEx_identifier = 0;
-  uint8_t sysEx_chunks = 0;
-  uint8_t sysEx_chunkCount = 0;
   uint16_t sysEx_chunkSize = 0;
-  uint16_t sysEx_lastChunkSize = 0;
-  uint8_t* sysEx_chunk_ptr = NULL;
   
   if (sysEx_alloc){
     sysEx_alloc = false;
@@ -166,7 +167,7 @@ void e256_clock(){
   Serial.println("Clock");
 };
 
-void usb_midi_transmit_setup(void) {
+void usb_midi_transmit_setup() {
   usbMIDI.begin();
   usbMIDI.setHandleProgramChange(e256_programChange);
   usbMIDI.setHandleNoteOn(e256_noteOn);
@@ -181,10 +182,9 @@ void usb_midi_read_input(void) {
   while (usbMIDI.read(MIDI_INPUT_CHANNEL)); // Read and discard any incoming MIDI messages
 };
 
-uint8_t blobValues[6] = {0}; 
-
-void usb_midi_transmit(void) {
+void usb_midi_transmit() {
   static uint32_t usbTransmitTimeStamp = 0;
+  uint8_t blobValues[6] = {0}; 
 
   switch (e256_mode) {
     case MATRIX_MODE_RAW:

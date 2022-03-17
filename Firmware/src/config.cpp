@@ -20,29 +20,29 @@
 Bounce BUTTON_L = Bounce();
 Bounce BUTTON_R = Bounce();
 
+e256_mode_t e256_m[5] = {
+  {{HIGH, LOW, false}, 1500, 1500, true},  // [0] STANDALONE_MODE
+  {{HIGH, HIGH, false}, 800, 800, true},   // [1] MATRIX_MODE_RAW
+  {{HIGH, HIGH, false}, 200, 200, true},   // [2] MATRIX_MODE_INTERP
+  {{HIGH, LOW, false}, 1000, 50, true},    // [3] EDIT_MODE
+  {{HIGH, LOW, false}, 50, 1000, true}     // [4] PLAY_MODE
+};
+
+e256_state_t e256_s[4] = {
+  {{LOW, LOW, false}, 50, 50, 10},         // [0] CALIBRATE
+  {{HIGH, LOW, false}, 500, 500, 4},       // [1] GET_CONFIG
+  {{HIGH, LOW, false}, 150, 150, 4},       // [2] DONE_ACTION
+  {{HIGH, LOW, false}, 25, 25, 20}         // [3] ERROR
+};
+
 // The levels below can be adjusted using E256 built-in encoder
 Encoder e256_e(ENCODER_PIN_A, ENCODER_PIN_B);
-
-e256_mode_t e256_m[5] = {
-  {{HIGH, HIGH, false}, 500, 700, true},  // [0] MATRIX_MODE_RAW
-  {{HIGH, HIGH, false}, 800, 800, true},  // [1] MATRIX_MODE_INTERP
-  {{HIGH, LOW, false}, 1000, 1000, true}, // [2] STANDALONE_MODE
-  {{HIGH, LOW, false}, 400, 1000, true},  // [3] EDIT_MODE
-  {{HIGH, LOW, false}, 1000, 1000, true}  // [4] PLAY_MODE
-};
 
 e256_level_t e256_l[4] = {
   {{HIGH, HIGH, false}, 1, 50, 12, false}, // [0]  THRESHOLD
   {{HIGH, LOW, false}, 1, 31, 17, false},  // [1]  SIG_IN
   {{LOW, HIGH, false}, 13, 31, 29, false}, // [2]  SIG_OUT
   {{LOW, LOW, false}, 2, 60, 3, false}     // [3]  LINE_OUT
-};
-
-e256_state_t e256_s[4] = {
-  {{LOW, LOW, false}, 20, 20, 6},    // [0] CALIBRATE
-  {{HIGH, LOW, false}, 150, 100, 4}, // [1] CONFIG
-  {{HIGH, LOW, false}, 150, 100, 4}, // [2] DONE_ACTION
-  {{HIGH, LOW, false}, 25, 25, 10}   // [3] ERROR
 };
 
 e256_control_t e256_ctr = {
@@ -52,8 +52,7 @@ e256_control_t e256_ctr = {
   &e256_l[0]  // levels_ptr
 };
 
-uint8_t e256_mode = PLAY_MODE;
-uint8_t e256_last_mode = PLAY_MODE;
+uint8_t e256_mode = STANDALONE_MODE;
 uint8_t e256_level = THRESHOLD;
 
 uint8_t* config_ptr = NULL;
@@ -63,7 +62,7 @@ uint16_t configSize = 0;
 // [Bounce2]: https://github.com/thomasfredericks/Bounce2
 // https://www.pjrc.com/teensy/interrupts.html
 // https://github.com/khoih-prog/Teensy_TimerInterrupt/blob/main/examples/SwitchDebounce/SwitchDebounce.ino
-inline void setup_buttons(void) {
+inline void setup_buttons() {
   BUTTON_L.attach(BUTTON_PIN_L, INPUT_PULLUP);  // Attach the debouncer to a pin with INPUT_PULLUP mode
   BUTTON_R.attach(BUTTON_PIN_R, INPUT_PULLUP);  // Attach the debouncer to a pin with INPUT_PULLUP mode
   BUTTON_L.interval(25);                        // Debounce interval of 25 millis
@@ -152,7 +151,7 @@ inline void flash_config(uint8_t* data_ptr, unsigned int size) {
 };
 
 // Selec the current mode and perform the matrix sensor calibration 
-inline void update_buttons(void) {
+inline void update_buttons() {
   BUTTON_L.update();
   BUTTON_R.update();
   // ACTION: BUTTON_L short press
@@ -166,7 +165,7 @@ inline void update_buttons(void) {
     flash_config(sysEx_data_ptr, sysEx_dataSize);
   };
   // ACTION: BUTTON_R long press
-  // FONCTION: EDIT_MODE (send all blob values over MIDI format)
+  // FONCTION: EDIT_MODE (send mappings values over MIDI hardware)
   // LEDs: blink slowly alternately
   if (BUTTON_R.rose() && BUTTON_R.previousDuration() > LONG_HOLD) {
     set_mode(EDIT_MODE);
@@ -178,13 +177,18 @@ inline void update_buttons(void) {
   // levels[2] = SIG_OUT
   // levels[3] = LINE_OUT
   if (BUTTON_R.rose() && BUTTON_R.previousDuration() < LONG_HOLD) {
-    e256_level = ++e256_level % 4; // Loop into level modes
+    e256_level = (e256_level + 1) % 4; // Loop into level modes
     set_level(e256_level, e256_ctr.levels[e256_level].val);
   };
 };
 
+inline void setup_encoder(){
+  e256_ctr.encoder->write(e256_ctr.levels[e256_level].val << 2);
+}
+
 // Levels values adjustment using rotary encoder
 // TODO: add interrupt
+// TODO: switch back the LEDs to the curent e256_mode after some time !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 inline boolean read_encoder(uint8_t level) {
   uint8_t val = e256_ctr.encoder->read() >> 2;
   if (val != e256_ctr.levels[level].val) {
@@ -243,7 +247,7 @@ inline void fade_leds(uint8_t level) {
 };
 
 // Update LEDs according to the mode and rotary encoder values
-inline void update_leds(void) {
+inline void update_leds() {
   fade_leds(e256_level);
   blink_leds(e256_mode);
 };
@@ -420,6 +424,10 @@ void load_config(uint8_t* data_ptr, uint8_t msg) {
   };
 };
 
+void sand_config(){
+
+}
+
 inline void load_flash_config() {
   if (!SerialFlash.begin(FLASH_CHIP_SELECT)) {
     midiInfo(ERROR_CONNECTING_FLASH);
@@ -439,14 +447,17 @@ inline void load_flash_config() {
   };
 };
 
-void config_setup(void){
+void hardware_setup(){
   setup_buttons();
-  load_flash_config();
-  matrix_calibrate();
+  setup_encoder();
 };
 
-void update_controls(void){
+void update_controls(){
   update_buttons();
   update_encoder();
   update_leds();
+};
+
+void config_setup(){
+  load_flash_config();
 };

@@ -13,7 +13,7 @@
 
 #define NAME                         "256"
 #define PROJECT                      "ETEXTILE-SYNTHESIZER"
-#define VERSION                      "1.0.10"
+#define VERSION                      "1.0.11"
 #define SENSOR_UID                   1 // Unique sensor ID
 
 // E256 HARDWARE CONSTANTS
@@ -53,15 +53,15 @@
 #define MIDI_TRANSMIT_INTERVAL       50
 
 // E256 MODES CONSTANTS
-#define MATRIX_MODE_RAW              0 // Send matrix analog sensor values (16x16) over USB using MIDI format
-#define MATRIX_MODE_INTERP           1 // Send matrix analog sensor values (16x16) over USB using MIDI format
-#define STANDALONE_MODE              2 // Send mappings values over MIDI hardware
+#define STANDALONE_MODE              0 // Send mappings values over MIDI hardware
+#define MATRIX_MODE_RAW              1 // Send matrix analog sensor values (16x16) over USB using MIDI format
+#define MATRIX_MODE_INTERP           2 // Send matrix analog sensor values (16x16) over USB using MIDI format
 #define EDIT_MODE                    3 // Send all blobs values over USB_MIDI
 #define PLAY_MODE                    4 // Send mappings values over USB_MIDI
 
 // E256 STATES CONSTANTS
 #define CALIBRATE                    0 //
-#define CONFIG                       1 //
+#define GET_CONFIG                   1 //
 #define DONE_ACTION                  2 // 
 #define ERROR                        3 //
 
@@ -151,7 +151,6 @@ struct e256_control {
 extern e256_control_t e256_ctr;
 
 extern uint8_t e256_mode;
-extern uint8_t e256_last_mode;
 extern uint8_t e256_level;
 
 void config_setup(void);
@@ -160,6 +159,7 @@ void set_mode(uint8_t mode);
 void set_level(uint8_t level, uint8_t value);
 void set_state(uint8_t state);
 
+void hardware_setup(void);
 void load_config(uint8_t* data_ptr, uint8_t msg);
 void update_controls(void);
 

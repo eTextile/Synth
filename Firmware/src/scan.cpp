@@ -113,6 +113,8 @@ void scan_setup(void) {
   offsetFrane.pData = &offsetArray[0];
   offsetFrane.numCols = RAW_COLS;
   offsetFrane.numRows = RAW_ROWS;
+  
+  matrix_calibrate();
 };
 
 // Columns are analog INPUT_PINS reded two by two
