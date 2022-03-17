@@ -44,8 +44,8 @@ void e256_programChange(byte channel, byte program){
     case MATRIX_MODE_INTERP:
       set_mode(MATRIX_MODE_INTERP);
       break;
-    case MAPPING_MODE:
-      set_mode(MAPPING_MODE);
+    case STANDALONE_MODE:
+      set_mode(STANDALONE_MODE);
       break;
     case EDIT_MODE:
       set_mode(EDIT_MODE);
@@ -96,19 +96,19 @@ inline void printBytes(const uint8_t* data_ptr, uint16_t size) {
 // [ SYSEX_BEGIN, SYSEX_ID, SYSEX_DATA, SYSEX_END ]
 // LOAD_DONE
 
-boolean sysEx_alloc = true;
-
-uint8_t sysEx_identifier = 0;
 uint16_t sysEx_dataSize = 0;
 uint8_t* sysEx_data_ptr = NULL;
 
-uint8_t sysEx_chunks = 0;
-uint8_t sysEx_chunkCount = 0;
-uint16_t sysEx_chunkSize = 0;
-uint16_t sysEx_lastChunkSize = 0;
-uint8_t* sysEx_chunk_ptr = NULL;
-
 void e256_systemExclusive(const uint8_t* data_ptr, uint16_t length, boolean complete){
+  static boolean sysEx_alloc = true;
+
+  uint8_t sysEx_identifier = 0;
+  uint8_t sysEx_chunks = 0;
+  uint8_t sysEx_chunkCount = 0;
+  uint16_t sysEx_chunkSize = 0;
+  uint16_t sysEx_lastChunkSize = 0;
+  uint8_t* sysEx_chunk_ptr = NULL;
+  
   if (sysEx_alloc){
     sysEx_alloc = false;
     sysEx_identifier = *(data_ptr + 2);
@@ -215,7 +215,6 @@ void usb_midi_transmit(void) {
             if (millis() - blob_ptr->transmitTimeStamp > MIDI_TRANSMIT_INTERVAL) {
               blob_ptr->transmitTimeStamp = millis();
               /*
-              // usbMIDI.sendControlChange(control, value, channel);
               usbMIDI.sendControlChange(BX, (uint8_t)round(map(blob_ptr->centroid.X, 0, WIDTH, 0, 127)), blob_ptr->UID + 1);
               usbMIDI.sendControlChange(BY, (uint8_t)round(map(blob_ptr->centroid.Y, 0, HEIGHT, 0, 127)), blob_ptr->UID + 1);
               usbMIDI.sendControlChange(BZ, constrain(blob_ptr->centroid.Z, 0, 127), blob_ptr->UID + 1);

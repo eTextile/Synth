@@ -18,7 +18,7 @@ void sound_card_setup() {
 // According to https://github.com/PaulStoffregen/Audio/blob/master/control_sgtl5000.cpp
 void update_levels(void) {
 
-  switch (levelMode) {
+  switch (e256_level) {
     case LINE_OUT:
       // FONCTION : line_out level adjustment using rotary encoder // DEFAULT MODE
       // LOWEST level is 31 (1.16 Volts p-p)

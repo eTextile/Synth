@@ -35,7 +35,7 @@ void setup() {
   scan_setup();
   interp_setup();
   blob_setup();
-  midi_setup();
+  midi_bus_setup();
   config_setup();
   mapping_lib_setup();
   usb_midi_transmit_setup();
@@ -66,9 +66,6 @@ void loop() {
   matrix_interp();
   matrix_find_blobs();
 
-#if defined(HARDWARE_MIDI)
-  hardware_midi_read_input();
-#endif
 #if defined(SOUND_CARD)
   update_levels();
 #endif
@@ -85,20 +82,24 @@ void loop() {
   player_flash();
 #endif
 
+update_controls();
+
 switch (e256_mode){
-  case EDIT_MODE:
+  case STANDALONE_MODE:
+    hardware_midi_read_input();
+    mapping_lib_update();
+    hardware_midi_transmit();
+  break;
+  case EDIT_MODE || PLAY_MODE:
     usb_midi_read_input();
     usb_midi_transmit();
   break;
   case PLAY_MODE:
-    update_controls();
+    usb_midi_read_input();
     mapping_lib_update();
-    hardware_midi_transmit();
-  break;
-default:
+    usb_midi_transmit();
   break;
 }
-
 
 #if defined(DEBUG_FPS)
   if (millis() - fpsTimeStamp >= 1000) {

@@ -55,9 +55,9 @@
 // E256 MODES CONSTANTS
 #define MATRIX_MODE_RAW              0 // Send matrix analog sensor values (16x16) over USB using MIDI format
 #define MATRIX_MODE_INTERP           1 // Send matrix analog sensor values (16x16) over USB using MIDI format
-#define MAPPING_MODE                 2 // 
+#define STANDALONE_MODE              2 // Send mappings values over MIDI hardware
 #define EDIT_MODE                    3 // Send all blobs values over USB_MIDI
-#define PLAY_MODE                    4 // Send mappings values over MIDI hardware
+#define PLAY_MODE                    4 // Send mappings values over USB_MIDI
 
 // E256 STATES CONSTANTS
 #define CALIBRATE                    0 //
@@ -151,8 +151,8 @@ struct e256_control {
 extern e256_control_t e256_ctr;
 
 extern uint8_t e256_mode;
-extern uint8_t lastMode;
-extern uint8_t levelMode;
+extern uint8_t e256_last_mode;
+extern uint8_t e256_level;
 
 void config_setup(void);
 

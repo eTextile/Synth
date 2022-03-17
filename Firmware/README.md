@@ -55,7 +55,7 @@ The firmware is using a **platformio.ini** to select the needed fonctionnalites.
 - [MOOG]: TODO
 
 ### Mapping functionality (IN_PROGRESS)
-- [MAPPING_MODE]
+- [STANDALONE_MODE]
   - [GRID_LAYOUT_MIDI_IN]
   - [GRID_LAYOUT_DEFAULT]
   - [GRID_LAYOUT_HARMONIC]

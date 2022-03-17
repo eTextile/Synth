@@ -24,11 +24,11 @@ Bounce BUTTON_R = Bounce();
 Encoder e256_e(ENCODER_PIN_A, ENCODER_PIN_B);
 
 e256_mode_t e256_m[5] = {
-  {{HIGH, LOW, false}, 500, 700, true},   // [0] MATRIX_MODE_RAW
-  {{HIGH, LOW, false}, 800, 800, true},   // [1] MATRIX_MODE_INTERP
-  {{HIGH, HIGH, false}, 1000, 1000, true},// [2] MAPPING_MODE
-  {{HIGH, HIGH, false}, 400, 1000, true}, // [3] EDIT_MODE
-  {{HIGH, HIGH, false}, 400, 1000, true}  // [4] PLAY_MODE
+  {{HIGH, HIGH, false}, 500, 700, true},  // [0] MATRIX_MODE_RAW
+  {{HIGH, HIGH, false}, 800, 800, true},  // [1] MATRIX_MODE_INTERP
+  {{HIGH, LOW, false}, 1000, 1000, true}, // [2] STANDALONE_MODE
+  {{HIGH, LOW, false}, 400, 1000, true},  // [3] EDIT_MODE
+  {{HIGH, LOW, false}, 1000, 1000, true}  // [4] PLAY_MODE
 };
 
 e256_level_t e256_l[4] = {
@@ -53,8 +53,8 @@ e256_control_t e256_ctr = {
 };
 
 uint8_t e256_mode = PLAY_MODE;
-uint8_t lastMode = PLAY_MODE;
-uint8_t levelMode = THRESHOLD;
+uint8_t e256_last_mode = PLAY_MODE;
+uint8_t e256_level = THRESHOLD;
 
 uint8_t* config_ptr = NULL;
 uint16_t configSize = 0;
@@ -80,7 +80,7 @@ void setup_leds(void* ptr){
 
 void set_mode(uint8_t mode) {
   e256_ctr.modes[e256_mode].leds.update = false;
-  e256_ctr.levels[levelMode].leds.update = false;
+  e256_ctr.levels[e256_level].leds.update = false;
   setup_leds(&e256_ctr.modes[mode]);
   e256_ctr.modes[mode].leds.update = true;
   e256_mode = mode;
@@ -94,7 +94,7 @@ void set_level(uint8_t level, uint8_t value) {
   e256_ctr.encoder->write(value << 2);
   setup_leds(&e256_ctr.levels[level]);
   e256_ctr.levels[level].update = true;
-  levelMode = level;
+  e256_level = level;
   #if defined(DEBUG_LEVELS)
     Serial.printf("\nSET_LEVEL:%d_%d", level, value);
   #endif
@@ -178,8 +178,8 @@ inline void update_buttons(void) {
   // levels[2] = SIG_OUT
   // levels[3] = LINE_OUT
   if (BUTTON_R.rose() && BUTTON_R.previousDuration() < LONG_HOLD) {
-    levelMode = ++levelMode % 4; // Loop into level modes
-    set_level(levelMode, e256_ctr.levels[levelMode].val);
+    e256_level = ++e256_level % 4; // Loop into level modes
+    set_level(e256_level, e256_ctr.levels[e256_level].val);
   };
 };
 
@@ -209,8 +209,8 @@ inline boolean read_encoder(uint8_t level) {
 
 // Update levels[level] of each mode using the rotary encoder
 inline void update_encoder() {
-  if (read_encoder(levelMode)) {
-    set_level(levelMode, e256_ctr.levels[levelMode].val);
+  if (read_encoder(e256_level)) {
+    set_level(e256_level, e256_ctr.levels[e256_level].val);
   };
 };
 
@@ -244,7 +244,7 @@ inline void fade_leds(uint8_t level) {
 
 // Update LEDs according to the mode and rotary encoder values
 inline void update_leds(void) {
-  fade_leds(levelMode);
+  fade_leds(e256_level);
   blink_leds(e256_mode);
 };
 
