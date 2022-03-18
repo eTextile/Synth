@@ -34,7 +34,7 @@ e256_state_t e256_s[4] = {
   {{HIGH, LOW, false}, 150, 150, 4},       // [2] DONE_ACTION
   {{HIGH, LOW, false}, 25, 25, 20}         // [3] ERROR
 };
-
+  
 // The levels below can be adjusted using E256 built-in encoder
 Encoder e256_e(ENCODER_PIN_A, ENCODER_PIN_B);
 
@@ -53,7 +53,11 @@ e256_control_t e256_ctr = {
 };
 
 uint8_t e256_mode = STANDALONE_MODE;
+uint8_t e256_lastMode = STANDALONE_MODE;
 uint8_t e256_level = THRESHOLD;
+boolean levelToggle = true;
+
+uint32_t levelTimer = 0;
 
 uint8_t* config_ptr = NULL;
 uint16_t configSize = 0;
@@ -82,6 +86,7 @@ void set_mode(uint8_t mode) {
   e256_ctr.levels[e256_level].leds.update = false;
   setup_leds(&e256_ctr.modes[mode]);
   e256_ctr.modes[mode].leds.update = true;
+  e256_lastMode = e256_mode;
   e256_mode = mode;
   #if defined(DEBUG_MODES)
     Serial.printf("\nSET_MODE:%d", mode);
@@ -142,7 +147,7 @@ inline void flash_config(uint8_t* data_ptr, unsigned int size) {
   if (size < FLASH_SIZE) {
     flashFile.write(data_ptr, size);
     flashFile.close();
-    midiInfo(DONE_FLASH_CONFIG_WRITE);
+    midiInfo(FLASH_CONFIG_WRITE_DONE);
     set_state(DONE_ACTION);
   } else {
     midiInfo(ERROR_FILE_TO_BIG);
@@ -214,8 +219,14 @@ inline boolean read_encoder(uint8_t level) {
 // Update levels[level] of each mode using the rotary encoder
 inline void update_encoder() {
   if (read_encoder(e256_level)) {
+    levelTimer = millis();
+    levelToggle = true;
     set_level(e256_level, e256_ctr.levels[e256_level].val);
-  };
+  }
+  if (millis() - levelTimer > 2000 && levelToggle){
+    levelToggle = false;
+    set_mode(e256_lastMode);
+  } 
 };
 
 inline void blink_leds(uint8_t mode) {
@@ -439,7 +450,7 @@ inline void load_flash_config() {
     configSize = configFile.size();
     config_ptr = allocate(config_ptr, configSize);
     configFile.read(config_ptr, configSize);
-    load_config(config_ptr, DONE_FLASH_CONFIG_LOAD);
+    load_config(config_ptr, FLASH_CONFIG_LOAD_DONE);
   }
   else {
     midiInfo(ERROR_NO_CONFIG_FILE);

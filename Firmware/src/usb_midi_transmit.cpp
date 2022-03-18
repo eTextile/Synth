@@ -100,15 +100,13 @@ uint16_t sysEx_dataSize = 0;
 uint8_t* sysEx_data_ptr = NULL;
 
 void e256_systemExclusive(const uint8_t* data_ptr, uint16_t length, boolean complete){
-  
   static boolean sysEx_alloc = true;
   static uint8_t* sysEx_chunk_ptr = NULL;
   static uint16_t sysEx_lastChunkSize = 0;
   static uint8_t sysEx_chunks = 0;
   static uint8_t sysEx_chunkCount = 0;
-
-  uint8_t sysEx_identifier = 0;
-  uint16_t sysEx_chunkSize = 0;
+  static uint8_t sysEx_identifier = 0;
+  static uint16_t sysEx_chunkSize = 0;
   
   if (sysEx_alloc){
     sysEx_alloc = false;
@@ -119,7 +117,7 @@ void e256_systemExclusive(const uint8_t* data_ptr, uint16_t length, boolean comp
     sysEx_lastChunkSize = (sysEx_dataSize + 3) % USB_MIDI_SYSEX_MAX;
     if (sysEx_lastChunkSize != 0) sysEx_chunks++;
     sysEx_chunkCount = 0;
-    midiInfo(DONE_USBMIDI_CONFIG_ALLOC);
+    midiInfo(USBMIDI_CONFIG_ALLOC_DONE);
   }
   else {
     if (sysEx_chunks == 1) { // Only one chunk to load
@@ -145,12 +143,12 @@ void e256_systemExclusive(const uint8_t* data_ptr, uint16_t length, boolean comp
         #if defined(DEBUG_CONFIG)
           printBytes(sysEx_data_ptr, sysEx_dataSize);
         #endif
-        load_config(sysEx_data_ptr, DONE_USBMIDI_CONFIG_LOAD);
+        load_config(sysEx_data_ptr, USBMIDI_CONFIG_UPLOAD_DONE);
         sysEx_alloc = true;
       }
       else if (sysEx_identifier == SYSEX_SOUND){
         // TODO
-        //midiInfo(DONE_USBMIDI_SOUND_LOAD);
+        //midiInfo(USBMIDI_SOUND_LOAD_DONE);
         //set_state(DONE_ACTION);
         sysEx_alloc = true;
       }
