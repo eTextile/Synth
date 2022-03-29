@@ -20,12 +20,13 @@
 Bounce BUTTON_L = Bounce();
 Bounce BUTTON_R = Bounce();
 
-e256_mode_t e256_m[5] = {
-  {{HIGH, LOW, false}, 1500, 1500, true},  // [0] STANDALONE_MODE
-  {{HIGH, HIGH, false}, 800, 800, true},   // [1] MATRIX_MODE_RAW
-  {{HIGH, HIGH, false}, 200, 200, true},   // [2] MATRIX_MODE_INTERP
-  {{HIGH, LOW, false}, 1000, 50, true},    // [3] EDIT_MODE
-  {{HIGH, LOW, false}, 50, 1000, true}     // [4] PLAY_MODE
+e256_mode_t e256_m[6] = {
+  {{HIGH, LOW, false}, 600, 600, true},    // [0] SYNC_MODE
+  {{HIGH, LOW, false}, 1500, 1500, true},  // [1] STANDALONE_MODE
+  {{HIGH, HIGH, false}, 800, 800, true},   // [2] MATRIX_MODE_RAW
+  {{HIGH, HIGH, false}, 200, 200, true},   // [3] MATRIX_MODE_INTERP
+  {{HIGH, LOW, false}, 1000, 50, true},    // [4] EDIT_MODE
+  {{HIGH, LOW, false}, 50, 1000, true}     // [5] PLAY_MODE
 };
 
 e256_state_t e256_s[4] = {
@@ -39,7 +40,7 @@ e256_state_t e256_s[4] = {
 Encoder e256_e(ENCODER_PIN_A, ENCODER_PIN_B);
 
 e256_level_t e256_l[4] = {
-  {{HIGH, HIGH, false}, 1, 50, 12, false}, // [0]  THRESHOLD
+  {{HIGH, HIGH, false}, 2, 50, 10, false}, // [0]  THRESHOLD
   {{HIGH, LOW, false}, 1, 31, 17, false},  // [1]  SIG_IN
   {{LOW, HIGH, false}, 13, 31, 29, false}, // [2]  SIG_OUT
   {{LOW, LOW, false}, 2, 60, 3, false}     // [3]  LINE_OUT
@@ -52,10 +53,9 @@ e256_control_t e256_ctr = {
   &e256_l[0]  // levels_ptr
 };
 
-uint8_t e256_mode = STANDALONE_MODE;
-uint8_t e256_lastMode = STANDALONE_MODE;
+uint8_t e256_mode = SYNC_MODE;
+uint8_t e256_lastMode = SYNC_MODE;
 uint8_t e256_level = THRESHOLD;
-boolean levelToggle = true;
 
 uint32_t levelTimer = 0;
 
@@ -163,6 +163,7 @@ inline void update_buttons() {
   // FONCTION: CALIBRATE THE SENSOR MATRIX
   if (BUTTON_L.rose() && BUTTON_L.previousDuration() < LONG_HOLD) {
     matrix_calibrate();
+    set_state(CALIBRATE);
   };
   // ACTION: BUTTON_L long press
   // FONCTION: save the mapping config file to the permanent memory.
@@ -193,7 +194,6 @@ inline void setup_encoder(){
 
 // Levels values adjustment using rotary encoder
 // TODO: add interrupt
-// TODO: switch back the LEDs to the curent e256_mode after some time !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 inline boolean read_encoder(uint8_t level) {
   uint8_t val = e256_ctr.encoder->read() >> 2;
   if (val != e256_ctr.levels[level].val) {
@@ -218,15 +218,17 @@ inline boolean read_encoder(uint8_t level) {
 
 // Update levels[level] of each mode using the rotary encoder
 inline void update_encoder() {
+  static boolean levelToggle = true;
+
   if (read_encoder(e256_level)) {
     levelTimer = millis();
     levelToggle = true;
     set_level(e256_level, e256_ctr.levels[e256_level].val);
   }
-  if (millis() - levelTimer > 2000 && levelToggle){
+  if (millis() - levelTimer > LEVEL_TIMEOUT && levelToggle){
     levelToggle = false;
     set_mode(e256_lastMode);
-  } 
+  };
 };
 
 inline void blink_leds(uint8_t mode) {

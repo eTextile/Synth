@@ -51,21 +51,24 @@
 #define LONG_HOLD                    1500
 #define BLINK_ITER                   10
 #define MIDI_TRANSMIT_INTERVAL       50
+#define LEVEL_TIMEOUT                3000
+#define SYNC_MODE_TIMEOUT            4000
 
-// E256 MODES CONSTANTS
-#define STANDALONE_MODE              0 // Send mappings values over MIDI hardware
-#define MATRIX_MODE_RAW              1 // Send matrix analog sensor values (16x16) over USB using MIDI format
-#define MATRIX_MODE_INTERP           2 // Send matrix analog sensor values (16x16) over USB using MIDI format
-#define EDIT_MODE                    3 // Send all blobs values over USB_MIDI
-#define PLAY_MODE                    4 // Send mappings values over USB_MIDI
+// E256 MODES CONSTANTS (PGM_OUT CHANNEL 1)
+#define SYNC_MODE                    0 // Read incoming setup
+#define STANDALONE_MODE              1 // Send mappings values over MIDI hardware
+#define MATRIX_MODE_RAW              2 // Send matrix analog sensor values (16x16) over USB using MIDI format
+#define MATRIX_MODE_INTERP           3 // Send matrix analog sensor values (16x16) over USB using MIDI format
+#define EDIT_MODE                    4 // Send all blobs values over USB_MIDI
+#define PLAY_MODE                    5 // Send mappings values over USB_MIDI
 
-// E256 STATES CONSTANTS
+// E256 STATES CONSTANTS (PGM_OUT CHANNEL 2)
 #define CALIBRATE                    0 //
 #define GET_CONFIG                   1 //
 #define DONE_ACTION                  2 // 
 #define ERROR                        3 //
 
-// E256 LEVELS CONSTANTS
+// E256 LEVELS CONSTANTS (CTL_OUT CHANNEL 1)
 #define THRESHOLD                    0 // E256-LEDs: | 1 | 1 |
 #define SIG_IN                       1 // E256-LEDs: | 1 | 0 |
 #define SIG_OUT                      2 // E256-LEDs: | 0 | 1 |
@@ -95,6 +98,8 @@
 #define USBMIDI_CONFIG_ALLOC_DONE    19
 #define USBMIDI_CONFIG_UPLOAD_DONE   20
 #define USBMIDI_SOUND_UPLOAD_DONE    21
+#define USBMIDI_SET_LEVEL_DONE       22
+
 // ERROR CODES CONSTANTS
 #define ERROR_WAITING_FOR_GONFIG     33
 #define ERROR_LOADING_GONFIG_FAILED  34

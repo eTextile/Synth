@@ -13,6 +13,7 @@
 #include "allocate.h"
 
 void e256_noteOn(byte channel, byte note, byte velocity){
+  Serial.println(channel);
   midiNode_t* node_ptr = (midiNode_t*)llist_pop_front(&midi_node_stack);
   node_ptr->midiMsg.status = midi::NoteOn;
   node_ptr->midiMsg.data1 = note;
@@ -21,6 +22,7 @@ void e256_noteOn(byte channel, byte note, byte velocity){
 };
 
 void e256_noteOff(byte channel, byte note, byte velocity){
+  Serial.println(channel);
   midiNode_t* node_ptr = (midiNode_t*)llist_pop_front(&midi_node_stack);
   node_ptr->midiMsg.status = midi::NoteOff;
   node_ptr->midiMsg.data1 = note;
@@ -28,39 +30,61 @@ void e256_noteOff(byte channel, byte note, byte velocity){
   llist_push_front(&midiIn, node_ptr);
 };
 
-void e256_controlChange(byte channel, byte control, byte value){
-  set_level(control, value);
+void e256_controlChange(byte channel, byte number, byte value){
+    switch (channel){
+      case 1: // CHANNEL 1 -> LEVELS
+        set_level(number, value);
+        break;
+      case 2: // CHANNEL 2 -> ALL_OTHERS
+        midiInfo(USBMIDI_SET_LEVEL_DONE);
+        break;
+      default:
+        break;
+    }
 };
 
 void e256_programChange(byte channel, byte program){
-  Serial.printf("\ne256_programChange: %d_%d", channel, program);
+  Serial.printf("\ne256_programChange Channel: %d Program: %d", channel, program);
   // BUG with usbMIDI.setHandleProgramChange()
   switch (channel){
   case 1: // CHANNEL 1 -> MODE
     switch (program){
-    case MATRIX_MODE_RAW:
+    case SYNC_MODE:
+      /////////////////////// SEND_CONFIG!?
       set_mode(MATRIX_MODE_RAW);
-      break;
-    case MATRIX_MODE_INTERP:
-      set_mode(MATRIX_MODE_INTERP);
+      //midiInfo(DONE_ACTION);
+      midiInfo(MATRIX_MODE_RAW);
       break;
     case STANDALONE_MODE:
       set_mode(STANDALONE_MODE);
       break;
+    case MATRIX_MODE_RAW:
+      set_mode(MATRIX_MODE_RAW);
+      midiInfo(DONE_ACTION);
+      break;
+    case MATRIX_MODE_INTERP:
+      set_mode(MATRIX_MODE_INTERP);
+      midiInfo(DONE_ACTION);
+      break;
     case EDIT_MODE:
       set_mode(EDIT_MODE);
+      midiInfo(DONE_ACTION);
       break;
     case PLAY_MODE:
       set_mode(PLAY_MODE);
+      midiInfo(DONE_ACTION);
     break;
     };
   case 2: // CHANNEL 2 -> STATE
     switch (program){
     case CALIBRATE:
       matrix_calibrate();
+      set_state(CALIBRATE);
+      midiInfo(DONE_ACTION);
       break;
     case GET_CONFIG:
       set_state(GET_CONFIG);
+      midiInfo(DONE_ACTION);
       break;
     case DONE_ACTION:
       set_state(DONE_ACTION);
@@ -71,6 +95,13 @@ void e256_programChange(byte channel, byte program){
     };
   };
 };
+
+void usb_midi_hand_shake(){
+  if (e256_mode == SYNC_MODE && millis() > SYNC_MODE_TIMEOUT){
+    set_mode(STANDALONE_MODE);
+    //matrix_calibrate();
+  }
+}
 
 void midiInfo(uint8_t msg){
   usbMIDI.sendProgramChange(msg, MIDI_OUTPUT_CHANNEL); // ProgramChange(program, channel);
@@ -176,8 +207,8 @@ void usb_midi_transmit_setup() {
 };
 
 void usb_midi_read_input(void) {
-  usbMIDI.read(MIDI_INPUT_CHANNEL);         // Is there a MIDI incoming messages on channel One
-  while (usbMIDI.read(MIDI_INPUT_CHANNEL)); // Read and discard any incoming MIDI messages
+  usbMIDI.read();         // Is there a MIDI incoming messages on channel One
+  while (usbMIDI.read()); // Read and discard any incoming MIDI messages
 };
 
 void usb_midi_transmit() {

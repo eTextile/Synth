@@ -31,7 +31,7 @@
 unsigned long fpsTimeStamp = 0;
 uint16_t fps = 0;
 
-void setup(){
+void setup() {
   hardware_setup();
   scan_setup();
   interp_setup();
@@ -63,7 +63,7 @@ void setup(){
 #endif
 };
 
-void loop(){
+void loop() {
   matrix_scan();
   matrix_interp();
   matrix_find_blobs();
@@ -86,13 +86,18 @@ void loop(){
 
   update_controls();
 
-  switch (e256_mode){
+  switch (e256_mode) {
+  case SYNC_MODE:
+    usb_midi_read_input();
+    usb_midi_hand_shake();
+    usb_midi_transmit();
+    break;
   case STANDALONE_MODE:
     hardware_midi_read_input();
     // mapping_lib_update();
     hardware_midi_transmit();
     break;
-  case MATRIX_MODE_RAW || MATRIX_MODE_INTERP:
+  case MATRIX_MODE_RAW:
     usb_midi_read_input();
     usb_midi_transmit();
     break;
@@ -108,7 +113,7 @@ void loop(){
   }
 
 #if defined(DEBUG_FPS)
-  if (millis() - fpsTimeStamp >= 1000){
+  if (millis() - fpsTimeStamp >= 1000) {
     fpsTimeStamp = millis();
     Serial.printf("\nFPS:%d", fps);
     // Serial.printf("\nFPS:%d\tCPU:%f\tMEM:%f", fps, AudioProcessorUsageMax(), AudioMemoryUsageMax());
