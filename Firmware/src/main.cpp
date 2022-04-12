@@ -14,6 +14,7 @@
 #include "mapping_lib.h"
 #include "usb_midi_transmit.h"
 #include "hardware_midi_transmit.h"
+#include "soundCard.h"
 
 #if defined(PLAYER_FLASH)
 #include "player_flash.h"
@@ -23,9 +24,6 @@
 #endif
 #if defined(PLAYER_GRANULAR)
 #include "player_granular.h"
-#endif
-#if defined(PLAYER_FLASH) || defined(PLAYER_SYNTH) || defined(PLAYER_SYNTH2) || defined(PLAYER_GRANULAR)
-#include "soundCard.h"
 #endif
 
 unsigned long fpsTimeStamp = 0;
@@ -42,17 +40,15 @@ void setup() {
   usb_midi_transmit_setup();
   hardware_midi_transmit_setup();
   set_mode(e256_mode);
+  sound_card_setup();
 
 #if defined(RUNING_MEDIAN)
   running_median_setup();
 #endif
-#if defined(SOUND_CARD)
-  sound_card_setup();
-#endif
 #if defined(PLAYER_SYNTH)
   player_synth_setup();
 #endif
-#if defined(interp_setup)
+#if defined(PLAYER_SYNTH2)
   player_synth2_setup();
 #endif
 #if defined(PLAYER_FLASH)
@@ -67,34 +63,30 @@ void loop() {
   matrix_scan();
   matrix_interp();
   matrix_find_blobs();
-
-#if defined(SOUND_CARD)
-  update_levels();
-#endif
-#if defined(PLAYER_SYNTH)
-  player_synth();
-#endif
-#if defined(PLAYER_SYNTH2)
-  player_synth2();
-#endif
-#if defined(PLAYER_GRANULAR)
-  player_granular();
-#endif
-#if defined(PLAYER_FLASH)
-  player_flash();
-#endif
-
   update_controls();
 
   switch (e256_mode) {
   case SYNC_MODE:
     usb_midi_read_input();
-    usb_midi_hand_shake();
     usb_midi_transmit();
+    usb_midi_sync_timeout();
     break;
   case STANDALONE_MODE:
     hardware_midi_read_input();
     // mapping_lib_update();
+    update_levels();
+    #if defined(PLAYER_SYNTH)
+      player_synth();
+    #endif
+    #if defined(PLAYER_SYNTH2)
+      player_synth2();
+    #endif
+    #if defined(PLAYER_FLASH)
+      player_flash();
+    #endif
+    #if defined(PLAYER_GRANULAR)
+      player_granular();
+    #endif
     hardware_midi_transmit();
     break;
   case MATRIX_MODE_RAW:

@@ -7,10 +7,13 @@
 #include "usb_midi_transmit.h"
 #include "config.h"
 #include "scan.h"
+#include "interp.h"
 #include "llist.h"
 #include "blob.h"
 #include "midi_bus.h"
 #include "allocate.h"
+
+boolean send_config = false;
 
 void e256_noteOn(byte channel, byte note, byte velocity){
   Serial.println(channel);
@@ -32,82 +35,71 @@ void e256_noteOff(byte channel, byte note, byte velocity){
 
 void e256_controlChange(byte channel, byte number, byte value){
     switch (channel){
-      case 1: // CHANNEL 1 -> LEVELS
+      case MIDI_LEVELS_CHANNEL:
         set_level(number, value);
         break;
-      case 2: // CHANNEL 2 -> ALL_OTHERS
-        midiInfo(USBMIDI_SET_LEVEL_DONE);
-        break;
       default:
+        // NA
         break;
     }
 };
 
 void e256_programChange(byte channel, byte program){
-  Serial.printf("\ne256_programChange Channel: %d Program: %d", channel, program);
-  // BUG with usbMIDI.setHandleProgramChange()
   switch (channel){
-  case 1: // CHANNEL 1 -> MODE
-    switch (program){
-    case SYNC_MODE:
-      /////////////////////// SEND_CONFIG!?
-      set_mode(MATRIX_MODE_RAW);
-      //midiInfo(DONE_ACTION);
-      midiInfo(MATRIX_MODE_RAW);
+    case MIDI_MODES_CHANNEL:
+      switch (program){
+        case SYNC_MODE:
+          midiInfo(SYNC_MODE_DONE, MIDI_VERBOSITY_CHANNEL);
+          break;
+        case MATRIX_MODE_RAW:
+          set_mode(MATRIX_MODE_RAW);
+          midiInfo(DONE_ACTION, MIDI_VERBOSITY_CHANNEL);
+          break;
+        case MATRIX_MODE_INTERP:
+          set_mode(MATRIX_MODE_INTERP);
+          midiInfo(DONE_ACTION, MIDI_VERBOSITY_CHANNEL);
+          break;
+        case EDIT_MODE:
+          set_mode(EDIT_MODE);
+          midiInfo(DONE_ACTION, MIDI_VERBOSITY_CHANNEL);
+          break;
+        case PLAY_MODE:
+          set_mode(PLAY_MODE);
+          midiInfo(DONE_ACTION, MIDI_VERBOSITY_CHANNEL);
+          break;
+      };
       break;
-    case STANDALONE_MODE:
-      set_mode(STANDALONE_MODE);
+    case MIDI_STATES_CHANNEL:
+      switch (program){
+        case CALIBRATE:
+          matrix_calibrate();
+          set_state(CALIBRATE);
+          midiInfo(DONE_ACTION, MIDI_VERBOSITY_CHANNEL);
+          break;
+        case GET_CONFIG:
+          set_state(GET_CONFIG);
+          send_config = true;
+          break;
+      };
       break;
-    case MATRIX_MODE_RAW:
-      set_mode(MATRIX_MODE_RAW);
-      midiInfo(DONE_ACTION);
-      break;
-    case MATRIX_MODE_INTERP:
-      set_mode(MATRIX_MODE_INTERP);
-      midiInfo(DONE_ACTION);
-      break;
-    case EDIT_MODE:
-      set_mode(EDIT_MODE);
-      midiInfo(DONE_ACTION);
-      break;
-    case PLAY_MODE:
-      set_mode(PLAY_MODE);
-      midiInfo(DONE_ACTION);
-    break;
-    };
-  case 2: // CHANNEL 2 -> STATE
-    switch (program){
-    case CALIBRATE:
-      matrix_calibrate();
-      set_state(CALIBRATE);
-      midiInfo(DONE_ACTION);
-      break;
-    case GET_CONFIG:
-      set_state(GET_CONFIG);
-      midiInfo(DONE_ACTION);
-      break;
-    case DONE_ACTION:
-      set_state(DONE_ACTION);
-      break;
-    case ERROR:
-      set_state(ERROR);
-      break;
-    };
+  };
+  #if defined(DEBUG_MIDI_IO)
+    Serial.printf("\nRECIVE_PGM_IN:%d\tCHANNEL:%d", program, channel);
+  #endif
+};
+
+void usb_midi_sync_timeout(){
+  if (e256_mode == SYNC_MODE && millis() > SYNC_MODE_TIMEOUT){
+    matrix_calibrate();
+    set_mode(STANDALONE_MODE);
   };
 };
 
-void usb_midi_hand_shake(){
-  if (e256_mode == SYNC_MODE && millis() > SYNC_MODE_TIMEOUT){
-    set_mode(STANDALONE_MODE);
-    //matrix_calibrate();
-  }
-}
-
-void midiInfo(uint8_t msg){
-  usbMIDI.sendProgramChange(msg, MIDI_OUTPUT_CHANNEL); // ProgramChange(program, channel);
+void midiInfo(uint8_t msg, uint8_t channel){
+  usbMIDI.sendProgramChange(msg, channel); // ProgramChange(program, channel);
   usbMIDI.send_now();
   #if defined(DEBUG_CONFIG)
-    Serial.printf("\nMIDI_MSG:\t%d", msg);
+    Serial.printf("\nMIDI_MSG:%d\tCHANNEL:%d", msg, channel);
   #endif
 };
 
@@ -148,7 +140,7 @@ void e256_systemExclusive(const uint8_t* data_ptr, uint16_t length, boolean comp
     sysEx_lastChunkSize = (sysEx_dataSize + 3) % USB_MIDI_SYSEX_MAX;
     if (sysEx_lastChunkSize != 0) sysEx_chunks++;
     sysEx_chunkCount = 0;
-    midiInfo(USBMIDI_CONFIG_ALLOC_DONE);
+    midiInfo(USBMIDI_CONFIG_ALLOC_DONE, MIDI_ERROR_CHANNEL);
   }
   else {
     if (sysEx_chunks == 1) { // Only one chunk to load
@@ -174,8 +166,15 @@ void e256_systemExclusive(const uint8_t* data_ptr, uint16_t length, boolean comp
         #if defined(DEBUG_CONFIG)
           printBytes(sysEx_data_ptr, sysEx_dataSize);
         #endif
-        load_config(sysEx_data_ptr, USBMIDI_CONFIG_UPLOAD_DONE);
-        sysEx_alloc = true;
+        if (load_config(sysEx_data_ptr)){
+          sysEx_alloc = true;
+          midiInfo(USBMIDI_CONFIG_LOAD_DONE, MIDI_ERROR_CHANNEL);
+          set_state(DONE_ACTION);
+        }
+        else {
+          midiInfo(ERROR_LOADING_GONFIG_FAILED, MIDI_ERROR_CHANNEL);
+          set_state(ERROR);
+        };
       }
       else if (sysEx_identifier == SYSEX_SOUND){
         // TODO
@@ -184,7 +183,7 @@ void e256_systemExclusive(const uint8_t* data_ptr, uint16_t length, boolean comp
         sysEx_alloc = true;
       }
       else {
-        midiInfo(ERROR_UNKNOWN_SYSEX);
+        midiInfo(ERROR_UNKNOWN_SYSEX, MIDI_ERROR_CHANNEL);
         set_state(ERROR);
         sysEx_alloc = true;
       };
@@ -216,22 +215,29 @@ void usb_midi_transmit() {
   uint8_t blobValues[6] = {0}; 
 
   switch (e256_mode) {
+    case SYNC_MODE:
+      if (send_config){
+        send_config = false;
+        usbMIDI.sendSysEx(configSize, config_ptr, false);
+        usbMIDI.send_now();
+      };
+      while (usbMIDI.read()); // Read and discard any incoming MIDI messages
+    break;
     case MATRIX_MODE_RAW:
       if (millis() - usbTransmitTimeStamp > MIDI_TRANSMIT_INTERVAL) {
         usbTransmitTimeStamp = millis();
-        usbMIDI.sendSysEx(RAW_FRAME, rawFrame.pData);
+        usbMIDI.sendSysEx(RAW_FRAME, rawFrame.pData, false);
         usbMIDI.send_now();
-        while (usbMIDI.read()); // Read and discard any incoming MIDI messages
       };
+      while (usbMIDI.read()); // Read and discard any incoming MIDI messages
       break;
     case MATRIX_MODE_INTERP:
       if (millis() - usbTransmitTimeStamp > MIDI_TRANSMIT_INTERVAL) {
         usbTransmitTimeStamp = millis();
-        //USB_MIDI_SYSEX_MAX = 290;
-        //usbMIDI.sendSysEx(NEW_FRAME, interpFrame.pData, false, 0);
-        //usbMIDI.send_now();
-        //while (usbMIDI.read()); // Read and discard any incoming MIDI messages
+        usbMIDI.sendSysEx(NEW_FRAME, interpFrame.pData, false);
+        usbMIDI.send_now();
       };
+      while (usbMIDI.read()); // Read and discard any incoming MIDI messages
       break;
     case EDIT_MODE:
       // Send all blobs values over USB using MIDI format

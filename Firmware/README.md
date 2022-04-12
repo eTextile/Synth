@@ -3,8 +3,8 @@
 
 ### Requirements
 - **eTextile-Synthesizer PCB** & **Teensy 4.0**
-- **Arduino IDE**: Arduino 1.8.19 [DOWNLOAD](https://www.arduino.cc/en/Main/Software)
-- **Visual Studio Code**: [DOWNLOAD](https://visualstudio.microsoft.com/fr/)
+- **Arduino IDE**: Arduino 1.8.19 [DOWNLOAD](https://www.arduino.cc/en/Main/Software/)
+- **Visual Studio Code**: [DOWNLOAD](https://visualstudio.microsoft.com/)
 - **platform.io extension**: [DOWNLOAD](https://platform.io/)
 - **platform.io additional board**: Teensy 4.0
 
@@ -23,26 +23,23 @@ All Library dependencies are automatically installed using platformio.ini (lib_d
 5. Click "Install"
 
 ### Powering the eTextile-Synthesizer
-- The Teensy Micro USB Type B **will not power** the eTextile-Synthesizer
-- You must use the included power cable with an **5Volts AC/DC power Plug** or your laptop USB plug
+- The Teensy Micro USB Type B **will not power** the eTextile-Synthesizer.
+- You must use the included power cable with an **5Volts AC/DC power Plug** or your laptop USB port.
 
 ### Program Synopsis
-- **Force image acquisition** 16x16 made with sinchronious Analogread
-- **Bilinear interpolation** the sensor force image is interpolated to 64x64 using bilinear algorithm
-- **Touch biasing** threshold adjustable depending on needed sensitivity
-- **Blob segmentation** the binary image is analyzed with a Connected Component Labelling algorithm
+- **Force image acquisition** 16x16 using sinchronious dual analog read.
+- **Bilinear interpolation** the sensor force image is interpolated to 64x64 using bilinear algorithm.
+- **Touch biasing** adjustable threshold, depending on needed sensitivity.
+- **Blob segmentation** the binary image is genarated using a flood fill algorithm.
 - **Blob tracking** blob ID management (matching with previous frame)
-- **Blob shape and movement characterisation**: blobs coordinates, size, pressure, velocity
-- **Blob transmission** via MIDI over USB and MIDI over HARDWARE
+- **Blob shape and movement characterisation**: blobs coordinates, size, pressure, velocity, etc.
+- **Blob transmission** via MIDI over USB and MIDI over HARDWARE (mini-jack-TRS-A).
 
 ### Benchmark
   - ADC_INPUT : 2500 FPS
   - ADC_INPUT / BILINEAR_INTERPOLATION : ...
   - ADC_INPUT / BILINEAR_INTERPOLATION / BLOB_TRACKING : 550 FPS
   - ADC_INPUT / BILINEAR_INTERPOLATION / BLOB_TRACKING / AUDIO : ...
-
-## Configuring the system
-The firmware is using a **platformio.ini** to select the needed fonctionnalites. Uncomment the lines that you need.
 
 ### Use the eTextile-Synthesizer as COMPUTER_INTERFACE
 - [USB_MIDI]: Transmit touch coordinates via USB_MIDI
@@ -76,5 +73,3 @@ WARRANTIES, see LICENSE.txt included in the eTextile-Synthesizer project folder.
 - **Teensy Synthesizer** / Open source
     - [MicroDexed](https://www.parasitstudio.de/)
     - [Dexed - FM Plugin Synth](https://github.com/asb2m10/dexed)
-  mapping_lib_update();
-  mapping_lib_update();

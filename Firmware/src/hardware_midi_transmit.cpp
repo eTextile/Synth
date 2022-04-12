@@ -12,13 +12,13 @@
 MIDI_CREATE_INSTANCE(HardwareSerial, Serial3, MIDI);
 
 void hardware_midi_transmit_setup(void) {
-  MIDI.begin(MIDI_INPUT_CHANNEL); // Launch MIDI and listen to channel 1
+  MIDI.begin(MIDI_INPUT_CHANNEL); // Launch MIDI hardware and listen to channel 1
   MIDI.setHandleMessage(hardware_midi_handle_input);
 };
 
 void hardware_midi_read_input(void) {
-  MIDI.read(MIDI_INPUT_CHANNEL);            // Is there a MIDI incoming messages on channel One
-  while (MIDI.read(MIDI_INPUT_CHANNEL));    // Read and discard any incoming MIDI messages
+  MIDI.read(MIDI_INPUT_CHANNEL);         // Is there any incoming MIDI messages on channel 1
+  while (MIDI.read(MIDI_INPUT_CHANNEL)); // Read and discard any incoming MIDI messages
 };
 
 void hardware_midi_handle_input(const midi::Message<128u> &midiMsg) {

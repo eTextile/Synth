@@ -11,9 +11,9 @@
 #define ENCODER_OPTIMIZE_INTERRUPTS
 #include <Encoder.h>                 // https://github.com/PaulStoffregen/Encoder
 
-#define NAME                         "256"
 #define PROJECT                      "ETEXTILE-SYNTHESIZER"
-#define VERSION                      "1.0.11"
+#define NAME                         "256"
+#define VERSION                      "1.0.12"
 #define SENSOR_UID                   1 // Unique sensor ID
 
 // E256 HARDWARE CONSTANTS
@@ -54,27 +54,36 @@
 #define LEVEL_TIMEOUT                3000
 #define SYNC_MODE_TIMEOUT            4000
 
-// E256 MODES CONSTANTS (PGM_OUT CHANNEL 1)
-#define SYNC_MODE                    0 // Read incoming setup
+// E256 MIDI I/O CHANNELS CONSTANTS [1:15]
+#define MIDI_INPUT_CHANNEL           1
+#define MIDI_OUTPUT_CHANNEL          2
+#define MIDI_MODES_CHANNEL           3
+#define MIDI_STATES_CHANNEL          4
+#define MIDI_LEVELS_CHANNEL          5
+#define MIDI_VERBOSITY_CHANNEL       6
+#define MIDI_ERROR_CHANNEL           7
+
+// E256 MODES CONSTANTS (MIDI_MODES_CHANNEL)
+#define SYNC_MODE                    0 // Hand chake mode 
 #define STANDALONE_MODE              1 // Send mappings values over MIDI hardware
 #define MATRIX_MODE_RAW              2 // Send matrix analog sensor values (16x16) over USB using MIDI format
 #define MATRIX_MODE_INTERP           3 // Send matrix analog sensor values (16x16) over USB using MIDI format
 #define EDIT_MODE                    4 // Send all blobs values over USB_MIDI
 #define PLAY_MODE                    5 // Send mappings values over USB_MIDI
 
-// E256 STATES CONSTANTS (PGM_OUT CHANNEL 2)
+// E256 STATES CONSTANTS (MIDI_STATES_CHANNEL)
 #define CALIBRATE                    0 //
 #define GET_CONFIG                   1 //
 #define DONE_ACTION                  2 // 
 #define ERROR                        3 //
 
-// E256 LEVELS CONSTANTS (CTL_OUT CHANNEL 1)
+// E256 LEVELS CONSTANTS (MIDI_LEVELS_CHANNEL)
 #define THRESHOLD                    0 // E256-LEDs: | 1 | 1 |
 #define SIG_IN                       1 // E256-LEDs: | 1 | 0 |
 #define SIG_OUT                      2 // E256-LEDs: | 0 | 1 |
 #define LINE_OUT                     3 // E256-LEDs: | 0 | 0 |
 
-// E256 MAPPING_LIB CONSTANTS
+// E256 MAPPING_LIB CONSTANTS 
 #define MAX_BLOBS                    32    // [0:7] How many blobs can be tracked at the same time
 #define MAX_TRIGGERS                 16
 #define MAX_TOGGLES                  16
@@ -86,18 +95,17 @@
 #define MAX_POLYGONS                 8
 
 // E256 MIDI CONSTANTS
-#define MIDI_INPUT_CHANNEL           1  // [1:15] Set the HARDWARE MIDI_INPUT channel
-#define MIDI_OUTPUT_CHANNEL          1  // [1:15] Set the HARDWARE MIDI_OUTPUT channel
 #define SYSEX_CONF                   0x7C
 #define SYSEX_SOUND                  0x6C
 
 // VERBOSITY CONSTANTS
+#define SYNC_MODE_DONE               15
 #define FLASH_CONFIG_ALLOC_DONE      16
 #define FLASH_CONFIG_LOAD_DONE       17
 #define FLASH_CONFIG_WRITE_DONE      18
 #define USBMIDI_CONFIG_ALLOC_DONE    19
-#define USBMIDI_CONFIG_UPLOAD_DONE   20
-#define USBMIDI_SOUND_UPLOAD_DONE    21
+#define USBMIDI_CONFIG_LOAD_DONE     20
+#define USBMIDI_SOUND_LOAD_DONE      21
 #define USBMIDI_SET_LEVEL_DONE       22
 
 // ERROR CODES CONSTANTS
@@ -143,6 +151,7 @@ struct e256_level {
 };
 
 extern uint16_t configSize;
+extern uint8_t* config_ptr;
 
 typedef struct e256_control e256_control_t;
 struct e256_control {
@@ -160,11 +169,11 @@ extern uint8_t e256_level;
 void config_setup(void);
 
 void set_mode(uint8_t mode);
-void set_level(uint8_t level, uint8_t value);
 void set_state(uint8_t state);
+void set_level(uint8_t level, uint8_t value);
 
 void hardware_setup(void);
-void load_config(uint8_t* data_ptr, uint8_t msg);
+boolean load_config(uint8_t* data_ptr);
 void update_controls(void);
 
 #endif /*__CONFIG_H__*/

@@ -21,8 +21,8 @@ Bounce BUTTON_L = Bounce();
 Bounce BUTTON_R = Bounce();
 
 e256_mode_t e256_m[6] = {
-  {{HIGH, LOW, false}, 600, 600, true},    // [0] SYNC_MODE
-  {{HIGH, LOW, false}, 1500, 1500, true},  // [1] STANDALONE_MODE
+  {{HIGH, LOW, false}, 500, 500, true},    // [0] SYNC_MODE
+  {{HIGH, LOW, false}, 100, 1500, true},   // [1] STANDALONE_MODE
   {{HIGH, HIGH, false}, 800, 800, true},   // [2] MATRIX_MODE_RAW
   {{HIGH, HIGH, false}, 200, 200, true},   // [3] MATRIX_MODE_INTERP
   {{HIGH, LOW, false}, 1000, 50, true},    // [4] EDIT_MODE
@@ -30,10 +30,10 @@ e256_mode_t e256_m[6] = {
 };
 
 e256_state_t e256_s[4] = {
-  {{LOW, LOW, false}, 50, 50, 10},         // [0] CALIBRATE
+  {{LOW, LOW, false}, 50, 50, 8},          // [0] CALIBRATE
   {{HIGH, LOW, false}, 500, 500, 4},       // [1] GET_CONFIG
   {{HIGH, LOW, false}, 150, 150, 4},       // [2] DONE_ACTION
-  {{HIGH, LOW, false}, 25, 25, 20}         // [3] ERROR
+  {{HIGH, LOW, false}, 15, 50, 200}        // [3] ERROR
 };
   
 // The levels below can be adjusted using E256 built-in encoder
@@ -121,7 +121,7 @@ void set_state(uint8_t state) {
 
 inline void flash_config(uint8_t* data_ptr, unsigned int size) {
   if (!SerialFlash.begin(FLASH_CHIP_SELECT)) {
-    midiInfo(ERROR_CONNECTING_FLASH);
+    midiInfo(ERROR_CONNECTING_FLASH, MIDI_ERROR_CHANNEL);
     set_state(ERROR);
     return;
   };
@@ -134,23 +134,23 @@ inline void flash_config(uint8_t* data_ptr, unsigned int size) {
   if (SerialFlash.create("config.json", size)) {
     flashFile = SerialFlash.open("config.json");
     if (!flashFile) {
-      midiInfo(ERROR_WHILE_OPEN_FLASH_FILE);
+      midiInfo(ERROR_WHILE_OPEN_FLASH_FILE, MIDI_ERROR_CHANNEL);
       set_state(ERROR);
       return;
     };
   }
   else {
-    midiInfo(ERROR_FLASH_FULL);
+    midiInfo(ERROR_FLASH_FULL, MIDI_ERROR_CHANNEL);
     set_state(ERROR);
     return;
   };
   if (size < FLASH_SIZE) {
     flashFile.write(data_ptr, size);
     flashFile.close();
-    midiInfo(FLASH_CONFIG_WRITE_DONE);
+    midiInfo(FLASH_CONFIG_WRITE_DONE, MIDI_VERBOSITY_CHANNEL);
     set_state(DONE_ACTION);
   } else {
-    midiInfo(ERROR_FILE_TO_BIG);
+    midiInfo(ERROR_FILE_TO_BIG, MIDI_ERROR_CHANNEL);
     set_state(ERROR);
   };
 };
@@ -379,71 +379,66 @@ inline bool config_load_mapping_polygons(const JsonArray& config) {
 
 bool config_load_mapping(const JsonObject &config) {
   if (config.isNull()) {
-    midiInfo(ERROR_LOADING_GONFIG_FAILED);
+    midiInfo(ERROR_LOADING_GONFIG_FAILED, MIDI_ERROR_CHANNEL);
     set_state(ERROR);
     return false;
   };
   if (!config_load_mapping_triggers(config["triggers"])) {
-    midiInfo(ERROR_LOADING_GONFIG_FAILED);
+    midiInfo(ERROR_LOADING_GONFIG_FAILED, MIDI_ERROR_CHANNEL);
     set_state(ERROR);
     return false;
   };
   if (!config_load_mapping_toggles(config["toggles"])) {
-    midiInfo(ERROR_LOADING_GONFIG_FAILED);
+    midiInfo(ERROR_LOADING_GONFIG_FAILED, MIDI_ERROR_CHANNEL);
     set_state(ERROR);
     return false;
   };
   if (!config_load_mapping_vSliders(config["vSliders"])) {
-    midiInfo(ERROR_LOADING_GONFIG_FAILED);
+    midiInfo(ERROR_LOADING_GONFIG_FAILED, MIDI_ERROR_CHANNEL);
     set_state(ERROR);
     return false;
   };
   if (!config_load_mapping_hSliders(config["hSliders"])) {
-    midiInfo(ERROR_LOADING_GONFIG_FAILED);
+    midiInfo(ERROR_LOADING_GONFIG_FAILED, MIDI_ERROR_CHANNEL);
     set_state(ERROR);
     return false;
   };
   if (!config_load_mapping_circles(config["circles"])) {
-    midiInfo(ERROR_LOADING_GONFIG_FAILED);
+    midiInfo(ERROR_LOADING_GONFIG_FAILED, MIDI_ERROR_CHANNEL);
     set_state(ERROR);
     return false;
   };
   if (!config_load_mapping_touchpads(config["touchpad"])) {
-    midiInfo(ERROR_LOADING_GONFIG_FAILED);
+    midiInfo(ERROR_LOADING_GONFIG_FAILED, MIDI_ERROR_CHANNEL);
     set_state(ERROR);
     return false;
   };
   if (!config_load_mapping_polygons(config["polygons"])) {
-    midiInfo(ERROR_LOADING_GONFIG_FAILED);
+    midiInfo(ERROR_LOADING_GONFIG_FAILED, MIDI_ERROR_CHANNEL);
     set_state(ERROR);
     return false;
   };
   return true;
 };
 
-void load_config(uint8_t* data_ptr, uint8_t msg) {
+boolean load_config(uint8_t* data_ptr) {
   StaticJsonDocument<2048> config;
-  DeserializationError err = deserializeJson(config, data_ptr);
-  if (err) {
-    midiInfo(ERROR_WAITING_FOR_GONFIG);
+  DeserializationError error = deserializeJson(config, data_ptr);
+  if (error) {
+    midiInfo(ERROR_WAITING_FOR_GONFIG, MIDI_ERROR_CHANNEL);
     set_state(ERROR);
-    return;
+    return false;
   };
-  if (!config_load_mapping(config["mapping"])) {
-    return;
-  } else {
-    midiInfo(msg);
-    set_state(DONE_ACTION);
-  };
+  if (config_load_mapping(config["mapping"])) {
+    return true;
+  } else{
+    return false;
+  }
 };
-
-void sand_config(){
-
-}
 
 inline void load_flash_config() {
   if (!SerialFlash.begin(FLASH_CHIP_SELECT)) {
-    midiInfo(ERROR_CONNECTING_FLASH);
+    midiInfo(ERROR_CONNECTING_FLASH, MIDI_ERROR_CHANNEL);
     set_state(ERROR);
     return;
   };
@@ -452,10 +447,17 @@ inline void load_flash_config() {
     configSize = configFile.size();
     config_ptr = allocate(config_ptr, configSize);
     configFile.read(config_ptr, configSize);
-    load_config(config_ptr, FLASH_CONFIG_LOAD_DONE);
+    if (load_config(config_ptr)){
+      midiInfo(FLASH_CONFIG_LOAD_DONE, MIDI_VERBOSITY_CHANNEL);
+      set_state(DONE_ACTION);
+    }
+    else{
+      midiInfo(ERROR_LOADING_GONFIG_FAILED, MIDI_ERROR_CHANNEL);
+      set_state(ERROR);
+    }
   }
   else {
-    midiInfo(ERROR_NO_CONFIG_FILE);
+    midiInfo(ERROR_NO_CONFIG_FILE, MIDI_ERROR_CHANNEL);
     set_state(ERROR);
   };
 };
