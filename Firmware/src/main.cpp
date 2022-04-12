@@ -41,7 +41,6 @@ void setup() {
   hardware_midi_transmit_setup();
   set_mode(e256_mode);
   sound_card_setup();
-
 #if defined(RUNING_MEDIAN)
   running_median_setup();
 #endif
@@ -66,10 +65,14 @@ void loop() {
   update_controls();
 
   switch (e256_mode) {
+  case PENDING_MODE:
+    usb_midi_read_input();
+    usb_midi_transmit();
+    usb_midi_pending_mode_timeout();
+    break;
   case SYNC_MODE:
     usb_midi_read_input();
     usb_midi_transmit();
-    usb_midi_sync_timeout();
     break;
   case STANDALONE_MODE:
     hardware_midi_read_input();

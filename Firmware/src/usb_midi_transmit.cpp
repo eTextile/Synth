@@ -48,24 +48,28 @@ void e256_programChange(byte channel, byte program){
   switch (channel){
     case MIDI_MODES_CHANNEL:
       switch (program){
+        case PENDING_MODE:
+          midiInfo(PENDING_MODE_DONE, MIDI_VERBOSITY_CHANNEL);
+          break;
         case SYNC_MODE:
+          set_mode(SYNC_MODE);
           midiInfo(SYNC_MODE_DONE, MIDI_VERBOSITY_CHANNEL);
           break;
         case MATRIX_MODE_RAW:
           set_mode(MATRIX_MODE_RAW);
-          midiInfo(DONE_ACTION, MIDI_VERBOSITY_CHANNEL);
+          midiInfo(MATRIX_MODE_RAW_DONE, MIDI_VERBOSITY_CHANNEL);
           break;
         case MATRIX_MODE_INTERP:
           set_mode(MATRIX_MODE_INTERP);
-          midiInfo(DONE_ACTION, MIDI_VERBOSITY_CHANNEL);
+          midiInfo(MATRIX_MODE_INTERP_DONE, MIDI_VERBOSITY_CHANNEL);
           break;
         case EDIT_MODE:
           set_mode(EDIT_MODE);
-          midiInfo(DONE_ACTION, MIDI_VERBOSITY_CHANNEL);
+          midiInfo(EDIT_MODE_DONE, MIDI_VERBOSITY_CHANNEL);
           break;
         case PLAY_MODE:
           set_mode(PLAY_MODE);
-          midiInfo(DONE_ACTION, MIDI_VERBOSITY_CHANNEL);
+          midiInfo(PLAY_MODE_DONE, MIDI_VERBOSITY_CHANNEL);
           break;
       };
       break;
@@ -74,10 +78,9 @@ void e256_programChange(byte channel, byte program){
         case CALIBRATE:
           matrix_calibrate();
           set_state(CALIBRATE);
-          midiInfo(DONE_ACTION, MIDI_VERBOSITY_CHANNEL);
+          midiInfo(CALIBRATE_DONE, MIDI_VERBOSITY_CHANNEL);
           break;
         case GET_CONFIG:
-          set_state(GET_CONFIG);
           send_config = true;
           break;
       };
@@ -88,10 +91,10 @@ void e256_programChange(byte channel, byte program){
   #endif
 };
 
-void usb_midi_sync_timeout(){
-  if (e256_mode == SYNC_MODE && millis() > SYNC_MODE_TIMEOUT){
-    matrix_calibrate();
+void usb_midi_pending_mode_timeout(){
+  if (e256_mode == PENDING_MODE && millis() > SYNC_MODE_TIMEOUT){
     set_mode(STANDALONE_MODE);
+    matrix_calibrate();
   };
 };
 
@@ -169,11 +172,9 @@ void e256_systemExclusive(const uint8_t* data_ptr, uint16_t length, boolean comp
         if (load_config(sysEx_data_ptr)){
           sysEx_alloc = true;
           midiInfo(USBMIDI_CONFIG_LOAD_DONE, MIDI_ERROR_CHANNEL);
-          set_state(DONE_ACTION);
         }
         else {
           midiInfo(ERROR_LOADING_GONFIG_FAILED, MIDI_ERROR_CHANNEL);
-          set_state(ERROR);
         };
       }
       else if (sysEx_identifier == SYSEX_SOUND){
@@ -184,7 +185,6 @@ void e256_systemExclusive(const uint8_t* data_ptr, uint16_t length, boolean comp
       }
       else {
         midiInfo(ERROR_UNKNOWN_SYSEX, MIDI_ERROR_CHANNEL);
-        set_state(ERROR);
         sysEx_alloc = true;
       };
     };

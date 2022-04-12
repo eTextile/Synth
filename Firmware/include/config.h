@@ -52,7 +52,7 @@
 #define BLINK_ITER                   10
 #define MIDI_TRANSMIT_INTERVAL       50
 #define LEVEL_TIMEOUT                3000
-#define SYNC_MODE_TIMEOUT            4000
+#define SYNC_MODE_TIMEOUT            5000
 
 // E256 MIDI I/O CHANNELS CONSTANTS [1:15]
 #define MIDI_INPUT_CHANNEL           1
@@ -64,18 +64,18 @@
 #define MIDI_ERROR_CHANNEL           7
 
 // E256 MODES CONSTANTS (MIDI_MODES_CHANNEL)
-#define SYNC_MODE                    0 // Hand chake mode 
-#define STANDALONE_MODE              1 // Send mappings values over MIDI hardware
-#define MATRIX_MODE_RAW              2 // Send matrix analog sensor values (16x16) over USB using MIDI format
-#define MATRIX_MODE_INTERP           3 // Send matrix analog sensor values (16x16) over USB using MIDI format
-#define EDIT_MODE                    4 // Send all blobs values over USB_MIDI
-#define PLAY_MODE                    5 // Send mappings values over USB_MIDI
+#define PENDING_MODE                 0 // Waiting for mode
+#define SYNC_MODE                    1 // Hand chake mode
+#define STANDALONE_MODE              2 // Send mappings values over MIDI hardware
+#define MATRIX_MODE_RAW              3 // Send matrix analog sensor values (16x16) over USB using MIDI format
+#define MATRIX_MODE_INTERP           4 // Send matrix analog sensor values (16x16) over USB using MIDI format
+#define EDIT_MODE                    5 // Send all blobs values over USB_MIDI
+#define PLAY_MODE                    6 // Send mappings values over USB_MIDI
+#define ERROR_MODE                   7 //
 
 // E256 STATES CONSTANTS (MIDI_STATES_CHANNEL)
 #define CALIBRATE                    0 //
-#define GET_CONFIG                   1 //
-#define DONE_ACTION                  2 // 
-#define ERROR                        3 //
+#define GET_CONFIG                   1                 
 
 // E256 LEVELS CONSTANTS (MIDI_LEVELS_CHANNEL)
 #define THRESHOLD                    0 // E256-LEDs: | 1 | 1 |
@@ -99,14 +99,21 @@
 #define SYSEX_SOUND                  0x6C
 
 // VERBOSITY CONSTANTS
-#define SYNC_MODE_DONE               15
-#define FLASH_CONFIG_ALLOC_DONE      16
-#define FLASH_CONFIG_LOAD_DONE       17
-#define FLASH_CONFIG_WRITE_DONE      18
-#define USBMIDI_CONFIG_ALLOC_DONE    19
-#define USBMIDI_CONFIG_LOAD_DONE     20
-#define USBMIDI_SOUND_LOAD_DONE      21
-#define USBMIDI_SET_LEVEL_DONE       22
+#define PENDING_MODE_DONE            0
+#define SYNC_MODE_DONE               1
+#define MATRIX_MODE_RAW_DONE         2
+#define MATRIX_MODE_INTERP_DONE      3
+#define EDIT_MODE_DONE               4
+#define PLAY_MODE_DONE               5
+#define FLASH_CONFIG_ALLOC_DONE      6
+#define FLASH_CONFIG_LOAD_DONE       7
+#define FLASH_CONFIG_WRITE_DONE      8
+#define USBMIDI_CONFIG_ALLOC_DONE    9
+#define USBMIDI_CONFIG_LOAD_DONE     10
+#define USBMIDI_SOUND_LOAD_DONE      11
+#define USBMIDI_SET_LEVEL_DONE       12
+#define CALIBRATE_DONE               13
+#define DONE_ACTION                  14 
 
 // ERROR CODES CONSTANTS
 #define ERROR_WAITING_FOR_GONFIG     33

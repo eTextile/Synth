@@ -20,20 +20,20 @@
 Bounce BUTTON_L = Bounce();
 Bounce BUTTON_R = Bounce();
 
-e256_mode_t e256_m[6] = {
-  {{HIGH, LOW, false}, 500, 500, true},    // [0] SYNC_MODE
-  {{HIGH, LOW, false}, 100, 1500, true},   // [1] STANDALONE_MODE
-  {{HIGH, HIGH, false}, 800, 800, true},   // [2] MATRIX_MODE_RAW
-  {{HIGH, HIGH, false}, 200, 200, true},   // [3] MATRIX_MODE_INTERP
-  {{HIGH, LOW, false}, 1000, 50, true},    // [4] EDIT_MODE
-  {{HIGH, LOW, false}, 50, 1000, true}     // [5] PLAY_MODE
+e256_mode_t e256_m[8] = {
+  {{HIGH, LOW, false}, 50, 50, true},      // [0] PENDING_MODE
+  {{HIGH, LOW, false}, 500, 500, true},    // [1] SYNC_MODE
+  {{HIGH, LOW, false}, 2500, 2500, true},  // [2] STANDALONE_MODE
+  {{HIGH, HIGH, false}, 200, 200, true},   // [3] MATRIX_MODE_RAW
+  {{HIGH, HIGH, false}, 200, 200, true},   // [4] MATRIX_MODE_INTERP
+  {{HIGH, LOW, false}, 1000, 50, true},    // [5] EDIT_MODE
+  {{HIGH, LOW, false}, 50, 1000, true},    // [6] PLAY_MODE
+  {{HIGH, LOW, false}, 10, 10, true}       // [7] ERROR_MODE
 };
 
-e256_state_t e256_s[4] = {
+e256_state_t e256_s[2] = {
   {{LOW, LOW, false}, 50, 50, 8},          // [0] CALIBRATE
-  {{HIGH, LOW, false}, 500, 500, 4},       // [1] GET_CONFIG
-  {{HIGH, LOW, false}, 150, 150, 4},       // [2] DONE_ACTION
-  {{HIGH, LOW, false}, 15, 50, 200}        // [3] ERROR
+  {{HIGH, LOW, false}, 15, 50, 200}        // [1] GET_CONFIG
 };
   
 // The levels below can be adjusted using E256 built-in encoder
@@ -53,8 +53,8 @@ e256_control_t e256_ctr = {
   &e256_l[0]  // levels_ptr
 };
 
-uint8_t e256_mode = SYNC_MODE;
-uint8_t e256_lastMode = SYNC_MODE;
+uint8_t e256_mode = PENDING_MODE;
+uint8_t e256_lastMode = PENDING_MODE;
 uint8_t e256_level = THRESHOLD;
 
 uint32_t levelTimer = 0;
@@ -122,7 +122,7 @@ void set_state(uint8_t state) {
 inline void flash_config(uint8_t* data_ptr, unsigned int size) {
   if (!SerialFlash.begin(FLASH_CHIP_SELECT)) {
     midiInfo(ERROR_CONNECTING_FLASH, MIDI_ERROR_CHANNEL);
-    set_state(ERROR);
+    set_mode(ERROR_MODE);
     return;
   };
   while (!SerialFlash.ready());
@@ -135,23 +135,22 @@ inline void flash_config(uint8_t* data_ptr, unsigned int size) {
     flashFile = SerialFlash.open("config.json");
     if (!flashFile) {
       midiInfo(ERROR_WHILE_OPEN_FLASH_FILE, MIDI_ERROR_CHANNEL);
-      set_state(ERROR);
+      set_mode(ERROR_MODE);
       return;
     };
   }
   else {
     midiInfo(ERROR_FLASH_FULL, MIDI_ERROR_CHANNEL);
-    set_state(ERROR);
+    set_mode(ERROR_MODE);
     return;
   };
   if (size < FLASH_SIZE) {
     flashFile.write(data_ptr, size);
     flashFile.close();
     midiInfo(FLASH_CONFIG_WRITE_DONE, MIDI_VERBOSITY_CHANNEL);
-    set_state(DONE_ACTION);
   } else {
     midiInfo(ERROR_FILE_TO_BIG, MIDI_ERROR_CHANNEL);
-    set_state(ERROR);
+    set_mode(ERROR_MODE);
   };
 };
 
@@ -162,8 +161,8 @@ inline void update_buttons() {
   // ACTION: BUTTON_L short press
   // FONCTION: CALIBRATE THE SENSOR MATRIX
   if (BUTTON_L.rose() && BUTTON_L.previousDuration() < LONG_HOLD) {
-    matrix_calibrate();
-    set_state(CALIBRATE);
+    //matrix_calibrate(); // FIXME for erratic call when booting!
+    //set_state(CALIBRATE);
   };
   // ACTION: BUTTON_L long press
   // FONCTION: save the mapping config file to the permanent memory.
@@ -171,10 +170,10 @@ inline void update_buttons() {
     flash_config(sysEx_data_ptr, sysEx_dataSize);
   };
   // ACTION: BUTTON_R long press
-  // FONCTION: EDIT_MODE (send mappings values over MIDI hardware)
-  // LEDs: blink slowly alternately
+  // FONCTION: PENDING_MODE (waiting for mode)
+  // LEDs: blink slowly (500ms) alternately
   if (BUTTON_R.rose() && BUTTON_R.previousDuration() > LONG_HOLD) {
-    set_mode(EDIT_MODE);
+    set_mode(PENDING_MODE);
   };
   // ACTION: BUTTON_R short press
   // FONCTION: SELECT_LEVEL
@@ -380,42 +379,42 @@ inline bool config_load_mapping_polygons(const JsonArray& config) {
 bool config_load_mapping(const JsonObject &config) {
   if (config.isNull()) {
     midiInfo(ERROR_LOADING_GONFIG_FAILED, MIDI_ERROR_CHANNEL);
-    set_state(ERROR);
+    set_mode(ERROR_MODE);
     return false;
   };
   if (!config_load_mapping_triggers(config["triggers"])) {
     midiInfo(ERROR_LOADING_GONFIG_FAILED, MIDI_ERROR_CHANNEL);
-    set_state(ERROR);
+    set_mode(ERROR_MODE);
     return false;
   };
   if (!config_load_mapping_toggles(config["toggles"])) {
     midiInfo(ERROR_LOADING_GONFIG_FAILED, MIDI_ERROR_CHANNEL);
-    set_state(ERROR);
+    set_mode(ERROR_MODE);
     return false;
   };
   if (!config_load_mapping_vSliders(config["vSliders"])) {
     midiInfo(ERROR_LOADING_GONFIG_FAILED, MIDI_ERROR_CHANNEL);
-    set_state(ERROR);
+    set_mode(ERROR_MODE);
     return false;
   };
   if (!config_load_mapping_hSliders(config["hSliders"])) {
     midiInfo(ERROR_LOADING_GONFIG_FAILED, MIDI_ERROR_CHANNEL);
-    set_state(ERROR);
+    set_mode(ERROR_MODE);
     return false;
   };
   if (!config_load_mapping_circles(config["circles"])) {
     midiInfo(ERROR_LOADING_GONFIG_FAILED, MIDI_ERROR_CHANNEL);
-    set_state(ERROR);
+    set_mode(ERROR_MODE);
     return false;
   };
   if (!config_load_mapping_touchpads(config["touchpad"])) {
     midiInfo(ERROR_LOADING_GONFIG_FAILED, MIDI_ERROR_CHANNEL);
-    set_state(ERROR);
+    set_mode(ERROR_MODE);
     return false;
   };
   if (!config_load_mapping_polygons(config["polygons"])) {
     midiInfo(ERROR_LOADING_GONFIG_FAILED, MIDI_ERROR_CHANNEL);
-    set_state(ERROR);
+    set_mode(ERROR_MODE);
     return false;
   };
   return true;
@@ -426,7 +425,7 @@ boolean load_config(uint8_t* data_ptr) {
   DeserializationError error = deserializeJson(config, data_ptr);
   if (error) {
     midiInfo(ERROR_WAITING_FOR_GONFIG, MIDI_ERROR_CHANNEL);
-    set_state(ERROR);
+    set_mode(ERROR_MODE);
     return false;
   };
   if (config_load_mapping(config["mapping"])) {
@@ -439,7 +438,7 @@ boolean load_config(uint8_t* data_ptr) {
 inline void load_flash_config() {
   if (!SerialFlash.begin(FLASH_CHIP_SELECT)) {
     midiInfo(ERROR_CONNECTING_FLASH, MIDI_ERROR_CHANNEL);
-    set_state(ERROR);
+    set_mode(ERROR_MODE);
     return;
   };
   SerialFlashFile configFile = SerialFlash.open("config.json");
@@ -453,12 +452,12 @@ inline void load_flash_config() {
     }
     else{
       midiInfo(ERROR_LOADING_GONFIG_FAILED, MIDI_ERROR_CHANNEL);
-      set_state(ERROR);
+    set_mode(ERROR_MODE);
     }
   }
   else {
     midiInfo(ERROR_NO_CONFIG_FILE, MIDI_ERROR_CHANNEL);
-    set_state(ERROR);
+    set_mode(ERROR_MODE);
   };
 };
 
