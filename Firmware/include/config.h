@@ -52,7 +52,7 @@
 #define BLINK_ITER                   10
 #define MIDI_TRANSMIT_INTERVAL       50
 #define LEVEL_TIMEOUT                3000
-#define SYNC_MODE_TIMEOUT            5000
+#define PENDING_MODE_TIMEOUT         5000
 
 // E256 MIDI I/O CHANNELS CONSTANTS [1:15]
 #define MIDI_INPUT_CHANNEL           1
@@ -170,7 +170,7 @@ struct e256_control {
 
 extern e256_control_t e256_ctr;
 
-extern uint8_t e256_mode;
+extern uint8_t e256_currentMode;
 extern uint8_t e256_level;
 
 void config_setup(void);

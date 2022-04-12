@@ -4,6 +4,10 @@
   This work is licensed under Creative Commons Attribution-ShareAlike 4.0 International license, see the LICENSE file for details.
 */
 
+#include <ArduinoJson.h>
+#include <SerialFlash.h>
+#include <Bounce2.h>
+
 #include "config.h"
 #include "scan.h"
 #include "interp.h"
@@ -11,10 +15,6 @@
 #include "usb_midi_transmit.h"
 #include "allocate.h"
 #include "mapping_lib.h"
-
-#include <ArduinoJson.h>
-#include <SerialFlash.h>
-#include <Bounce2.h>
 
 // The modes below can be selected using E256 built-in switches
 Bounce BUTTON_L = Bounce();
@@ -53,11 +53,9 @@ e256_control_t e256_ctr = {
   &e256_l[0]  // levels_ptr
 };
 
-uint8_t e256_mode = PENDING_MODE;
+uint8_t e256_currentMode = PENDING_MODE;
 uint8_t e256_lastMode = PENDING_MODE;
 uint8_t e256_level = THRESHOLD;
-
-uint32_t levelTimer = 0;
 
 uint8_t* config_ptr = NULL;
 uint16_t configSize = 0;
@@ -82,19 +80,19 @@ void setup_leds(void* ptr){
 };
 
 void set_mode(uint8_t mode) {
-  e256_ctr.modes[e256_mode].leds.update = false;
+  e256_ctr.modes[e256_currentMode].leds.update = false;
   e256_ctr.levels[e256_level].leds.update = false;
   setup_leds(&e256_ctr.modes[mode]);
   e256_ctr.modes[mode].leds.update = true;
-  e256_lastMode = e256_mode;
-  e256_mode = mode;
+  e256_lastMode = e256_currentMode;
+  e256_currentMode = mode;
   #if defined(DEBUG_MODES)
     Serial.printf("\nSET_MODE:%d", mode);
   #endif
 };
 
 void set_level(uint8_t level, uint8_t value) {
-  e256_ctr.modes[e256_mode].leds.update = false;
+  e256_ctr.modes[e256_currentMode].leds.update = false;
   e256_ctr.encoder->write(value << 2);
   setup_leds(&e256_ctr.levels[level]);
   e256_ctr.levels[level].update = true;
@@ -173,7 +171,7 @@ inline void update_buttons() {
   // FONCTION: PENDING_MODE (waiting for mode)
   // LEDs: blink slowly (500ms) alternately
   if (BUTTON_R.rose() && BUTTON_R.previousDuration() > LONG_HOLD) {
-    set_mode(PENDING_MODE);
+    //set_mode(PENDING_MODE);
   };
   // ACTION: BUTTON_R short press
   // FONCTION: SELECT_LEVEL
@@ -217,14 +215,14 @@ inline boolean read_encoder(uint8_t level) {
 
 // Update levels[level] of each mode using the rotary encoder
 inline void update_encoder() {
+  static uint32_t levelTimeStamp = 0;
   static boolean levelToggle = true;
-
   if (read_encoder(e256_level)) {
-    levelTimer = millis();
+    levelTimeStamp = millis();
     levelToggle = true;
     set_level(e256_level, e256_ctr.levels[e256_level].val);
   }
-  if (millis() - levelTimer > LEVEL_TIMEOUT && levelToggle){
+  if (millis() - levelTimeStamp > LEVEL_TIMEOUT && levelToggle){
     levelToggle = false;
     set_mode(e256_lastMode);
   };
@@ -261,7 +259,7 @@ inline void fade_leds(uint8_t level) {
 // Update LEDs according to the mode and rotary encoder values
 inline void update_leds() {
   fade_leds(e256_level);
-  blink_leds(e256_mode);
+  blink_leds(e256_currentMode);
 };
 
 //////////////////////////////////////// LOAD CONFIG

@@ -13,8 +13,6 @@
 #include "midi_bus.h"
 #include "allocate.h"
 
-boolean send_config = false;
-
 void e256_noteOn(byte channel, byte note, byte velocity){
   Serial.println(channel);
   midiNode_t* node_ptr = (midiNode_t*)llist_pop_front(&midi_node_stack);
@@ -81,7 +79,9 @@ void e256_programChange(byte channel, byte program){
           midiInfo(CALIBRATE_DONE, MIDI_VERBOSITY_CHANNEL);
           break;
         case GET_CONFIG:
-          send_config = true;
+          usbMIDI.sendSysEx(configSize, config_ptr, false);
+          usbMIDI.send_now();
+          while (usbMIDI.read());
           break;
       };
       break;
@@ -92,9 +92,9 @@ void e256_programChange(byte channel, byte program){
 };
 
 void usb_midi_pending_mode_timeout(){
-  if (e256_mode == PENDING_MODE && millis() > SYNC_MODE_TIMEOUT){
+  if (e256_currentMode == PENDING_MODE && millis() > PENDING_MODE_TIMEOUT){
     set_mode(STANDALONE_MODE);
-    matrix_calibrate();
+    //matrix_calibrate();
   };
 };
 
@@ -191,6 +191,7 @@ void e256_systemExclusive(const uint8_t* data_ptr, uint16_t length, boolean comp
   };
 };
 
+// TODO
 void e256_clock(){
   Serial.println("Clock");
 };
@@ -212,16 +213,13 @@ void usb_midi_read_input(void) {
 
 void usb_midi_transmit() {
   static uint32_t usbTransmitTimeStamp = 0;
-  uint8_t blobValues[6] = {0}; 
-
-  switch (e256_mode) {
+  uint8_t blobValues[6] = {0};
+  switch (e256_currentMode) {
+    case PENDING_MODE:
+      // NA
+    break;
     case SYNC_MODE:
-      if (send_config){
-        send_config = false;
-        usbMIDI.sendSysEx(configSize, config_ptr, false);
-        usbMIDI.send_now();
-      };
-      while (usbMIDI.read()); // Read and discard any incoming MIDI messages
+      // NA
     break;
     case MATRIX_MODE_RAW:
       if (millis() - usbTransmitTimeStamp > MIDI_TRANSMIT_INTERVAL) {
@@ -249,14 +247,6 @@ void usb_midi_transmit() {
           } else {
             if (millis() - blob_ptr->transmitTimeStamp > MIDI_TRANSMIT_INTERVAL) {
               blob_ptr->transmitTimeStamp = millis();
-              /*
-              usbMIDI.sendControlChange(BX, (uint8_t)round(map(blob_ptr->centroid.X, 0, WIDTH, 0, 127)), blob_ptr->UID + 1);
-              usbMIDI.sendControlChange(BY, (uint8_t)round(map(blob_ptr->centroid.Y, 0, HEIGHT, 0, 127)), blob_ptr->UID + 1);
-              usbMIDI.sendControlChange(BZ, constrain(blob_ptr->centroid.Z, 0, 127), blob_ptr->UID + 1);
-              usbMIDI.sendControlChange(BW, blob_ptr->box.W, blob_ptr->UID + 1);
-              usbMIDI.sendControlChange(BH, blob_ptr->box.H, blob_ptr->UID + 1);
-              usbMIDI.send_now();
-              */
               blobValues[0] = blob_ptr->UID + 1;
               blobValues[1] = (uint8_t)round(map(blob_ptr->centroid.X, 0, WIDTH, 0, 127));
               blobValues[2] = (uint8_t)round(map(blob_ptr->centroid.Y, 0, HEIGHT, 0, 127));
@@ -264,7 +254,6 @@ void usb_midi_transmit() {
               blobValues[4] = blob_ptr->box.W;
               blobValues[5] = blob_ptr->box.H;
               usbMIDI.sendSysEx(6, blobValues);
-              //usbMIDI.send_now(); 
             };
           };
         } else {
@@ -273,8 +262,8 @@ void usb_midi_transmit() {
             usbMIDI.send_now();
           };
         };
-        while (usbMIDI.read()); // Read and discard any incoming MIDI messages
       };
+      while (usbMIDI.read()); // Read and discard any incoming MIDI messages
       break;
     case PLAY_MODE:
       for (midiNode_t* node_ptr = (midiNode_t*)ITERATOR_START_FROM_HEAD(&midiOut); node_ptr != NULL; node_ptr = (midiNode_t*)ITERATOR_NEXT(node_ptr)) {
