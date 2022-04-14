@@ -52,7 +52,7 @@
 #define BLINK_ITER                   10
 #define MIDI_TRANSMIT_INTERVAL       50
 #define LEVEL_TIMEOUT                3000
-#define PENDING_MODE_TIMEOUT         5000
+#define PENDING_MODE_TIMEOUT         2000
 
 // E256 MIDI I/O CHANNELS CONSTANTS [1:15]
 #define MIDI_INPUT_CHANNEL           1
@@ -71,7 +71,7 @@
 #define MATRIX_MODE_INTERP           4 // Send matrix analog sensor values (16x16) over USB using MIDI format
 #define EDIT_MODE                    5 // Send all blobs values over USB_MIDI
 #define PLAY_MODE                    6 // Send mappings values over USB_MIDI
-#define ERROR_MODE                   7 //
+#define ERROR_MODE                   7 // 
 
 // E256 STATES CONSTANTS (MIDI_STATES_CHANNEL)
 #define CALIBRATE                    0 //

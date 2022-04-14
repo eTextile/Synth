@@ -9,6 +9,8 @@
 
 #include <Arduino.h>
 
+extern uint32_t bootTime;
+
 extern uint16_t sysEx_dataSize;
 extern uint8_t* sysEx_data_ptr;
 

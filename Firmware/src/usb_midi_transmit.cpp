@@ -13,6 +13,8 @@
 #include "midi_bus.h"
 #include "allocate.h"
 
+uint32_t bootTime = 0;
+
 void e256_noteOn(byte channel, byte note, byte velocity){
   Serial.println(channel);
   midiNode_t* node_ptr = (midiNode_t*)llist_pop_front(&midi_node_stack);
@@ -92,9 +94,9 @@ void e256_programChange(byte channel, byte program){
 };
 
 void usb_midi_pending_mode_timeout(){
-  if (e256_currentMode == PENDING_MODE && millis() > PENDING_MODE_TIMEOUT){
+  if (e256_currentMode == PENDING_MODE && millis() - bootTime > PENDING_MODE_TIMEOUT){
     set_mode(STANDALONE_MODE);
-    //matrix_calibrate();
+    matrix_calibrate();
   };
 };
 
@@ -208,7 +210,7 @@ void usb_midi_transmit_setup() {
 
 void usb_midi_read_input(void) {
   usbMIDI.read();         // Is there a MIDI incoming messages on channel One
-  while (usbMIDI.read()); // Read and discard any incoming MIDI messages
+  //while (usbMIDI.read()); // Read and discard any incoming MIDI messages
 };
 
 void usb_midi_transmit() {

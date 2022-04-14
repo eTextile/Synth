@@ -39,7 +39,6 @@ void setup() {
   // mapping_lib_setup();
   usb_midi_transmit_setup();
   hardware_midi_transmit_setup();
-  set_mode(e256_currentMode);
   sound_card_setup();
 #if defined(RUNING_MEDIAN)
   running_median_setup();
@@ -56,6 +55,8 @@ void setup() {
 #if defined(PLAYER_GRANULAR)
   player_granular_setup();
 #endif
+set_mode(e256_currentMode);
+bootTime = millis();
 };
 
 void loop() {

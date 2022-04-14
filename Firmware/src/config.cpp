@@ -216,7 +216,7 @@ inline boolean read_encoder(uint8_t level) {
 // Update levels[level] of each mode using the rotary encoder
 inline void update_encoder() {
   static uint32_t levelTimeStamp = 0;
-  static boolean levelToggle = true;
+  static boolean levelToggle = false;
   if (read_encoder(e256_level)) {
     levelTimeStamp = millis();
     levelToggle = true;
