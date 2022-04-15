@@ -74,8 +74,8 @@
 #define ERROR_MODE                   7 // 
 
 // E256 STATES CONSTANTS (MIDI_STATES_CHANNEL)
-#define CALIBRATE                    0 //
-#define GET_CONFIG                   1                 
+#define CALIBRATE                    0
+#define CONFIG_FILE_REQUEST          1                 
 
 // E256 LEVELS CONSTANTS (MIDI_LEVELS_CHANNEL)
 #define THRESHOLD                    0 // E256-LEDs: | 1 | 1 |

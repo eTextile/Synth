@@ -80,7 +80,7 @@ void e256_programChange(byte channel, byte program){
           set_state(CALIBRATE);
           midiInfo(CALIBRATE_DONE, MIDI_VERBOSITY_CHANNEL);
           break;
-        case GET_CONFIG:
+        case CONFIG_FILE_REQUEST:
           usbMIDI.sendSysEx(configSize, config_ptr, false);
           usbMIDI.send_now();
           while (usbMIDI.read());
@@ -145,7 +145,7 @@ void e256_systemExclusive(const uint8_t* data_ptr, uint16_t length, boolean comp
     sysEx_lastChunkSize = (sysEx_dataSize + 3) % USB_MIDI_SYSEX_MAX;
     if (sysEx_lastChunkSize != 0) sysEx_chunks++;
     sysEx_chunkCount = 0;
-    midiInfo(USBMIDI_CONFIG_ALLOC_DONE, MIDI_ERROR_CHANNEL);
+    midiInfo(USBMIDI_CONFIG_ALLOC_DONE, MIDI_VERBOSITY_CHANNEL);
   }
   else {
     if (sysEx_chunks == 1) { // Only one chunk to load
@@ -173,7 +173,7 @@ void e256_systemExclusive(const uint8_t* data_ptr, uint16_t length, boolean comp
         #endif
         if (load_config(sysEx_data_ptr)){
           sysEx_alloc = true;
-          midiInfo(USBMIDI_CONFIG_LOAD_DONE, MIDI_ERROR_CHANNEL);
+          midiInfo(USBMIDI_CONFIG_LOAD_DONE, MIDI_VERBOSITY_CHANNEL);
         }
         else {
           midiInfo(ERROR_LOADING_GONFIG_FAILED, MIDI_ERROR_CHANNEL);
@@ -218,10 +218,10 @@ void usb_midi_transmit() {
   uint8_t blobValues[6] = {0};
   switch (e256_currentMode) {
     case PENDING_MODE:
-      // NA
+      // Nothing to transmit
     break;
     case SYNC_MODE:
-      // NA
+      // Send config file
     break;
     case MATRIX_MODE_RAW:
       if (millis() - usbTransmitTimeStamp > MIDI_TRANSMIT_INTERVAL) {
