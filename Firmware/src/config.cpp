@@ -32,10 +32,10 @@ e256_mode_t e256_m[8] = {
 };
 
 e256_state_t e256_s[2] = {
-  {{LOW, LOW, false}, 50, 50, 8},          // [0] CALIBRATE
-  {{HIGH, LOW, false}, 15, 50, 200}        // [1] GET_CONFIG
+  {{LOW, LOW, false}, 50, 50, 8},          // [0] CALIBRATE_REQUEST
+  {{HIGH, LOW, false}, 15, 50, 200}        // [1] CONFIG_FILE_REQUEST
 };
-  
+
 // The levels below can be adjusted using E256 built-in encoder
 Encoder e256_e(ENCODER_PIN_A, ENCODER_PIN_B);
 
@@ -119,7 +119,7 @@ void set_state(uint8_t state) {
 
 inline void flash_config(uint8_t* data_ptr, unsigned int size) {
   if (!SerialFlash.begin(FLASH_CHIP_SELECT)) {
-    midiInfo(ERROR_CONNECTING_FLASH, MIDI_ERROR_CHANNEL);
+    midiInfo(CONNECTING_FLASH, MIDI_ERROR_CHANNEL);
     set_mode(ERROR_MODE);
     return;
   };
@@ -132,13 +132,13 @@ inline void flash_config(uint8_t* data_ptr, unsigned int size) {
   if (SerialFlash.create("config.json", size)) {
     flashFile = SerialFlash.open("config.json");
     if (!flashFile) {
-      midiInfo(ERROR_WHILE_OPEN_FLASH_FILE, MIDI_ERROR_CHANNEL);
+      midiInfo(WHILE_OPEN_FLASH_FILE, MIDI_ERROR_CHANNEL);
       set_mode(ERROR_MODE);
       return;
     };
   }
   else {
-    midiInfo(ERROR_FLASH_FULL, MIDI_ERROR_CHANNEL);
+    midiInfo(FLASH_FULL, MIDI_ERROR_CHANNEL);
     set_mode(ERROR_MODE);
     return;
   };
@@ -147,7 +147,7 @@ inline void flash_config(uint8_t* data_ptr, unsigned int size) {
     flashFile.close();
     midiInfo(FLASH_CONFIG_WRITE_DONE, MIDI_VERBOSITY_CHANNEL);
   } else {
-    midiInfo(ERROR_FILE_TO_BIG, MIDI_ERROR_CHANNEL);
+    midiInfo(FILE_TO_BIG, MIDI_ERROR_CHANNEL);
     set_mode(ERROR_MODE);
   };
 };
@@ -160,7 +160,7 @@ inline void update_buttons() {
   // FONCTION: CALIBRATE THE SENSOR MATRIX
   if (BUTTON_L.rose() && BUTTON_L.previousDuration() < LONG_HOLD) {
     //matrix_calibrate(); // FIXME for erratic call when booting!
-    //set_state(CALIBRATE);
+    //set_state(CALIBRATE_REQUEST);
   };
   // ACTION: BUTTON_L long press
   // FONCTION: save the mapping config file to the permanent memory.
@@ -258,11 +258,10 @@ inline void fade_leds(uint8_t level) {
 
 // Update LEDs according to the mode and rotary encoder values
 inline void update_leds() {
-  fade_leds(e256_level);
   blink_leds(e256_currentMode);
+  fade_leds(e256_level);
 };
 
-//////////////////////////////////////// LOAD CONFIG
 inline bool config_load_mapping_triggers(const JsonArray& config) {
   if (config.isNull()) {
     return false;
@@ -374,44 +373,52 @@ inline bool config_load_mapping_polygons(const JsonArray& config) {
   return true;
 };
 
-bool config_load_mapping(const JsonObject &config) {
+boolean config_load_mapping(const JsonObject &config) {
   if (config.isNull()) {
-    midiInfo(ERROR_LOADING_GONFIG_FAILED, MIDI_ERROR_CHANNEL);
+    midiInfo(LOADING_GONFIG_FAILED, MIDI_ERROR_CHANNEL);
+    Serial.println("A");
     set_mode(ERROR_MODE);
     return false;
   };
   if (!config_load_mapping_triggers(config["triggers"])) {
-    midiInfo(ERROR_LOADING_GONFIG_FAILED, MIDI_ERROR_CHANNEL);
+    midiInfo(LOADING_GONFIG_FAILED, MIDI_ERROR_CHANNEL);
+    Serial.println("B");
     set_mode(ERROR_MODE);
     return false;
   };
   if (!config_load_mapping_toggles(config["toggles"])) {
-    midiInfo(ERROR_LOADING_GONFIG_FAILED, MIDI_ERROR_CHANNEL);
+    midiInfo(LOADING_GONFIG_FAILED, MIDI_ERROR_CHANNEL);
+    Serial.println("C");
     set_mode(ERROR_MODE);
     return false;
   };
   if (!config_load_mapping_vSliders(config["vSliders"])) {
-    midiInfo(ERROR_LOADING_GONFIG_FAILED, MIDI_ERROR_CHANNEL);
+    midiInfo(LOADING_GONFIG_FAILED, MIDI_ERROR_CHANNEL);
+    Serial.println("D");
     set_mode(ERROR_MODE);
     return false;
   };
   if (!config_load_mapping_hSliders(config["hSliders"])) {
-    midiInfo(ERROR_LOADING_GONFIG_FAILED, MIDI_ERROR_CHANNEL);
+    midiInfo(LOADING_GONFIG_FAILED, MIDI_ERROR_CHANNEL);
+    Serial.println("E");
     set_mode(ERROR_MODE);
     return false;
   };
   if (!config_load_mapping_circles(config["circles"])) {
-    midiInfo(ERROR_LOADING_GONFIG_FAILED, MIDI_ERROR_CHANNEL);
+    midiInfo(LOADING_GONFIG_FAILED, MIDI_ERROR_CHANNEL);
+    Serial.println("F");
     set_mode(ERROR_MODE);
     return false;
   };
   if (!config_load_mapping_touchpads(config["touchpad"])) {
-    midiInfo(ERROR_LOADING_GONFIG_FAILED, MIDI_ERROR_CHANNEL);
+    midiInfo(LOADING_GONFIG_FAILED, MIDI_ERROR_CHANNEL);
+    Serial.println("G");
     set_mode(ERROR_MODE);
     return false;
   };
   if (!config_load_mapping_polygons(config["polygons"])) {
-    midiInfo(ERROR_LOADING_GONFIG_FAILED, MIDI_ERROR_CHANNEL);
+    midiInfo(LOADING_GONFIG_FAILED, MIDI_ERROR_CHANNEL);
+    Serial.println("H");
     set_mode(ERROR_MODE);
     return false;
   };
@@ -422,40 +429,41 @@ boolean load_config(uint8_t* data_ptr) {
   StaticJsonDocument<2048> config;
   DeserializationError error = deserializeJson(config, data_ptr);
   if (error) {
-    midiInfo(ERROR_WAITING_FOR_GONFIG, MIDI_ERROR_CHANNEL);
-    set_mode(ERROR_MODE);
+    midiInfo(LOADING_GONFIG_FAILED, MIDI_ERROR_CHANNEL);
     return false;
   };
   if (config_load_mapping(config["mapping"])) {
     return true;
-  } else{
+  } else {
     return false;
-  }
+  };
 };
 
-inline void load_flash_config() {
+boolean load_flash_config() {
   if (!SerialFlash.begin(FLASH_CHIP_SELECT)) {
-    midiInfo(ERROR_CONNECTING_FLASH, MIDI_ERROR_CHANNEL);
-    set_mode(ERROR_MODE);
-    return;
+    midiInfo(CONNECTING_FLASH, MIDI_ERROR_CHANNEL);
+    return false;
   };
   SerialFlashFile configFile = SerialFlash.open("config.json");
   if (configFile) {
     configSize = configFile.size();
+    Serial.printf("GONFIG_SIZE: %d", configSize); ///////////////////// 0!
+
     config_ptr = allocate(config_ptr, configSize);
     configFile.read(config_ptr, configSize);
     if (load_config(config_ptr)){
-      midiInfo(FLASH_CONFIG_LOAD_DONE, MIDI_VERBOSITY_CHANNEL);
-      set_state(DONE_ACTION);
+      return true;
     }
-    else{
-      midiInfo(ERROR_LOADING_GONFIG_FAILED, MIDI_ERROR_CHANNEL);
-    set_mode(ERROR_MODE);
-    }
+    else {
+      midiInfo(WAITING_FOR_GONFIG, MIDI_ERROR_CHANNEL);
+      //set_mode(PENDING_MODE);
+      //set_mode(SYNC_MODE);
+      return false;
+    };
   }
   else {
-    midiInfo(ERROR_NO_CONFIG_FILE, MIDI_ERROR_CHANNEL);
-    set_mode(ERROR_MODE);
+    midiInfo(NO_CONFIG_FILE, MIDI_ERROR_CHANNEL);
+    return false;
   };
 };
 
@@ -468,8 +476,4 @@ void update_controls(){
   update_buttons();
   update_encoder();
   update_leds();
-};
-
-void config_setup(){
-  load_flash_config();
 };

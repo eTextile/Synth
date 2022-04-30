@@ -35,7 +35,15 @@ void setup() {
   interp_setup();
   blob_setup();
   midi_bus_setup();
-  // config_setup();
+  delay(5000);
+  
+  if(load_flash_config()){
+    midiInfo(FLASH_CONFIG_LOAD_DONE, MIDI_VERBOSITY_CHANNEL);
+  } else {
+    midiInfo(LOADING_GONFIG_FAILED, MIDI_ERROR_CHANNEL);
+    //set_mode(ERROR_MODE);
+  }
+  
   // mapping_lib_setup();
   usb_midi_transmit_setup();
   hardware_midi_transmit_setup();
@@ -68,12 +76,10 @@ void loop() {
   switch (e256_currentMode) {
     case PENDING_MODE:
       usb_midi_read_input();
-      //usb_midi_transmit(); // NA
       usb_midi_pending_mode_timeout();
       break;
     case SYNC_MODE:
       usb_midi_read_input();
-      //usb_midi_transmit(); // NA
       break;
     case STANDALONE_MODE:
       hardware_midi_read_input();

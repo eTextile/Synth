@@ -74,7 +74,7 @@
 #define ERROR_MODE                   7 // 
 
 // E256 STATES CONSTANTS (MIDI_STATES_CHANNEL)
-#define CALIBRATE                    0
+#define CALIBRATE_REQUEST            0
 #define CONFIG_FILE_REQUEST          1                 
 
 // E256 LEVELS CONSTANTS (MIDI_LEVELS_CHANNEL)
@@ -95,8 +95,8 @@
 #define MAX_POLYGONS                 8
 
 // E256 MIDI CONSTANTS
-#define SYSEX_CONF                   0x7C
-#define SYSEX_SOUND                  0x6C
+#define SYSEX_CONF                   0x7C // DEC: 124
+#define SYSEX_SOUND                  0x6C // DEC: 108
 
 // VERBOSITY CONSTANTS
 #define PENDING_MODE_DONE            0
@@ -116,14 +116,14 @@
 #define DONE_ACTION                  14 
 
 // ERROR CODES CONSTANTS
-#define ERROR_WAITING_FOR_GONFIG     33
-#define ERROR_LOADING_GONFIG_FAILED  34
-#define ERROR_CONNECTING_FLASH       35
-#define ERROR_WHILE_OPEN_FLASH_FILE  36
-#define ERROR_FLASH_FULL             37
-#define ERROR_FILE_TO_BIG            38
-#define ERROR_NO_CONFIG_FILE         39
-#define ERROR_UNKNOWN_SYSEX          40
+#define WAITING_FOR_GONFIG           0
+#define LOADING_GONFIG_FAILED        1
+#define CONNECTING_FLASH             2
+#define WHILE_OPEN_FLASH_FILE        3
+#define FLASH_FULL                   4
+#define FILE_TO_BIG                  5
+#define NO_CONFIG_FILE               6
+#define UNKNOWN_SYSEX                7
 
 typedef struct leds leds_t;
 struct leds {
@@ -157,9 +157,6 @@ struct e256_level {
   boolean update;
 };
 
-extern uint16_t configSize;
-extern uint8_t* config_ptr;
-
 typedef struct e256_control e256_control_t;
 struct e256_control {
   Encoder* encoder;
@@ -169,18 +166,18 @@ struct e256_control {
 };
 
 extern e256_control_t e256_ctr;
-
 extern uint8_t e256_currentMode;
 extern uint8_t e256_level;
-
-void config_setup(void);
+extern uint8_t* config_ptr;
+extern uint16_t configSize;
 
 void set_mode(uint8_t mode);
 void set_state(uint8_t state);
 void set_level(uint8_t level, uint8_t value);
 
 void hardware_setup(void);
-boolean load_config(uint8_t* data_ptr);
 void update_controls(void);
+boolean load_flash_config(void);
+boolean load_config(uint8_t* data_ptr);
 
 #endif /*__CONFIG_H__*/

@@ -333,7 +333,7 @@ void MAPPING_POLYGONS_SETUP(void) {
 
 void mapping_polygons_update(void) {
   for (blob_t* blob_ptr = (blob_t*)ITERATOR_START_FROM_HEAD(&llist_blobs); blob_ptr != NULL; blob_ptr = (blob_t*)ITERATOR_NEXT(blob_ptr)) {
-    bool odd_nodes = false;
+    boolean odd_nodes = false;
     uint8_t p = 0;
     int i, j = (mapp_polygonsParams[p].point_cnt - 1);
     for (p = 0; p < mapp_polygons; p++) {

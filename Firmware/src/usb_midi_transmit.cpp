@@ -49,6 +49,7 @@ void e256_programChange(byte channel, byte program){
     case MIDI_MODES_CHANNEL:
       switch (program){
         case PENDING_MODE:
+          //set_mode(PENDING_MODE);
           midiInfo(PENDING_MODE_DONE, MIDI_VERBOSITY_CHANNEL);
           break;
         case SYNC_MODE:
@@ -75,9 +76,9 @@ void e256_programChange(byte channel, byte program){
       break;
     case MIDI_STATES_CHANNEL:
       switch (program){
-        case CALIBRATE:
+        case CALIBRATE_REQUEST:
           matrix_calibrate();
-          set_state(CALIBRATE);
+          set_state(CALIBRATE_REQUEST);
           midiInfo(CALIBRATE_DONE, MIDI_VERBOSITY_CHANNEL);
           break;
         case CONFIG_FILE_REQUEST:
@@ -104,7 +105,7 @@ void midiInfo(uint8_t msg, uint8_t channel){
   usbMIDI.sendProgramChange(msg, channel); // ProgramChange(program, channel);
   usbMIDI.send_now();
   #if defined(DEBUG_CONFIG)
-    Serial.printf("\nMIDI_MSG:%d\tCHANNEL:%d", msg, channel);
+    Serial.printf("\nSEND_MIDI_MSG:%d\tCHANNEL:%d", msg, channel);
   #endif
 };
 
@@ -176,17 +177,17 @@ void e256_systemExclusive(const uint8_t* data_ptr, uint16_t length, boolean comp
           midiInfo(USBMIDI_CONFIG_LOAD_DONE, MIDI_VERBOSITY_CHANNEL);
         }
         else {
-          midiInfo(ERROR_LOADING_GONFIG_FAILED, MIDI_ERROR_CHANNEL);
+          midiInfo(LOADING_GONFIG_FAILED, MIDI_ERROR_CHANNEL);
+          Serial.println("J");
         };
       }
       else if (sysEx_identifier == SYSEX_SOUND){
         // TODO
-        //midiInfo(USBMIDI_SOUND_LOAD_DONE);
-        //set_state(DONE_ACTION);
+        midiInfo(USBMIDI_SOUND_LOAD_DONE, MIDI_VERBOSITY_CHANNEL);
         sysEx_alloc = true;
       }
       else {
-        midiInfo(ERROR_UNKNOWN_SYSEX, MIDI_ERROR_CHANNEL);
+        midiInfo(UNKNOWN_SYSEX, MIDI_ERROR_CHANNEL);
         sysEx_alloc = true;
       };
     };
@@ -209,8 +210,7 @@ void usb_midi_transmit_setup() {
 };
 
 void usb_midi_read_input(void) {
-  usbMIDI.read();         // Is there a MIDI incoming messages on channel One
-  //while (usbMIDI.read()); // Read and discard any incoming MIDI messages
+  usbMIDI.read(); // Is there a MIDI incoming messages on any channel
 };
 
 void usb_midi_transmit() {
@@ -218,10 +218,10 @@ void usb_midi_transmit() {
   uint8_t blobValues[6] = {0};
   switch (e256_currentMode) {
     case PENDING_MODE:
-      // Nothing to transmit
+      // Nothing to do
     break;
     case SYNC_MODE:
-      // Send config file
+      // Nothing to do
     break;
     case MATRIX_MODE_RAW:
       if (millis() - usbTransmitTimeStamp > MIDI_TRANSMIT_INTERVAL) {
