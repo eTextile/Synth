@@ -35,19 +35,20 @@ void setup() {
   interp_setup();
   blob_setup();
   midi_bus_setup();
-  delay(5000);
-  
+  // mapping_lib_setup();
+  usb_midi_transmit_setup();
+  hardware_midi_transmit_setup();
+  sound_card_setup();
+
+  delay(500);
+
   if(load_flash_config()){
     midiInfo(FLASH_CONFIG_LOAD_DONE, MIDI_VERBOSITY_CHANNEL);
   } else {
     midiInfo(LOADING_GONFIG_FAILED, MIDI_ERROR_CHANNEL);
     //set_mode(ERROR_MODE);
   }
-  
-  // mapping_lib_setup();
-  usb_midi_transmit_setup();
-  hardware_midi_transmit_setup();
-  sound_card_setup();
+
 #if defined(RUNING_MEDIAN)
   running_median_setup();
 #endif
@@ -63,7 +64,7 @@ void setup() {
 #if defined(PLAYER_GRANULAR)
   player_granular_setup();
 #endif
-set_mode(e256_currentMode);
+set_mode(PENDING_MODE);
 bootTime = millis();
 };
 

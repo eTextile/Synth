@@ -117,7 +117,7 @@ void set_state(uint8_t state) {
   #endif
 };
 
-inline void flash_config(uint8_t* data_ptr, unsigned int size) {
+inline void flash_config(unsigned int size, uint8_t* data_ptr) {
   if (!SerialFlash.begin(FLASH_CHIP_SELECT)) {
     midiInfo(CONNECTING_FLASH, MIDI_ERROR_CHANNEL);
     set_mode(ERROR_MODE);
@@ -165,7 +165,7 @@ inline void update_buttons() {
   // ACTION: BUTTON_L long press
   // FONCTION: save the mapping config file to the permanent memory.
   if (BUTTON_L.rose() && BUTTON_L.previousDuration() > LONG_HOLD) {
-    flash_config(sysEx_data_ptr, sysEx_dataSize);
+    flash_config(sysEx_dataSize, sysEx_data_ptr);
   };
   // ACTION: BUTTON_R long press
   // FONCTION: PENDING_MODE (waiting for mode)
