@@ -182,7 +182,7 @@ void e256_systemExclusive(const uint8_t* data_ptr, uint16_t length, boolean comp
           midiInfo(USBMIDI_CONFIG_LOAD_DONE, MIDI_VERBOSITY_CHANNEL);
         }
         else {
-          midiInfo(USBMIDI_GONFIG_LOAD_FAILED, MIDI_ERROR_CHANNEL);
+          midiInfo(USBMIDI_CONFIG_LOAD_FAILED, MIDI_ERROR_CHANNEL);
         };
       }
       else if (sysEx_identifier == SYSEX_SOUND){ // TODO

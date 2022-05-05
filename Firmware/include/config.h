@@ -116,15 +116,15 @@
 #define DONE_ACTION                  14 
 
 // ERROR CODES CONSTANTS
-#define WAITING_FOR_GONFIG             0
+#define WAITING_FOR_CONFIG             0
 #define CONNECTING_FLASH               1
 #define FLASH_FULL                     2
 #define FILE_TO_BIG                    3
 #define NO_CONFIG_FILE                 4
 #define WHILE_OPEN_FLASH_FILE          5
-#define USBMIDI_GONFIG_LOAD_FAILED     6
+#define USBMIDI_CONFIG_LOAD_FAILED     6
 #define FLASH_CONFIG_LOAD_FAILED       7
-#define LOAD_GONFIG_FAILED             8
+#define LOAD_CONFIG_FAILED             8
 #define UNKNOWN_SYSEX                  9
 
 typedef struct leds leds_t;

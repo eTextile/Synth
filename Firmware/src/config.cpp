@@ -375,42 +375,42 @@ inline bool config_load_mapping_polygons(const JsonArray& config) {
 
 boolean config_load_mapping(const JsonObject &config) {
   if (config.isNull()) {
-    midiInfo(LOAD_GONFIG_FAILED, MIDI_ERROR_CHANNEL);
+    midiInfo(LOAD_CONFIG_FAILED, MIDI_ERROR_CHANNEL);
     set_mode(ERROR_MODE);
     return false;
   };
   if (!config_load_mapping_triggers(config["triggers"])) {
-    midiInfo(LOAD_GONFIG_FAILED, MIDI_ERROR_CHANNEL);
+    midiInfo(LOAD_CONFIG_FAILED, MIDI_ERROR_CHANNEL);
     set_mode(ERROR_MODE);
     return false;
   };
   if (!config_load_mapping_toggles(config["toggles"])) {
-    midiInfo(LOAD_GONFIG_FAILED, MIDI_ERROR_CHANNEL);
+    midiInfo(LOAD_CONFIG_FAILED, MIDI_ERROR_CHANNEL);
     set_mode(ERROR_MODE);
     return false;
   };
   if (!config_load_mapping_vSliders(config["vSliders"])) {
-    midiInfo(LOAD_GONFIG_FAILED, MIDI_ERROR_CHANNEL);
+    midiInfo(LOAD_CONFIG_FAILED, MIDI_ERROR_CHANNEL);
     set_mode(ERROR_MODE);
     return false;
   };
   if (!config_load_mapping_hSliders(config["hSliders"])) {
-    midiInfo(LOAD_GONFIG_FAILED, MIDI_ERROR_CHANNEL);
+    midiInfo(LOAD_CONFIG_FAILED, MIDI_ERROR_CHANNEL);
     set_mode(ERROR_MODE);
     return false;
   };
   if (!config_load_mapping_circles(config["circles"])) {
-    midiInfo(LOAD_GONFIG_FAILED, MIDI_ERROR_CHANNEL);
+    midiInfo(LOAD_CONFIG_FAILED, MIDI_ERROR_CHANNEL);
     set_mode(ERROR_MODE);
     return false;
   };
   if (!config_load_mapping_touchpads(config["touchpad"])) {
-    midiInfo(LOAD_GONFIG_FAILED, MIDI_ERROR_CHANNEL);
+    midiInfo(LOAD_CONFIG_FAILED, MIDI_ERROR_CHANNEL);
     set_mode(ERROR_MODE);
     return false;
   };
   if (!config_load_mapping_polygons(config["polygons"])) {
-    midiInfo(LOAD_GONFIG_FAILED, MIDI_ERROR_CHANNEL);
+    midiInfo(LOAD_CONFIG_FAILED, MIDI_ERROR_CHANNEL);
     set_mode(ERROR_MODE);
     return false;
   };
@@ -421,7 +421,7 @@ boolean load_config(uint8_t* data_ptr) {
   StaticJsonDocument<2048> config;
   DeserializationError error = deserializeJson(config, data_ptr);
   if (error) {
-    midiInfo(LOAD_GONFIG_FAILED, MIDI_ERROR_CHANNEL);
+    midiInfo(LOAD_CONFIG_FAILED, MIDI_ERROR_CHANNEL);
     return false;
   };
   if (config_load_mapping(config["mapping"])) {
@@ -439,7 +439,7 @@ boolean load_flash_config() {
   SerialFlashFile configFile = SerialFlash.open("config.json");
   if (configFile) {
     flash_configSize = configFile.size();
-    Serial.printf("GONFIG_SIZE: %d", flash_configSize); ///////////////////// 0!
+    Serial.printf("CONFIG_SIZE: %d", flash_configSize); ///////////////////// 0!
 
     flash_config_ptr = allocate(flash_config_ptr, flash_configSize);
     configFile.read(flash_config_ptr, flash_configSize);
@@ -448,7 +448,7 @@ boolean load_flash_config() {
       return true;
     }
     else {
-      midiInfo(WAITING_FOR_GONFIG, MIDI_ERROR_CHANNEL);
+      midiInfo(WAITING_FOR_CONFIG, MIDI_ERROR_CHANNEL);
       //set_mode(PENDING_MODE);
       //set_mode(SYNC_MODE);
       return false;
