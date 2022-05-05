@@ -45,7 +45,7 @@ void setup() {
   if(load_flash_config()){
     midiInfo(FLASH_CONFIG_LOAD_DONE, MIDI_VERBOSITY_CHANNEL);
   } else {
-    midiInfo(LOADING_GONFIG_FAILED, MIDI_ERROR_CHANNEL);
+    midiInfo(FLASH_CONFIG_LOAD_FAILED, MIDI_ERROR_CHANNEL);
     //set_mode(ERROR_MODE);
   }
 

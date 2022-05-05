@@ -116,14 +116,16 @@
 #define DONE_ACTION                  14 
 
 // ERROR CODES CONSTANTS
-#define WAITING_FOR_GONFIG           0
-#define LOADING_GONFIG_FAILED        1
-#define CONNECTING_FLASH             2
-#define WHILE_OPEN_FLASH_FILE        3
-#define FLASH_FULL                   4
-#define FILE_TO_BIG                  5
-#define NO_CONFIG_FILE               6
-#define UNKNOWN_SYSEX                7
+#define WAITING_FOR_GONFIG             0
+#define CONNECTING_FLASH               1
+#define FLASH_FULL                     2
+#define FILE_TO_BIG                    3
+#define NO_CONFIG_FILE                 4
+#define WHILE_OPEN_FLASH_FILE          5
+#define USBMIDI_GONFIG_LOAD_FAILED     6
+#define FLASH_CONFIG_LOAD_FAILED       7
+#define LOAD_GONFIG_FAILED             8
+#define UNKNOWN_SYSEX                  9
 
 typedef struct leds leds_t;
 struct leds {
@@ -168,8 +170,8 @@ struct e256_control {
 extern e256_control_t e256_ctr;
 extern uint8_t e256_currentMode;
 extern uint8_t e256_level;
-extern uint8_t* config_ptr;
-extern uint16_t configSize;
+extern uint8_t* flash_config_ptr;
+extern uint16_t flash_configSize;
 
 void set_mode(uint8_t mode);
 void set_state(uint8_t state);

@@ -82,8 +82,10 @@ void e256_programChange(byte channel, byte program){
           midiInfo(CALIBRATE_DONE, MIDI_VERBOSITY_CHANNEL);
           break;
         case CONFIG_FILE_REQUEST:
-          printBytes(configSize, config_ptr);
-          usbMIDI.sendSysEx(configSize, config_ptr, false);
+          #if defined(DEBUG_CONFIG)
+            printBytes(flash_configSize, flash_config_ptr);
+          #endif
+          usbMIDI.sendSysEx(flash_configSize, flash_config_ptr, false);
           usbMIDI.send_now();
           while (usbMIDI.read());
           break;
@@ -120,11 +122,12 @@ void printBytes(uint16_t size, uint8_t* data_ptr) {
   };
 };
 
-// Load config via MIDI system exclusive message
-// [ SYSEX_BEGIN, SYSEX_ID, SYSEX_IDENTIFIER, SYSEX_SIZE_MSB, SYSEX_SIZE_LSB, SYSEX_END ]
-// ALLOC_DONE
-// [ SYSEX_BEGIN, SYSEX_ID, SYSEX_DATA, SYSEX_END ]
-// LOAD_DONE
+// Send data via MIDI system exclusive message
+// As MIDI buffer is limited to (USB_MIDI_SYSEX_MAX) we must register the data in chunks!
+// Recive: [ SYSEX_BEGIN, SYSEX_DEVICE_ID, SYSEX_IDENTIFIER, SYSEX_SIZE_MSB, SYSEX_SIZE_LSB, SYSEX_END ] 
+// Send: USBMIDI_CONFIG_ALLOC_DONE
+// Recive: [ SYSEX_BEGIN, SYSEX_DEVICE_ID, SYSEX_DATA, SYSEX_END ]
+// Send: USBMIDI_CONFIG_LOAD_DONE
 
 uint16_t sysEx_dataSize = 0;
 uint8_t* sysEx_data_ptr = NULL;
@@ -147,13 +150,14 @@ void e256_systemExclusive(const uint8_t* data_ptr, uint16_t length, boolean comp
     sysEx_lastChunkSize = (sysEx_dataSize + 3) % USB_MIDI_SYSEX_MAX;
     if (sysEx_lastChunkSize != 0) sysEx_chunks++;
     sysEx_chunkCount = 0;
+    //memset(sysEx_data_ptr, 0, sysEx_dataSize);
     midiInfo(USBMIDI_CONFIG_ALLOC_DONE, MIDI_VERBOSITY_CHANNEL);
   }
   else {
     if (sysEx_chunks == 1) { // Only one chunk to load
       memcpy(sysEx_chunk_ptr, data_ptr + 2, sysEx_dataSize);
     }
-    else if (sysEx_chunkCount == 0 && sysEx_chunks > 1) { // First chunk
+    else if (sysEx_chunks > 1 && sysEx_chunkCount == 0) { // First chunk
       sysEx_chunkSize = USB_MIDI_SYSEX_MAX - 2; // Removing header size
       memcpy(sysEx_chunk_ptr, data_ptr + 2, sysEx_chunkSize);
       sysEx_chunk_ptr += sysEx_chunkSize;
@@ -170,20 +174,18 @@ void e256_systemExclusive(const uint8_t* data_ptr, uint16_t length, boolean comp
       memcpy(sysEx_chunk_ptr, data_ptr, sysEx_chunkSize);
 
       if (sysEx_identifier == SYSEX_CONF) {
+        sysEx_alloc = true;
         #if defined(DEBUG_CONFIG)
           printBytes(sysEx_dataSize, sysEx_data_ptr);
         #endif
         if (load_config(sysEx_data_ptr)){
           midiInfo(USBMIDI_CONFIG_LOAD_DONE, MIDI_VERBOSITY_CHANNEL);
-          sysEx_alloc = true;
         }
         else {
-          midiInfo(LOADING_GONFIG_FAILED, MIDI_ERROR_CHANNEL);
-          Serial.println("J");
+          midiInfo(USBMIDI_GONFIG_LOAD_FAILED, MIDI_ERROR_CHANNEL);
         };
       }
-      else if (sysEx_identifier == SYSEX_SOUND){
-        // TODO
+      else if (sysEx_identifier == SYSEX_SOUND){ // TODO
         midiInfo(USBMIDI_SOUND_LOAD_DONE, MIDI_VERBOSITY_CHANNEL);
         sysEx_alloc = true;
       }

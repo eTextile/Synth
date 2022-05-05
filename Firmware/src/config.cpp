@@ -57,8 +57,8 @@ uint8_t e256_currentMode = PENDING_MODE;
 uint8_t e256_lastMode = PENDING_MODE;
 uint8_t e256_level = THRESHOLD;
 
-uint8_t* config_ptr = NULL;
-uint16_t configSize = 0;
+uint8_t* flash_config_ptr = NULL;
+uint16_t flash_configSize = 0;
 
 // Her it should not compile if you didn't install the library
 // [Bounce2]: https://github.com/thomasfredericks/Bounce2
@@ -117,7 +117,7 @@ void set_state(uint8_t state) {
   #endif
 };
 
-inline void flash_config(unsigned int size, uint8_t* data_ptr) {
+inline void flash_config(uint16_t size, uint8_t* data_ptr) {
   if (!SerialFlash.begin(FLASH_CHIP_SELECT)) {
     midiInfo(CONNECTING_FLASH, MIDI_ERROR_CHANNEL);
     set_mode(ERROR_MODE);
@@ -375,50 +375,42 @@ inline bool config_load_mapping_polygons(const JsonArray& config) {
 
 boolean config_load_mapping(const JsonObject &config) {
   if (config.isNull()) {
-    midiInfo(LOADING_GONFIG_FAILED, MIDI_ERROR_CHANNEL);
-    Serial.println("A");
+    midiInfo(LOAD_GONFIG_FAILED, MIDI_ERROR_CHANNEL);
     set_mode(ERROR_MODE);
     return false;
   };
   if (!config_load_mapping_triggers(config["triggers"])) {
-    midiInfo(LOADING_GONFIG_FAILED, MIDI_ERROR_CHANNEL);
-    Serial.println("B");
+    midiInfo(LOAD_GONFIG_FAILED, MIDI_ERROR_CHANNEL);
     set_mode(ERROR_MODE);
     return false;
   };
   if (!config_load_mapping_toggles(config["toggles"])) {
-    midiInfo(LOADING_GONFIG_FAILED, MIDI_ERROR_CHANNEL);
-    Serial.println("C");
+    midiInfo(LOAD_GONFIG_FAILED, MIDI_ERROR_CHANNEL);
     set_mode(ERROR_MODE);
     return false;
   };
   if (!config_load_mapping_vSliders(config["vSliders"])) {
-    midiInfo(LOADING_GONFIG_FAILED, MIDI_ERROR_CHANNEL);
-    Serial.println("D");
+    midiInfo(LOAD_GONFIG_FAILED, MIDI_ERROR_CHANNEL);
     set_mode(ERROR_MODE);
     return false;
   };
   if (!config_load_mapping_hSliders(config["hSliders"])) {
-    midiInfo(LOADING_GONFIG_FAILED, MIDI_ERROR_CHANNEL);
-    Serial.println("E");
+    midiInfo(LOAD_GONFIG_FAILED, MIDI_ERROR_CHANNEL);
     set_mode(ERROR_MODE);
     return false;
   };
   if (!config_load_mapping_circles(config["circles"])) {
-    midiInfo(LOADING_GONFIG_FAILED, MIDI_ERROR_CHANNEL);
-    Serial.println("F");
+    midiInfo(LOAD_GONFIG_FAILED, MIDI_ERROR_CHANNEL);
     set_mode(ERROR_MODE);
     return false;
   };
   if (!config_load_mapping_touchpads(config["touchpad"])) {
-    midiInfo(LOADING_GONFIG_FAILED, MIDI_ERROR_CHANNEL);
-    Serial.println("G");
+    midiInfo(LOAD_GONFIG_FAILED, MIDI_ERROR_CHANNEL);
     set_mode(ERROR_MODE);
     return false;
   };
   if (!config_load_mapping_polygons(config["polygons"])) {
-    midiInfo(LOADING_GONFIG_FAILED, MIDI_ERROR_CHANNEL);
-    Serial.println("H");
+    midiInfo(LOAD_GONFIG_FAILED, MIDI_ERROR_CHANNEL);
     set_mode(ERROR_MODE);
     return false;
   };
@@ -429,7 +421,7 @@ boolean load_config(uint8_t* data_ptr) {
   StaticJsonDocument<2048> config;
   DeserializationError error = deserializeJson(config, data_ptr);
   if (error) {
-    midiInfo(LOADING_GONFIG_FAILED, MIDI_ERROR_CHANNEL);
+    midiInfo(LOAD_GONFIG_FAILED, MIDI_ERROR_CHANNEL);
     return false;
   };
   if (config_load_mapping(config["mapping"])) {
@@ -446,12 +438,13 @@ boolean load_flash_config() {
   };
   SerialFlashFile configFile = SerialFlash.open("config.json");
   if (configFile) {
-    configSize = configFile.size();
-    Serial.printf("GONFIG_SIZE: %d", configSize); ///////////////////// 0!
+    flash_configSize = configFile.size();
+    Serial.printf("GONFIG_SIZE: %d", flash_configSize); ///////////////////// 0!
 
-    config_ptr = allocate(config_ptr, configSize);
-    configFile.read(config_ptr, configSize);
-    if (load_config(config_ptr)){
+    flash_config_ptr = allocate(flash_config_ptr, flash_configSize);
+    configFile.read(flash_config_ptr, flash_configSize);
+    if (load_config(flash_config_ptr)){
+      midiInfo(FLASH_CONFIG_LOAD_DONE, MIDI_VERBOSITY_CHANNEL);
       return true;
     }
     else {
