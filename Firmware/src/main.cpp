@@ -40,14 +40,8 @@ void setup() {
   hardware_midi_transmit_setup();
   sound_card_setup();
 
-  delay(500);
-
-  if(load_flash_config()){
-    midiInfo(FLASH_CONFIG_LOAD_DONE, MIDI_VERBOSITY_CHANNEL);
-  } else {
-    midiInfo(FLASH_CONFIG_LOAD_FAILED, MIDI_ERROR_CHANNEL);
-    //set_mode(ERROR_MODE);
-  }
+  //while (!Serial);
+  //Serial.println("START");
 
 #if defined(RUNING_MEDIAN)
   running_median_setup();

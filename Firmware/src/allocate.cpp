@@ -1,11 +1,17 @@
+/*
+  This file is part of the eTextile-Synthesizer project - http://synth.eTextile.org
+  Copyright (c) 2014-2022 Maurin Donneaud <maurin@etextile.org>
+  This work is licensed under Creative Commons Attribution-ShareAlike 4.0 International license, see the LICENSE file for details.
+*/
+
 #include "allocate.h"
 
-uint8_t* allocate(uint8_t* data_ptr, uint16_t size) {
+void* allocate(void* data_ptr, uint16_t size) {
   if (data_ptr == NULL){
-    data_ptr = (uint8_t*) malloc(size);
+    data_ptr = malloc(size * sizeof(uint8_t));
     return data_ptr;
     } else {
-    data_ptr = (uint8_t*) realloc(data_ptr, size);
+    data_ptr = realloc(data_ptr, size * sizeof(uint8_t));
     return data_ptr;
   };
 };

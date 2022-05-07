@@ -14,6 +14,8 @@
 #include "allocate.h"
 
 uint32_t bootTime = 0;
+uint16_t sysEx_dataSize = 0;
+uint8_t* sysEx_data_ptr = NULL;
 
 void e256_noteOn(byte channel, byte note, byte velocity){
   Serial.println(channel);
@@ -82,12 +84,18 @@ void e256_programChange(byte channel, byte program){
           midiInfo(CALIBRATE_DONE, MIDI_VERBOSITY_CHANNEL);
           break;
         case CONFIG_FILE_REQUEST:
-          #if defined(DEBUG_CONFIG)
-            printBytes(flash_configSize, flash_config_ptr);
-          #endif
-          usbMIDI.sendSysEx(flash_configSize, flash_config_ptr, false);
-          usbMIDI.send_now();
-          while (usbMIDI.read());
+          if(load_flash_config()){
+            midiInfo(FLASH_CONFIG_LOAD_DONE, MIDI_VERBOSITY_CHANNEL);
+            usbMIDI.sendSysEx(flash_configSize, flash_config_ptr, false);
+            usbMIDI.send_now();
+            while (usbMIDI.read());
+            #if defined(DEBUG_CONFIG)
+              Serial.printf("\nSEND_FLASH_CONFIG: ");
+              printBytes(flash_config_ptr, flash_configSize);
+            #endif
+          } else {
+            midiInfo(FLASH_CONFIG_LOAD_FAILED, MIDI_VERBOSITY_CHANNEL);
+          };
           break;
       };
       break;
@@ -99,8 +107,16 @@ void e256_programChange(byte channel, byte program){
 
 void usb_midi_pending_mode_timeout(){
   if (e256_currentMode == PENDING_MODE && millis() - bootTime > PENDING_MODE_TIMEOUT){
-    set_mode(STANDALONE_MODE);
-    matrix_calibrate();
+    if(load_flash_config()){
+      set_mode(STANDALONE_MODE);
+      matrix_calibrate();
+      #if defined(DEBUG_CONFIG)
+        Serial.printf("\nLOADED_FLASH_CONFIG: ");
+        printBytes(flash_config_ptr, flash_configSize);
+      #endif
+    } else {
+      set_mode(ERROR_MODE);
+    };
   };
 };
 
@@ -112,12 +128,12 @@ void midiInfo(uint8_t msg, uint8_t channel){
   #endif
 };
 
-void printBytes(uint16_t size, uint8_t* data_ptr) {
-  Serial.printf("\nSysEx length: %d", size);
-  Serial.printf("\nSysEx message:");
+void printBytes(uint8_t* data_ptr, uint16_t size) {
+  Serial.printf("\nDATA_LENGTH: %d", size);
+  Serial.printf("\nDATA: ");
   while (size > 0) {
-    byte b = *data_ptr++;
-    Serial.printf(" %x", b);
+    uint8_t b = *data_ptr++;
+    Serial.printf("%x ", b);
     size--;
   };
 };
@@ -128,9 +144,6 @@ void printBytes(uint16_t size, uint8_t* data_ptr) {
 // Send: USBMIDI_CONFIG_ALLOC_DONE
 // Recive: [ SYSEX_BEGIN, SYSEX_DEVICE_ID, SYSEX_DATA, SYSEX_END ]
 // Send: USBMIDI_CONFIG_LOAD_DONE
-
-uint16_t sysEx_dataSize = 0;
-uint8_t* sysEx_data_ptr = NULL;
 
 void e256_systemExclusive(const uint8_t* data_ptr, uint16_t length, boolean complete){
   static boolean sysEx_alloc = true;
@@ -144,54 +157,46 @@ void e256_systemExclusive(const uint8_t* data_ptr, uint16_t length, boolean comp
   if (sysEx_alloc){
     sysEx_alloc = false;
     sysEx_identifier = *(data_ptr + 2);
-    sysEx_dataSize = *(data_ptr + 3) << 7 | *(data_ptr + 4);    
-    sysEx_chunk_ptr = sysEx_data_ptr = allocate(sysEx_data_ptr, sysEx_dataSize);
+    sysEx_dataSize = *(data_ptr + 3) << 7 | *(data_ptr + 4);
+    sysEx_chunk_ptr = sysEx_data_ptr = (uint8_t*)allocate(sysEx_data_ptr, sysEx_dataSize );
     sysEx_chunks = (uint8_t)((sysEx_dataSize + 3) / USB_MIDI_SYSEX_MAX);
     sysEx_lastChunkSize = (sysEx_dataSize + 3) % USB_MIDI_SYSEX_MAX;
     if (sysEx_lastChunkSize != 0) sysEx_chunks++;
     sysEx_chunkCount = 0;
-    //memset(sysEx_data_ptr, 0, sysEx_dataSize);
     midiInfo(USBMIDI_CONFIG_ALLOC_DONE, MIDI_VERBOSITY_CHANNEL);
   }
   else {
     if (sysEx_chunks == 1) { // Only one chunk to load
-      memcpy(sysEx_chunk_ptr, data_ptr + 2, sysEx_dataSize);
+      memcpy(sysEx_chunk_ptr, data_ptr + 2, sizeof(uint8_t) * sysEx_dataSize);
     }
     else if (sysEx_chunks > 1 && sysEx_chunkCount == 0) { // First chunk
       sysEx_chunkSize = USB_MIDI_SYSEX_MAX - 2; // Removing header size
-      memcpy(sysEx_chunk_ptr, data_ptr + 2, sysEx_chunkSize);
+      memcpy(sysEx_chunk_ptr, data_ptr + 2, sizeof(uint8_t) * sysEx_chunkSize);
       sysEx_chunk_ptr += sysEx_chunkSize;
       sysEx_chunkCount++;
     }
     else if (sysEx_chunkCount < sysEx_chunks - 1){ // Middle chunks
       sysEx_chunkSize = USB_MIDI_SYSEX_MAX;
-      memcpy(sysEx_chunk_ptr, data_ptr, sysEx_chunkSize);
+      memcpy(sysEx_chunk_ptr, data_ptr, sizeof(uint8_t) * sysEx_chunkSize);
       sysEx_chunk_ptr += sysEx_chunkSize;
       sysEx_chunkCount++;
     }
     else { // Last chunk
       sysEx_chunkSize = sysEx_lastChunkSize - 1; // Removing footer size
-      memcpy(sysEx_chunk_ptr, data_ptr, sysEx_chunkSize);
-
+      memcpy(sysEx_chunk_ptr, data_ptr, sizeof(uint8_t) * sysEx_chunkSize);
+      sysEx_alloc = true;
       if (sysEx_identifier == SYSEX_CONF) {
-        sysEx_alloc = true;
+        midiInfo(USBMIDI_CONFIG_LOAD_DONE, MIDI_VERBOSITY_CHANNEL);
         #if defined(DEBUG_CONFIG)
-          printBytes(sysEx_dataSize, sysEx_data_ptr);
+          Serial.printf("\nSYSEX_CONFIG_RECIVED: ");
+          printBytes(sysEx_data_ptr, sysEx_dataSize);
         #endif
-        if (load_config(sysEx_data_ptr)){
-          midiInfo(USBMIDI_CONFIG_LOAD_DONE, MIDI_VERBOSITY_CHANNEL);
-        }
-        else {
-          midiInfo(USBMIDI_CONFIG_LOAD_FAILED, MIDI_ERROR_CHANNEL);
-        };
       }
       else if (sysEx_identifier == SYSEX_SOUND){ // TODO
         midiInfo(USBMIDI_SOUND_LOAD_DONE, MIDI_VERBOSITY_CHANNEL);
-        sysEx_alloc = true;
       }
       else {
         midiInfo(UNKNOWN_SYSEX, MIDI_ERROR_CHANNEL);
-        sysEx_alloc = true;
       };
     };
   };

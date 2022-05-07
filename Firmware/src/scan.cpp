@@ -158,9 +158,11 @@ void matrix_calibrate(void) {
 
         result = adc->analogSynchronizedRead(ADC0_PIN, ADC1_PIN);
         uint8_t ADC0_val = result.result_adc0;
-        if (ADC0_val > offsetArray[indexA]) offsetArray[indexA] = ADC0_val;
+        //if (ADC0_val > offsetArray[indexA]) offsetArray[indexA] = ADC0_val;
+        offsetArray[indexA] = max(offsetArray[indexA], ADC0_val);
         uint8_t ADC1_val = result.result_adc1;
-        if (ADC1_val > offsetArray[indexB]) offsetArray[indexB] = ADC1_val;
+        //if (ADC1_val > offsetArray[indexB]) offsetArray[indexB] = ADC1_val;
+        offsetArray[indexB] = max(offsetArray[indexB], ADC1_val);
         #if defined(SET_ORIGIN_Y)
           setRows = setRows << 1;
         #else
@@ -215,13 +217,11 @@ void matrix_scan(void) {
 
       uint8_t valA = result.result_adc0;
       valA > offsetArray[indexA] ? rawFrameArray[indexA] = valA - offsetArray[indexA] : rawFrameArray[indexA] = 0;
-      //valA > 127 ? rawFrameArray[indexA] = 127 : NULL; // Add limit for MIDI message 0:127
-      if (valA > 127) rawFrameArray[indexB] = 127;
-      
+      rawFrameArray[indexA] = min(valA, 127); // Add limit for MIDI message 0:127
+
       uint8_t valB = result.result_adc1;
       valB > offsetArray[indexB] ? rawFrameArray[indexB] = valB - offsetArray[indexB] : rawFrameArray[indexB] = 0;
-      //valB > 127 ? rawFrameArray[indexB] = 127 : NULL; // Add limit for MIDI message 0:127
-      if (valB > 127) rawFrameArray[indexB] = 127;
+      rawFrameArray[indexB] = min(valB, 127); // Add limit for MIDI message 0:127
 
 #if defined(SET_ORIGIN_Y)
       setRows = setRows << 1;

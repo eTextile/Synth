@@ -17,7 +17,7 @@ extern uint8_t* sysEx_data_ptr;
 void usb_midi_transmit_setup(void);
 
 void midiInfo(uint8_t msg, uint8_t channel);
-void printBytes(uint16_t size, uint8_t* data_ptr);
+void printBytes(uint8_t* data_ptr, uint16_t size);
 void usb_midi_pending_mode_timeout(void);
 
 void usb_midi_read_input(void);

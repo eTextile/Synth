@@ -117,38 +117,40 @@ void set_state(uint8_t state) {
   #endif
 };
 
-inline void flash_config(uint16_t size, uint8_t* data_ptr) {
-  if (!SerialFlash.begin(FLASH_CHIP_SELECT)) {
-    midiInfo(CONNECTING_FLASH, MIDI_ERROR_CHANNEL);
-    set_mode(ERROR_MODE);
-    return;
-  };
-  while (!SerialFlash.ready());
-  SerialFlashFile flashFile;
-  if (SerialFlash.exists("config.json")) {
-    SerialFlash.remove("config.json"); // It doesn't reclaim the space, but it does let you create a new file with the same name
-  };
-  // Create a new file and open it for writing
-  if (SerialFlash.create("config.json", size)) {
-    flashFile = SerialFlash.open("config.json");
-    if (!flashFile) {
-      midiInfo(WHILE_OPEN_FLASH_FILE, MIDI_ERROR_CHANNEL);
+inline void flash_file(const char *fileName, uint8_t* data_ptr, uint16_t size) {
+  if (sysEx_dataSize != 0) {
+    if (!SerialFlash.begin(FLASH_CHIP_SELECT)) {
+      midiInfo(CONNECTING_FLASH, MIDI_ERROR_CHANNEL);
       set_mode(ERROR_MODE);
       return;
     };
-  }
-  else {
-    midiInfo(FLASH_FULL, MIDI_ERROR_CHANNEL);
-    set_mode(ERROR_MODE);
-    return;
-  };
-  if (size < FLASH_SIZE) {
-    flashFile.write(data_ptr, size);
-    flashFile.close();
-    midiInfo(FLASH_CONFIG_WRITE_DONE, MIDI_VERBOSITY_CHANNEL);
-  } else {
-    midiInfo(FILE_TO_BIG, MIDI_ERROR_CHANNEL);
-    set_mode(ERROR_MODE);
+    while (!SerialFlash.ready());
+    if (SerialFlash.exists(fileName)) {
+      SerialFlash.remove(fileName);
+    };
+    // Create a new file and open it for writing
+    SerialFlashFile tmpFile;
+    if (SerialFlash.create(fileName, size)) {
+      tmpFile = SerialFlash.open(fileName);
+      if (!tmpFile){
+        midiInfo(WHILE_OPEN_FLASH_FILE, MIDI_ERROR_CHANNEL);
+        set_mode(ERROR_MODE);
+        return;
+      };
+    }
+    else {
+      midiInfo(FLASH_FULL, MIDI_ERROR_CHANNEL);
+      return;
+    };
+    if (sysEx_dataSize < FLASH_SIZE) {
+      tmpFile.write(data_ptr, size);
+      tmpFile.close();
+      midiInfo(FLASH_CONFIG_WRITE_DONE, MIDI_VERBOSITY_CHANNEL);
+    }
+    else {
+      midiInfo(FILE_TO_BIG, MIDI_ERROR_CHANNEL);
+      set_mode(ERROR_MODE);
+    };
   };
 };
 
@@ -165,7 +167,14 @@ inline void update_buttons() {
   // ACTION: BUTTON_L long press
   // FONCTION: save the mapping config file to the permanent memory.
   if (BUTTON_L.rose() && BUTTON_L.previousDuration() > LONG_HOLD) {
-    flash_config(sysEx_dataSize, sysEx_data_ptr);
+    if (sysEx_dataSize > 0){
+      flash_file("config.json", sysEx_data_ptr, sysEx_dataSize);
+      apply_config(sysEx_data_ptr, sysEx_dataSize);
+      #if defined(DEBUG_CONFIG)
+        Serial.printf("\nSYSEX_CONFIG_WRITE: "); // FIXME FILE CORRUPTED!
+        printBytes(sysEx_data_ptr, sysEx_dataSize);
+      #endif
+    };
   };
   // ACTION: BUTTON_R long press
   // FONCTION: PENDING_MODE (waiting for mode)
@@ -281,11 +290,12 @@ inline bool config_load_mapping_toggles(const JsonArray& config) {
   if (config.isNull()) {
     return false;
   }
+  Serial.printf("\nTOGGLES: %d ", config.size());
   mapping_toggles_alloc(config.size());
   for (uint8_t i = 0; i < mapp_togs; i++) {
     mapp_togsParams[i].rect.from.x = config[i]["Xmin"];
-    mapp_togsParams[i].rect.to.x = config[i]["Xmax"];
     mapp_togsParams[i].rect.from.y = config[i]["Ymin"];
+    mapp_togsParams[i].rect.to.x = config[i]["Xmax"];
     mapp_togsParams[i].rect.to.y = config[i]["Ymax"];
     mapp_togsParams[i].note = config[i]["note"];
   }
@@ -375,58 +385,61 @@ inline bool config_load_mapping_polygons(const JsonArray& config) {
 
 boolean config_load_mapping(const JsonObject &config) {
   if (config.isNull()) {
-    midiInfo(LOAD_CONFIG_FAILED, MIDI_ERROR_CHANNEL);
+    midiInfo(CONFIG_APPLY_FAILED, MIDI_ERROR_CHANNEL);
     set_mode(ERROR_MODE);
     return false;
   };
   if (!config_load_mapping_triggers(config["triggers"])) {
-    midiInfo(LOAD_CONFIG_FAILED, MIDI_ERROR_CHANNEL);
+    midiInfo(CONFIG_APPLY_FAILED, MIDI_ERROR_CHANNEL);
     set_mode(ERROR_MODE);
     return false;
   };
   if (!config_load_mapping_toggles(config["toggles"])) {
-    midiInfo(LOAD_CONFIG_FAILED, MIDI_ERROR_CHANNEL);
+    midiInfo(CONFIG_APPLY_FAILED, MIDI_ERROR_CHANNEL);
     set_mode(ERROR_MODE);
     return false;
   };
   if (!config_load_mapping_vSliders(config["vSliders"])) {
-    midiInfo(LOAD_CONFIG_FAILED, MIDI_ERROR_CHANNEL);
+    midiInfo(CONFIG_APPLY_FAILED, MIDI_ERROR_CHANNEL);
     set_mode(ERROR_MODE);
     return false;
   };
   if (!config_load_mapping_hSliders(config["hSliders"])) {
-    midiInfo(LOAD_CONFIG_FAILED, MIDI_ERROR_CHANNEL);
+    midiInfo(CONFIG_APPLY_FAILED, MIDI_ERROR_CHANNEL);
     set_mode(ERROR_MODE);
     return false;
   };
   if (!config_load_mapping_circles(config["circles"])) {
-    midiInfo(LOAD_CONFIG_FAILED, MIDI_ERROR_CHANNEL);
+    midiInfo(CONFIG_APPLY_FAILED, MIDI_ERROR_CHANNEL);
     set_mode(ERROR_MODE);
     return false;
   };
   if (!config_load_mapping_touchpads(config["touchpad"])) {
-    midiInfo(LOAD_CONFIG_FAILED, MIDI_ERROR_CHANNEL);
+    midiInfo(CONFIG_APPLY_FAILED, MIDI_ERROR_CHANNEL);
     set_mode(ERROR_MODE);
     return false;
   };
   if (!config_load_mapping_polygons(config["polygons"])) {
-    midiInfo(LOAD_CONFIG_FAILED, MIDI_ERROR_CHANNEL);
+    midiInfo(CONFIG_APPLY_FAILED, MIDI_ERROR_CHANNEL);
     set_mode(ERROR_MODE);
     return false;
   };
   return true;
 };
 
-boolean load_config(uint8_t* data_ptr) {
-  StaticJsonDocument<2048> config;
-  DeserializationError error = deserializeJson(config, data_ptr);
+boolean apply_config(uint8_t* conf_ptr, uint16_t conf_size) {
+  //DynamicJsonDocument config(conf_size);
+  StaticJsonDocument<4095> config;
+  DeserializationError error = deserializeJson(config, conf_ptr);
   if (error) {
-    midiInfo(LOAD_CONFIG_FAILED, MIDI_ERROR_CHANNEL);
+    midiInfo(CONFIG_APPLY_FAILED, MIDI_ERROR_CHANNEL);
     return false;
   };
   if (config_load_mapping(config["mapping"])) {
+    midiInfo(CONFIG_APPLY_DONE, MIDI_VERBOSITY_CHANNEL);
     return true;
   } else {
+    midiInfo(CONFIG_APPLY_FAILED, MIDI_ERROR_CHANNEL);
     return false;
   };
 };
@@ -435,28 +448,19 @@ boolean load_flash_config() {
   if (!SerialFlash.begin(FLASH_CHIP_SELECT)) {
     midiInfo(CONNECTING_FLASH, MIDI_ERROR_CHANNEL);
     return false;
-  };
-  SerialFlashFile configFile = SerialFlash.open("config.json");
-  if (configFile) {
-    flash_configSize = configFile.size();
-    Serial.printf("CONFIG_SIZE: %d", flash_configSize); ///////////////////// 0!
-
-    flash_config_ptr = allocate(flash_config_ptr, flash_configSize);
-    configFile.read(flash_config_ptr, flash_configSize);
-    if (load_config(flash_config_ptr)){
-      midiInfo(FLASH_CONFIG_LOAD_DONE, MIDI_VERBOSITY_CHANNEL);
+  }
+  else {
+    SerialFlashFile configFile = SerialFlash.open("config.json");
+    if (configFile) {
+      flash_configSize = (uint16_t)configFile.size();
+      flash_config_ptr = (uint8_t *)allocate(flash_config_ptr, flash_configSize);
+      configFile.read(flash_config_ptr, flash_configSize);
       return true;
     }
     else {
-      midiInfo(WAITING_FOR_CONFIG, MIDI_ERROR_CHANNEL);
-      //set_mode(PENDING_MODE);
-      //set_mode(SYNC_MODE);
+      midiInfo(NO_CONFIG_FILE, MIDI_VERBOSITY_CHANNEL);
       return false;
     };
-  }
-  else {
-    midiInfo(NO_CONFIG_FILE, MIDI_ERROR_CHANNEL);
-    return false;
   };
 };
 

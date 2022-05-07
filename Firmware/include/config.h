@@ -52,7 +52,7 @@
 #define BLINK_ITER                   10
 #define MIDI_TRANSMIT_INTERVAL       50
 #define LEVEL_TIMEOUT                3000
-#define PENDING_MODE_TIMEOUT         2000
+#define PENDING_MODE_TIMEOUT         4000
 
 // E256 MIDI I/O CHANNELS CONSTANTS [1:15]
 #define MIDI_INPUT_CHANNEL           1
@@ -110,10 +110,11 @@
 #define FLASH_CONFIG_WRITE_DONE      8
 #define USBMIDI_CONFIG_ALLOC_DONE    9
 #define USBMIDI_CONFIG_LOAD_DONE     10
-#define USBMIDI_SOUND_LOAD_DONE      11
-#define USBMIDI_SET_LEVEL_DONE       12
-#define CALIBRATE_DONE               13
-#define DONE_ACTION                  14 
+#define CONFIG_APPLY_DONE            11
+#define USBMIDI_SOUND_LOAD_DONE      12
+#define USBMIDI_SET_LEVEL_DONE       13
+#define CALIBRATE_DONE               14
+#define DONE_ACTION                  15 
 
 // ERROR CODES CONSTANTS
 #define WAITING_FOR_CONFIG             0
@@ -124,7 +125,7 @@
 #define WHILE_OPEN_FLASH_FILE          5
 #define USBMIDI_CONFIG_LOAD_FAILED     6
 #define FLASH_CONFIG_LOAD_FAILED       7
-#define LOAD_CONFIG_FAILED             8
+#define CONFIG_APPLY_FAILED            8
 #define UNKNOWN_SYSEX                  9
 
 typedef struct leds leds_t;
@@ -170,6 +171,7 @@ struct e256_control {
 extern e256_control_t e256_ctr;
 extern uint8_t e256_currentMode;
 extern uint8_t e256_level;
+
 extern uint8_t* flash_config_ptr;
 extern uint16_t flash_configSize;
 
@@ -180,6 +182,6 @@ void set_level(uint8_t level, uint8_t value);
 void hardware_setup(void);
 void update_controls(void);
 boolean load_flash_config(void);
-boolean load_config(uint8_t* data_ptr);
+boolean apply_config(uint8_t* conf_ptr, uint16_t conf_size);
 
 #endif /*__CONFIG_H__*/
