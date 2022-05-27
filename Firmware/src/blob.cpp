@@ -211,9 +211,9 @@ void matrix_find_blobs(void) {
         if (blob_pixels > BLOB_MIN_PIX && blob_pixels < BLOB_MAX_PIX && blob_count < MAX_BLOBS) {
           blob_count++;
           blob_t* blob_ptr = (blob_t*)llist_pop_front(&llist_blobs_stack);
-          blob_ptr->centroid.X = constrain(blob_cx / blob_pixels, X_MIN, X_MAX) - X_MIN ;
-          blob_ptr->centroid.Y = constrain(blob_cy / blob_pixels, Y_MIN, Y_MAX) - Y_MIN;
-          blob_ptr->centroid.Z = blob_depth - e256_ctr.levels[THRESHOLD].val;
+          blob_ptr->centroid.x = constrain(blob_cx / blob_pixels, X_MIN, X_MAX) - X_MIN ;
+          blob_ptr->centroid.y = constrain(blob_cy / blob_pixels, Y_MIN, Y_MAX) - Y_MIN;
+          blob_ptr->centroid.z = blob_depth - e256_ctr.levels[THRESHOLD].val;
           blob_ptr->box.W = (blob_x2 - blob_x1);
           blob_ptr->box.H = blob_height;
           llist_push_front(&llist_blobs_temp, blob_ptr);
@@ -258,7 +258,7 @@ void matrix_find_blobs(void) {
   for (blob_t* blobIn_ptr = (blob_t*)ITERATOR_START_FROM_HEAD(&llist_blobs_temp); blobIn_ptr != NULL; blobIn_ptr = (blob_t*)ITERATOR_NEXT(blobIn_ptr)) {
     float minDist = 255.0f;
     for (blob_t* blobOut_ptr = (blob_t*)ITERATOR_START_FROM_HEAD(&llist_blobs); blobOut_ptr != NULL; blobOut_ptr = (blob_t*)ITERATOR_NEXT(blobOut_ptr)) {
-      float dist = sqrtf(pow(blobIn_ptr->centroid.X - blobOut_ptr->centroid.X, 2) + pow(blobIn_ptr->centroid.Y - blobOut_ptr->centroid.Y, 2));
+      float dist = sqrtf(pow(blobIn_ptr->centroid.x - blobOut_ptr->centroid.x, 2) + pow(blobIn_ptr->centroid.y - blobOut_ptr->centroid.y, 2));
       if (dist < minDist) {
         minDist = dist;
         nearestBlob_ptr = blobOut_ptr;
@@ -357,20 +357,20 @@ void matrix_find_blobs(void) {
 for (blob_t* blob_ptr = (blob_t*)ITERATOR_START_FROM_HEAD(&llist_blobs); blob_ptr != NULL; blob_ptr = (blob_t*)ITERATOR_NEXT(blob_ptr)) {
   if (!blob_ptr->lastState) {
     blob_ptr->velocity.TimeStamp = millis();
-    lastCoord[blob_ptr->UID].X = blob_ptr->centroid.X;
-    lastCoord[blob_ptr->UID].Y = blob_ptr->centroid.Y;
-    lastCoord[blob_ptr->UID].Z = blob_ptr->centroid.Z;
+    lastCoord[blob_ptr->UID].X = blob_ptr->centroid.x;
+    lastCoord[blob_ptr->UID].Y = blob_ptr->centroid.y;
+    lastCoord[blob_ptr->UID].Z = blob_ptr->centroid.z;
   }
   else {
     if (millis() - blob_ptr->velocity.TimeStamp > 10) {
       blob_ptr->velocity.timeStamp = millis();
-      float vx = fabs(blob_ptr->centroid.X - lastCoord[blob_ptr->UID].X);
-      float vy = fabs(blob_ptr->centroid.Y - lastCoord[blob_ptr->UID].Y);
+      float vx = fabs(blob_ptr->centroid.x - lastCoord[blob_ptr->UID].X);
+      float vy = fabs(blob_ptr->centroid.y - lastCoord[blob_ptr->UID].Y);
       blob_ptr->velocity.XY = sqrtf(vx * vx + vy * vy);
-      blob_ptr->velocity.Z = blob_ptr->centroid.Z - lastCoord[blob_ptr->UID].Z;
-      lastCoord[blob_ptr->UID].X = blob_ptr->centroid.X;
-      lastCoord[blob_ptr->UID].Y = blob_ptr->centroid.Y;
-      lastCoord[blob_ptr->UID].Z = blob_ptr->centroid.Z;
+      blob_ptr->velocity.Z = blob_ptr->centroid.z - lastCoord[blob_ptr->UID].Z;
+      lastCoord[blob_ptr->UID].X = blob_ptr->centroid.x;
+      lastCoord[blob_ptr->UID].Y = blob_ptr->centroid.y;
+      lastCoord[blob_ptr->UID].Z = blob_ptr->centroid.z;
     };
   };
 
@@ -393,9 +393,9 @@ for (blob_t* blob_ptr = (blob_t*)ITERATOR_START_FROM_HEAD(&llist_blobs); blob_pt
                   blob_ptr->UID,
                   blob_ptr->lastState,
                   blob_ptr->state,
-                  blob_ptr->centroid.X,
-                  blob_ptr->centroid.Y,
-                  blob_ptr->centroid.Z,
+                  blob_ptr->centroid.x,
+                  blob_ptr->centroid.y,
+                  blob_ptr->centroid.z,
                   blob_ptr->box.W,
                   blob_ptr->box.H,
                   blob_ptr->velocity.XY,

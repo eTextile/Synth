@@ -277,57 +277,61 @@ inline bool config_load_mapping_triggers(const JsonArray& config) {
   };
   mapping_triggers_alloc(config.size());
   for (uint8_t i = 0; i < mapp_trigs; i++) {
-    mapp_trigsParams[i].rect.from.x = config[i]["Xmin"];
-    mapp_trigsParams[i].rect.to.x = config[i]["Xmax"];
-    mapp_trigsParams[i].rect.from.y = config[i]["Ymin"];
-    mapp_trigsParams[i].rect.to.y = config[i]["Ymax"];
+    int from_x = config[i]["f"][0];
+    int from_y = config[i]["f"][1];
+    int to_x = config[i]["t"][0];
+    int to_y = config[i]["t"][1];
+    mapp_trigsParams[i].rect.from.x = from_x;
+    mapp_trigsParams[i].rect.from.y = from_y;
+    mapp_trigsParams[i].rect.to.x = to_x;
+    mapp_trigsParams[i].rect.to.y = to_y;
+    mapp_trigsParams[i].chan = config[i]["chan"];
     mapp_trigsParams[i].note = config[i]["note"];
+    mapp_trigsParams[i].velocity = config[i]["velocity"];
   };
   return true;
 };
 
-inline bool config_load_mapping_toggles(const JsonArray& config) {
+inline bool config_load_mapping_switchs(const JsonArray& config) {
   if (config.isNull()) {
     return false;
   }
-  Serial.printf("\nTOGGLES: %d ", config.size());
-  mapping_toggles_alloc(config.size());
-  for (uint8_t i = 0; i < mapp_togs; i++) {
-    mapp_togsParams[i].rect.from.x = config[i]["Xmin"];
-    mapp_togsParams[i].rect.from.y = config[i]["Ymin"];
-    mapp_togsParams[i].rect.to.x = config[i]["Xmax"];
-    mapp_togsParams[i].rect.to.y = config[i]["Ymax"];
-    mapp_togsParams[i].note = config[i]["note"];
+  mapping_switchs_alloc(config.size());
+  for (uint8_t i = 0; i < mapp_switchs; i++) {
+    int from_x = config[i]["f"][0];
+    int from_y = config[i]["f"][1];
+    int to_x = config[i]["t"][0];
+    int to_y = config[i]["t"][1];
+    mapp_switchParams[i].rect.from.x = from_x;
+    mapp_switchParams[i].rect.from.y = from_y;
+    mapp_switchParams[i].rect.to.x = to_x;
+    mapp_switchParams[i].rect.to.y = to_y;
+    mapp_switchParams[i].chan = config[i]["chan"];
+    mapp_switchParams[i].note = config[i]["note"];
+    mapp_switchParams[i].velocity = config[i]["velocity"];
   }
   return true;
 }
 
-inline bool config_load_mapping_vSliders(const JsonArray& config) {
+inline bool config_load_mapping_sliders(const JsonArray& config) {
   if (config.isNull()) {
     return false;
   };
-  mapping_vSliders_alloc(config.size());
-  for (uint8_t i = 0; i < mapp_vSliders; i++) {
-    mapp_vSlidersParams[i].rect.from.x = config[i]["Xmin"];
-    mapp_vSlidersParams[i].rect.to.x = config[i]["Xmax"];
-    mapp_vSlidersParams[i].rect.from.y = config[i]["Ymin"];
-    mapp_vSlidersParams[i].rect.to.y = config[i]["Ymax"];
-    mapp_vSlidersParams[i].CC = config[i]["CC"];
-  };
-  return true;
-};
+  mapping_sliders_alloc(config.size());
+  for (uint8_t i = 0; i < mapp_sliders; i++) {
+    int from_x = config[i]["f"][0];
+    int from_y = config[i]["f"][1];
+    int to_x = config[i]["t"][0];
+    int to_y = config[i]["t"][1];
+    mapp_slidersParams[i].rect.from.x = from_x;
+    mapp_slidersParams[i].rect.from.y = from_y;
+    mapp_slidersParams[i].rect.to.x = to_x;
+    mapp_slidersParams[i].rect.to.y = to_y;
+    mapp_slidersParams[i].chan = config[i]["c"];
+    mapp_slidersParams[i].cc = config[i]["o"];
+    mapp_slidersParams[i].min = config[i]["i"];
+    mapp_slidersParams[i].max = config[i]["a"];
 
-inline bool config_load_mapping_hSliders(const JsonArray& config) {
-  if (config.isNull()) {
-    return false;
-  };
-  mapping_hSliders_alloc(config.size());
-  for (uint8_t i = 0; i < mapp_hSliders; i++) {
-    mapp_hSlidersParams[i].rect.from.x = config[i]["Xmin"];
-    mapp_hSlidersParams[i].rect.to.x = config[i]["Xmax"];
-    mapp_hSlidersParams[i].rect.from.y = config[i]["Ymin"];
-    mapp_hSlidersParams[i].rect.to.y = config[i]["Ymax"];
-    mapp_hSlidersParams[i].CC = config[i]["CC"];
   };
   return true;
 };
@@ -354,16 +358,23 @@ inline bool config_load_mapping_touchpads(const JsonArray& config) {
   };
   mapping_touchpads_alloc(config.size());
   for (uint8_t i = 0; i < mapp_touchpads; i++) {
-    mapp_touchpadsParams[i].rect.from.x = config[i]["Xmin"];
-    mapp_touchpadsParams[i].rect.to.x = config[i]["Xmax"];
-    mapp_touchpadsParams[i].rect.from.y = config[i]["Ymin"];
-    mapp_touchpadsParams[i].rect.to.y = config[i]["Ymax"];
-    mapp_touchpadsParams[i].CCx = config[i]["CCx"];     // Blob X axis MIDI cChange mapping
-    mapp_touchpadsParams[i].CCy = config[i]["CCy"];     // Blob Y axis MIDI cChange mapping
-    mapp_touchpadsParams[i].CCz = config[i]["CCz"];     // Blob Z axis MIDI cChange mapping
-    mapp_touchpadsParams[i].CCs = config[i]["CCs"];     // Blob state MIDI cChange mapping
-    mapp_touchpadsParams[i].CCvxy = config[i]["CCvxy"]; // Blob XY velocity MIDI cChange mapping
-    mapp_touchpadsParams[i].CCvz = config[i]["CCvz"];   // Blob Z velocity MIDI cChange mapping
+    mapp_touchpadsParams[i].rect.from.x = config[i]["f"][0];
+    mapp_touchpadsParams[i].rect.from.y = config[i]["f"][1];
+    mapp_touchpadsParams[i].rect.to.x = config[i]["t"][0];
+    mapp_touchpadsParams[i].rect.to.y = config[i]["t"][1];
+    mapp_touchpadsParams[i].touchs = config[i]["b"];
+    if (config[i]["b"] > MAX_TOUCH_POINT) {
+      midiInfo(TOO_MANY_BLOBS, MIDI_ERROR_CHANNEL);
+      return false;
+    }
+    for (uint8_t j = 0; j < config[i]["b"]; j++){
+      mapp_touchpadsParams[i].touch[j].x_chan = config[i]["l"][j][0][0];
+      mapp_touchpadsParams[i].touch[j].x_cc = config[i]["l"][j][0][1];
+      mapp_touchpadsParams[i].touch[j].y_chan = config[i]["l"][j][1][0];
+      mapp_touchpadsParams[i].touch[j].y_cc = config[i]["l"][j][1][1];
+      mapp_touchpadsParams[i].touch[j].z_chan = config[i]["l"][j][2][0];
+      mapp_touchpadsParams[i].touch[j].z_cc = config[i]["l"][j][2][1];
+    };
  };
   return true;
 };
@@ -394,17 +405,12 @@ boolean config_load_mapping(const JsonObject &config) {
     set_mode(ERROR_MODE);
     return false;
   };
-  if (!config_load_mapping_toggles(config["toggles"])) {
+  if (!config_load_mapping_switchs(config["SWITCHS"])) {
     midiInfo(CONFIG_APPLY_FAILED, MIDI_ERROR_CHANNEL);
     set_mode(ERROR_MODE);
     return false;
   };
-  if (!config_load_mapping_vSliders(config["vSliders"])) {
-    midiInfo(CONFIG_APPLY_FAILED, MIDI_ERROR_CHANNEL);
-    set_mode(ERROR_MODE);
-    return false;
-  };
-  if (!config_load_mapping_hSliders(config["hSliders"])) {
+  if (!config_load_mapping_sliders(config["sliders"])) {
     midiInfo(CONFIG_APPLY_FAILED, MIDI_ERROR_CHANNEL);
     set_mode(ERROR_MODE);
     return false;

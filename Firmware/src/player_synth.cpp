@@ -115,18 +115,18 @@ void player_synth(void) {
         allSynth[blob_ptr->UID].fade->fadeIn(10);
       }
       else {
-        allSynth[blob_ptr->UID].wf->frequency(blob_ptr->centroid.X * 3);
-        allSynth[blob_ptr->UID].fm->frequency(blob_ptr->centroid.Y * 4 + 50);
-        //allSynth[blob_ptr->UID].wf->frequency((blob_ptr->centroid.X / 4.0) + 1);
-        //allSynth[blob_ptr->UID].fm->frequency((blob_ptr->centroid.Y / 2.0) + 5);
+        allSynth[blob_ptr->UID].wf->frequency(blob_ptr->centroid.x * 3);
+        allSynth[blob_ptr->UID].fm->frequency(blob_ptr->centroid.y * 4 + 50);
+        //allSynth[blob_ptr->UID].wf->frequency((blob_ptr->centroid.x / 4.0) + 1);
+        //allSynth[blob_ptr->UID].fm->frequency((blob_ptr->centroid.y / 2.0) + 5);
         /*
           if (blob_ptr->UID == 0) {
-          allSynth[blob_ptr->UID].wf->frequency((blob_ptr->centroid.X / 4.0) + 1);
-          allSynth[blob_ptr->UID].fm->frequency((blob_ptr->centroid.Y / 2.0) + 5);
+          allSynth[blob_ptr->UID].wf->frequency((blob_ptr->centroid.x / 4.0) + 1);
+          allSynth[blob_ptr->UID].fm->frequency((blob_ptr->centroid.y / 2.0) + 5);
           }
           else if (blob_ptr->UID == 1) {
-          allSynth[blob_ptr->UID].wf->frequency(blob_ptr->centroid.X * 3);
-          allSynth[blob_ptr->UID].fm->frequency(blob_ptr->centroid.Y * 4 + 50);
+          allSynth[blob_ptr->UID].wf->frequency(blob_ptr->centroid.x * 3);
+          allSynth[blob_ptr->UID].fm->frequency(blob_ptr->centroid.y * 4 + 50);
           };
         */
       };

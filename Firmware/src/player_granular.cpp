@@ -39,12 +39,12 @@ void player_granular(void) {
     AudioNoInterrupts();
     if (blob_ptr->state) {
       if (!blob_ptr->lastState) {
-        float msec = blob_ptr->centroid.Y; // Blob_Y mapped to grainLength
+        float msec = blob_ptr->centroid.y; // Blob_Y mapped to grainLength
         msec = round(10 + msec);
         granular.beginPitchShift(msec);    // The grainLength is specified in milliseconds, up to 1/3 of the memory from begin();
       }
       else {
-        float ratio = blob_ptr->centroid.X / (float)X_MAX; // Mapp X to buffer size
+        float ratio = blob_ptr->centroid.x / (float)X_MAX; // Mapp X to buffer size
         ratio = powf(2.0, ratio * 2.0 - 1.0);              // 0.5 to 2.0
         //ratio = powf(2.0, ratio * 6.0 - 3.0);            // 0.125 to 8.0 -- uncomment for far too much range!
         granular.setSpeed(ratio);

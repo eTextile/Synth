@@ -258,9 +258,9 @@ void usb_midi_transmit() {
             if (millis() - blob_ptr->transmitTimeStamp > MIDI_TRANSMIT_INTERVAL) {
               blob_ptr->transmitTimeStamp = millis();
               blobValues[0] = blob_ptr->UID + 1;
-              blobValues[1] = (uint8_t)round(map(blob_ptr->centroid.X, 0, WIDTH, 0, 127));
-              blobValues[2] = (uint8_t)round(map(blob_ptr->centroid.Y, 0, HEIGHT, 0, 127));
-              blobValues[3] = blob_ptr->centroid.Z;
+              blobValues[1] = (uint8_t)round(map(blob_ptr->centroid.x, 0, WIDTH, 0, 127));
+              blobValues[2] = (uint8_t)round(map(blob_ptr->centroid.y, 0, HEIGHT, 0, 127));
+              blobValues[3] = blob_ptr->centroid.z;
               blobValues[4] = blob_ptr->box.W;
               blobValues[5] = blob_ptr->box.H;
               usbMIDI.sendSysEx(6, blobValues, false); // Testing!

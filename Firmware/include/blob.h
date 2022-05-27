@@ -78,9 +78,9 @@ struct xylr {
 
 typedef struct vertrice vertrice_t;
 struct vertrice {
-  float   X;
-  float   Y;
-  uint8_t Z;
+  float   x;
+  float   y;
+  uint8_t z;
 };
 
 typedef struct box box_t;
@@ -110,7 +110,7 @@ struct blob {
   uint32_t debounceTimeStamp;
   uint32_t transmitTimeStamp;
   uint16_t pixels;
-  boolean state;
+  boolean state; ///
   boolean lastState;
   box_t box;
   vertrice_t centroid;

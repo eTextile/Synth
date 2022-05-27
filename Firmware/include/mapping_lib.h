@@ -36,48 +36,29 @@ struct point {
     float y;
 };
 
-typedef struct polygon polygon_t;
-struct polygon {
-    uint8_t point_cnt;
-    point_t point[MAX_POLYGON_POINT];
-    float m[MAX_POLYGON_POINT];
-    float c[MAX_POLYGON_POINT];
-};
-
 typedef struct rect rect_t;
 struct rect {
   point_t from;
   point_t to;
 };
 
-typedef struct Key Key_t;
-struct Key {
+typedef struct key keysroke_t;
+struct key {
   rect_t rect;
-  boolean state;
+  uint8_t chan;
   uint8_t note;
+  uint8_t velocity;
+  boolean state;
 };
 
-typedef struct touchpad touchpad_t;
-struct touchpad {
+typedef struct slider slider_t;
+struct slider {
   rect_t rect;
-  uint8_t CCx;    // Blob X axis MIDI cChange mapping
-  uint8_t CCy;    // Blob Y axis MIDI cChange mapping
-  uint8_t CCz;    // Blob Z axis MIDI cChange mapping
-  uint8_t CCs;    // Blob state MIDI cChange mapping
-  uint8_t CCvxy;  // Blob XY velocity MIDI cChange mapping
-  uint8_t CCvz;   // Blob Z velocity MIDI cChange mapping
-};
-
-typedef struct vSlider vSlider_t;
-struct vSlider {
-  rect_t rect;
-  uint8_t CC;
-};
-
-typedef struct hSlider hSlider_t;
-struct hSlider {
-  rect_t rect;
-  uint8_t CC;
+  uint8_t chan;
+  uint8_t cc;
+  uint8_t min;
+  uint8_t max;
+  uint8_t val;
 };
 
 typedef struct cTrack cTrack_t;
@@ -95,41 +76,61 @@ struct cSlider {
   float lastVal;
 };
 
+typedef struct polygon polygon_t;
+struct polygon {
+    uint8_t point_cnt;
+    point_t point[MAX_POLYGON_POINT];
+    float m[MAX_POLYGON_POINT];
+    float c[MAX_POLYGON_POINT];
+};
+typedef struct e256_touch e256_touch_t;
+struct e256_touch {
+  uint8_t x_chan;  //
+  uint8_t x_cc;    //
+  uint8_t y_chan;  //
+  uint8_t y_cc;    //
+  uint8_t z_chan;  //
+  uint8_t z_cc;    //
+};
+
+typedef struct touchpad touchpad_t;
+struct touchpad {
+  rect_t rect;
+  uint8_t touchs; // Max blobs
+  e256_touch_t touch[MAX_TOUCH_POINT];
+  uint8_t min;    // 
+  uint8_t max;    //
+};
+
 extern uint8_t mapp_trigs;
-extern Key_t *mapp_trigsParams;
+extern keysroke_t *mapp_trigsParams;
 void mapping_triggers_alloc(uint8_t count);
 
-extern uint8_t mapp_togs;
-extern Key_t *mapp_togsParams;
-void mapping_toggles_alloc(uint8_t count);
+extern uint8_t mapp_switchs;
+extern keysroke_t *mapp_switchParams;
+void mapping_switchs_alloc(uint8_t count);
 
-extern uint8_t mapp_hSliders;
-extern hSlider_t *mapp_hSlidersParams;
-void mapping_hSliders_alloc(uint8_t count);
-
-extern uint8_t mapp_vSliders;
-extern vSlider_t *mapp_vSlidersParams;
-void mapping_vSliders_alloc(uint8_t count);
+extern uint8_t mapp_sliders;
+extern slider_t *mapp_slidersParams;
+void mapping_sliders_alloc(uint8_t count);
 
 extern uint8_t mapp_circles;
 extern circle_t *mapp_circlesParams;
 void mapping_circles_alloc(uint8_t count);
 
-extern uint8_t mapp_touchpads;
-extern touchpad_t *mapp_touchpadsParams;
-void mapping_touchpads_alloc(uint8_t count);
-
 extern uint8_t mapp_polygons;
 extern polygon_t *mapp_polygonsParams;
 void mapping_polygons_alloc(uint8_t count);
 
+extern uint8_t mapp_touchpads;
+extern touchpad_t *mapp_touchpadsParams;
+void mapping_touchpads_alloc(uint8_t count);
 
 void mapping_lib_setup(void);
 
 void MAPPING_TRIGGERS_SETUP(void);
-void MAPPING_TOGGLES_SETUP(void);
-void MAPPING_VSLIDERS_SETUP(void);
-void MAPPING_HSLIDERS_SETUP(void);
+void MAPPING_SWITCHS_SETUP(void);
+void MAPPING_SLIDERS_SETUP(void);
 void MAPPING_CIRCLES_SETUP(void);
 void MAPPING_TOUCHPADS_SETUP(void);
 void MAPPING_POLYGONS_SETUP(void);
@@ -137,15 +138,15 @@ void MAPPING_GRID_SETUP(void);
 void MAPPING_CSLIDERS_SETUP(void);
 
 void mapping_tirggers_updete(void);
-void mapping_toggles_updete(void);
-void mapping_vSliders_updete(void);
-void mapping_hSliders_updete(void);
+void mapping_switchs_updete(void);
+void mapping_sliders_updete(void);
 void mapping_circles_updete(void);
-void mapping_touchpads_updete(void);
 void mapping_polygons_update(void);
+void mapping_touchpads_updete(void);
+
+void mapping_cSliders_updete(void);
 void mapping_grid_populate(void);
 void mapping_grid_updete(void);
-void mapping_cSliders_updete(void);
 
 void mapping_lib_update(void);
 

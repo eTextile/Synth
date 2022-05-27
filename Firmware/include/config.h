@@ -86,11 +86,11 @@
 // E256 MAPPING_LIB CONSTANTS 
 #define MAX_BLOBS                    32    // [0:7] How many blobs can be tracked at the same time
 #define MAX_TRIGGERS                 16
-#define MAX_TOGGLES                  16
-#define MAX_HSLIDERS                 8
-#define MAX_VSLIDERS                 8
+#define MAX_SWITCHS                  16
+#define MAX_SLIDERS                  8
 #define MAX_CIRCLES                  9
 #define MAX_TOUCHPADS                4
+#define MAX_TOUCH_POINT              10
 #define MAX_POLYGON_POINT            128
 #define MAX_POLYGONS                 8
 
@@ -127,6 +127,16 @@
 #define FLASH_CONFIG_LOAD_FAILED       7
 #define CONFIG_APPLY_FAILED            8
 #define UNKNOWN_SYSEX                  9
+#define TOO_MANY_BLOBS                 10
+
+/*
+#define M_CHAN                         "c"
+#define M_VELO                         "v"
+#define M_NOTE                         "n"
+#define M_CC                           "cc"
+#define M_VAL                          "v"
+#define M_STATE                        "s"
+*/
 
 typedef struct leds leds_t;
 struct leds {
