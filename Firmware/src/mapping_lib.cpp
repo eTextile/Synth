@@ -42,7 +42,7 @@ void mapping_triggers_update(void) {
           blob_ptr->centroid.y > mapp_trigsParams[i].rect.from.y &&
           blob_ptr->centroid.y < mapp_trigsParams[i].rect.to.y) {
         if (!blob_ptr->lastState) {
-          midi_sendOut(midi::NoteOn, mapp_trigsParams[i].note, 127);
+          midi_sendOut(midi::NoteOn, mapp_trigsParams[i].note, mapp_trigsParams[i].velocity);
           #if defined(DEBUG_MAPPING)
             Serial.printf("\nDEBUG_MAPPING_TRIGGERS\tID:%d\tNOTE_ON:%d", i, mapp_trigParams[i].note);
           #endif
