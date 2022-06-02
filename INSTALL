@@ -1,0 +1,37 @@
+cd $HOME
+mkdir etextile
+cd etextile
+
+# Install platform.io
+https://docs.platformio.org/en/latest//core/installation.html#installation-methods
+$ python3 -c "$(curl -fsSL https://raw.githubusercontent.com/platformio/platformio/master/scripts/get-platformio.py)"
+
+# Download UDEV rules for Teensy
+$ wget https://www.pjrc.com/teensy/00-teensy.rules
+$ sudo cp 00-teensy.rules /etc/udev/rules.d/
+
+# Download Arduino IDE
+https://www.arduino.cc/en/software
+$ tar xvf arduino-1.8.19-linux64.tar.xz
+
+# Download Teensyduino Installer
+$ wget https://www.pjrc.com/teensy/td_156/TeensyduinoInstall.linux64
+$ chmod 755 TeensyduinoInstall.linux64
+$ TeensyduinoInstall.linux64
+-> Select Arduino path: $HOME/etextile/arduino-1.8.19
+
+# Compile the Firmware
+$ git clone https://github.com/eTextile/Synth/ Synth.git
+$ cd Synth.git
+$ git checkout E256_platformio
+$ cd Firmware
+$ $HOME/.platformio/penv/bin/pio lib install "bblanchon/ArduinoJson@^6.19.4"
+$ $HOME/.platformio/penv/bin/platformio run
+$ cp .pio/build/USB_MIDI_SERIAL/firmware.hex .
+
+# Flash the Firmware
+$ cd ..
+$ cd arduino-1.8.19/hardware/teensy/avr/cores/teensy4/
+$ make
+File -> Open HEX File
+-> Select firmware path: $HOME/etextile/Synth.git/Firmware/firmware.hex
