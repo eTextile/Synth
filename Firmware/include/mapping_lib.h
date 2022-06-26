@@ -51,9 +51,11 @@ struct key {
   boolean state;
 };
 
+
 typedef struct slider slider_t;
 struct slider {
   rect_t rect;
+  boolean dir; // H_SLIDER || V_SLIDER
   uint8_t chan;
   uint8_t cc;
   uint8_t min;
@@ -85,12 +87,12 @@ struct polygon {
 };
 typedef struct e256_touch e256_touch_t;
 struct e256_touch {
-  uint8_t x_chan;  //
-  uint8_t x_cc;    //
-  uint8_t y_chan;  //
-  uint8_t y_cc;    //
-  uint8_t z_chan;  //
-  uint8_t z_cc;    //
+  uint8_t Xchan;
+  uint8_t Xcc;
+  uint8_t Ychan;
+  uint8_t Ycc;
+  uint8_t Zchan;
+  uint8_t Zcc;
 };
 
 typedef struct touchpad touchpad_t;
@@ -128,14 +130,13 @@ void mapping_touchpads_alloc(uint8_t count);
 
 void mapping_lib_setup(void);
 
-void MAPPING_TRIGGERS_SETUP(void);
-void MAPPING_SWITCHS_SETUP(void);
-void MAPPING_SLIDERS_SETUP(void);
-void MAPPING_CIRCLES_SETUP(void);
-void MAPPING_TOUCHPADS_SETUP(void);
-void MAPPING_POLYGONS_SETUP(void);
-void MAPPING_GRID_SETUP(void);
-void MAPPING_CSLIDERS_SETUP(void);
+void mapping_triggers_setup(void);
+void mapping_switchs_setup(void);
+void mapping_sliders_setup(void);
+void mapping_circles_setup(void);
+void mapping_touchpads_setup(void);
+void mapping_polygons_setup(void);
+void mapping_grids_setup(void);
 
 void mapping_tirggers_updete(void);
 void mapping_switchs_updete(void);
@@ -144,7 +145,6 @@ void mapping_circles_updete(void);
 void mapping_polygons_update(void);
 void mapping_touchpads_updete(void);
 
-void mapping_cSliders_updete(void);
 void mapping_grid_populate(void);
 void mapping_grid_updete(void);
 

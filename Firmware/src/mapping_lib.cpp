@@ -7,11 +7,11 @@
 #include "mapping_lib.h"
 
 void mapping_lib_setup(){
-  MAPPING_TRIGGERS_SETUP();
-  MAPPING_SWITCHS_SETUP();
-  MAPPING_SLIDERS_SETUP();
-  MAPPING_CIRCLES_SETUP();
-  MAPPING_TOUCHPADS_SETUP();
+  mapping_triggers_setup();
+  mapping_switchs_setup();
+  mapping_sliders_setup();
+  mapping_circles_setup();
+  mapping_touchpads_setup();
   MAPPING_POLYGONS_SETUP();
   //MAPPING_GRID_SETUP();
   //MAPPING_CSLIDERS_SETUP();
@@ -29,7 +29,7 @@ void mapping_triggers_alloc(uint8_t count) {
   mapp_trigsParams = mapp_trigsParams_privStore;
 };
 
-inline void MAPPING_TRIGGERS_SETUP(void) {
+inline void mapping_triggers_setup(void) {
   // Nothing to pre-compute yet
 };
 
@@ -70,7 +70,7 @@ void mapping_switchs_alloc(uint8_t count) {
   mapp_switchParams = mapp_switchParams_privStore;
 };
 
-void MAPPING_SWITCHS_SETUP(void) {
+void mapping_switchs_setup(void) {
   // Nothing to pre-compute yet
 };
 
@@ -102,7 +102,7 @@ void mapping_switchs_update(void) {
 };
 
 ///////////////////////////////////////////////
-              /*__V_SLIDERS__*/
+              /*__SLIDERS__*/
 ///////////////////////////////////////////////
 uint8_t mapp_sliders = 0;
 slider_t* mapp_slidersParams = NULL;
@@ -115,8 +115,16 @@ void mapping_sliders_alloc(uint8_t count) {
   mapp_slidersParams = mapp_slidersParams_privStore;
 };
 
-void MAPPING_SLIDERS_SETUP(void) {
-  // Nothing to pre-compute yet
+void mapping_sliders_setup(void) {
+  for (uint8_t i = 0; i < mapp_sliders; i++) {
+    uint8_t size_x = mapp_slidersParams[i].rect.to.x - mapp_slidersParams[i].rect.from.x;
+    uint8_t size_y = mapp_slidersParams[i].rect.to.y - mapp_slidersParams[i].rect.from.y;
+    if (size_x > size_y){
+      mapp_slidersParams[i].dir = H_SLIDER;
+    } else {
+      mapp_slidersParams[i].dir = V_SLIDER;
+    };
+  };
 };
 
 void mapping_sliders_update(void) {
@@ -126,7 +134,15 @@ void mapping_sliders_update(void) {
           blob_ptr->centroid.x < mapp_slidersParams[i].rect.to.x &&
           blob_ptr->centroid.y > mapp_slidersParams[i].rect.from.y &&
           blob_ptr->centroid.y < mapp_slidersParams[i].rect.to.y) {
-        uint8_t val = round(map(blob_ptr->centroid.y, mapp_slidersParams[i].rect.from.y, mapp_slidersParams[i].rect.to.y, 0, 127)); // [0:127]
+        uint8_t val = 0;
+        switch (mapp_slidersParams[i].dir){
+          case H_SLIDER:
+            val = round(map(blob_ptr->centroid.x, mapp_slidersParams[i].rect.from.x, mapp_slidersParams[i].rect.to.x, 0, 127)); // [0:127]
+          break;
+          case V_SLIDER:
+            val = round(map(blob_ptr->centroid.y, mapp_slidersParams[i].rect.from.y, mapp_slidersParams[i].rect.to.y, 0, 127)); // [0:127]
+          break;
+        }
         if (val != mapp_sliders_lastVal[i]) {
           mapp_sliders_lastVal[i] = val;
           #if defined(DEBUG_MAPPING)
@@ -153,7 +169,7 @@ void mapping_circles_alloc(uint8_t count) {
   mapp_circlesParams = mapp_circlesParams_privStore;
 };
 
-void MAPPING_CIRCLES_SETUP(void){
+void mapping_circles_setup(void){
    // Nothing to pre-compute yet
 };
 
@@ -202,7 +218,7 @@ void mapping_touchpads_alloc(uint8_t count) {
   mapp_touchpadsParams = mapp_touchpadsParams_privStore;
 };
 
-void MAPPING_TOUCHPADS_SETUP(void){
+void mapping_touchpads_setup(void){
   // Nothing to pre-compute yet
 };
 
@@ -213,12 +229,12 @@ void mapping_touchpads_update(void) {
           blob_ptr->centroid.x < mapp_touchpadsParams[i].rect.to.x &&
           blob_ptr->centroid.y > mapp_touchpadsParams[i].rect.from.y &&
           blob_ptr->centroid.y < mapp_touchpadsParams[i].rect.to.y) {
-        if (mapp_touchpadsParams[i].touch[blob_ptr->UID].x_cc) {
+        if (mapp_touchpadsParams[i].touch[blob_ptr->UID].Xcc) {
           #if defined(DEBUG_MAPPING)
             Serial.printf("\nDEBUG_MAPPING_TOUCHPAD\tMIDI_x_cc:%d\tVAL:%d", mapp_touchpadsParams[i].CCx, round(map(blob_ptr->centroid.x, mapp_touchpadsParams[i].rect.from.x, mapp_touchpadsParams[i].rect.to.x, 0, 127)));
           #else
             midi_sendOut(midi::ControlChange,
-            mapp_touchpadsParams[i].touch[blob_ptr->UID].x_cc,
+            mapp_touchpadsParams[i].touch[blob_ptr->UID].Xcc,
             round(map(blob_ptr->centroid.x,
             mapp_touchpadsParams[i].rect.from.x,
             mapp_touchpadsParams[i].rect.to.x,
@@ -226,12 +242,12 @@ void mapping_touchpads_update(void) {
             mapp_touchpadsParams[i].max)));
           #endif
         };
-        if (mapp_touchpadsParams[i].touch[blob_ptr->UID].y_cc) {
+        if (mapp_touchpadsParams[i].touch[blob_ptr->UID].Ycc) {
           #if defined(DEBUG_MAPPING)
             Serial.printf("\nDEBUG_MAPPING_TOUCHPAD\tMIDI_y_cc:%d\tVAL:%d", mapp_touchpadsParams[i].touch[blob_ptr->UID].y_cc, round(map(blob_ptr->centroid.y, mapp_touchpadsParams[i].rect.from.y, mapp_touchpadsParams[i].rect.to.y, 0, 127)));
           #else
             midi_sendOut(midi::ControlChange,
-            mapp_touchpadsParams[i].touch[blob_ptr->UID].y_cc,
+            mapp_touchpadsParams[i].touch[blob_ptr->UID].Ycc,
             round(
               map(blob_ptr->centroid.x,
               mapp_touchpadsParams[i].rect.from.y,
@@ -242,12 +258,12 @@ void mapping_touchpads_update(void) {
             );
           #endif
         };
-        if (mapp_touchpadsParams[i].touch[blob_ptr->UID].z_cc) {
+        if (mapp_touchpadsParams[i].touch[blob_ptr->UID].Zcc) {
           #if defined(DEBUG_MAPPING)
             Serial.printf("\nDEBUG_MAPPING_TOUCHPAD\tMIDI_z_cc:%d\tVAL:%d", mapp_touchpadsParams[i].touch[blob_ptr->UID].z_cc, map(blob_ptr->centroid.z, 0, 255, 0, 127));
           #else
             midi_sendOut(midi::ControlChange,
-            mapp_touchpadsParams[i].touch[blob_ptr->UID].z_cc, 
+            mapp_touchpadsParams[i].touch[blob_ptr->UID].Zcc, 
             map(blob_ptr->centroid.z, 0, 255, 0, 127));
           #endif
         };

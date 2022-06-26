@@ -91,8 +91,10 @@
 #define MAX_CIRCLES                  9
 #define MAX_TOUCHPADS                4
 #define MAX_TOUCH_POINT              10
-#define MAX_POLYGON_POINT            128
+#define MAX_POLYGON_POINT            64
 #define MAX_POLYGONS                 8
+#define H_SLIDER                     0
+#define V_SLIDER                     1
 
 // E256 MIDI CONSTANTS
 #define SYSEX_CONF                   0x7C // DEC: 124
