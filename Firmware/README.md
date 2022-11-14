@@ -1,7 +1,71 @@
-# eTextile-Synthesizer
-## Exploring music through textile
+# eTextile-MIDI-interface
+## Build your own eTextile-User-Interfaces to play music through textile
 
-### Requirements
+## Easy step-by-step User Guide
+1. Poweirng the **eTextile-MIDI-interface**:
+    - Use the included power cable with a **common 5V USB power supplie**
+    - or use the same cable to plug the interface to your laptop USB port
+2. For data communication between the eTextile-MIDI-interface and the web app or music software:
+    - use both cables: the power cable and the Micro USB cable (Type B)
+3. Load the provided web application (using Chome): https://mapping.etextile.org/
+4. Build your custom eTextile-User-Interfaces using the web app features
+5. The app contains Graphic-User-Interface moduls like toggles, sliders, grids, etc.
+6. Each one can be placed, resized and configured to target specific MIDI_PARAMETERS
+    - Each modul is providing **Midi Note** or **Midi Control-Change**
+7. The web app is made to generate and upload a **config file** to the eTextile-MIDI-interface
+8. You can then save it to the flash memory to be **load on each startup**
+    - Long Press on the LEFT_BUTTON (physical) will **save the config to the flash memory**
+9. You can as well save it to your computer for arkive
+10. Use MIDI cable (mini-jack-TRS-A) to connect the eTextile-MIDI-interface to external MIDI Synthesizers.
+
+## BOOT SEQUENCE
+### BOOTING WITH USB CABLE & POWER PLUG
+1. When the eTextile-MIDI-interface is connected to the web app via Micro USB cable (type B) & power cable
+2. The App will automatically detect the device an proceed with [SYNC_MODE_REQUEST]
+3. The device answer [SYNC_MODE_DONE]
+4. The App will proceed with [CONFIG_FILE_REQUEST]
+5. The device can answer [FLASH_CONFIG_LOAD_DONE] or [FLASH_CONFIG_LOAD_FAILED]
+    - if [FLASH_CONFIG_LOAD_DONE]
+      - Right after the device will send it **curent config file** using (MIDI_SYSTEM_EXCLUSIVE_MSG)
+      - then the web app will load the config on the sceen
+      - This config can be modified and re-uplod to the device, **erasing the previous config file** :-(
+      - A config manager is would be cool :-)
+    - if [FLASH_CONFIG_LOAD_FAILED]
+      - The web app will prompt **NO CONFIG FILE IN THE DEVICE!**
+      - you will then start from scratch
+
+### BOOTING WITH POWER PLUG ONLY (NO USB CABLE!)
+1. When powering the eTextile-MIDI-interface with the power plug (No USB)
+2. The firmware boot in [PENDING_MODE]
+3. If [PENDING_MODE_TIMEOUT] ocurre it switch to [STANDALONE_MODE]
+4. The device proceed with **loaded_flash_config()**
+    - If [FLASH_CONFIG_LOAD_FAILED]: the **BUILTIN_LEDS** will blink **ERROR_CODE**  
+    - If [FLASH_CONFIG_LOAD_DONE]: the **BUILTIN_LEDS** will blink **STANDALONE_MODE**
+5. The eTextile-MIDI-interface with TUI mappings is now RUNING!
+6. By using a mini-jack (TRS-A) on the MIDI-OUT socket your custom eTextile-MIDI-interface is now able to talk MIDI to your external MIDI SYNTH
+
+## MAPPING LIB
+### LIST OF AVAILABLE TUIs
+- All feture are parametric
+  - tirggers()
+  - switchs()
+  - sliders()
+  - circles()
+  - polygons()
+  - touchpads()
+  - grids()
+    - grid tables are hardcoded (it's more difficult to change if it later becomes necessary :-(
+    - [GRID_LAYOUT_NOTES]; MIDI notes definitions
+    - [GRID_LAYOUT_MIDI_IN]: Use the MIDI_HARDWARE_INPUT notes to populate the grid
+    - GRID_LAYOUT_DEFAULT vs GRID_LAYOUT_HARMONIC
+        - [GRID_LAYOUT_DEFAULT]: the MIDI notes are organized sequentially from 0 to 127 % GRID COLS
+            - GRID_LAYOUT_DEFAULT -> GRID_COLS  12
+            - GRID_LAYOUT_DEFAULT -> GRID_ROWS  11
+        - [GRID_LAYOUT_HARMONIC]: the MIDI notes are organized in 2D Harmonic table note layout
+            - GRID_LAYOUT_HARMONIC -> GRID_COLS 14
+            - GRID_LAYOUT_HARMONIC -> GRID_ROWS 9
+
+### Development Frameworks
 - **eTextile-Synthesizer PCB** & **Teensy 4.0**
 - **Arduino IDE**: Arduino 1.8.19 [DOWNLOAD](https://www.arduino.cc/en/Main/Software/)
 - **Visual Studio Code**: [DOWNLOAD](https://visualstudio.microsoft.com/)
@@ -10,7 +74,8 @@
 
 ### External Libraries
 All Library dependencies are automatically installed using platformio.ini (lib_deps)
-    Path of the lib_deps installation : /Synth/Firmware/.pio/libdeps/teensy40/...
+Path of the lib_deps installation : 
+    /Synth/Firmware/.pio/libdeps/teensy40/...
 
 ### Firmware main file
     /Synth/Firmware/src/main.cpp
@@ -23,17 +88,19 @@ All Library dependencies are automatically installed using platformio.ini (lib_d
 5. Click "Install"
 
 ### Powering the eTextile-Synthesizer
-- The Teensy Micro USB Type B **will not power** the eTextile-Synthesizer.
+- The Teensy Micro USB Type B **is not powering** the eTextile-Synthesizer.
 - You must use the included power cable with an **5Volts AC/DC power Plug** or your laptop USB port.
 
-### Program Synopsis
+### Firmware Synopsis (Low level)
 - **Force image acquisition** 16x16 using sinchronious dual analog read.
 - **Bilinear interpolation** the sensor force image is interpolated to 64x64 using bilinear algorithm.
 - **Touch biasing** adjustable threshold, depending on needed sensitivity.
 - **Blob segmentation** the binary image is genarated using a flood fill algorithm.
 - **Blob tracking** blob ID management (matching with previous frame)
-- **Blob shape and movement characterisation**: blobs coordinates, size, pressure, velocity, etc.
-- **Blob transmission** via MIDI over USB and MIDI over HARDWARE (mini-jack-TRS-A).
+- **Blob shape and movement characterisation**: blobs coordinates, size, pressure, velocity.
+- **Tactile-User-Interface using Mapping-lib functionalitys**
+    - MIDI over USB (USB cable type B)
+    - MIDI over HARDWARE (mini-jack-TRS-A)
 
 ### Benchmark
   - ADC_INPUT : 2500 FPS
@@ -41,28 +108,10 @@ All Library dependencies are automatically installed using platformio.ini (lib_d
   - ADC_INPUT / BILINEAR_INTERPOLATION / BLOB_TRACKING : 550 FPS
   - ADC_INPUT / BILINEAR_INTERPOLATION / BLOB_TRACKING / AUDIO : ...
 
-### Use the eTextile-Synthesizer as COMPUTER_INTERFACE
-- [USB_MIDI]: Transmit touch coordinates via USB_MIDI
-- [HARDWARE_MIDI]: Transmit touch coordinates via MIDI hardware (mini-jack-TRS-A)
-
-### Use the eTextile-Synthesizer as STANDALONE device
-- [SYNTH_PLAYER]: set the eTextile-Synthesizer as polyphonic synthesizer
-- [GRANULAR_PLAYER]: 
-- [FLASH_PLAYER]: play audio files loded into the external flash memody 
-- [MOOG]: TODO
-
-### Mapping functionality (IN_PROGRESS)
-- [STANDALONE_MODE]
-  - [GRID_LAYOUT_MIDI_IN]
-  - [GRID_LAYOUT_DEFAULT]
-  - [GRID_LAYOUT_HARMONIC]
-  - [GRID_LAYOUT_NOTES]
-  - [GRID_LAYOUT_FREQ]
-
 ## Copyright
 Except as otherwise noted, all files in the eTextile-Synthesizer project folder
 
-    Copyright (c) 2014-2021 Maurin Donneaud
+    Copyright (c) 2014-2022 Maurin Donneaud
 
 For information on usage and redistribution, and for a DISCLAIMER OF ALL
 WARRANTIES, see LICENSE.txt included in the eTextile-Synthesizer project folder.

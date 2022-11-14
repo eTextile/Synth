@@ -4,7 +4,8 @@
   This work is licensed under Creative Commons Attribution-ShareAlike 4.0 International license, see the LICENSE file for details.
 */
 
-#include "usb_midi_transmit.h"
+#include "usb_midi_io.h"
+
 #include "config.h"
 #include "scan.h"
 #include "interp.h"
@@ -14,11 +15,11 @@
 #include "allocate.h"
 
 uint32_t bootTime = 0;
-uint16_t sysEx_dataSize = 0;
+uint16_t sysEx_data_length = 0;
 uint8_t* sysEx_data_ptr = NULL;
 
+// Used by USB_MIDI & HARDWARE_MIDI
 void e256_noteOn(byte channel, byte note, byte velocity){
-  Serial.println(channel);
   midiNode_t* node_ptr = (midiNode_t*)llist_pop_front(&midi_node_stack);
   node_ptr->midiMsg.status = midi::NoteOn;
   node_ptr->midiMsg.data1 = note;
@@ -26,8 +27,8 @@ void e256_noteOn(byte channel, byte note, byte velocity){
   llist_push_front(&midiIn, node_ptr);
 };
 
+// Used by USB_MIDI & HARDWARE_MIDI
 void e256_noteOff(byte channel, byte note, byte velocity){
-  Serial.println(channel);
   midiNode_t* node_ptr = (midiNode_t*)llist_pop_front(&midi_node_stack);
   node_ptr->midiMsg.status = midi::NoteOff;
   node_ptr->midiMsg.data1 = note;
@@ -35,6 +36,7 @@ void e256_noteOff(byte channel, byte note, byte velocity){
   llist_push_front(&midiIn, node_ptr);
 };
 
+// Used by USB_MIDI & HARDWARE_MIDI
 void e256_controlChange(byte channel, byte number, byte value){
     switch (channel){
       case MIDI_LEVELS_CHANNEL:
@@ -46,6 +48,7 @@ void e256_controlChange(byte channel, byte number, byte value){
     }
 };
 
+// Used by USB_MIDI & HARDWARE_MIDI
 void e256_programChange(byte channel, byte program){
   switch (channel){
     case MIDI_MODES_CHANNEL:
@@ -89,53 +92,50 @@ void e256_programChange(byte channel, byte program){
             usbMIDI.sendSysEx(flash_configSize, flash_config_ptr, false);
             usbMIDI.send_now();
             while (usbMIDI.read());
-            #if defined(DEBUG_CONFIG)
+            #if defined(USB_MIDI_SERIAL) & defined(DEBUG_CONFIG)
               Serial.printf("\nSEND_FLASH_CONFIG: ");
               printBytes(flash_config_ptr, flash_configSize);
             #endif
           } else {
-            midiInfo(FLASH_CONFIG_LOAD_FAILED, MIDI_VERBOSITY_CHANNEL);
+            midiInfo(FLASH_CONFIG_LOAD_FAILED, MIDI_ERROR_CHANNEL);
           };
           break;
       };
       break;
   };
-  #if defined(DEBUG_MIDI_IO)
+  #if defined(USB_MIDI_SERIAL) & defined(DEBUG_MIDI_IO)
     Serial.printf("\nRECIVE_PGM_IN:%d\tCHANNEL:%d", program, channel);
   #endif
 };
 
+// Move to midi_management.cpp
 void usb_midi_pending_mode_timeout(){
   if (e256_currentMode == PENDING_MODE && millis() - bootTime > PENDING_MODE_TIMEOUT){
     if(load_flash_config()){
       set_mode(STANDALONE_MODE);
       matrix_calibrate();
-      #if defined(DEBUG_CONFIG)
-        Serial.printf("\nLOADED_FLASH_CONFIG: ");
+      #if defined(USB_MIDI_SERIAL) & defined(DEBUG_CONFIG)
+        Serial.printf("\nFLASH_CONFIG_LOAD_DONE: ");
         printBytes(flash_config_ptr, flash_configSize);
       #endif
     } else {
-      set_mode(ERROR_MODE);
+      set_mode(SYNC_MODE);
+      #if defined(USB_MIDI_SERIAL) & defined(DEBUG_CONFIG)
+        Serial.printf("\nFLASH_CONFIG_LOAD_FAILED!");
+      #endif
+      //set_mode(ERROR_MODE);
     };
   };
 };
 
 void midiInfo(uint8_t msg, uint8_t channel){
+if (e256_currentMode == STANDALONE_MODE){
   usbMIDI.sendProgramChange(msg, channel); // ProgramChange(program, channel);
   usbMIDI.send_now();
-  #if defined(DEBUG_CONFIG)
+  #if defined(USB_MIDI_SERIAL) & defined(DEBUG_CONFIG)
     Serial.printf("\nSEND_MIDI_MSG:%d\tCHANNEL:%d", msg, channel);
   #endif
-};
-
-void printBytes(uint8_t* data_ptr, uint16_t size) {
-  Serial.printf("\nDATA_LENGTH: %d", size);
-  Serial.printf("\nDATA: ");
-  while (size > 0) {
-    uint8_t b = *data_ptr++;
-    Serial.printf("%x ", b);
-    size--;
-  };
+  }
 };
 
 // Send data via MIDI system exclusive message
@@ -157,17 +157,17 @@ void e256_systemExclusive(const uint8_t* data_ptr, uint16_t length, boolean comp
   if (sysEx_alloc){
     sysEx_alloc = false;
     sysEx_identifier = *(data_ptr + 2);
-    sysEx_dataSize = *(data_ptr + 3) << 7 | *(data_ptr + 4);
-    sysEx_chunk_ptr = sysEx_data_ptr = (uint8_t*)allocate(sysEx_data_ptr, sysEx_dataSize );
-    sysEx_chunks = (uint8_t)((sysEx_dataSize + 3) / USB_MIDI_SYSEX_MAX);
-    sysEx_lastChunkSize = (sysEx_dataSize + 3) % USB_MIDI_SYSEX_MAX;
+    sysEx_data_length = *(data_ptr + 3) << 7 | *(data_ptr + 4);
+    sysEx_chunk_ptr = sysEx_data_ptr = (uint8_t*)allocate(sysEx_data_ptr, sysEx_data_length );
+    sysEx_chunks = (uint8_t)((sysEx_data_length + 3) / USB_MIDI_SYSEX_MAX);
+    sysEx_lastChunkSize = (sysEx_data_length + 3) % USB_MIDI_SYSEX_MAX;
     if (sysEx_lastChunkSize != 0) sysEx_chunks++;
     sysEx_chunkCount = 0;
     midiInfo(USBMIDI_CONFIG_ALLOC_DONE, MIDI_VERBOSITY_CHANNEL);
   }
   else {
     if (sysEx_chunks == 1) { // Only one chunk to load
-      memcpy(sysEx_chunk_ptr, data_ptr + 2, sizeof(uint8_t) * sysEx_dataSize);
+      memcpy(sysEx_chunk_ptr, data_ptr + 2, sizeof(uint8_t) * sysEx_data_length);
     }
     else if (sysEx_chunks > 1 && sysEx_chunkCount == 0) { // First chunk
       sysEx_chunkSize = USB_MIDI_SYSEX_MAX - 2; // Removing header size
@@ -187,9 +187,9 @@ void e256_systemExclusive(const uint8_t* data_ptr, uint16_t length, boolean comp
       sysEx_alloc = true;
       if (sysEx_identifier == SYSEX_CONF) {
         midiInfo(USBMIDI_CONFIG_LOAD_DONE, MIDI_VERBOSITY_CHANNEL);
-        #if defined(DEBUG_CONFIG)
+        #if defined(USB_MIDI_SERIAL) & defined(DEBUG_CONFIG)
           Serial.printf("\nSYSEX_CONFIG_RECIVED: ");
-          printBytes(sysEx_data_ptr, sysEx_dataSize);
+          printBytes(sysEx_data_ptr, sysEx_data_length);
         #endif
       }
       else if (sysEx_identifier == SYSEX_SOUND){ // TODO
@@ -204,10 +204,13 @@ void e256_systemExclusive(const uint8_t* data_ptr, uint16_t length, boolean comp
 
 // TODO
 void e256_clock(){
+#if defined(USB_MIDI_SERIAL) & defined(DEBUG_CONFIG)
   Serial.println("Clock");
+#endif
 };
 
-void usb_midi_transmit_setup() {
+// Setup the USB_MIDI communication port
+void usb_midi_io_setup() {
   usbMIDI.begin();
   usbMIDI.setHandleProgramChange(e256_programChange);
   usbMIDI.setHandleNoteOn(e256_noteOn);
@@ -217,8 +220,46 @@ void usb_midi_transmit_setup() {
   usbMIDI.setHandleClock(e256_clock);
 };
 
-void usb_midi_read_input(void) {
+void usb_midi_recive(void) {
   usbMIDI.read(); // Is there a MIDI incoming messages on any channel
+};
+
+void usb_midi_handle_input(const midi::Message<128u> &midiMsg){
+midiNode_t* node_ptr = (midiNode_t*)llist_pop_front(&midi_node_stack);  // Get a node from the MIDI nodes stack
+  // This can be refactored !!!!!!!!!!!!!!!!!!!!
+  switch (midiMsg.type) {
+    case midi::NoteOn:
+      node_ptr->midiMsg.status = midi::NoteOn;         // Set the MIDI status
+      node_ptr->midiMsg.data1 = midiMsg.data1;         // Set the MIDI note
+      node_ptr->midiMsg.data2 = midiMsg.data2;         // Set the MIDI velocity
+      //node_ptr->midiMsg.channel = midiMsg.channel;   // Set the MIDI channel
+      llist_push_front(&midiIn, node_ptr);             // Add the node to the midiIn linked liste
+      break;
+    case midi::NoteOff:
+      node_ptr->midiMsg.status = midi::NoteOff;        // Set the MIDI status
+      node_ptr->midiMsg.data1 = midiMsg.data1;         // Set the MIDI note
+      node_ptr->midiMsg.data2 = midiMsg.data2;         // Set the MIDI velocity
+      //node_ptr->midiMsg.channel = midiMsg.channel;   // Set the MIDI channel
+      llist_push_front(&midiIn, node_ptr);             // Add the node to the midiIn linked liste
+      break;
+    case midi::ControlChange:
+      node_ptr->midiMsg.status = midi::ControlChange;  // Set the MIDI status
+      node_ptr->midiMsg.data1 = midiMsg.data1;         // Set the MIDI control
+      node_ptr->midiMsg.data2 = midiMsg.data2;         // Set the MIDI value
+      //node_ptr->midiMsg.channel = midiMsg.channel;   // Set the MIDI channel
+      llist_push_front(&midiIn, node_ptr);             // Add the node to the midiIn linked liste
+      break;
+    case midi::Clock:
+      node_ptr->midiMsg.status = midi::Clock;          // Set the MIDI status
+      //node_ptr->midiMsg.data1 = midiMsg.data1;       // Set the MIDI note
+      //node_ptr->midiMsg.data2 = midiMsg.data2;       // Set the MIDI velocity
+      //node_ptr->midiMsg.channel = midiMsg.channel;   // Set the MIDI channel
+      llist_push_front(&midiIn, node_ptr);             // Add the node to the midiIn linked liste
+      break;
+    default:
+      llist_push_front(&midi_node_stack, node_ptr);    // Add the node to the midi_node_stack linked liste
+      break;
+  };
 };
 
 void usb_midi_transmit() {

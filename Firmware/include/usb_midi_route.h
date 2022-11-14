@@ -4,10 +4,11 @@
   This work is licensed under Creative Commons Attribution-ShareAlike 4.0 International license, see the LICENSE file for details.
 */
 
-#ifndef __PLAYER_GRANULAR_H__
-#define __PLAYER_GRANULAR_H__
+// midi_management
+// global mid fitures used by USB_MIDI & HARDWARE_MIDI
+// MidiThru.cpp !?
 
-void player_granular_setup(void);
-void player_granular(void);
+#ifndef __USB_MIDI_ROUTE_H__
+#define __USB_MIDI_IO_H__
 
-#endif /*__PLAYER_GRANULAR_H__*/
+#endif /*__USB_MIDI_ROUTE_H__*/

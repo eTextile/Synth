@@ -4,8 +4,8 @@
   This work is licensed under Creative Commons Attribution-ShareAlike 4.0 International license, see the LICENSE file for details.
 */
 
-#ifndef __SEQ_H__
-#define __SEQ_H__
+#ifndef __MIDI_SEQ_H__
+#define __MIDI_SEQ_H__
 
 #include "config.h"
 #include "llist.h"
@@ -22,4 +22,4 @@ void tapTempo(void);      // TODO
 void stepSequencer(void); // TODO
 void arpeggiator(void);   // TODO
 
-#endif /*__SEQ_H__*/
+#endif /*__MIDI_SEQ_H__*/

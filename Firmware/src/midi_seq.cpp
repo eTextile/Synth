@@ -4,12 +4,11 @@
   This work is licensed under Creative Commons Attribution-ShareAlike 4.0 International license, see the LICENSE file for details.
 */
 
-#include "seq.h"
+#include "midi_seq.h"
 
-// TODO
 void tapTempo(void) {
-
   for (midiNode_t* midiNode_ptr = (midiNode_t*)ITERATOR_START_FROM_HEAD(&midiOut); midiNode_ptr != NULL; midiNode_ptr = (midiNode_t*)ITERATOR_NEXT(midiNode_ptr)) {
+    // TODO
   };
 };
 

@@ -64,6 +64,7 @@ uint8_t setDualCols[DUAL_COLS] = {
 
 #undef SPI_HAS_TRANSACTION
 #define SPI_HAS_TRANSACTION 0
+// will look at https://github.com/RobTillaart/FastShiftInOut
 
 inline void setup_spi(void) {
   #if defined(__MK20DX256__)                                              // If using Teensy 3.2
@@ -231,7 +232,7 @@ void matrix_scan(void) {
     };
   };
 
-#if defined(DEBUG_ADC)
+#if defined(USB_MIDI_SERIAL) & defined(DEBUG_ADC)
   for (uint8_t posY = 0; posY < RAW_ROWS; posY++) {
     uint8_t* row_ptr = COMPUTE_IMAGE_ROW_PTR(&rawFrame, posY);
     for (uint8_t posX = 0; posX < RAW_COLS; posX++) {

@@ -110,7 +110,7 @@ struct blob {
   uint32_t debounceTimeStamp;
   uint32_t transmitTimeStamp;
   uint16_t pixels;
-  boolean state; ///
+  boolean state;
   boolean lastState;
   box_t box;
   vertrice_t centroid;

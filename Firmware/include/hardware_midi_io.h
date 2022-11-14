@@ -4,15 +4,15 @@
   This work is licensed under Creative Commons Attribution-ShareAlike 4.0 International license, see the LICENSE file for details.
 */
 
-#ifndef __HARDWARE_MIDI_TRANSMIT_H__
-#define __HARDWARE_MIDI_TRANSMIT_H__
+#ifndef __HARDWARE_MIDI_IO_H__
+#define __HARDWARE_MIDI_IO_H__
 
 #include "midi_bus.h"
 
-void hardware_midi_transmit_setup(void);
+void hardware_midi_io_setup(void);
 
 void hardware_midi_read_input(void);
 void hardware_midi_handle_input(const midi::Message<128u> &midiMsg);
 void hardware_midi_transmit(void);
 
-#endif /*__HARDWARE_MIDI_TRANSMIT_H__*/
+#endif /*__HARDWARE_MIDI_IO_H__*/

@@ -6,7 +6,7 @@
 
 #include "midi_bus.h"
 
-#define MIDI_NODES 64
+#define MIDI_NODES 128
 
 midiNode_t midiNodeArray[MIDI_NODES] = {0}; // Memory allocation for all MIDI I/O messages
 
@@ -27,4 +27,14 @@ void midi_bus_setup(void) {
     llist_raz(&midiIn);
     llist_raz(&midiOut);
     llist_raz(&midiChord);
+};
+
+void printBytes(uint8_t* data_ptr, uint16_t length) {
+  Serial.printf("\nDATA_LENGTH: %d", length);
+  Serial.printf("\nDATA: ");
+  while (length > 0) {
+    uint8_t b = *data_ptr++;
+    Serial.printf("%x ", b);
+    length--;
+  };
 };

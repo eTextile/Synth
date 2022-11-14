@@ -12,19 +12,9 @@
 #include "median.h"
 #include "midi_bus.h"
 #include "mapping_lib.h"
-#include "usb_midi_transmit.h"
-#include "hardware_midi_transmit.h"
+#include "usb_midi_io.h"
+#include "hardware_midi_io.h"
 #include "soundCard.h"
-
-#if defined(PLAYER_FLASH)
-#include "player_flash.h"
-#endif
-#if defined(PLAYER_SYNTH)
-#include "player_synth.h"
-#endif
-#if defined(PLAYER_GRANULAR)
-#include "player_granular.h"
-#endif
 
 uint32_t fpsTimeStamp = 0;
 uint16_t fps = 0;
@@ -35,29 +25,12 @@ void setup() {
   interp_setup();
   blob_setup();
   midi_bus_setup();
-  // mapping_lib_setup();
-  usb_midi_transmit_setup();
-  hardware_midi_transmit_setup();
-  sound_card_setup();
-
+  mapping_lib_setup();
+  usb_midi_io_setup();
+  hardware_midi_io_setup();
   //while (!Serial);
   //Serial.println("START");
 
-#if defined(RUNING_MEDIAN)
-  running_median_setup();
-#endif
-#if defined(PLAYER_SYNTH)
-  player_synth_setup();
-#endif
-#if defined(PLAYER_SYNTH2)
-  player_synth2_setup();
-#endif
-#if defined(PLAYER_FLASH)
-  player_flash_setup();
-#endif
-#if defined(PLAYER_GRANULAR)
-  player_granular_setup();
-#endif
 set_mode(PENDING_MODE);
 bootTime = millis();
 };
@@ -70,46 +43,36 @@ void loop() {
 
   switch (e256_currentMode) {
     case PENDING_MODE:
-      usb_midi_read_input();
+      usb_midi_recive();
       usb_midi_pending_mode_timeout();
       break;
     case SYNC_MODE:
-      usb_midi_read_input();
+      usb_midi_recive();
       break;
     case STANDALONE_MODE:
-      hardware_midi_read_input();
-      // mapping_lib_update();
-      update_levels();
-      #if defined(PLAYER_SYNTH)
-      player_synth();
+      #if defined(GRID_LAYOUT_MIDI_IN)
+        hardware_midi_read_input();
       #endif
-      #if defined(PLAYER_SYNTH2)
-      player_synth2();
-      #endif
-      #if defined(PLAYER_FLASH)
-      player_flash();
-      #endif
-      #if defined(PLAYER_GRANULAR)
-      player_granular();
-      #endif
+      mapping_lib_update();
+      //update_levels(); // NOT_USED in this branche!
       hardware_midi_transmit();
       break;
     case MATRIX_MODE_RAW:
-      usb_midi_read_input();
+      usb_midi_recive();
       usb_midi_transmit();
       break;
     case EDIT_MODE:
-      usb_midi_read_input();
+      usb_midi_recive();
       usb_midi_transmit();
       break;
     case PLAY_MODE:
-      usb_midi_read_input();
-      // mapping_lib_update();
+      usb_midi_recive();
+      mapping_lib_update();
       usb_midi_transmit();
       break;
   };
 
-  #if defined(DEBUG_FPS)
+  #if defined(USB_MIDI_SERIAL) & defined(DEBUG_FPS)
   if (millis() - fpsTimeStamp >= 1000) {
     fpsTimeStamp = millis();
     Serial.printf("\nFPS:%d", fps);

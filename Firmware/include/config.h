@@ -43,6 +43,8 @@
 #define X_MAX                        58    // Blob centroid X max value
 #define Y_MIN                        1     // Blob centroid Y min value
 #define Y_MAX                        58    // Blob centroid Y max value
+#define Z_MIN                        0     // Blob centroid Z min value
+#define Z_MAX                        256   // Blob centroid Z max value
 #define WIDTH                        (X_MAX - X_MIN)
 #define HEIGHT                       (Y_MAX - Y_MIN)
 #define IIPi                         (float)(2 * PI)
@@ -50,7 +52,7 @@
 #define PiII                         (float)(PI / 2)
 #define LONG_HOLD                    1500
 #define BLINK_ITER                   10
-#define MIDI_TRANSMIT_INTERVAL       50
+#define MIDI_TRANSMIT_INTERVAL       50    // 20Hz
 #define LEVEL_TIMEOUT                3000
 #define PENDING_MODE_TIMEOUT         4000
 
@@ -90,9 +92,11 @@
 #define MAX_SLIDERS                  8
 #define MAX_CIRCLES                  9
 #define MAX_TOUCHPADS                4
-#define MAX_TOUCH_POINT              10
-#define MAX_POLYGON_POINT            64
+#define MAX_TOUCH_POINTS             10
+#define MAX_POLYGON_POINTS           64
 #define MAX_POLYGONS                 8
+#define MAX_GRIDS                    2
+#define MAX_GRID_KEYS                128
 #define H_SLIDER                     0
 #define V_SLIDER                     1
 

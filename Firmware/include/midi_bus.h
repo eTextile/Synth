@@ -32,14 +32,15 @@ struct midiNode {
   midiMsg_t midiMsg;
 };
 
-inline void midi_sendOut(uint8_t status, uint8_t note, uint8_t value){
+inline void midi_sendOut
+(uint8_t status, midiMsg_t midiMsg){
   midiNode_t* node_ptr = (midiNode_t*)llist_pop_front(&midi_node_stack);
-  node_ptr->midiMsg.status = status; // status/comande byte: MSB:status & LSB:channel
-  node_ptr->midiMsg.data1 = note;
-  node_ptr->midiMsg.data2 = value;
+  node_ptr->midiMsg = midiMsg;
   llist_push_front(&midiOut, node_ptr);
 };
 
 void midi_bus_setup(void);
+
+void printBytes(uint8_t* data_ptr, uint16_t length);
 
 #endif /*__MIDI_BUS_H__*/
