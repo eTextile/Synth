@@ -11,7 +11,7 @@
 #include "interp.h"
 #include "llist.h"
 #include "blob.h"
-#include "midi_bus.h"
+//#include "midi_bus.h"
 #include "allocate.h"
 
 uint32_t bootTime = 0;
@@ -145,8 +145,8 @@ if (e256_currentMode == STANDALONE_MODE){
 // Recive: [ SYSEX_BEGIN, SYSEX_DEVICE_ID, SYSEX_DATA, SYSEX_END ]
 // Send: USBMIDI_CONFIG_LOAD_DONE
 
-void e256_systemExclusive(const uint8_t* data_ptr, uint16_t length, boolean complete){
-  static boolean sysEx_alloc = true;
+void e256_systemExclusive(const uint8_t* data_ptr, uint16_t length, bool complete){
+  static bool sysEx_alloc = true;
   static uint8_t* sysEx_chunk_ptr = NULL;
   static uint16_t sysEx_lastChunkSize = 0;
   static uint8_t sysEx_chunks = 0;
@@ -187,10 +187,17 @@ void e256_systemExclusive(const uint8_t* data_ptr, uint16_t length, boolean comp
       sysEx_alloc = true;
       if (sysEx_identifier == SYSEX_CONF) {
         midiInfo(USBMIDI_CONFIG_LOAD_DONE, MIDI_VERBOSITY_CHANNEL);
-        #if defined(USB_MIDI_SERIAL) & defined(DEBUG_CONFIG)
-          Serial.printf("\nSYSEX_CONFIG_RECIVED: ");
-          printBytes(sysEx_data_ptr, sysEx_data_length);
-        #endif
+        if (apply_config(sysEx_data_ptr, sysEx_data_length)){
+          #if defined(USB_MIDI_SERIAL) & defined(DEBUG_CONFIG)
+            Serial.printf("\nSYSEX_CONFIG_RECIVED: ");
+            printBytes(sysEx_data_ptr, sysEx_data_length);
+          #else
+            midiInfo(CONFIG_APPLY_DONE, MIDI_VERBOSITY_CHANNEL);
+          #endif
+        }
+        else {
+          midiInfo(CONFIG_APPLY_FAILED, MIDI_ERROR_CHANNEL);
+        }
       }
       else if (sysEx_identifier == SYSEX_SOUND){ // TODO
         midiInfo(USBMIDI_SOUND_LOAD_DONE, MIDI_VERBOSITY_CHANNEL);
@@ -226,35 +233,52 @@ void usb_midi_recive(void) {
 
 void usb_midi_handle_input(const midi::Message<128u> &midiMsg){
 midiNode_t* node_ptr = (midiNode_t*)llist_pop_front(&midi_node_stack);  // Get a node from the MIDI nodes stack
-  // This can be refactored !!!!!!!!!!!!!!!!!!!!
+  // This can be refactored via C++ !?
+  //
   switch (midiMsg.type) {
     case midi::NoteOn:
       node_ptr->midiMsg.status = midi::NoteOn;         // Set the MIDI status
+      node_ptr->midiMsg.channel = midiMsg.channel;     // Set the MIDI channel
       node_ptr->midiMsg.data1 = midiMsg.data1;         // Set the MIDI note
       node_ptr->midiMsg.data2 = midiMsg.data2;         // Set the MIDI velocity
-      //node_ptr->midiMsg.channel = midiMsg.channel;   // Set the MIDI channel
-      llist_push_front(&midiIn, node_ptr);             // Add the node to the midiIn linked liste
+      #if defined(MIDI_THRU) 
+        llist_push_front(&midiOut, node_ptr);          // Add the node to the midiOut linked liste
+      #else
+        llist_push_front(&midiIn, node_ptr);           // Add the node to the midiIn linked liste
+      #endif
       break;
     case midi::NoteOff:
       node_ptr->midiMsg.status = midi::NoteOff;        // Set the MIDI status
+      node_ptr->midiMsg.channel = midiMsg.channel;     // Set the MIDI channel
       node_ptr->midiMsg.data1 = midiMsg.data1;         // Set the MIDI note
       node_ptr->midiMsg.data2 = midiMsg.data2;         // Set the MIDI velocity
-      //node_ptr->midiMsg.channel = midiMsg.channel;   // Set the MIDI channel
-      llist_push_front(&midiIn, node_ptr);             // Add the node to the midiIn linked liste
+      #if defined(MIDI_THRU) 
+        llist_push_front(&midiOut, node_ptr);          // Add the node to the midiOut linked liste
+      #else
+        llist_push_front(&midiIn, node_ptr);           // Add the node to the midiIn linked liste
+      #endif
       break;
     case midi::ControlChange:
       node_ptr->midiMsg.status = midi::ControlChange;  // Set the MIDI status
+      node_ptr->midiMsg.channel = midiMsg.channel;     // Set the MIDI channel
       node_ptr->midiMsg.data1 = midiMsg.data1;         // Set the MIDI control
       node_ptr->midiMsg.data2 = midiMsg.data2;         // Set the MIDI value
-      //node_ptr->midiMsg.channel = midiMsg.channel;   // Set the MIDI channel
-      llist_push_front(&midiIn, node_ptr);             // Add the node to the midiIn linked liste
+      #if defined(MIDI_THRU) 
+        llist_push_front(&midiOut, node_ptr);          // Add the node to the midiOut linked liste
+      #else
+        llist_push_front(&midiIn, node_ptr);           // Add the node to the midiIn linked liste
+      #endif
       break;
     case midi::Clock:
       node_ptr->midiMsg.status = midi::Clock;          // Set the MIDI status
+      //node_ptr->midiMsg.channel = midiMsg.channel;   // Set the MIDI channel
       //node_ptr->midiMsg.data1 = midiMsg.data1;       // Set the MIDI note
       //node_ptr->midiMsg.data2 = midiMsg.data2;       // Set the MIDI velocity
-      //node_ptr->midiMsg.channel = midiMsg.channel;   // Set the MIDI channel
-      llist_push_front(&midiIn, node_ptr);             // Add the node to the midiIn linked liste
+      #if defined(MIDI_THRU) 
+        llist_push_front(&midiOut, node_ptr);          // Add the node to the midiOut linked liste
+      #else
+        llist_push_front(&midiIn, node_ptr);           // Add the node to the midiIn linked liste
+      #endif
       break;
     default:
       llist_push_front(&midi_node_stack, node_ptr);    // Add the node to the midi_node_stack linked liste
@@ -296,16 +320,19 @@ void usb_midi_transmit() {
             usbMIDI.sendNoteOn(blob_ptr->UID + 1, 1, BS); // sendNoteOn(note, velocity, channel);
             usbMIDI.send_now();
           } else {
-            if (millis() - blob_ptr->transmitTimeStamp > MIDI_TRANSMIT_INTERVAL) {
-              blob_ptr->transmitTimeStamp = millis();
-              blobValues[0] = blob_ptr->UID + 1;
-              blobValues[1] = (uint8_t)round(map(blob_ptr->centroid.x, 0, WIDTH, 0, 127));
-              blobValues[2] = (uint8_t)round(map(blob_ptr->centroid.y, 0, HEIGHT, 0, 127));
-              blobValues[3] = blob_ptr->centroid.z;
-              blobValues[4] = blob_ptr->box.W;
-              blobValues[5] = blob_ptr->box.H;
-              usbMIDI.sendSysEx(6, blobValues, false); // Testing!
-            };
+            //if (millis() - blob_ptr->transmitTimeStamp > MIDI_TRANSMIT_INTERVAL) {
+            //blob_ptr->transmitTimeStamp = millis();
+            //if (millis() - usbTransmitTimeStamp > MIDI_TRANSMIT_INTERVAL) {
+            //usbTransmitTimeStamp = millis();
+            // This must be zerocopy!
+            blobValues[0] = blob_ptr->UID + 1;
+            blobValues[1] = (uint8_t)round(map(blob_ptr->centroid.x, 0, WIDTH, 0, 127));
+            blobValues[2] = (uint8_t)round(map(blob_ptr->centroid.y, 0, HEIGHT, 0, 127));
+            blobValues[3] = blob_ptr->centroid.z;
+            blobValues[4] = blob_ptr->box.W;
+            blobValues[5] = blob_ptr->box.H;
+            usbMIDI.sendSysEx(6, blobValues, false); // Testing!
+            //};
           };
         } else {
           if (blob_ptr->lastState && blob_ptr->status != NOT_FOUND) {
@@ -317,7 +344,9 @@ void usb_midi_transmit() {
       while (usbMIDI.read()); // Read and discard any incoming MIDI messages
       break;
     case PLAY_MODE:
-      for (midiNode_t* node_ptr = (midiNode_t*)ITERATOR_START_FROM_HEAD(&midiOut); node_ptr != NULL; node_ptr = (midiNode_t*)ITERATOR_NEXT(node_ptr)) {
+    // The PLAY_MODE will play MIDI depending on the mapping you made using the web app
+    // Using MIDI_THRU : USB_MIDI_IN-> HARDWARE_MIDI_OUT
+      for (midiNode_t *node_ptr = (midiNode_t *)ITERATOR_START_FROM_HEAD(&midiOut); node_ptr != NULL; node_ptr = (midiNode_t *)ITERATOR_NEXT(node_ptr)){
         switch (node_ptr->midiMsg.status) {
           case midi::NoteOn:
             usbMIDI.sendNoteOn(node_ptr->midiMsg.data1, node_ptr->midiMsg.data2, node_ptr->midiMsg.channel);

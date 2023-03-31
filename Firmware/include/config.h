@@ -85,13 +85,14 @@
 #define SIG_OUT                      2 // E256-LEDs: | 0 | 1 |
 #define LINE_OUT                     3 // E256-LEDs: | 0 | 0 |
 
-// E256 MAPPING_LIB CONSTANTS 
-#define MAX_BLOBS                    32    // [0:7] How many blobs can be tracked at the same time
+// E256 MAPPING_LIB CONSTANTS
+#define MAX_BLOBS                    16    // [0:7] How many blobs can be tracked at the same time
 #define MAX_TRIGGERS                 16
 #define MAX_SWITCHS                  16
 #define MAX_SLIDERS                  8
-#define MAX_CIRCLES                  9
-#define MAX_TOUCHPADS                4
+#define MAX_CSLIDERS                 2
+#define MAX_KNOBS                    9
+#define MAX_TOUCHPADS                2
 #define MAX_TOUCH_POINTS             10
 #define MAX_POLYGON_POINTS           64
 #define MAX_POLYGONS                 8
@@ -131,9 +132,10 @@
 #define WHILE_OPEN_FLASH_FILE          5
 #define USBMIDI_CONFIG_LOAD_FAILED     6
 #define FLASH_CONFIG_LOAD_FAILED       7
-#define CONFIG_APPLY_FAILED            8
-#define UNKNOWN_SYSEX                  9
-#define TOO_MANY_BLOBS                 10
+#define FLASH_CONFIG_WRITE_FAILED      8
+#define CONFIG_APPLY_FAILED            9
+#define UNKNOWN_SYSEX                  10
+#define TOO_MANY_BLOBS                 11
 
 /*
 #define M_CHAN                         "c"
@@ -146,9 +148,9 @@
 
 typedef struct leds leds_t;
 struct leds {
-  boolean D1;
-  boolean D2;
-  boolean update;
+  bool D1;
+  bool D2;
+  bool update;
 };
 
 typedef struct e256_mode e256_mode_t;
@@ -156,7 +158,7 @@ struct e256_mode {
   leds_t leds;
   uint16_t timeOn;
   uint16_t timeOff;
-  boolean toggle;
+  bool toggle;
 };
 
 typedef struct e256_state e256_state_t;
@@ -173,7 +175,7 @@ struct e256_level {
   uint8_t minVal;
   uint8_t maxVal;
   uint8_t val;
-  boolean update;
+  bool update;
 };
 
 typedef struct e256_control e256_control_t;
@@ -197,7 +199,7 @@ void set_level(uint8_t level, uint8_t value);
 
 void hardware_setup(void);
 void update_controls(void);
-boolean load_flash_config(void);
-boolean apply_config(uint8_t* conf_ptr, uint16_t conf_size);
+bool load_flash_config(void);
+bool apply_config(uint8_t* conf_ptr, uint16_t conf_size);
 
 #endif /*__CONFIG_H__*/

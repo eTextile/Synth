@@ -25,43 +25,53 @@ void hardware_midi_handle_input(const midi::Message<128u> &midiMsg) {
   //dataPacket_t* dataPacket = (dataPacket_t*)midiMsg;
   midiNode_t* node_ptr = (midiNode_t*)llist_pop_front(&midi_node_stack);  // Get a node from the MIDI nodes stack
   
-  // This can be refactored to avoide the data copy !!!!!!!!!!!!!!!!!!!!
+  // This can be refactored to avoide data copy !!!!!!!!!!!!!!!!!!!!
+  // I dont understand the struct of midiMsg.
+  // can it be casted or direct pushed to our I/O midi list  
   switch (midiMsg.type) {
     case midi::NoteOn:
-      
+      node_ptr->midiMsg.channel = midiMsg.channel;     // Set the MIDI channel
       node_ptr->midiMsg.status = midi::NoteOn;         // Set the MIDI status
       node_ptr->midiMsg.data1 = midiMsg.data1;         // Set the MIDI note
       node_ptr->midiMsg.data2 = midiMsg.data2;         // Set the MIDI velocity
-      node_ptr->midiMsg.channel = midiMsg.channel;     // Set the MIDI channel
-      
-      llist_push_front(&midiIn, node_ptr);             // Add the node to the midiIn linked liste
+      #if defined(MIDI_THRU)
+        llist_push_front(&midiOut, node_ptr);          // Add the node to the midiOut linked liste
+      #else
+        llist_push_front(&midiIn, node_ptr);           // Add the node to the midiIn linked liste
+      #endif
       break;
     case midi::NoteOff:
-
+      node_ptr->midiMsg.channel = midiMsg.channel;     // Set the MIDI channel
       node_ptr->midiMsg.status = midi::NoteOff;        // Set the MIDI status
       node_ptr->midiMsg.data1 = midiMsg.data1;         // Set the MIDI note
       node_ptr->midiMsg.data2 = midiMsg.data2;         // Set the MIDI velocity
-      node_ptr->midiMsg.channel = midiMsg.channel;     // Set the MIDI channel
-      
-      llist_push_front(&midiIn, node_ptr);             // Add the node to the midiIn linked liste
+      #if defined(MIDI_THRU) 
+        llist_push_front(&midiOut, node_ptr);          // Add the node to the midiOut linked liste
+      #else
+        llist_push_front(&midiIn, node_ptr);           // Add the node to the midiIn linked liste
+      #endif      
       break;
     case midi::ControlChange:
-      
+      node_ptr->midiMsg.channel = midiMsg.channel;     // Set the MIDI channel
       node_ptr->midiMsg.status = midi::ControlChange;  // Set the MIDI status
       node_ptr->midiMsg.data1 = midiMsg.data1;         // Set the MIDI control
       node_ptr->midiMsg.data2 = midiMsg.data2;         // Set the MIDI value
-      node_ptr->midiMsg.channel = midiMsg.channel;     // Set the MIDI channel
-
-      llist_push_front(&midiIn, node_ptr);             // Add the node to the midiIn linked liste
+      #if defined(MIDI_THRU) 
+        llist_push_front(&midiOut, node_ptr);          // Add the node to the midiOut linked liste
+      #else
+        llist_push_front(&midiIn, node_ptr);           // Add the node to the midiIn linked liste
+      #endif
       break;
     case midi::Clock:
-      
+      node_ptr->midiMsg.channel = midiMsg.channel;     // Set the MIDI channel      
       node_ptr->midiMsg.status = midi::Clock;          // Set the MIDI status
       node_ptr->midiMsg.data1 = midiMsg.data1;         // Set the MIDI note
       node_ptr->midiMsg.data2 = midiMsg.data2;         // Set the MIDI velocity
-      node_ptr->midiMsg.channel = midiMsg.channel;     // Set the MIDI channel
-      
-      llist_push_front(&midiIn, node_ptr);             // Add the node to the midiIn linked liste
+      #if defined(MIDI_THRU) 
+        llist_push_front(&midiOut, node_ptr);          // Add the node to the midiOut linked liste
+      #else
+        llist_push_front(&midiIn, node_ptr);           // Add the node to the midiIn linked liste
+      #endif
       break;
     default:
       llist_push_front(&midi_node_stack, node_ptr);    // Add the node to the midi_node_stack linked liste

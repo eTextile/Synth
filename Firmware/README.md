@@ -4,12 +4,12 @@
 ## Easy step-by-step User Guide
 1. Poweirng the **eTextile-MIDI-interface**:
     - Use the included power cable with a **common 5V USB power supplie**
-    - or use the same cable to plug the interface to your laptop USB port
+    - Or use the same cable to plug the interface to your laptop USB port
 2. For data communication between the eTextile-MIDI-interface and the web app or music software:
     - use both cables: the power cable and the Micro USB cable (Type B)
 3. Load the provided web application (using Chome): https://mapping.etextile.org/
-4. Build your custom eTextile-User-Interfaces using the web app features
-5. The app contains Graphic-User-Interface moduls like toggles, sliders, grids, etc.
+4. Build your custom Graphic-User-Interface using the web app features
+5. The app contains GUI moduls like toggles, sliders, grids, etc.
 6. Each one can be placed, resized and configured to target specific MIDI_PARAMETERS
     - Each modul is providing **Midi Note** or **Midi Control-Change**
 7. The web app is made to generate and upload a **config file** to the eTextile-MIDI-interface
@@ -50,7 +50,7 @@
   - tirggers()
   - switchs()
   - sliders()
-  - circles()
+  - knobs()
   - polygons()
   - touchpads()
   - grids()

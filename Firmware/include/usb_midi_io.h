@@ -8,6 +8,7 @@
 #define __USB_MIDI_IO_H__
 
 #include <Arduino.h>
+#include "midi_bus.h"
 
 extern uint32_t bootTime;
 
@@ -22,7 +23,7 @@ void midiInfo(uint8_t msg, uint8_t channel);
 void usb_midi_pending_mode_timeout(void);
 
 void usb_midi_recive(void);
-void usb_midi_handle_input(void); // TODO
+void usb_midi_handle_input(const midi::Message<128u> &midiMsg);
 void usb_midi_transmit(void);
 
 #endif /*__USB_MIDI_IO_H__*/

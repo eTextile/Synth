@@ -20,10 +20,10 @@ extern llist_t midiChord;
 
 typedef struct midiMsg midiMsg_t;
 struct midiMsg {
+  uint8_t channel;  // MIDI channel (0-15)
   uint8_t status;   // For MIDI status bytes see: https://github.com/PaulStoffregen/MIDI/blob/master/src/midi_Defs.h
   uint8_t data1;    // First value  (0-127), controller number or note number
   uint8_t data2;    // Second value (0-127), controller value or velocity
-  uint8_t channel;  // MIDI channel (0-15)
 };
 
 typedef struct midiNode midiNode_t;
@@ -32,8 +32,7 @@ struct midiNode {
   midiMsg_t midiMsg;
 };
 
-inline void midi_sendOut
-(uint8_t status, midiMsg_t midiMsg){
+inline void midi_sendOut(midiMsg_t midiMsg){
   midiNode_t* node_ptr = (midiNode_t*)llist_pop_front(&midi_node_stack);
   node_ptr->midiMsg = midiMsg;
   llist_push_front(&midiOut, node_ptr);

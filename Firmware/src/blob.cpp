@@ -127,7 +127,7 @@ void matrix_find_blobs(void) {
           uint8_t top_left = left;
           uint8_t bot_left = left;
 
-          boolean break_out = false;
+          bool break_out = false;
 
           while (1) { // while_B
 
@@ -135,7 +135,7 @@ void matrix_find_blobs(void) {
               row_ptr_B = COMPUTE_IMAGE_ROW_PTR(&interpFrame, posY - 1);
               bmp_row_ptr_B = &bitmapArray[0] + (posY - 1) * NEW_COLS;
 
-              boolean recurse = true;
+              bool recurse = true;
               for (uint8_t i = top_left; i <= right; i++) {
 
                 if ((!IMAGE_GET_PIXEL_FAST(bmp_row_ptr_B, i))
@@ -163,7 +163,7 @@ void matrix_find_blobs(void) {
             row_ptr_B = COMPUTE_IMAGE_ROW_PTR(&interpFrame, posY + 1);
             bmp_row_ptr_B = &bitmapArray[0] + (posY + 1) * NEW_COLS;
 
-            boolean recurse = true;
+            bool recurse = true;
             for (uint8_t i = bot_left; i <= right; i++) {
 
               if (!IMAGE_GET_PIXEL_FAST(bmp_row_ptr_B, i) &&
@@ -229,7 +229,7 @@ void matrix_find_blobs(void) {
   // DEAD BLOBS REMOVER
   blob_t* prevBlob_ptr = NULL;
   while (1) {
-    boolean deadFound = false;
+    bool deadFound = false;
     for (blob_t* blobOut_ptr = (blob_t*)ITERATOR_START_FROM_HEAD(&llist_blobs); blobOut_ptr != NULL; blobOut_ptr = (blob_t*)ITERATOR_NEXT(blobOut_ptr)) {
       if (blobOut_ptr->status == TO_REMOVE) {
         deadFound = true;
@@ -281,7 +281,7 @@ void matrix_find_blobs(void) {
       // Find the smallest missing UID in the outputBlobs linked list
       // BUG: when two blobs are arriving in the new frame they get the same ID (FIXED or NOT?)
       while (1) {
-        boolean isFree = true;
+        bool isFree = true;
         for (blob_t* blobOut_ptr = (blob_t*)ITERATOR_START_FROM_HEAD(&llist_blobs); blobOut_ptr != NULL; blobOut_ptr = (blob_t*)ITERATOR_NEXT(blobOut_ptr)) {
           if (blobOut_ptr->UID == minID) {
             #if defined(USB_MIDI_SERIAL) & defined(DEBUG_FIND_BLOBS)
@@ -311,10 +311,10 @@ void matrix_find_blobs(void) {
   // Look for dead blobs in the outputBlobs linked list
   // If found flag it NOT_FOUND or TO_REMOVE and add it to the temporary input blobs linked list
   while (1) {
-    boolean allDone = true;
+    bool allDone = true;
     blob_t* prevBlob_ptr = NULL;
     for (blob_t* blobOut_ptr = (blob_t*)ITERATOR_START_FROM_HEAD(&llist_blobs); blobOut_ptr != NULL; blobOut_ptr = (blob_t*)ITERATOR_NEXT(blobOut_ptr)) {
-      boolean found = false;
+      bool found = false;
       for (blob_t* blobIn_ptr = (blob_t*)ITERATOR_START_FROM_HEAD(&llist_blobs_temp); blobIn_ptr != NULL; blobIn_ptr = (blob_t*)ITERATOR_NEXT(blobIn_ptr)) {
         if (blobIn_ptr->UID == blobOut_ptr->UID) {
           found = true;

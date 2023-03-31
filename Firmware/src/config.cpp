@@ -117,12 +117,11 @@ void set_state(uint8_t state) {
   #endif
 };
 
-inline void flash_file(const char *fileName, uint8_t* data_ptr, uint16_t size) {
+bool flash_file(const char *fileName, uint8_t* data_ptr, uint16_t size) {
   if (sysEx_data_length != 0) {
     if (!SerialFlash.begin(FLASH_CHIP_SELECT)) {
       midiInfo(CONNECTING_FLASH, MIDI_ERROR_CHANNEL);
-      set_mode(ERROR_MODE);
-      return;
+      return false;
     };
     while (!SerialFlash.ready());
     if (SerialFlash.exists(fileName)) {
@@ -134,24 +133,24 @@ inline void flash_file(const char *fileName, uint8_t* data_ptr, uint16_t size) {
       tmpFile = SerialFlash.open(fileName);
       if (!tmpFile){
         midiInfo(WHILE_OPEN_FLASH_FILE, MIDI_ERROR_CHANNEL);
-        set_mode(ERROR_MODE);
-        return;
+        return false;
       };
     }
     else {
       midiInfo(FLASH_FULL, MIDI_ERROR_CHANNEL);
-      return;
+      return false;
     };
     if (sysEx_data_length < FLASH_SIZE) {
       tmpFile.write(data_ptr, size);
       tmpFile.close();
-      midiInfo(FLASH_CONFIG_WRITE_DONE, MIDI_VERBOSITY_CHANNEL);
+      return true;
     }
     else {
       midiInfo(FILE_TO_BIG, MIDI_ERROR_CHANNEL);
-      set_mode(ERROR_MODE);
+      return false;
     };
   };
+  return false;
 };
 
 // Selec the current mode and perform the matrix sensor calibration 
@@ -165,15 +164,21 @@ inline void update_buttons() {
     //set_state(CALIBRATE_REQUEST);
   };
   // ACTION: BUTTON_L long press
-  // FONCTION: save the mapping config file to the permanent memory.
+  // FONCTION: save the mapping config file to the permanent flash memory
   if (BUTTON_L.rose() && BUTTON_L.previousDuration() > LONG_HOLD) {
     if (sysEx_data_length > 0){
-      flash_file("config.json", sysEx_data_ptr, sysEx_data_length);
-      apply_config(sysEx_data_ptr, sysEx_data_length);
-      #if defined(USB_MIDI_SERIAL) & defined(DEBUG_CONFIG)
-        Serial.printf("\nSYSEX_CONFIG_WRITE: "); // FIXME FILE CORRUPTED!
-        printBytes(sysEx_data_ptr, sysEx_data_length);
-      #endif
+      if (flash_file("config.json", sysEx_data_ptr, sysEx_data_length)){
+        midiInfo(FLASH_CONFIG_WRITE_DONE, MIDI_VERBOSITY_CHANNEL);
+      }
+      else {
+        #if defined(USB_MIDI_SERIAL) & defined(DEBUG_CONFIG)
+          Serial.printf("\nSYSEX_CONFIG_WRITE: "); // FIXME FILE CORRUPTED!
+          printBytes(sysEx_data_ptr, sysEx_data_length);
+        #else
+          midiInfo(FLASH_CONFIG_WRITE_FAILED, MIDI_ERROR_CHANNEL);
+          set_mode(ERROR_MODE);
+        #endif
+      }
     };
   };
   // ACTION: BUTTON_R long press
@@ -200,7 +205,7 @@ inline void setup_encoder(){
 
 // Levels values adjustment using rotary encoder
 // May interrupt driven !?
-inline boolean read_encoder(uint8_t level) {
+inline bool read_encoder(uint8_t level) {
   uint8_t val = e256_ctr.encoder->read() >> 2;
   if (val != e256_ctr.levels[level].val) {
     if (val > e256_ctr.levels[level].maxVal) {
@@ -225,7 +230,7 @@ inline boolean read_encoder(uint8_t level) {
 // Update levels[level] of each mode using the rotary encoder
 inline void update_encoder() {
   static uint32_t levelTimeStamp = 0;
-  static boolean levelToggle = false;
+  static bool levelToggle = false;
   if (read_encoder(e256_level)) {
     levelTimeStamp = millis();
     levelToggle = true;
@@ -283,6 +288,7 @@ inline bool config_load_mappings_triggers(const JsonArray& config) {
     mapp_trigsParams[i].rect.to.x = config[i]["to"][0];
     mapp_trigsParams[i].rect.to.y = config[i]["to"][1];
     mapp_trigsParams[i].midiMsg.channel = config[i]["chan"];
+    //mapp_trigsParams[i].midiMsg.type = ;
     mapp_trigsParams[i].midiMsg.data1 = config[i]["note"];
     mapp_trigsParams[i].midiMsg.data2 = config[i]["velocity"];
   };
@@ -299,9 +305,9 @@ inline bool config_load_mappings_switchs(const JsonArray& config) {
     mapp_switchParams[i].rect.from.y = config[i]["from"][1];
     mapp_switchParams[i].rect.to.x = config[i]["to"][0];
     mapp_switchParams[i].rect.to.y = config[i]["to"][1];
-    mapp_switchParams[i].chan = config[i]["chan"];
-    mapp_switchParams[i].note = config[i]["note"];
-    mapp_switchParams[i].velocity = config[i]["velocity"];
+    mapp_switchParams[i].midiMsg.channel = config[i]["chan"];
+    mapp_switchParams[i].midiMsg.data1 = config[i]["note"];
+    mapp_switchParams[i].midiMsg.data2 = config[i]["velocity"];
   }
   return true;
 }
@@ -316,8 +322,8 @@ inline bool config_load_mappings_sliders(const JsonArray& config) {
     mapp_slidersParams[i].rect.from.y = config[i]["from"][1];
     mapp_slidersParams[i].rect.to.x = config[i]["to"][0];
     mapp_slidersParams[i].rect.to.y = config[i]["to"][1];
-    mapp_slidersParams[i].chan = config[i]["chan"];
-    mapp_slidersParams[i].cc = config[i]["cc"];
+    mapp_slidersParams[i].midiMsg.channel = config[i]["chan"];
+    mapp_slidersParams[i].midiMsg.data1 = config[i]["cc"];
     mapp_slidersParams[i].min = config[i]["min"];
     mapp_slidersParams[i].max = config[i]["max"];
 
@@ -325,21 +331,28 @@ inline bool config_load_mappings_sliders(const JsonArray& config) {
   return true;
 };
 
-inline bool config_load_mappings_circles(const JsonArray& config) {
+inline bool config_load_mappings_knobs(const JsonArray& config) {
   if (config.isNull()) {
     return false;
   }
-  mapping_circles_alloc(config.size());
+  mapping_knobs_alloc(config.size());
   for (uint8_t i = 0; i < mapp_knobs; i++) {
     mapp_knobsParams[i].center.x = config[i]["cent_X"];
     mapp_knobsParams[i].center.y = config[i]["cent_y"];
     mapp_knobsParams[i].radius = config[i]["radius"];
     mapp_knobsParams[i].offset = config[i]["offset"];
-    mapp_knobsParams[i].CCr = config[i]["cc_rad"];
-    mapp_knobsParams[i].CCt = config[i]["cc_theta"];
+    mapp_knobsParams[i].midiMsg_radius.data1 = config[i]["cc_rad"];
+    mapp_knobsParams[i].midiMsg_theta.data1 = config[i]["cc_theta"];
   };
   return true;
 }
+
+/*
+  uint8_t status;   // For MIDI status bytes see: https://github.com/PaulStoffregen/MIDI/blob/master/src/midi_Defs.h
+  uint8_t data1;    // First value  (0-127), controller number or note number
+  uint8_t data2;    // Second value (0-127), controller value or velocity
+  uint8_t channel;  // MIDI channel (0-15)
+*/
 
 inline bool config_load_mappings_touchpads(const JsonArray& config) {
   if (config.isNull()) {
@@ -352,20 +365,23 @@ inline bool config_load_mappings_touchpads(const JsonArray& config) {
     mapp_touchpadsParams[i].rect.to.x = config[i]["to"][0];
     mapp_touchpadsParams[i].rect.to.y = config[i]["to"][1];
     mapp_touchpadsParams[i].touchs = config[i]["touchs"];
-    mapp_touchpadsParams[i].min = config[i]["min"];
-    mapp_touchpadsParams[i].max = config[i]["max"];
-    
+    mapp_touchpadsParams[i].x_min = config[i]["x_min"];
+    mapp_touchpadsParams[i].x_max = config[i]["x_max"];
+    mapp_touchpadsParams[i].y_min = config[i]["y_min"];
+    mapp_touchpadsParams[i].y_max = config[i]["y_max"];
+    mapp_touchpadsParams[i].z_min = config[i]["z_min"];
+    mapp_touchpadsParams[i].z_max = config[i]["z_max"];
     if (config[i]["touchs"] > MAX_TOUCH_POINTS) {
       midiInfo(TOO_MANY_BLOBS, MIDI_ERROR_CHANNEL);
       return false;
     }
     for (uint8_t j = 0; j < config[i]["touchs"]; j++){
-      mapp_touchpadsParams[i].touch[j].Xchan = config[i][j]["Xchan"];
-      mapp_touchpadsParams[i].touch[j].Xcc = config[i][j]["Xcc"];
-      mapp_touchpadsParams[i].touch[j].Ychan = config[i][j]["Ychan"];
-      mapp_touchpadsParams[i].touch[j].Ycc = config[i][j]["Xcc"];
-      mapp_touchpadsParams[i].touch[j].Zchan = config[i][j]["Zchan"];
-      mapp_touchpadsParams[i].touch[j].Zcc = config[i][j]["Zcc"];
+      mapp_touchpadsParams[i].touch[j].midiMsg_x.channel = config[i][j]["Xchan"];
+      mapp_touchpadsParams[i].touch[j].midiMsg_x.data1 = config[i][j]["Xcc"];
+      mapp_touchpadsParams[i].touch[j].midiMsg_y.channel = config[i][j]["Ychan"];
+      mapp_touchpadsParams[i].touch[j].midiMsg_y.data1 = config[i][j]["Xcc"];
+      mapp_touchpadsParams[i].touch[j].midiMsg_z.channel = config[i][j]["Zchan"];
+      mapp_touchpadsParams[i].touch[j].midiMsg_z.data1 = config[i][j]["Zcc"];
     };
  };
   return true;
@@ -398,13 +414,12 @@ inline bool config_load_mappings_grids(const JsonArray& config) {
     mapp_gridsParams[i].rect.to.y = config[i]["to"][1];
     mapp_gridsParams[i].cols = config[i]["cols"];
     mapp_gridsParams[i].rows = config[i]["rows"];
-    mapp_gridsParams[i].gap = config[i]["gap"];
     mapp_gridsParams[i].mode = config[i]["mode"];
   };
   return true;
 };
 
-boolean config_load_mappings(const JsonObject &config) {
+bool config_load_mappings(const JsonObject &config) {
   if (config.isNull()) {
     midiInfo(CONFIG_APPLY_FAILED, MIDI_ERROR_CHANNEL);
     set_mode(ERROR_MODE);
@@ -425,7 +440,7 @@ boolean config_load_mappings(const JsonObject &config) {
     set_mode(ERROR_MODE);
     return false;
   };
-  if (!config_load_mappings_circles(config["circles"])) {
+  if (!config_load_mappings_knobs(config["knobs"])) {
     midiInfo(CONFIG_APPLY_FAILED, MIDI_ERROR_CHANNEL);
     set_mode(ERROR_MODE);
     return false;
@@ -448,24 +463,21 @@ boolean config_load_mappings(const JsonObject &config) {
   return true;
 };
 
-boolean apply_config(uint8_t* conf_ptr, uint16_t conf_size) {
+bool apply_config(uint8_t* conf_ptr, uint16_t conf_size) {
   //DynamicJsonDocument config(conf_size);
   StaticJsonDocument<4095> config;
   DeserializationError error = deserializeJson(config, conf_ptr);
   if (error) {
-    midiInfo(CONFIG_APPLY_FAILED, MIDI_ERROR_CHANNEL);
     return false;
   };
   if (config_load_mappings(config["mapping"])) {
-    midiInfo(CONFIG_APPLY_DONE, MIDI_VERBOSITY_CHANNEL);
     return true;
   } else {
-    midiInfo(CONFIG_APPLY_FAILED, MIDI_ERROR_CHANNEL);
     return false;
   };
 };
 
-boolean load_flash_config() {
+bool load_flash_config() {
   if (!SerialFlash.begin(FLASH_CHIP_SELECT)) {
     midiInfo(CONNECTING_FLASH, MIDI_ERROR_CHANNEL);
     return false;
