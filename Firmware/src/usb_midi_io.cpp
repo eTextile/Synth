@@ -21,6 +21,7 @@ uint8_t* sysEx_data_ptr = NULL;
 // Used by USB_MIDI & HARDWARE_MIDI
 void e256_noteOn(byte channel, byte note, byte velocity){
   midiNode_t* node_ptr = (midiNode_t*)llist_pop_front(&midi_node_stack);
+  node_ptr->midiMsg.channel = channel;
   node_ptr->midiMsg.status = midi::NoteOn;
   node_ptr->midiMsg.data1 = note;
   node_ptr->midiMsg.data2 = velocity;
@@ -30,6 +31,7 @@ void e256_noteOn(byte channel, byte note, byte velocity){
 // Used by USB_MIDI & HARDWARE_MIDI
 void e256_noteOff(byte channel, byte note, byte velocity){
   midiNode_t* node_ptr = (midiNode_t*)llist_pop_front(&midi_node_stack);
+  node_ptr->midiMsg.channel = channel;
   node_ptr->midiMsg.status = midi::NoteOff;
   node_ptr->midiMsg.data1 = note;
   node_ptr->midiMsg.data2 = velocity;
@@ -231,6 +233,7 @@ void usb_midi_recive(void) {
   usbMIDI.read(); // Is there a MIDI incoming messages on any channel
 };
 
+// NOT USED!
 void usb_midi_handle_input(const midi::Message<128u> &midiMsg){
 midiNode_t* node_ptr = (midiNode_t*)llist_pop_front(&midi_node_stack);  // Get a node from the MIDI nodes stack
   // This can be refactored via C++ !?
@@ -322,16 +325,22 @@ void usb_midi_transmit() {
           } else {
             //if (millis() - blob_ptr->transmitTimeStamp > MIDI_TRANSMIT_INTERVAL) {
             //blob_ptr->transmitTimeStamp = millis();
+            
             //if (millis() - usbTransmitTimeStamp > MIDI_TRANSMIT_INTERVAL) {
             //usbTransmitTimeStamp = millis();
+            
             // This must be zerocopy!
+
             blobValues[0] = blob_ptr->UID + 1;
             blobValues[1] = (uint8_t)round(map(blob_ptr->centroid.x, 0, WIDTH, 0, 127));
             blobValues[2] = (uint8_t)round(map(blob_ptr->centroid.y, 0, HEIGHT, 0, 127));
             blobValues[3] = blob_ptr->centroid.z;
             blobValues[4] = blob_ptr->box.W;
             blobValues[5] = blob_ptr->box.H;
+
             usbMIDI.sendSysEx(6, blobValues, false); // Testing!
+            
+            //usbMIDI.sendSysEx(6, blob_ptr.pData, false); // TODO !?
             //};
           };
         } else {
