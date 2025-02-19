@@ -22,8 +22,6 @@ void mapping_touchpads_alloc(uint8_t touchpads_cnt) {
   llist_builder(&llist_touchpads_pool, &mapp_touchpads[0], touchpads_cnt, sizeof(mapp_touchpads[0]));
 };
 
-void mapping_touchpad_play(blob_t*);
-
 bool mapping_touchpad_is_blob_inside(common_t* mapping_ptr, blob_t* blob_ptr) {
   mapp_touchpad_t* touchpad_ptr = (mapp_touchpad_t*)mapping_ptr;
   if (blob_ptr->centroid.x > touchpad_ptr->params.rect.from.x &&

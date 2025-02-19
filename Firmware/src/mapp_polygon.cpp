@@ -25,8 +25,6 @@ void mapping_polygons_alloc(uint8_t polygons_cnt) {
   llist_builder(&llist_polygons_pool, &mapp_polygons[0], polygons_cnt, sizeof(mapp_polygons[0]));
 };
 
-void mapping_polygon_play(blob_t*);
-
 // Test if the blob is within the polygon
 bool mapping_polygon_is_blob_inside(common_t* mapping_ptr, blob_t* blob_ptr) {
   mapp_polygon_t* polygon_ptr = (mapp_polygon_t*)mapping_ptr;

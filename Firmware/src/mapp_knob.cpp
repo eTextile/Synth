@@ -22,8 +22,6 @@ void mapping_knobs_alloc(uint8_t knobs_cnt) {
   llist_builder(&llist_knobs_pool, &mapp_knobs[0], knobs_cnt, sizeof(mapp_knobs[0]));
 };
 
-void mapping_knob_play(blob_t*);
-
 bool mapping_knob_is_blob_inside(common_t* mapping_ptr, blob_t* blob_ptr) {
   mapp_knob_t* knob_ptr = (mapp_knob_t*)mapping_ptr;
   if (blob_ptr->centroid.x > knob_ptr->params.rect.from.x &&

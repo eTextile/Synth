@@ -23,8 +23,6 @@ void mapping_switchs_alloc(uint8_t switchs_cnt) {
   llist_builder(&llist_switch_pool, &mapp_switches[0], switchs_cnt, sizeof(mapp_switches[0]));
 };
 
-void mapping_switch_play(blob_t*);
-
 // Test if the blob is within the key limit
 bool mapping_switch_is_blob_inside(common_t* mapping_ptr, blob_t* blob_ptr) {
   mapp_switch_t* switch_ptr = (mapp_switch_t*)mapping_ptr;
