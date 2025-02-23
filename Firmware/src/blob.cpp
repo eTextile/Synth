@@ -25,19 +25,16 @@ uint8_t bitmap_array[NEW_FRAME] = {0}; // Store (64*64) binary values
 xylr_t lifo_array[LIFO_NODES] = {0};   // Store lifo nodes
 blob_t blob_array[MAX_BLOBS] = {0};    // Store blobs
 
-llist_t llist_context_pool;            // Free nodes pool
-llist_t llist_context;                 // Used nodes
-llist_t llist_blobs_pool;              // Free nodes pool
-
-llist_t llist_blobs;                   // Intermediate blobs linked list
-//llist_t llist_previous_blobs;        // Output blobs linked list
+llist_t llist_context_pool;            // Context nodes pool
+llist_t llist_context;                 // Context nodes linked list
+llist_t llist_blobs_pool;              // Blobs nodes pool
+llist_t llist_blobs;                   // Blobs nodes linked list
 
 void blob_setup(void) {
   llist_builder(&llist_context_pool, &lifo_array[0], LIFO_NODES, sizeof(lifo_array[0])); // Add X nodes to the llist_context_pool
   llist_builder(&llist_blobs_pool, &blob_array[0], MAX_BLOBS, sizeof(blob_array[0])); // Add X nodes to the llist_blobs_pool
   llist_raz(&llist_context);
   llist_raz(&llist_blobs);
-  //llist_raz(&llist_previous_blobs);
 
   for (lnode_t* node_ptr = ITERATOR_START_FROM_HEAD(&llist_blobs_pool); node_ptr != NULL; node_ptr = ITERATOR_NEXT(node_ptr)) {
     blob_t* blob_ptr = (blob_t*)ITERATOR_DATA(node_ptr);
@@ -58,19 +55,20 @@ void matrix_find_blobs(void) {
   // DEAD BLOBS REMOVER
   llist_t blobs_to_keep;
   blob_t* is_dead_blob_ptr = NULL;
+  Serial.println("TIP");
 
   while ((is_dead_blob_ptr = (blob_t*)llist_pop_front(&llist_blobs)) != NULL) {
-    
     if ((millis() - is_dead_blob_ptr->life_time_stamp) > TIME_TO_LEAVE) {
       
       common_t* mapping_common_ptr = (common_t*)is_dead_blob_ptr->action.mapping_ptr;
-      if (mapping_common_ptr != NULL) {
+      if (mapping_common_ptr) {
         mapping_common_ptr->blob_dispose_func_ptr(mapping_common_ptr, is_dead_blob_ptr);
       }
 
       llist_push_front(&llist_blobs_pool, is_dead_blob_ptr);
+
       #if defined(USB_MIDI_SERIAL) && defined(DEBUG_FIND_BLOBS)
-        Serial.printf("\nDEBUG_FIND_BLOBS / Blob: %p removed", &is_dead_blob_ptr);
+        Serial.printf("\nDEBUG_FIND_BLOBS / Blob: %p dispose", is_dead_blob_ptr->UID);
       #endif
     }
     else {
@@ -80,8 +78,9 @@ void matrix_find_blobs(void) {
     };
   };
   llist_swap_llist(&llist_blobs, &blobs_to_keep);
-
-  memset((uint8_t*)bitmap_array, 0, SIZEOF_FRAME);
+  Serial.println("pop");
+  
+  memset((uint8_t*)&bitmap_array[0], 0, SIZEOF_FRAME);
   uint8_t blob_count = 0;
   
   for (uint8_t posY = 0; posY < NEW_ROWS; posY += Y_STRIDE) {
@@ -243,7 +242,8 @@ void matrix_find_blobs(void) {
             existing_blob_ptr->status = PRESENT;
             existing_blob_ptr->life_time_stamp = millis();
             llist_push_back(&llist_blobs_pool, new_blob_ptr);
-          } else {
+          }
+          else {
             new_blob_ptr->status = NEW;
             new_blob_ptr->UID = set_id();
             new_blob_ptr->life_time_stamp = millis();
@@ -320,28 +320,3 @@ bool is_blob_existing(blob_t* blob_ptr, blob_t* new_blob_ptr) {
   };
   return false;
 };
-
-/*
-void blob_sort(llist_t* llist_ptr) {
-  lnode_t* next_node_ptr = llist_ptr->head_ptr->next_ptr;
-
-  uint16_t llist_size = 0;
-  for (lnode_t* node_ptr = ITERATOR_START_FROM_HEAD(&llist_ptr); node_ptr != NULL; node_ptr = ITERATOR_NEXT(node_ptr)) {
-    llist_size++;
-  };
-
-  blob_t* tmp_blob_ptr;
-  for (lnode_t* node_ptr = ITERATOR_START_FROM_HEAD(&llist_ptr); node_ptr != NULL; node_ptr = ITERATOR_NEXT(node_ptr)) {
-    blob_t* blob_ptr = (blob_t*)ITERATOR_DATA(node_ptr);
-    for (int j=0; j<llist_size; j++) {
-      blob_t* next_blob_ptr = (blob_t*)ITERATOR_DATA(next_blob_ptr);
-      if (blob_ptr->UID > next_blob_ptr->UID) {
-        tmp_blob_ptr = blob_ptr;
-        blob_ptr = next_blob_ptr;
-        next_node_ptr->data_ptr = tmp_blob_ptr;
-      }
-      next_node_ptr = ITERATOR_NEXT(next_node_ptr);
-    };
-  };
-};
-*/

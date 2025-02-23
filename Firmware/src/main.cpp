@@ -20,19 +20,21 @@ uint32_t fpsTimeStamp = 0;
 uint16_t fps = 0;
 
 void setup() {
+  #if defined(USB_MIDI_SERIAL)
+    while (!Serial);
+    Serial.printf("\nVERSION:\t%s", VERSION);
+  #endif
   hardware_setup();
   scan_setup();
   interp_setup();
   llist_setup();
   blob_setup();
+  Serial.printf("\nDONE");
+  
   hardware_midi_setup();
   usb_midi_setup();
   midi_bus_setup();
   set_mode(PENDING_MODE);
-  #if defined(USB_MIDI_SERIAL)
-    //while (!Serial);
-    //Serial.printf("\nVERSION:\t%s", VERSION);
-  #endif
   bootTime = millis();
 };
 

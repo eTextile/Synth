@@ -64,7 +64,7 @@ void mapping_polygon_dispose_blob(common_t* mapping_ptr, blob_t* blob_ptr) {
   mapp_polygon_t* polygon_ptr = (mapp_polygon_t*)mapping_ptr;
   blob_ptr->action.mapping_ptr = NULL;
   blob_ptr->action.mapping_data_ptr = NULL;
-  if (--polygon_ptr->active_blob_count == 0){
+  if (--polygon_ptr->active_blob_count == 0) {
     polygon_ptr->touch_index = 0;
   };
 };

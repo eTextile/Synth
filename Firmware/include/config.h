@@ -14,7 +14,7 @@
 
 #define PROJECT "ETEXTILE-SYNTHESIZER"
 #define NAME "256"
-#define VERSION "1.0.21"
+#define VERSION "1.0.22"
 #define SENSOR_UID 1 // Unique sensor ID
 #define FLASH_BUFFER_SIZE 4096
 
