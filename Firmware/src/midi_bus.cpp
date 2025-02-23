@@ -11,10 +11,10 @@
 
 midi_node_t midi_nodes_array[MIDI_NODES] = {}; // Memory allocation for all MIDI I/O messages
 
-llist_t midi_nodes_pool;                    // Main MIDI node stack
-llist_t midi_in;                             // Main MIDI Input linked list
-llist_t midi_out;                            // Main MIDI Output linked list
-llist_t midi_chord;                          // Main MIDI chord linked list
+llist_t midi_nodes_pool; // Main MIDI node stack
+llist_t midi_in;         // Main MIDI input linked list
+llist_t midi_out;        // Main MIDI output linked list
+llist_t midi_chord;      // Main MIDI chord linked list
 
 // Extract MIDI type and channel from MIDI status msg
 // https://www.midi.org/specifications-old/item/table-2-expanded-messages-list-status-bytes

@@ -25,18 +25,14 @@ void llist_setup(void) {
   };
 };
 
-static lnode_t* llist_pop_node_front(llist_t*);
-
 void llist_builder(llist_t* llist_ptr, void* nodes_array_ptr, const int item_count, const int item_size) {
-  uint32_t* item_ptr = (uint32_t*)nodes_array_ptr;
+  uint16_t* item_ptr = (uint16_t*)nodes_array_ptr;
   llist_raz(llist_ptr);
-  Serial.println(item_count); // DEBUB!
   for (uint16_t i = 0; i < item_count; i++) {
-    //llist_push_front(llist_ptr, item_ptr);
-    item_ptr = item_ptr + (item_size * sizeof(uint8_t)); //////////////////////////// FIXME!?
-    Serial.printf("\nPOINTER: %p", item_ptr);
-  }
-  Serial.println("END"); // DEBUB!
+    Serial.printf("\nLL_BUILDER\tINDEX: %d POINTER: %p", i, item_ptr); // DEBUG
+    llist_push_front(llist_ptr, (void*)item_ptr);
+    item_ptr += item_size;
+  };
 };
 
 static lnode_t* llist_pop_node_front(llist_t* llist_ptr) {
@@ -79,10 +75,8 @@ static void llist_push_node_back(llist_t* llist_ptr, lnode_t* node_ptr) {
 void* llist_pop_front(llist_t* llist_ptr) {
   lnode_t* node_ptr = llist_pop_node_front(llist_ptr);
   if (node_ptr) {
-    void* data_ptr;
-    data_ptr = node_ptr->data_ptr;
     llist_push_node_front(&llist_nodes_pool, node_ptr);
-    return data_ptr;
+    return node_ptr->data_ptr;
   }
   else {
     llist_push_node_front(&llist_nodes_pool, node_ptr);
@@ -92,20 +86,21 @@ void* llist_pop_front(llist_t* llist_ptr) {
 
 void llist_push_front(llist_t* llist_ptr, void* data_ptr) {
   lnode_t* node_ptr = llist_pop_node_front(&llist_nodes_pool);
+  Serial.printf("\nPUSH_FRONT\tPOINTER: %p", node_ptr); // DEBUG
   node_ptr->data_ptr = data_ptr;
   llist_push_node_front(llist_ptr, node_ptr);
 };
 
 void llist_push_back(llist_t* llist_ptr, void* data_ptr) {
   lnode_t* node_ptr = llist_pop_node_front(&llist_nodes_pool);
-  node_ptr->data_ptr = data_ptr;
+  node_ptr->data_ptr = &data_ptr;
   llist_push_node_back(llist_ptr, node_ptr);
 };
 
 void llist_swap_llist(llist_t* llistA_ptr, llist_t* llistB_ptr) {
   if (llistA_ptr->head_ptr || llistB_ptr->head_ptr) {
-    lnode_t* tmp_head_ptr = (lnode_t*)llistA_ptr->head_ptr;
-    lnode_t* tmp_tail_ptr = (lnode_t*)llistA_ptr->tail_ptr;
+    lnode_t* tmp_head_ptr = llistA_ptr->head_ptr;
+    lnode_t* tmp_tail_ptr = llistA_ptr->tail_ptr;
     llistA_ptr->head_ptr = llistB_ptr->head_ptr;
     llistA_ptr->tail_ptr = llistB_ptr->tail_ptr;
     llistB_ptr->head_ptr = tmp_head_ptr;
