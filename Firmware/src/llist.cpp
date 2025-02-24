@@ -6,7 +6,7 @@
 
 #include "llist.h"
 
-#define LLIST_NODES_POOL  1500 // Set the maximum nodes number
+#define LLIST_NODES_POOL  1200 // Set the maximum nodes number
 
 lnode_t llist_nodes_array[LLIST_NODES_POOL] = {0}; // Store linked list nodes
 
@@ -26,11 +26,11 @@ void llist_setup(void) {
 };
 
 void llist_builder(llist_t* llist_ptr, void* nodes_array_ptr, const int item_count, const int item_size) {
-  uint16_t* item_ptr = (uint16_t*)nodes_array_ptr;
+  uint8_t* item_ptr = (uint8_t*)nodes_array_ptr;
   llist_raz(llist_ptr);
   for (uint16_t i = 0; i < item_count; i++) {
     Serial.printf("\nLL_BUILDER\tINDEX: %d POINTER: %p", i, item_ptr); // DEBUG
-    llist_push_front(llist_ptr, (void*)item_ptr);
+    llist_push_front(llist_ptr, item_ptr);
     item_ptr += item_size;
   };
 };
@@ -63,7 +63,7 @@ static void llist_push_node_front(llist_t* llist_ptr, lnode_t* node_ptr) {
 
 static void llist_push_node_back(llist_t* llist_ptr, lnode_t* node_ptr) {
   node_ptr->next_ptr = NULL;
-  if (llist_ptr->head_ptr) {
+  if (llist_ptr->tail_ptr) {
     llist_ptr->tail_ptr->next_ptr = node_ptr;
     llist_ptr->tail_ptr = node_ptr;
   }
@@ -86,7 +86,6 @@ void* llist_pop_front(llist_t* llist_ptr) {
 
 void llist_push_front(llist_t* llist_ptr, void* data_ptr) {
   lnode_t* node_ptr = llist_pop_node_front(&llist_nodes_pool);
-  Serial.printf("\nPUSH_FRONT\tPOINTER: %p", node_ptr); // DEBUG
   node_ptr->data_ptr = data_ptr;
   llist_push_node_front(llist_ptr, node_ptr);
 };
