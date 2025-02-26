@@ -6,7 +6,7 @@
 
 #include "llist.h"
 
-#define LLIST_NODES_POOL  1200 // Set the maximum nodes number
+#define LLIST_NODES_POOL  1000 // Set the maximum nodes number
 
 lnode_t llist_nodes_array[LLIST_NODES_POOL] = {0}; // Store linked list nodes
 
@@ -18,12 +18,14 @@ void llist_raz(llist_t* llist_ptr) {
 
 static void llist_push_node_front(llist_t*, lnode_t*);
 
-void llist_setup(void) {
+void llist_setup() {
   llist_raz(&llist_nodes_pool);
-  for (int i = 0; i < LLIST_NODES_POOL; i++) {
+  for (uint16_t i = 0; i < LLIST_NODES_POOL; i++) {
     llist_push_node_front(&llist_nodes_pool, &llist_nodes_array[i]);
   };
 };
+
+void llist_push_front(llist_t*, void*);
 
 void llist_builder(llist_t* llist_ptr, void* nodes_array_ptr, const int item_count, const int item_size) {
   uint8_t* item_ptr = (uint8_t*)nodes_array_ptr;
@@ -34,6 +36,8 @@ void llist_builder(llist_t* llist_ptr, void* nodes_array_ptr, const int item_cou
     item_ptr += item_size;
   };
 };
+
+
 
 static lnode_t* llist_pop_node_front(llist_t* llist_ptr) {
   if (llist_ptr->head_ptr) {
@@ -92,7 +96,7 @@ void llist_push_front(llist_t* llist_ptr, void* data_ptr) {
 
 void llist_push_back(llist_t* llist_ptr, void* data_ptr) {
   lnode_t* node_ptr = llist_pop_node_front(&llist_nodes_pool);
-  node_ptr->data_ptr = &data_ptr;
+  node_ptr->data_ptr = data_ptr;
   llist_push_node_back(llist_ptr, node_ptr);
 };
 

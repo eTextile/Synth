@@ -32,7 +32,9 @@ llist_t llist_blobs;                   // Blobs nodes linked list
 
 void blob_setup(void) {
   llist_builder(&llist_context_pool, &lifo_array[0], LIFO_NODES, sizeof(lifo_array[0])); // Add X nodes to the llist_context_pool
+  Serial.println("blip");
   llist_builder(&llist_blobs_pool, &blob_array[0], MAX_BLOBS, sizeof(blob_array[0])); // Add X nodes to the llist_blobs_pool
+  Serial.println("blop");
   llist_raz(&llist_context);
   llist_raz(&llist_blobs);
 
