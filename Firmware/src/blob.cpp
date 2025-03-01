@@ -61,27 +61,21 @@ void matrix_find_blobs(void) {
   blob_t* is_dead_blob_ptr = NULL;
   
   llist_raz(&blobs_to_keep);
-
-  while (1) {
-    is_dead_blob_ptr = (blob_t*)llist_pop_front(&llist_blobs);
-    if (is_dead_blob_ptr != NULL) {
-      if ((millis() - is_dead_blob_ptr->life_time_stamp) > TIME_TO_LEAVE) {
-        Serial.println(is_dead_blob_ptr->life_time_stamp);
-        common_t* mapping_common_ptr = (common_t*)is_dead_blob_ptr->action.mapping_ptr;
-        if (mapping_common_ptr != NULL) {
-          mapping_common_ptr->blob_dispose_func_ptr(mapping_common_ptr, is_dead_blob_ptr);
-        }
-        llist_push_back(&llist_blobs_pool, is_dead_blob_ptr);
+  while ((is_dead_blob_ptr = (blob_t*)llist_pop_front(&llist_blobs)) != NULL) {
+    if ((millis() - is_dead_blob_ptr->life_time_stamp) > TIME_TO_LEAVE) {
+      Serial.println(is_dead_blob_ptr->life_time_stamp);
+      common_t* mapping_common_ptr = (common_t*)is_dead_blob_ptr->action.mapping_ptr;
+      if (mapping_common_ptr != NULL) {
+        mapping_common_ptr->blob_dispose_func_ptr(mapping_common_ptr, is_dead_blob_ptr);
       }
-      else {
-        is_dead_blob_ptr->last_status = is_dead_blob_ptr->status;
-        is_dead_blob_ptr->status = MISSING;
-        llist_push_front(&blobs_to_keep, is_dead_blob_ptr);
-      }
-      break;
-    };
-    break;
-  };
+      llist_push_back(&llist_blobs_pool, is_dead_blob_ptr);
+    }
+    else {
+      is_dead_blob_ptr->last_status = is_dead_blob_ptr->status;
+      is_dead_blob_ptr->status = MISSING;
+      llist_push_front(&blobs_to_keep, is_dead_blob_ptr);
+    }
+  }
   llist_swap_llist(&llist_blobs, &blobs_to_keep);
 
   memset((uint8_t*)&bitmap_array[0], 0, SIZEOF_FRAME);
