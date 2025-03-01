@@ -41,7 +41,7 @@ bool mapping_switch_assign_blob(common_t* mapping_ptr, blob_t* blob_ptr) {
   mapp_switch_t* switch_ptr = (mapp_switch_t*)mapping_ptr;
   if (switch_ptr->touch_index < switch_ptr->params.touchs) {
     blob_ptr->action.mapping_ptr = switch_ptr;
-    blob_ptr->action.mapping_data_ptr = &switch_ptr->params.touch[switch_ptr->touch_index++];
+    blob_ptr->action.touch_ptr = &switch_ptr->params.touch[switch_ptr->touch_index++];
     switch_ptr->active_blob_count++;
     return true;
   }
@@ -51,7 +51,7 @@ bool mapping_switch_assign_blob(common_t* mapping_ptr, blob_t* blob_ptr) {
 void mapping_switch_dispose_blob(common_t* mapping_ptr, blob_t* blob_ptr) {
   mapp_switch_t* switch_ptr = (mapp_switch_t*)mapping_ptr;
   blob_ptr->action.mapping_ptr = NULL;
-  blob_ptr->action.mapping_data_ptr = NULL;
+  blob_ptr->action.touch_ptr = NULL;
   if (--switch_ptr->active_blob_count == 0){
     switch_ptr->touch_index = 0;
   };
@@ -59,7 +59,7 @@ void mapping_switch_dispose_blob(common_t* mapping_ptr, blob_t* blob_ptr) {
 
 void mapping_switch_play(blob_t* blob_ptr) {
   mapp_switch_t* switch_ptr = (mapp_switch_t*)blob_ptr->action.mapping_ptr;
-  touch_3d_t* touch_ptr = (touch_3d_t*)blob_ptr->action.mapping_data_ptr;
+  touch_3d_t* touch_ptr = (touch_3d_t*)blob_ptr->action.touch_ptr;
 
     switch (switch_ptr->params.msg.midi.type) {
       case midi::NoteOff:

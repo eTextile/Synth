@@ -39,7 +39,7 @@ bool mapping_knob_assign_blob(common_t* mapping_ptr, blob_t* blob_ptr) {
   mapp_knob_t* knob_ptr = (mapp_knob_t*)mapping_ptr;
   if (knob_ptr->touch_index < knob_ptr->params.touchs) {
     blob_ptr->action.mapping_ptr = knob_ptr;
-    blob_ptr->action.mapping_data_ptr = &knob_ptr->params.touch[knob_ptr->touch_index++];
+    blob_ptr->action.touch_ptr = &knob_ptr->params.touch[knob_ptr->touch_index++];
     knob_ptr->active_blob_count++;
     return true;
   }
@@ -49,7 +49,7 @@ bool mapping_knob_assign_blob(common_t* mapping_ptr, blob_t* blob_ptr) {
 void mapping_knob_dispose_blob(common_t* mapping_ptr, blob_t* blob_ptr) {
   mapp_knob_t* knob_ptr = (mapp_knob_t*)mapping_ptr;
   blob_ptr->action.mapping_ptr = NULL;
-  blob_ptr->action.mapping_data_ptr = NULL;
+  blob_ptr->action.touch_ptr = NULL;
   if (--knob_ptr->active_blob_count == 0) {
     knob_ptr->touch_index = 0;
   };
@@ -57,7 +57,7 @@ void mapping_knob_dispose_blob(common_t* mapping_ptr, blob_t* blob_ptr) {
 
 void mapping_knob_play(blob_t* blob_ptr) {
   mapp_knob_t* knob_ptr = (mapp_knob_t*)blob_ptr->action.mapping_ptr;
-  knob_touch_t* touch_ptr = (knob_touch_t*)blob_ptr->action.mapping_data_ptr;
+  knob_touch_t* touch_ptr = (knob_touch_t*)blob_ptr->action.touch_ptr;
   
   float x = blob_ptr->centroid.x - knob_ptr->params.center.x;
   float y = blob_ptr->centroid.y - knob_ptr->params.center.y;

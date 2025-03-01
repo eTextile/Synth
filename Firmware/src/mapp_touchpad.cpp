@@ -39,7 +39,7 @@ bool mapping_touchpad_assign_blob(common_t* mapping_ptr, blob_t* blob_ptr) {
   mapp_touchpad_t* touchpad_ptr = (mapp_touchpad_t*)mapping_ptr;
   if (touchpad_ptr->touch_index < touchpad_ptr->params.touchs) {
     blob_ptr->action.mapping_ptr = touchpad_ptr;
-    blob_ptr->action.mapping_data_ptr = &touchpad_ptr->params.touch[touchpad_ptr->touch_index++];
+    blob_ptr->action.touch_ptr = &touchpad_ptr->params.touch[touchpad_ptr->touch_index++];
     touchpad_ptr->active_blob_count++;
     return true;
   }
@@ -49,7 +49,7 @@ bool mapping_touchpad_assign_blob(common_t* mapping_ptr, blob_t* blob_ptr) {
 void mapping_touchpad_dispose_blob(common_t* mapping_ptr, blob_t* blob_ptr) {
   mapp_touchpad_t* touchpad_ptr = (mapp_touchpad_t*)mapping_ptr;
   blob_ptr->action.mapping_ptr = NULL;
-  blob_ptr->action.mapping_data_ptr = NULL;
+  blob_ptr->action.touch_ptr = NULL;
   if (--touchpad_ptr->active_blob_count == 0) {
     touchpad_ptr->touch_index = 0;
   };
@@ -57,7 +57,7 @@ void mapping_touchpad_dispose_blob(common_t* mapping_ptr, blob_t* blob_ptr) {
 
 void mapping_touchpad_play(blob_t* blob_ptr) {
   mapp_touchpad_t* touchpad_ptr = (mapp_touchpad_t*)blob_ptr->action.mapping_ptr;
-  touch_3d_t* touch_ptr = (touch_3d_t*)blob_ptr->action.mapping_data_ptr;
+  touch_3d_t* touch_ptr = (touch_3d_t*)blob_ptr->action.touch_ptr;
 
   if (blob_ptr->status == NEW) {
     midi_send_out(touch_ptr->press.midi);

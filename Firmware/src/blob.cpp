@@ -43,7 +43,7 @@ void blob_setup(void) {
     blob_ptr->UID = 0;
     blob_ptr->status = MISSING;
     blob_ptr->last_status = MISSING;
-    blob_ptr->action.mapping_data_ptr = NULL;
+    blob_ptr->action.touch_ptr = NULL;
     blob_ptr->action.mapping_ptr = NULL;
     blob_ptr->life_time_stamp = millis();
   };
@@ -61,12 +61,14 @@ void matrix_find_blobs(void) {
   // DEAD BLOBS REMOVER
   blob_t* is_dead_blob_ptr = NULL;
   while ((is_dead_blob_ptr = (blob_t*)llist_pop_front(&llist_blobs)) != NULL) {
+
     if ((millis() - is_dead_blob_ptr->life_time_stamp) > TIME_TO_LEAVE) {
+      // MAPPING BLOB DISPOSE
       common_t* mapping_common_ptr = (common_t*)is_dead_blob_ptr->action.mapping_ptr;
       if (mapping_common_ptr != NULL) {
         mapping_common_ptr->blob_dispose_func_ptr(mapping_common_ptr, is_dead_blob_ptr);
       }
-      llist_push_back(&llist_blobs_pool, is_dead_blob_ptr);
+      llist_push_back(&llist_blobs_pool, is_dead_blob_ptr); // Remove or not?
     }
     else {
       is_dead_blob_ptr->last_status = is_dead_blob_ptr->status;

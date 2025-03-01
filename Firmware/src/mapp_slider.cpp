@@ -39,7 +39,7 @@ bool mapping_slider_assign_blob(common_t* mapping_ptr, blob_t* blob_ptr) {
   mapp_slider_t* slider_ptr = (mapp_slider_t*)mapping_ptr;
   if (slider_ptr->touch_index < slider_ptr->params.touchs) {
     blob_ptr->action.mapping_ptr = slider_ptr;
-    blob_ptr->action.mapping_data_ptr = &slider_ptr->params.touch[slider_ptr->touch_index++];
+    blob_ptr->action.touch_ptr = &slider_ptr->params.touch[slider_ptr->touch_index++];
     slider_ptr->active_blob_count++;
     return true;
   }
@@ -49,7 +49,7 @@ bool mapping_slider_assign_blob(common_t* mapping_ptr, blob_t* blob_ptr) {
 void mapping_slider_dispose_blob(common_t* mapping_ptr, blob_t* blob_ptr) {
   mapp_slider_t* slider_ptr = (mapp_slider_t*)mapping_ptr;
   blob_ptr->action.mapping_ptr = NULL;
-  blob_ptr->action.mapping_data_ptr = NULL;
+  blob_ptr->action.touch_ptr = NULL;
   if (--slider_ptr->active_blob_count == 0) {
     slider_ptr->touch_index = 0;
   };
@@ -57,8 +57,7 @@ void mapping_slider_dispose_blob(common_t* mapping_ptr, blob_t* blob_ptr) {
 
 void mapping_slider_play(blob_t* blob_ptr) {
   mapp_slider_t* slider_ptr = (mapp_slider_t*)blob_ptr->action.mapping_ptr;
-  touch_2d_t* touch_ptr = (touch_2d_t*)blob_ptr->action.mapping_data_ptr;
-  //Serial.printf("\nDEBUG_MAPPINGS_SLIDERS\tTOUCHS:%d", slider_ptr->params.touchs);
+  touch_2d_t* touch_ptr = (touch_2d_t*)blob_ptr->action.touch_ptr;
     switch (slider_ptr->params.dir) {
       case HORIZONTAL:
         if (blob_ptr->centroid.x != blob_ptr->last_centroid.x) {
