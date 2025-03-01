@@ -15,7 +15,7 @@
 
 #include "llist.h"
 
-#define TIME_TO_LEAVE 5000
+#define TIME_TO_LEAVE 2000
 
 extern llist_t llist_blobs; // Blobs linked list
 
