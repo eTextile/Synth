@@ -28,12 +28,14 @@ blob_t blob_array[MAX_BLOBS] = {0};    // Store blobs
 llist_t llist_context_pool;            // Context nodes pool
 llist_t llist_context;                 // Context nodes linked list
 llist_t llist_blobs_pool;              // Blobs nodes pool
+llist_t blobs_to_keep;                 // 
 llist_t llist_blobs;                   // Blobs nodes linked list
 
 void blob_setup(void) {
   llist_builder(&llist_context_pool, &lifo_array[0], LIFO_NODES, sizeof(lifo_array[0])); // Add X nodes to the llist_context_pool
   llist_builder(&llist_blobs_pool, &blob_array[0], MAX_BLOBS, sizeof(blob_array[0])); // Add X nodes to the llist_blobs_pool
   llist_raz(&llist_context);
+  llist_raz(&blobs_to_keep);
   llist_raz(&llist_blobs);
 
   for (lnode_t* node_ptr = ITERATOR_START_FROM_HEAD(&llist_blobs_pool); node_ptr != NULL; node_ptr = ITERATOR_NEXT(node_ptr)) {
@@ -55,12 +57,9 @@ inline uint8_t set_id(void) {
 /////////////////////////////// Scanline flood fill algorithm / SFF
 /////////////////////////////// Connected-component labeling / CCL
 void matrix_find_blobs(void) {
-
-  // DEAD BLOBS REMOVER
-  llist_t blobs_to_keep;
-  blob_t* is_dead_blob_ptr = NULL;
   
-  llist_raz(&blobs_to_keep);
+  // DEAD BLOBS REMOVER
+  blob_t* is_dead_blob_ptr = NULL;
   while ((is_dead_blob_ptr = (blob_t*)llist_pop_front(&llist_blobs)) != NULL) {
     if ((millis() - is_dead_blob_ptr->life_time_stamp) > TIME_TO_LEAVE) {
       Serial.println(is_dead_blob_ptr->life_time_stamp);
