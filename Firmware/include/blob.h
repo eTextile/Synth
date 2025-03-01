@@ -111,14 +111,6 @@ typedef struct blob_s blob_t;
 
 //typedef void blob_action_func_t(blob_t*);
 
-/*
-typedef struct touch_s touch_t;
-struct touch_s {
-  void* current_ptr;
-  void* previous_ptr;
-};
-*/
-
 typedef struct blob_action_s blob_action_t;
 struct blob_action_s {
   //blob_action_func_t* func_ptr;
@@ -130,8 +122,8 @@ struct blob_s {
   uint8_t UID;
   blob_status_t status;
   blob_status_t last_status;
-  uint32_t life_time_stamp;
-  uint32_t transmit_time_stamp;
+  unsigned long int life_time_stamp;
+  unsigned long int transmit_time_stamp;
   box_t box;
   uint16_t pixels;
   vertrice_t centroid;

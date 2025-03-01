@@ -32,16 +32,18 @@ llist_t llist_blobs;                   // Blobs nodes linked list
 
 void blob_setup(void) {
   llist_builder(&llist_context_pool, &lifo_array[0], LIFO_NODES, sizeof(lifo_array[0])); // Add X nodes to the llist_context_pool
-  Serial.println("blip");
   llist_builder(&llist_blobs_pool, &blob_array[0], MAX_BLOBS, sizeof(blob_array[0])); // Add X nodes to the llist_blobs_pool
-  Serial.println("blop");
   llist_raz(&llist_context);
   llist_raz(&llist_blobs);
 
   for (lnode_t* node_ptr = ITERATOR_START_FROM_HEAD(&llist_blobs_pool); node_ptr != NULL; node_ptr = ITERATOR_NEXT(node_ptr)) {
     blob_t* blob_ptr = (blob_t*)ITERATOR_DATA(node_ptr);
-    blob_ptr->UID = 255;
+    blob_ptr->UID = 0;
+    blob_ptr->status = MISSING;
     blob_ptr->last_status = MISSING;
+    blob_ptr->action.mapping_data_ptr = NULL;
+    blob_ptr->action.mapping_ptr = NULL;
+    blob_ptr->life_time_stamp = millis();
   };
 };
 
@@ -57,31 +59,31 @@ void matrix_find_blobs(void) {
   // DEAD BLOBS REMOVER
   llist_t blobs_to_keep;
   blob_t* is_dead_blob_ptr = NULL;
-  Serial.println("TIP");
+  
+  llist_raz(&blobs_to_keep);
 
-  while ((is_dead_blob_ptr = (blob_t*)llist_pop_front(&llist_blobs)) != NULL) {
-    if ((millis() - is_dead_blob_ptr->life_time_stamp) > TIME_TO_LEAVE) {
-      
-      common_t* mapping_common_ptr = (common_t*)is_dead_blob_ptr->action.mapping_ptr;
-      if (mapping_common_ptr) {
-        mapping_common_ptr->blob_dispose_func_ptr(mapping_common_ptr, is_dead_blob_ptr);
+  while (1) {
+    is_dead_blob_ptr = (blob_t*)llist_pop_front(&llist_blobs);
+    if (is_dead_blob_ptr != NULL) {
+      if ((millis() - is_dead_blob_ptr->life_time_stamp) > TIME_TO_LEAVE) {
+        Serial.println(is_dead_blob_ptr->life_time_stamp);
+        common_t* mapping_common_ptr = (common_t*)is_dead_blob_ptr->action.mapping_ptr;
+        if (mapping_common_ptr != NULL) {
+          mapping_common_ptr->blob_dispose_func_ptr(mapping_common_ptr, is_dead_blob_ptr);
+        }
+        llist_push_back(&llist_blobs_pool, is_dead_blob_ptr);
       }
-
-      llist_push_front(&llist_blobs_pool, is_dead_blob_ptr);
-
-      #if defined(USB_MIDI_SERIAL) && defined(DEBUG_FIND_BLOBS)
-        Serial.printf("\nDEBUG_FIND_BLOBS / Blob: %p dispose", is_dead_blob_ptr->UID);
-      #endif
-    }
-    else {
-      is_dead_blob_ptr->last_status = is_dead_blob_ptr->status;
-      is_dead_blob_ptr->status = MISSING;
-      llist_push_front(&blobs_to_keep, is_dead_blob_ptr);
+      else {
+        is_dead_blob_ptr->last_status = is_dead_blob_ptr->status;
+        is_dead_blob_ptr->status = MISSING;
+        llist_push_front(&blobs_to_keep, is_dead_blob_ptr);
+      }
+      break;
     };
+    break;
   };
   llist_swap_llist(&llist_blobs, &blobs_to_keep);
-  Serial.println("pop");
-  
+
   memset((uint8_t*)&bitmap_array[0], 0, SIZEOF_FRAME);
   uint8_t blob_count = 0;
   
@@ -187,7 +189,7 @@ void matrix_find_blobs(void) {
 
               if (!IMAGE_GET_PIXEL_FAST(bmp_row_ptr_b, i) &&
                   PIXEL_THRESHOLD(IMAGE_GET_PIXEL_FAST(row_ptr_b, i), e256_ctr.levels[THRESHOLD].val)) {
-
+                
                 xylr_t* context = (xylr_t*)llist_pop_front(&llist_context_pool);
                 context->x = posX;
                 context->y = posY;
@@ -251,7 +253,7 @@ void matrix_find_blobs(void) {
             new_blob_ptr->life_time_stamp = millis();
             llist_push_back(&llist_blobs, new_blob_ptr);
           }
-        };
+        }
         posX = oldX;
         posY = oldY;
       };
@@ -293,7 +295,7 @@ for (lnode_t* node_ptr = ITERATOR_START_FROM_HEAD(&llist_previous_blobs); node_p
   Serial.printf("\n");
 #endif
 #if defined(USB_MIDI_SERIAL) && defined(DEBUG_BLOBS)
-  for (lnode_t* node_ptr = ITERATOR_START_FROM_HEAD(&llist_previous_blobs); node_ptr != NULL; node_ptr = ITERATOR_NEXT(node_ptr)) {
+  for (lnode_t* node_ptr = ITERATOR_START_FROM_HEAD(&llist_blobs); node_ptr != NULL; node_ptr = ITERATOR_NEXT(node_ptr)) {
     blob_t* blob_ptr = (blob_t*)ITERATOR_DATA(node_ptr);
     Serial.printf("\nDEBUG_BLOBS:%d\tS:%d\tX:%f\tY:%f\tZ:%d\tW:%d\tH:%d\tVXY:%f\tVZ:%f",
                   blob_ptr->UID,

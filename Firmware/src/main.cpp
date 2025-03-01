@@ -21,16 +21,14 @@ uint16_t fps = 0;
 
 void setup() {
   #if defined(USB_MIDI_SERIAL)
-    while (!Serial);
-    Serial.printf("\nVERSION:\t%s", VERSION);
+    //while (!Serial);
+    //Serial.printf("\nVERSION:\t%s", VERSION);
   #endif
   hardware_setup();
   scan_setup();
   interp_setup();
   llist_setup();
-  blob_setup();
-  Serial.printf("\nDONE");
-  
+  blob_setup();  
   hardware_midi_setup();
   usb_midi_setup();
   midi_bus_setup();
@@ -41,7 +39,9 @@ void setup() {
 void loop() {
   matrix_scan();
   matrix_interp();
-  matrix_find_blobs();
+  
+  matrix_find_blobs(); // TESTING
+
   update_controls();
   //mapping_lib_update(); // USED FOR DEBUGING!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 

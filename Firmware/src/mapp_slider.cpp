@@ -162,7 +162,7 @@ void mapping_slider_create(const JsonObject &config) {
     uint8_t size_x = slider_ptr->params.rect.to.x - slider_ptr->params.rect.from.x;
     uint8_t size_y = slider_ptr->params.rect.to.y - slider_ptr->params.rect.from.y;
     if (size_x < size_y) {
-      slider_ptr->params.dir = VERTICAL; // TODO: pos -> dir
+      slider_ptr->params.dir = VERTICAL;
     } else {
       slider_ptr->params.dir = HORIZONTAL;
     };

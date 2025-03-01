@@ -34,7 +34,7 @@ ADC::Sync_result result; // Store ADC_0 & ADC_1
 uint8_t rawFrameArray[RAW_FRAME] = {0}; // 1D Array to store E256 ofseted analog input values
 uint8_t offsetArray[RAW_FRAME] = {0};   // 1D Array to store E256 smallest values
 
-image_t raw_frame;    // Memory allocation for raw frame values
+image_t raw_frame;   // Memory allocation for raw frame values
 image_t offsetFrane; // Memory allocation for offset frame values
 
 // Array to store all parameters used to configure the two 8:1 analog multiplexeurs ()
@@ -191,7 +191,7 @@ void matrix_scan(void) {
   for (uint8_t posY = 0; posY < RAW_ROWS; posY++) {
     uint8_t *row_ptr = COMPUTE_IMAGE_ROW_PTR(&raw_frame, posY);
     for (uint8_t posX = 0; posX < RAW_COLS; posX++) {
-      Serial.printf("\t%d", IMAGE_GET_PIXEL_FAST(row_ptr, posX));
+      Serial.printf("_%d", IMAGE_GET_PIXEL_FAST(row_ptr, posX));
     };
     Serial.printf("\n");
   };

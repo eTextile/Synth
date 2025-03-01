@@ -9,7 +9,7 @@
 
 #include <Arduino.h>
 #define ENCODER_USE_INTERRUPTS
-#define ENCODER_OPTIMIZE_INTERRUPTS
+//#define ENCODER_OPTIMIZE_INTERRUPTS
 #include <Encoder.h> // https://github.com/PaulStoffregen/Encoder
 
 #define PROJECT "ETEXTILE-SYNTHESIZER"
@@ -77,7 +77,7 @@
 #define MIDI_ERROR_CHANNEL 6
 
 // E256 MAPPING_LIB CONSTANTS
-#define MAX_BLOBS 16 // [1:16] How many blobs can be tracked at the same time
+#define MAX_BLOBS 8 // [1:16] How many blobs can be tracked at the same time
 
 #define MAX_SWITCHS 16
 #define MAX_SWITCH_TOUCHS 2
