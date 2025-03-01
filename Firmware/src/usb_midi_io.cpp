@@ -343,8 +343,8 @@ void usb_read_systemExclusive(const uint8_t *data_ptr, uint16_t sysEx_chunk_size
     sysEx_data_length = sysEx_data_length_MSB << 7 | sysEx_data_length_LSB;
 
     sysEx_chunk_ptr = sysEx_data_ptr = (uint8_t *)allocate(sysEx_data_ptr, sysEx_data_length + 1);
-    sysEx_chunks = (uint8_t)(sysEx_data_length + 3 / USB_MIDI_SYSEX_MAX); // +3 adding heder & footer size
-    sysEx_last_chunk_size = sysEx_data_length + 3 % USB_MIDI_SYSEX_MAX; // +3 adding heder & footer size
+    sysEx_chunks = (uint8_t)((sysEx_data_length + 3) / USB_MIDI_SYSEX_MAX); // +3 adding heder & footer size
+    sysEx_last_chunk_size = (sysEx_data_length + 3) % USB_MIDI_SYSEX_MAX; // +3 adding heder & footer size
     
     if (sysEx_last_chunk_size != 0) sysEx_chunks++;
 
@@ -352,8 +352,9 @@ void usb_read_systemExclusive(const uint8_t *data_ptr, uint16_t sysEx_chunk_size
     break;
 
   case UPLOAD_MODE:
-    if (sysEx_chunks == 1 && complete) { // Only one chunk to load
-      memcpy(sysEx_chunk_ptr, data_ptr + 2, sizeof(uint8_t) * sysEx_chunk_size - 3); // -3 removing heder & footer size
+    //Serial.printf("\nCONFIG_UPLOAD: LENGTH:%d\tTHUNKS:%td\tCOMPLETE:%d", sysEx_data_length, sysEx_chunks, complete);
+    if (sysEx_chunks == 1 && complete) { // Only one chunk to load // FIXME!
+      memcpy(sysEx_chunk_ptr, data_ptr + 2, sizeof(uint8_t) * sysEx_chunk_size - 2); // -3 removing heder & footer size
       usb_midi_send_info((uint8_t)UPLOAD_DONE, MIDI_VERBOSITY_CHANNEL);
     }
     else if (sysEx_chunks > 1 && sysEx_chunk_count == 0) { // First chunk
@@ -373,9 +374,9 @@ void usb_read_systemExclusive(const uint8_t *data_ptr, uint16_t sysEx_chunk_size
     };
     break;
 
-    default:
-      usb_midi_send_info((uint8_t)UNKNOWN_SYSEX, MIDI_ERROR_CHANNEL);
-      set_mode(ERROR_MODE);
-      break;
+  default:
+    usb_midi_send_info((uint8_t)UNKNOWN_SYSEX, MIDI_ERROR_CHANNEL);
+    set_mode(ERROR_MODE);
+    break;
   };
 };
