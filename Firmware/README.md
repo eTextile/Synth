@@ -5,18 +5,18 @@
 1. Poweirng the **eTextile-MIDI-interface**:
     - Use the included power cable with a **common 5V USB power supply**
     - Or use the same cable to plug the interface to your laptop USB port
-2. For data communication between the eTextile-MIDI-interface and the web app or music software:
-    - use both cables: the power cable and the Micro USB cable (Type B)
+
+2. For data communication between the eTextile-MIDI-interface and the web app or music software use both cables: the power cable and the Micro USB cable (Type B).
+
 3. Load the provided web application (using Chome): https://mapping.etextile.org/
-4. Build your custom Graphic-User-Interface using the web app features
-5. The app contains GUI moduls like toggles, sliders, etc.
-6. Each one can be placed, resized and configured to target specific MIDI_PARAMETERS
-    - Each modul is providing **Midi Note** or **Midi Control-Change**
-7. The web app is made to generate and upload a **config file** to the eTextile-MIDI-interface
-8. You can then save it to the flash memory to be **load on each startup**
-    - Long Press on the LEFT_BUTTON (physical) will **save the config to the flash memory**
-9. You can as well save it to your computer for arkive
-10. Use MIDI cable (mini-jack-TRS-A) to connect the eTextile-MIDI-interface to external MIDI Synthesizers.
+    - Build your custom Graphic-User-Interface using the web app features
+    - The app contains GUI moduls like toggles, sliders, etc.
+    - Each GUI can be placed, resized and configured to generate **Midi msg**
+    - Wen you have made your own board control the web app will generate and upload a **config file** to the eTextile-MIDI-interface
+    - A long press the LEFT_BUTTON of the PCB will save this config file to the flash memory.
+    - This config file will be **load on each startup**
+    - You can as well save it to your computer for arkive
+4. Use MIDI cable (mini-jack-TRS-A) to connect the eTextile-MIDI-interface to external MIDI Synthesizers.
 
 ## BOOT SEQUENCE
 ### BOOTING WITH USB CABLE & POWER PLUG
@@ -47,11 +47,11 @@
 ## MAPPING LIB
 ### LIST OF AVAILABLE TUIs
 - All feture are parametric
-  - switchs()
-  - sliders()
-  - knobs()
-  - polygons()
-  - touchpads()
+  - switch()
+  - slider()
+  - knob()
+  - polygon()
+  - touchpad()
 
 ### Development Frameworks
 - **eTextile-Synthesizer PCB** & **Teensy 4.0**
