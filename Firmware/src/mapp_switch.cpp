@@ -130,22 +130,26 @@ void mapping_switch_play(blob_t* blob_ptr) {
 
 void mapping_switch_create(const JsonObject &config) {
   mapp_switch_t* switch_ptr = (mapp_switch_t*)llist_pop_front(&llist_switch_pool);
-  midi_status_t status;
+  
+  switch_ptr->params.touchs = config["touchs"].as<uint8_t>();
   switch_ptr->params.rect.from.x = config["from"][0].as<float>();
   switch_ptr->params.rect.from.y = config["from"][1].as<float>();
   switch_ptr->params.rect.to.x = config["to"][0].as<float>();
   switch_ptr->params.rect.to.y = config["to"][1].as<float>();
-  midi_msg_status_unpack(config["msg"][0]["press"]["midi"]["status"].as<uint8_t>(), &status);
-  switch_ptr->params.msg.midi.type = status.type;
-  switch_ptr->params.msg.midi.data1 = config["msg"][0]["press"]["midi"]["data1"].as<uint8_t>();
-  switch_ptr->params.msg.midi.data2 = config["msg"][0]["press"]["midi"]["data2"].as<uint8_t>();
-  switch_ptr->params.msg.midi.channel = status.channel;
-  if (switch_ptr->params.msg.midi.type == midi::ControlChange ||
-    switch_ptr->params.msg.midi.type == midi::AfterTouchPoly) {
-    switch_ptr->params.msg.limit.min = config["msg"][0]["press"]["limit"]["min"].as<uint8_t>();
-    switch_ptr->params.msg.limit.max = config["msg"][0]["press"]["limit"]["max"].as<uint8_t>(); 
+    
+  midi_status_t status;
+  for (uint8_t i = 0; i<switch_ptr->params.touchs; i++){
+    midi_msg_status_unpack(config["msg"][i]["press"]["midi"]["status"].as<uint8_t>(), &status);
+    switch_ptr->params.touch[i].press.midi.type = status.type;
+    switch_ptr->params.touch[i].press.midi.data1 = config["msg"][i]["press"]["midi"]["data1"].as<uint8_t>();
+    switch_ptr->params.touch[i].press.midi.data2 = config["msg"][i]["press"]["midi"]["data2"].as<uint8_t>();
+    switch_ptr->params.touch[i].press.midi.channel = status.channel;
+    if (switch_ptr->params.msg.midi.type == midi::ControlChange ||
+      switch_ptr->params.touch[i].press.midi.type == midi::AfterTouchPoly) {
+      switch_ptr->params.touch[i].press.limit.min = config["msg"][i]["press"]["limit"]["min"].as<uint8_t>();
+      switch_ptr->params.touch[i].press.limit.max = config["msg"][i]["press"]["limit"]["max"].as<uint8_t>(); 
+    }
   }
-  
   switch_ptr->common.is_blob_inside_func_ptr = &mapping_switch_is_blob_inside;
   switch_ptr->common.blob_assign_func_ptr = &mapping_switch_assign_blob;
   switch_ptr->common.blob_dispose_func_ptr = &mapping_switch_dispose_blob;
