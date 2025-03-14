@@ -91,7 +91,7 @@ void scan_setup(void) {
 // Rows are digital OUTPUT_PINS supplyed one by one sequentially with 3.3V
 void matrix_calibrate(void) {
 
-  memset((uint8_t *)offsetArray, 0, RAW_FRAME); // RAZ offsetArray (16x16)
+  memset(&offsetArray[0], 0, RAW_FRAME); // RAZ offsetArray (16x16)
 
   for (uint8_t i = 0; i < CALIBRATION_CYCLES; i++) {
     for (uint8_t cols = 0; cols < DUAL_COLS; cols++) { // ANNALOG_PINS [0-7] with [8-15]
@@ -154,7 +154,7 @@ void matrix_scan(void) {
       SPI1.transfer(setDualCols[cols]);                // Shift out one byte that setup the two INPUT 8:1 analog multiplexers
       digitalWrite(SS1_PIN, HIGH);                     // Set the Slave Select Pin HIGH
 
-      uint8_t index_a = row * RAW_COLS + cols; // Compute 1D array index_a
+      uint8_t index_a = row * RAW_COLS + cols;  // Compute 1D array index_a
       uint8_t index_b = index_a + DUAL_COLS;    // Compute 1D array index_b
 
       pinMode(ADC0_PIN, OUTPUT);
@@ -172,12 +172,20 @@ void matrix_scan(void) {
       #endif
 
       uint8_t valA = result.result_adc0;
-      valA > offsetArray[index_a] ? rawFrameArray[index_a] = (valA - offsetArray[index_a]) : rawFrameArray[index_a] = 0;
-      //rawFrameArray[index_a] = min(valA, 127); // Add limit for MIDI message 0:127
-
+      if (valA > offsetArray[index_a]) {
+        rawFrameArray[index_a] = min(127, (valA - offsetArray[index_a]));
+      }
+      else {
+        rawFrameArray[index_a] = 0;
+      }
+      
       uint8_t valB = result.result_adc1;
-      valB > offsetArray[index_b] ? rawFrameArray[index_b] = (valB - offsetArray[index_b]) : rawFrameArray[index_b] = 0;
-      //rawFrameArray[index_b] = min(valB, 127); // Add limit for MIDI message 0:127
+      if (valB > offsetArray[index_b]) {
+        rawFrameArray[index_b] = min(127, (valB - offsetArray[index_b]));
+      }
+      else {
+        rawFrameArray[index_b] = 0;
+      }
 
       #if defined(SET_ORIGIN_Y)
         setRows = setRows << 1;
