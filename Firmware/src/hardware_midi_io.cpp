@@ -22,26 +22,28 @@ void hardware_midi_recive(void) {
 };
 
 void hardware_midi_handle_input(const midi::Message<128u> &midiMsg) {
-  // This can be refactored to avoide data copy !
-  // I dont understand the midiMsg struct!
-  // can it be casted or direct pushed to our I/O midi linked list?
-  //midi_msg_t* midiMsg = (midi_msg_t*)dataPacket;
-  midi_node_t* node_ptr = (midi_node_t*)llist_pop_front(&midi_nodes_pool);  // Get a node from the MIDI nodes stack
-  node_ptr->midi.type = midiMsg.type;       // Set the MIDI type
-  node_ptr->midi.data1 = midiMsg.data1;     // Set the MIDI note
-  node_ptr->midi.data2 = midiMsg.data2;     // Set the MIDI velocity
-  node_ptr->midi.channel = midiMsg.channel; // Set the MIDI channel
+  // midiMsg struct is C++
+  // Can it be refact for zero-copy ?
+  midi_msg_t* midi_ptr = (midi_msg_t*)llist_pop_front(&midi_nodes_pool);  // Get a node from the MIDI nodes stack
+  //midi_ptr = (midi_msg_t*)midiMsg;
+  
+  midi_ptr->type = midiMsg.type;       // Set the MIDI type
+  midi_ptr->data1 = midiMsg.data1;     // Set the MIDI note
+  midi_ptr->data2 = midiMsg.data2;     // Set the MIDI velocity
+  midi_ptr->channel = midiMsg.channel; // Set the MIDI channel
+  
   #if defined(MIDI_THRU)
-    llist_push_front(&midi_out, node_ptr);      // Add the node to the midi_out linked list
+    llist_push_front(&midi_out, midi_ptr);  // Add the node to the midi_out linked list
   #else
-    llist_push_front(&midi_in, node_ptr);       // Add the node to the midi_in linked list
+    llist_push_front(&midi_in, midi_ptr);   // Add the node to the midi_in linked list
   #endif
 };
 
-void hardware_midi_transmit(void){
-  for (lnode_t* node_ptr = ITERATOR_START_FROM_HEAD(&midi_out); node_ptr != NULL; node_ptr = ITERATOR_NEXT(node_ptr)){
-    midi_node_t* midi_node_ptr = (midi_node_t*)ITERATOR_DATA(node_ptr);
-    MIDI.send(midi_node_ptr->midi.type, midi_node_ptr->midi.data1, midi_node_ptr->midi.data2, midi_node_ptr->midi.channel);
+void hardware_midi_transmit(void) {
+  for (lnode_t* midi_node_ptr = ITERATOR_START_FROM_HEAD(&midi_out); midi_node_ptr != NULL; midi_node_ptr = ITERATOR_NEXT(midi_node_ptr)) {
+    midi_msg_t* midi_ptr = (midi_msg_t*)ITERATOR_DATA(midi_node_ptr);
+    Serial.println("SEND_OUT");
+    MIDI.send(midi_ptr->type, midi_ptr->data1, midi_ptr->data2, midi_ptr->channel);
   };
-  llist_concat_nodes(&midi_nodes_pool, &midi_out);
+  llist_concat_nodes(&midi_nodes_pool, &midi_out); // Save/rescure all midi_out nodes
 };

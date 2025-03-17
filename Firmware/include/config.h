@@ -41,7 +41,7 @@
 #define SIZEOF_FRAME (NEW_FRAME * sizeof(uint8_t))
 #define BLOB_MIN_PIX 6    // Set the minimum blob pixels
 #define BLOB_MAX_PIX 1024 // Set the minimum blob pixels
-#define LAST_BLOB_DIST 10
+#define LAST_BLOB_DIST 8
 
 #define X_PADDING_LEFT   0
 #define X_PADDING_REIGHT 0
@@ -77,7 +77,7 @@
 #define MIDI_ERROR_CHANNEL 6
 
 // E256 MAPPING_LIB CONSTANTS
-#define MAX_BLOBS 8 // [1:16] How many blobs can be tracked at the same time
+#define MAX_BLOBS 16 // [1:16] How many blobs can be tracked at the same time
 
 #define MAX_SWITCHS 16
 #define MAX_SWITCH_TOUCHS 2

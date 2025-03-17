@@ -6,7 +6,7 @@
 
 #include "llist.h"
 
-#define LLIST_NODES_POOL  1000 // Set the maximum nodes number
+#define LLIST_NODES_POOL  2000 // Set the maximum nodes number
 
 lnode_t llist_nodes_array[LLIST_NODES_POOL] = {0}; // Store linked list nodes
 

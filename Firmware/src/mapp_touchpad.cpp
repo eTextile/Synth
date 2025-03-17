@@ -60,9 +60,9 @@ void mapping_touchpad_play(blob_t* blob_ptr) {
   touch_3d_t* touch_ptr = (touch_3d_t*)blob_ptr->action.touch_ptr;
 
   if (blob_ptr->status == NEW) {
-    midi_send_out(touch_ptr->press.midi);
-    midi_send_out(touch_ptr->pos_x.midi);
-    midi_send_out(touch_ptr->pos_y.midi);
+    midi_send_out(&touch_ptr->press.midi);
+    midi_send_out(&touch_ptr->pos_x.midi);
+    midi_send_out(&touch_ptr->pos_y.midi);
   }
   else if (blob_ptr->status == PRESENT) {
     //
@@ -79,7 +79,7 @@ void mapping_touchpad_play(blob_t* blob_ptr) {
         touch_ptr->pos_x.limit.min,
         touch_ptr->pos_x.limit.max));
     // Change here!
-    midi_send_out(touch_ptr->pos_x.midi);
+    midi_send_out(&touch_ptr->pos_x.midi);
     #if defined(USB_MIDI_SERIAL) && defined(DEBUG_MAPPINGS_TOUCHPAD)
       Serial.printf("\nDEBUG_MAPPINGS_TOUCHPADS\tMIDI_X_CC:%d\tVAL:%d",
       touch_ptr->pos_x.midi.data2,
@@ -96,7 +96,7 @@ void mapping_touchpad_play(blob_t* blob_ptr) {
         touch_ptr->pos_y.limit.min,
         touch_ptr->pos_y.limit.max));
     // Change here!
-    midi_send_out(touch_ptr->pos_y.midi);
+    midi_send_out(&touch_ptr->pos_y.midi);
     #if defined(USB_MIDI_SERIAL) && defined(DEBUG_MAPPINGS_TOUCHPAD)
       Serial.printf("\nDEBUG_MAPPINGS_TOUCHPADS\tMIDI_Y_CC:%d\tVAL:%d",
       touch_ptr->pos_y.midi.data2,
@@ -109,16 +109,16 @@ void mapping_touchpad_play(blob_t* blob_ptr) {
       if (blob_ptr->status == NEW) {
         touch_ptr->press.midi.type = midi::NoteOn;
         //touch_ptr->press.midi.data2 = ... // TODO: add the velocity to the blob values!
-        midi_send_out(touch_ptr->press.midi);
-        #if defined(USB_MIDI_SERIAL) && defined(DEBUG_MAPPINGS_SWITCHS)
-          Serial.printf("\nDEBUG_MAPPINGS_SWITCHS\tID:%d\tNOTE_ON:%d", i, touchpad_ptr->params.msg.midi.data1);
+        midi_send_out(&touch_ptr->press.midi);
+        #if defined(USB_MIDI_SERIAL) && defined(DEBUG_MAPPINGS_TOUCHPAD)
+          Serial.printf("\nDEBUG_MAPPINGS_TOUCHPAD\tBLOB_ID:%d\tNOTE_ON:%d", blob_ptr->UID, touchpad_ptr->params.msg.midi.data1);
         #endif
       }
       else if (blob_ptr->status == MISSING && blob_ptr->last_status == PRESENT) {
         touch_ptr->press.midi.type = midi::NoteOff;
-        midi_send_out(touch_ptr->press.midi);
-        #if defined(USB_MIDI_SERIAL) && defined(DEBUG_MAPPINGS)
-          Serial.printf("\nDEBUG_MAPPINGS_SWITCHS\tID:%d\tNOTE_OFF:%d", i, touchpad_ptr->params.msg.midi.data1);
+        midi_send_out(&touch_ptr->press.midi);
+        #if defined(USB_MIDI_SERIAL) && defined(DEBUG_MAPPINGS_TOUCHPAD)
+          Serial.printf("\nDEBUG_MAPPINGS_TOUCHPAD\tBLOB_ID:%d\tNOTE_OFF:%d", i, touchpad_ptr->params.msg.midi.data1);
         #endif
       }
       break;
@@ -126,9 +126,9 @@ void mapping_touchpad_play(blob_t* blob_ptr) {
       if (blob_ptr->status == NEW) {
         touch_ptr->press.midi.type = midi::NoteOn;
         //mapp_switch->params.msg.midi.data2 = ... // TODO: add the velocity to the blob values!
-        midi_send_out(touch_ptr->press.midi);
-        #if defined(USB_MIDI_SERIAL) && defined(DEBUG_MAPPINGS_SWITCHS)
-          Serial.printf("\nDEBUG_MAPPINGS_SWITCHS\tID:%d\tNOTE_ON:%d", i, touchpad_ptr->params.msg.midi.data1);
+        midi_send_out(&touch_ptr->press.midi);
+        #if defined(USB_MIDI_SERIAL) && defined(DEBUG_MAPPINGS_TOUCHPAD)
+          Serial.printf("\nDEBUG_MAPPINGS_TOUCHPAD\tBLOB_ID:%d\tNOTE_ON:%d", blob_ptr->UID, touchpad_ptr->params.msg.midi.data1);
         #endif
       }
       break;
@@ -142,9 +142,9 @@ void mapping_touchpad_play(blob_t* blob_ptr) {
           Z_MAX,
           touch_ptr->press.limit.min,
           touch_ptr->press.limit.max));
-      midi_send_out(touch_ptr->press.midi);
-      #if defined(USB_MIDI_SERIAL) && defined(DEBUG_MAPPINGS_SWITCHS)
-        Serial.printf("\nDEBUG_MAPPINGS_SWITCHS\tID:%d\tC_CHANGE:%d", i, touch_ptr->press.midi.data2);
+      midi_send_out(&touch_ptr->press.midi);
+      #if defined(USB_MIDI_SERIAL) && defined(DEBUG_MAPPINGS_TOUCHPAD)
+        Serial.printf("\nDEBUG_MAPPINGS_TOUCHPAD\tBLOB_ID:%d\tC_CHANGE:%d", blob_ptr->UID, touch_ptr->press.midi.data2);
       #endif
       break;
     case midi::ProgramChange:
@@ -167,7 +167,7 @@ void mapping_touchpad_play(blob_t* blob_ptr) {
         Z_MAX,
         touch_ptr->press.limit.min,
         touch_ptr->press.limit.max));
-    midi_send_out(touch_ptr->press.midi);
+    midi_send_out(&touch_ptr->press.midi);
     #if defined(USB_MIDI_SERIAL) && defined(DEBUG_MAPPINGS_TOUCHPAD)
       Serial.printf("\nDEBUG_MAPPINGS_TOUCHPADS\tMIDI_Z_CC:%d\tVAL:%d",
       touch_ptr->press.midi.data2,
@@ -179,12 +179,19 @@ void mapping_touchpad_play(blob_t* blob_ptr) {
 
 void mapping_touchpad_create(const JsonObject &config) {
   mapp_touchpad_t* touchpad_ptr = (mapp_touchpad_t*)llist_pop_front(&llist_touchpads_pool);
+
+  touchpad_ptr->common.is_blob_inside_func_ptr = &mapping_touchpad_is_blob_inside;
+  touchpad_ptr->common.blob_assign_func_ptr = &mapping_touchpad_assign_blob;
+  touchpad_ptr->common.blob_dispose_func_ptr = &mapping_touchpad_dispose_blob;
+  touchpad_ptr->common.play_func_ptr = &mapping_touchpad_play;
+
   touchpad_ptr->params.touchs = config["touchs"].as<uint8_t>();
   touchpad_ptr->params.rect.from.x = config["from"][0].as<float>();
   touchpad_ptr->params.rect.from.y = config["from"][1].as<float>();
   touchpad_ptr->params.rect.to.x = config["to"][0].as<float>();
   touchpad_ptr->params.rect.to.y = config["to"][1].as<float>();
   //touchpad_ptr->params.mode = config["mode_z"].as<uint8_t>();
+
   if (touchpad_ptr->params.touchs < MAX_TOUCHPAD_TOUCHS) {
     midi_status_t status;
     for (uint8_t j = 0; j<touchpad_ptr->params.touchs; j++){
@@ -220,11 +227,5 @@ void mapping_touchpad_create(const JsonObject &config) {
       };
     };
   };
-
-  touchpad_ptr->common.is_blob_inside_func_ptr = &mapping_touchpad_is_blob_inside;
-  touchpad_ptr->common.blob_assign_func_ptr = &mapping_touchpad_assign_blob;
-  touchpad_ptr->common.blob_dispose_func_ptr = &mapping_touchpad_dispose_blob;
-  touchpad_ptr->common.play_func_ptr = &mapping_touchpad_play;
-
   llist_push_back(&llist_mappings, touchpad_ptr);
 };

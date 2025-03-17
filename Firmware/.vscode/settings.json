@@ -6,6 +6,13 @@
         "cmath": "cpp",
         "array": "cpp",
         "initializer_list": "cpp",
-        "utility": "cpp"
-    }
+        "utility": "cpp",
+        "*.tcc": "cpp",
+        "compare": "cpp",
+        "concepts": "cpp",
+        "numeric": "cpp",
+        "istream": "cpp",
+        "ostream": "cpp"
+    },
+    "liveServer.settings.port": 5501
 }

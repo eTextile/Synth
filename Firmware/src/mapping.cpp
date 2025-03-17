@@ -9,18 +9,26 @@
 llist_t llist_mappings;
 
 void mapping_lib_update(void) {
-  llist_concat_nodes(&midi_nodes_pool, &midi_out); // Save/rescure all midi_out nodes
+    
   for (lnode_t* blob_node_ptr = ITERATOR_START_FROM_HEAD(&llist_blobs); blob_node_ptr != NULL; blob_node_ptr = ITERATOR_NEXT(blob_node_ptr)) {
     blob_t* blob_ptr = (blob_t*)ITERATOR_DATA(blob_node_ptr);
+
     for (lnode_t* mapping_node_ptr = ITERATOR_START_FROM_HEAD(&llist_mappings); mapping_node_ptr != NULL; mapping_node_ptr = ITERATOR_NEXT(mapping_node_ptr)) {
-      common_t* mapping_common_ptr = (common_t*)ITERATOR_DATA(mapping_node_ptr);
-      if (mapping_common_ptr->is_blob_inside_func_ptr(mapping_common_ptr, blob_ptr)) {
-        mapping_common_ptr->blob_assign_func_ptr(mapping_common_ptr, blob_ptr);  
+      common_t* mapping_ptr = (common_t*)ITERATOR_DATA(mapping_node_ptr);
+      Serial.println("MAPPING");
+      if (mapping_ptr->is_blob_inside_func_ptr(mapping_ptr, blob_ptr)) {
+        Serial.println("INSIDE");
+        if (blob_ptr->action.mapping_ptr) {
+          Serial.println("PLAY");
+          mapping_ptr->play_func_ptr(blob_ptr);
+        } else {
+          Serial.println("ASSIGN");
+          mapping_ptr->blob_assign_func_ptr(mapping_ptr, blob_ptr);
+        };
       };
     };
   };
 };
-
 
 
 ///////////////////////////////////////////////
@@ -143,7 +151,7 @@ void mapping_cSliders_update(void) {
                 #if defined(USB_MIDI_SERIAL) && defined(DEBUG_MAPPINGS)
                   Serial.printf("\nDEBUG_MAPPINGS_CSLIDER\tSLIDER_ID:%d\tRADIUS:%f\tTHETA:%f\tVAL:%d", id, radius, theta, sliderVal);
                 #else
-                  midi_send_out(mapp_csliderParams[i].msg.midi);
+                  midi_send_out(&mapp_csliderParams[i].msg.midi);
                 #endif
               };
             };

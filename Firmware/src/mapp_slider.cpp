@@ -58,6 +58,7 @@ void mapping_slider_dispose_blob(common_t* mapping_ptr, blob_t* blob_ptr) {
 void mapping_slider_play(blob_t* blob_ptr) {
   mapp_slider_t* slider_ptr = (mapp_slider_t*)blob_ptr->action.mapping_ptr;
   touch_2d_t* touch_ptr = (touch_2d_t*)blob_ptr->action.touch_ptr;
+
   //Serial.printf("\nDEBUG_MAPPINGS_SLIDERS\tTOUCHS:%d", slider_ptr->params.touchs);
     switch (slider_ptr->params.dir) {
       case HORIZONTAL:
@@ -69,7 +70,7 @@ void mapping_slider_play(blob_t* blob_ptr) {
             touch_ptr->pos.limit.min,
             touch_ptr->pos.limit.max)
           );
-          midi_send_out(touch_ptr->pos.midi);
+          midi_send_out(&touch_ptr->pos.midi);
           #if defined(USB_MIDI_SERIAL) && defined(DEBUG_MAPPINGS_SLIDERS)
             Serial.printf("\nDEBUG_MAPPINGS_SLIDERS\tID:%d\tVal:%d", i, touch_ptr->pos.midi.data2);
           #endif
@@ -84,7 +85,7 @@ void mapping_slider_play(blob_t* blob_ptr) {
             touch_ptr->pos.limit.min,
             touch_ptr->pos.limit.max)
           );
-          midi_send_out(touch_ptr->pos.midi);
+          midi_send_out(&touch_ptr->pos.midi);
           #if defined(USB_MIDI_SERIAL) && defined(DEBUG_MAPPINGS_SLIDERS)
             Serial.printf("\nDEBUG_MAPPINGS_SLIDERS\tID:%d\tVal:%d", i, touch_ptr->pos.midi.data2);
           #endif   
@@ -109,7 +110,7 @@ void mapping_slider_play(blob_t* blob_ptr) {
               touch_ptr->press.limit.max)
             */
             touch_ptr->press.midi.data2 = blob_ptr->centroid.z;
-            midi_send_out(touch_ptr->press.midi);
+            midi_send_out(&touch_ptr->press.midi);
             #if defined(USB_MIDI_SERIAL) && defined(DEBUG_MAPPING_SLIDERS)
               Serial.printf("\nDEBUG_MAPPINGS_SLIDERS\tID:%d\tC_CHANGE:%d", i, mapp_grids->params.msg.midi.data2);
             #endif
@@ -132,15 +133,22 @@ void mapping_slider_play(blob_t* blob_ptr) {
 
 void mapping_slider_create(const JsonObject &config) {
   mapp_slider_t* slider_ptr = (mapp_slider_t*)llist_pop_front(&llist_sliders_pool);
+  
+  //slider_ptr->common.blob_ptr = NULL;
+  //slider_ptr->common.touch_ptr = NULL;
+  slider_ptr->common.is_blob_inside_func_ptr = &mapping_slider_is_blob_inside;
+  slider_ptr->common.blob_assign_func_ptr = &mapping_slider_assign_blob;
+  slider_ptr->common.blob_dispose_func_ptr = &mapping_slider_dispose_blob;
+  slider_ptr->common.play_func_ptr = &mapping_slider_play;
 
+  slider_ptr->params.touchs = config["touchs"].as<uint8_t>();
   slider_ptr->params.rect.from.x = config["from"][0].as<float>();
   slider_ptr->params.rect.from.y = config["from"][1].as<float>();
   slider_ptr->params.rect.to.x = config["to"][0].as<float>();
   slider_ptr->params.rect.to.y = config["to"][1].as<float>();
-  slider_ptr->params.touchs = config["touchs"].as<uint8_t>();
 
   midi_status_t status;
-  for (uint8_t j = 0; j<slider_ptr->params.touchs; j++){
+  for (uint8_t j = 0; j<slider_ptr->params.touchs; j++) {
     midi_msg_status_unpack(config["msg"][j]["pos"]["midi"]["status"].as<uint8_t>(), &status);
     slider_ptr->params.touch[j].pos.midi.type = status.type;
     slider_ptr->params.touch[j].pos.midi.data1 = config["msg"][j]["pos"]["midi"]["data1"].as<uint8_t>();
@@ -158,20 +166,14 @@ void mapping_slider_create(const JsonObject &config) {
       slider_ptr->params.touch[j].pos.midi.type == midi::AfterTouchPoly) {
       slider_ptr->params.touch[j].press.limit.min = config["msg"][j]["press"]["limit"]["min"].as<uint8_t>();
       slider_ptr->params.touch[j].press.limit.max = config["msg"][j]["press"]["limit"]["max"].as<uint8_t>();
-    };  
+    }
     uint8_t size_x = slider_ptr->params.rect.to.x - slider_ptr->params.rect.from.x;
     uint8_t size_y = slider_ptr->params.rect.to.y - slider_ptr->params.rect.from.y;
     if (size_x < size_y) {
       slider_ptr->params.dir = VERTICAL;
     } else {
       slider_ptr->params.dir = HORIZONTAL;
-    };
-  };
-
-  slider_ptr->common.is_blob_inside_func_ptr = &mapping_slider_is_blob_inside;
-  slider_ptr->common.blob_assign_func_ptr = &mapping_slider_assign_blob;
-  slider_ptr->common.blob_dispose_func_ptr = &mapping_slider_dispose_blob;
-  slider_ptr->common.play_func_ptr = &mapping_slider_play;
-
+    }
+  }
   llist_push_back(&llist_mappings, slider_ptr);
 };

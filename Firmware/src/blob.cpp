@@ -16,10 +16,9 @@
 #include "median.h"
 #include "mapping.h"
 
-#define LIFO_NODES          512        // Set the maximum nodes number
+#define LIFO_NODES          1024       // Set the maximum nodes number
 #define X_STRIDE            4          // Speed up X scanning
 #define Y_STRIDE            2          // Speed up Y scanning
-#define DEBOUNCE_TIME       50         // Avioding undesired bouncing effect when tapping or sliding on the sensor
 
 uint8_t bitmap_array[NEW_FRAME] = {0}; // Store (64*64) binary values
 xylr_t lifo_array[LIFO_NODES] = {0};   // Store lifo nodes
@@ -45,7 +44,6 @@ void blob_setup(void) {
     blob_ptr->last_status = MISSING;
     blob_ptr->action.touch_ptr = NULL;
     blob_ptr->action.mapping_ptr = NULL;
-    blob_ptr->life_time_stamp = millis();
   };
 };
 
@@ -61,24 +59,23 @@ void matrix_find_blobs(void) {
   // DEAD BLOBS REMOVER
   blob_t* is_dead_blob_ptr = NULL;
   while ((is_dead_blob_ptr = (blob_t*)llist_pop_front(&llist_blobs)) != NULL) {
-
     if ((millis() - is_dead_blob_ptr->life_time_stamp) > TIME_TO_LEAVE) {
       // MAPPING BLOB DISPOSE
-      common_t* mapping_common_ptr = (common_t*)is_dead_blob_ptr->action.mapping_ptr;
-      if (mapping_common_ptr != NULL) {
-        mapping_common_ptr->blob_dispose_func_ptr(mapping_common_ptr, is_dead_blob_ptr);
+      common_t* mapping_ptr = (common_t*)is_dead_blob_ptr->action.mapping_ptr;
+      if (mapping_ptr) {
+        mapping_ptr->blob_dispose_func_ptr(mapping_ptr, is_dead_blob_ptr);
+        Serial.println("DISPOSE");
       }
-      llist_push_back(&llist_blobs_pool, is_dead_blob_ptr); // Remove or not?
+      llist_push_back(&llist_blobs_pool, is_dead_blob_ptr);
     }
     else {
-      is_dead_blob_ptr->last_status = is_dead_blob_ptr->status;
-      is_dead_blob_ptr->status = MISSING;
       llist_push_front(&blobs_to_keep, is_dead_blob_ptr);
     }
   }
   llist_swap_llist(&llist_blobs, &blobs_to_keep);
 
-  memset((uint8_t*)&bitmap_array[0], 0, SIZEOF_FRAME);
+  memset(&bitmap_array[0], 0, SIZEOF_FRAME);
+
   uint8_t blob_count = 0;
   
   for (uint8_t posY = 0; posY < NEW_ROWS; posY += Y_STRIDE) {
@@ -88,8 +85,7 @@ void matrix_find_blobs(void) {
 
     for (uint8_t posX = (posY % X_STRIDE); posX < NEW_COLS; posX += X_STRIDE) {
       if (!IMAGE_GET_PIXEL_FAST(bmp_row_ptr_A, posX) &&
-          PIXEL_THRESHOLD(IMAGE_GET_PIXEL_FAST(row_ptr_a, posX), e256_ctr.levels[THRESHOLD].val)
-         ) {
+          PIXEL_THRESHOLD(IMAGE_GET_PIXEL_FAST(row_ptr_a, posX), e256_ctr.levels[THRESHOLD].val)) {
 
         uint8_t oldX = posX;
         uint8_t oldY = posY;
@@ -113,14 +109,12 @@ void matrix_find_blobs(void) {
 
           while ((left > 0) &&
                  !IMAGE_GET_PIXEL_FAST(bmp_row_ptr_b, left - 1) &&
-                 PIXEL_THRESHOLD(IMAGE_GET_PIXEL_FAST(row_ptr_b, left - 1), e256_ctr.levels[THRESHOLD].val)
-                ) {
+                 PIXEL_THRESHOLD(IMAGE_GET_PIXEL_FAST(row_ptr_b, left - 1), e256_ctr.levels[THRESHOLD].val)) {
             left--;
           };
           while (right < (NEW_COLS - 1) &&
                  !IMAGE_GET_PIXEL_FAST(bmp_row_ptr_b, right + 1) &&
-                 PIXEL_THRESHOLD(IMAGE_GET_PIXEL_FAST(row_ptr_b, right + 1), e256_ctr.levels[THRESHOLD].val)
-                ) {
+                 PIXEL_THRESHOLD(IMAGE_GET_PIXEL_FAST(row_ptr_b, right + 1), e256_ctr.levels[THRESHOLD].val)) {
             right++;
           };
 
@@ -226,27 +220,48 @@ void matrix_find_blobs(void) {
         if (blob_pixels > BLOB_MIN_PIX && blob_pixels < BLOB_MAX_PIX && blob_count < MAX_BLOBS) {
           blob_count++;
           blob_t* new_blob_ptr = (blob_t*)llist_pop_front(&llist_blobs_pool);
-          new_blob_ptr->last_centroid = new_blob_ptr->centroid;
-          new_blob_ptr->centroid.x = constrain(blob_cx / blob_pixels, X_MIN, X_MAX) - X_MIN ;
-          new_blob_ptr->centroid.y = constrain(blob_cy / blob_pixels, Y_MIN, Y_MAX) - Y_MIN;
-          // Subtract threshold and avoid negative numbers
-          blob_depth > e256_ctr.levels[THRESHOLD].val ? new_blob_ptr->centroid.z = (blob_depth - e256_ctr.levels[THRESHOLD].val) : new_blob_ptr->centroid.z = 0;
-          new_blob_ptr->box.w = (blob_x2 - blob_x1);
-          new_blob_ptr->box.h = blob_height;
+          //if (new_blob_ptr == NULL) Serial.println ("LL_BUG"); // DEBUG
 
-          blob_t* existing_blob_ptr = (blob_t*)llist_find_node(&llist_blobs, new_blob_ptr, (llist_compare_func_t*)&is_blob_existing);
+          new_blob_ptr->centroid.x = (constrain(blob_cx / blob_pixels, X_MIN, X_MAX) - X_MIN);
+          new_blob_ptr->centroid.y = (constrain(blob_cy / blob_pixels, Y_MIN, Y_MAX) - Y_MIN);
+
+          blob_t* blob_ptr = (blob_t*)llist_find_node(&llist_blobs, new_blob_ptr, (llist_compare_func_t*)&is_blob_existing);
           
-          if (existing_blob_ptr != NULL) {
-            existing_blob_ptr->status = PRESENT;
-            existing_blob_ptr->life_time_stamp = millis();
+          if (blob_ptr) {
+
+            blob_ptr->last_status = blob_ptr->status;
+            blob_ptr->status = PRESENT;
+
+            blob_ptr->centroid.x = new_blob_ptr->centroid.x;
+            blob_ptr->centroid.y = new_blob_ptr->centroid.y;
+            blob_ptr->centroid.z = new_blob_ptr->centroid.z;
+            //...
             llist_push_back(&llist_blobs_pool, new_blob_ptr);
           }
           else {
-            new_blob_ptr->status = NEW;
-            new_blob_ptr->UID = set_id();
-            new_blob_ptr->life_time_stamp = millis();
+            blob_ptr = new_blob_ptr;
+
+            blob_ptr->last_status = MISSING;
+            blob_ptr->status = NEW;
+
+            blob_ptr->UID = set_id();
+            blob_ptr->action.touch_ptr = NULL;
+            blob_ptr->action.mapping_ptr = NULL;
+            Serial.println("NEW");
+
             llist_push_back(&llist_blobs, new_blob_ptr);
           }
+          // Subtract threshold and avoid negative numbers
+          //blob_ptr->centroid.z = (blob_depth > e256_ctr.levels[THRESHOLD].val) ? (blob_depth - e256_ctr.levels[THRESHOLD].val) : 0;
+          if (blob_depth > e256_ctr.levels[THRESHOLD].val) {
+            blob_ptr->centroid.z = (blob_depth - e256_ctr.levels[THRESHOLD].val);
+          }
+          else {
+            blob_ptr->centroid.z = 0;
+          }          
+          blob_ptr->box.w = (blob_x2 - blob_x1);
+          blob_ptr->box.h = blob_height;
+          blob_ptr->life_time_stamp = millis();
         }
         posX = oldX;
         posY = oldY;
@@ -288,22 +303,25 @@ for (lnode_t* node_ptr = ITERATOR_START_FROM_HEAD(&llist_previous_blobs); node_p
   };
   Serial.printf("\n");
 #endif
+
 #if defined(USB_MIDI_SERIAL) && defined(DEBUG_BLOBS)
   for (lnode_t* node_ptr = ITERATOR_START_FROM_HEAD(&llist_blobs); node_ptr != NULL; node_ptr = ITERATOR_NEXT(node_ptr)) {
     blob_t* blob_ptr = (blob_t*)ITERATOR_DATA(node_ptr);
-    Serial.printf("\nDEBUG_BLOBS:%d\tS:%d\tX:%f\tY:%f\tZ:%d\tW:%d\tH:%d\tVXY:%f\tVZ:%f",
+    //Serial.printf("\nDEBUG_BLOBS:%d\tS:%d\tX:%f\tY:%f\tZ:%d\tW:%d\tH:%d\tVXY:%f\tVZ:%f",
+    Serial.printf("\nDEBUG_BLOBS:%d\tS:%d\tX:%f\tY:%f\tZ:%d\tW:%d\tH:%d",
                   blob_ptr->UID,
                   blob_ptr->status,
                   blob_ptr->centroid.x,
                   blob_ptr->centroid.y,
                   blob_ptr->centroid.z,
                   blob_ptr->box.w,
-                  blob_ptr->box.h,
-                  blob_ptr->velocity.xy,
-                  blob_ptr->velocity.z
+                  blob_ptr->box.h
+                  //blob_ptr->velocity.xy,
+                  //blob_ptr->velocity.z
                  );
   };
   #endif
+
   #if defined(USB_MIDI_SERIAL) && defined(DEBUG_FIND_BLOBS)
     if ((lnode_t*)llist_blobs.head_ptr != NULL) {
       Serial.printf("\n___________DEBUG_FIND_BLOBS / END_OF_FRAME");
@@ -313,6 +331,8 @@ for (lnode_t* node_ptr = ITERATOR_START_FROM_HEAD(&llist_previous_blobs); node_p
 
 bool is_blob_existing(blob_t* blob_ptr, blob_t* new_blob_ptr) {
   float dist = sqrtf(pow(blob_ptr->centroid.x - new_blob_ptr->centroid.x, 2) + pow(blob_ptr->centroid.y - new_blob_ptr->centroid.y, 2));
+  //Serial.printf("\nBLOB_A:%f_BLOB_B:%f", blob_ptr->centroid.x, new_blob_ptr->centroid.x);
+  //Serial.println(dist);
   if (dist < LAST_BLOB_DIST) {
     return true;
   };

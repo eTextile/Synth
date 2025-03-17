@@ -39,11 +39,6 @@ struct msg_s {
   uint8_t last_val;
 };
 
-typedef struct midi_node_s midi_node_t;
-struct midi_node_s {
-  midi_msg_t midi;
-};
-
 // MIDI status bytes: https://github.com/PaulStoffregen/MIDI/blob/master/src/midi_Defs.h
 typedef struct midi_status_s midi_status_t;
 struct midi_status_s {
@@ -54,12 +49,7 @@ struct midi_status_s {
 void midi_bus_setup(void);
 uint8_t midi_msg_status_pack(MidiType type, uint8_t channel);
 void midi_msg_status_unpack(uint8_t in_status, midi_status_t* out_status);
+void midi_send_out(midi_msg_t* midiMsg);
 void print_bytes(const uint8_t* data_ptr, size_t length);
-
-inline void midi_send_out(midi_msg_t midiMsg) {
-  midi_node_t* node_ptr = (midi_node_t*)llist_pop_front(&midi_nodes_pool);
-  node_ptr->midi = midiMsg;
-  llist_push_front(&midi_out, node_ptr);
-};
 
 #endif /*__MIDI_BUS_H__*/

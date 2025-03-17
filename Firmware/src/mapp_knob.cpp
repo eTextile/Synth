@@ -33,8 +33,6 @@ bool mapping_knob_is_blob_inside(common_t* mapping_ptr, blob_t* blob_ptr) {
   return false;
 };
 
-// blob == valeurs physiqyes captées
-// touch == données du nieme blob
 bool mapping_knob_assign_blob(common_t* mapping_ptr, blob_t* blob_ptr) {
   mapp_knob_t* knob_ptr = (mapp_knob_t*)mapping_ptr;
   if (knob_ptr->touch_index < knob_ptr->params.touchs) {
@@ -58,7 +56,7 @@ void mapping_knob_dispose_blob(common_t* mapping_ptr, blob_t* blob_ptr) {
 void mapping_knob_play(blob_t* blob_ptr) {
   mapp_knob_t* knob_ptr = (mapp_knob_t*)blob_ptr->action.mapping_ptr;
   knob_touch_t* touch_ptr = (knob_touch_t*)blob_ptr->action.touch_ptr;
-  
+
   float x = blob_ptr->centroid.x - knob_ptr->params.center.x;
   float y = blob_ptr->centroid.y - knob_ptr->params.center.y;
   float radius = sqrt(x * x + y * y);
@@ -78,9 +76,9 @@ void mapping_knob_play(blob_t* blob_ptr) {
     } else {
       touch_ptr->theta.midi.data2 = atanf(posY / posX);
     }
-    midi_send_out(touch_ptr->radius.midi);
-    midi_send_out(touch_ptr->theta.midi);
-    midi_send_out(touch_ptr->pressure.midi);
+    midi_send_out(&touch_ptr->radius.midi);
+    midi_send_out(&touch_ptr->theta.midi);
+    midi_send_out(&touch_ptr->pressure.midi);
     #if defined(USB_MIDI_SERIAL) && defined(DEBUG_MAPPINGS_KNOBS)
       Serial.printf("\nDEBUG_MAPPINGS_KNOBS:\tKnobsID:\t%d\tradius:\t%fTheta:\t%f", i, knob_ptr->params.touch[j].radius.midi.data2, knob_ptr->params.touch[j].theta.midi.data2);
     #endif
@@ -89,12 +87,25 @@ void mapping_knob_play(blob_t* blob_ptr) {
 
 void mapping_knob_create(const JsonObject &config) {
   mapp_knob_t* knob_ptr = (mapp_knob_t*)llist_pop_front(&llist_knobs_pool);
+
+  //knob_ptr->common.blob_ptr = NULL;
+  //knob_ptr->common.touch_ptr = NULL;
+  knob_ptr->common.is_blob_inside_func_ptr = &mapping_knob_is_blob_inside;
+  knob_ptr->common.blob_assign_func_ptr = &mapping_knob_assign_blob;
+  knob_ptr->common.blob_dispose_func_ptr = &mapping_knob_dispose_blob;
+  knob_ptr->common.play_func_ptr = &mapping_knob_play;
+
   knob_ptr->params.rect.from.x = config["from"][0].as<float>();
   knob_ptr->params.rect.from.y = config["from"][1].as<float>();
   knob_ptr->params.rect.to.x = config["to"][0].as<float>();
   knob_ptr->params.rect.to.y = config["to"][1].as<float>();
   knob_ptr->params.radius = config["radius"].as<float>();
   knob_ptr->params.offset = config["offset"].as<uint8_t>();
+
+  knob_ptr->params.radius = (knob_ptr->params.rect.to.x - knob_ptr->params.rect.from.x) / 2;
+  knob_ptr->params.center.x = (knob_ptr->params.rect.from.x + knob_ptr->params.radius);
+  knob_ptr->params.center.y = (knob_ptr->params.rect.from.y + knob_ptr->params.radius);
+  
   midi_status_t status;
   for (uint8_t j = 0; j<config["touchs"].as<uint8_t>(); j++){
     midi_msg_status_unpack(config["msg"][j]["radius"]["midi"]["status"].as<uint8_t>(), &status);
@@ -128,14 +139,5 @@ void mapping_knob_create(const JsonObject &config) {
       knob_ptr->params.touch[j].pressure.limit.max = config["msg"][j]["press"]["limit"]["max"].as<uint8_t>();
     }
   }
-  knob_ptr->params.radius = (knob_ptr->params.rect.to.x - knob_ptr->params.rect.from.x) / 2;
-  knob_ptr->params.center.x = (knob_ptr->params.rect.from.x + knob_ptr->params.radius);
-  knob_ptr->params.center.y = (knob_ptr->params.rect.from.y + knob_ptr->params.radius);
-  
-  knob_ptr->common.is_blob_inside_func_ptr = &mapping_knob_is_blob_inside;
-  knob_ptr->common.blob_assign_func_ptr = &mapping_knob_assign_blob;
-  knob_ptr->common.blob_dispose_func_ptr = &mapping_knob_dispose_blob;
-  knob_ptr->common.play_func_ptr = &mapping_knob_play;
-
   llist_push_back(&llist_mappings, knob_ptr);
 };

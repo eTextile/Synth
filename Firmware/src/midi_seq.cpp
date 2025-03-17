@@ -14,8 +14,8 @@ struct seq_s {
 
 void tap_tempo(void) {
   /*
-  for (lnode_t* node_ptr = ITERATOR_START_FROM_HEAD(&midi_out); node_ptr != NULL; node_ptr = ITERATOR_NEXT(node_ptr)) {
-    midi_node_t* midi_node_ptr = (midi_node_t*)ITERATOR_DATA(node_ptr);
+  for (lnode_t* midi_node_ptr = ITERATOR_START_FROM_HEAD(&midi_out); midi_node_ptr != NULL; midi_node_ptr = ITERATOR_NEXT(midi_node_ptr)) {
+    midi_msg_t* midi_ptr = (midi_msg_t*)ITERATOR_DATA(node_ptr);
     // TODO
   };
   */

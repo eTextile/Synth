@@ -71,6 +71,7 @@ void usb_midi_pending_mode_timeout() {
 void usb_midi_transmit() {
   static uint32_t usbTransmitTimeStamp = 0;
   uint8_t blob_values[8] = {0};
+  //uint8_t blob_values[9] = {0}; // TODO
   switch (e256_current_mode) {
     case PENDING_MODE:
       // Nothing to do
@@ -98,6 +99,8 @@ void usb_midi_transmit() {
       while (usbMIDI.read()); // Read and discard any incoming MIDI messages
       break;
     */
+   usbMIDI.sendSysEx(NEW_FRAME, interp_frame.data_ptr, false, 0);
+
     case EDIT_MODE:
       // Send all blobs values over USB using MIDI format
       for (lnode_t* node_ptr = ITERATOR_START_FROM_HEAD(&llist_blobs); node_ptr != NULL; node_ptr = ITERATOR_NEXT(node_ptr)) {
@@ -122,7 +125,8 @@ void usb_midi_transmit() {
           blob_values[5] = blob_ptr->box.w;
           blob_values[6] = blob_ptr->box.h;
           blob_values[7] = blob_ptr->centroid.z;
-          
+          //blob_values[8] = blob_ptr->status; // TODO
+
           usbMIDI.sendSysEx(8, blob_values, false);
           //};
         }
@@ -149,17 +153,17 @@ void usb_midi_send_info(uint8_t msg, uint8_t channel) {
 };
 
 void usb_read_noteOn(uint8_t channel, uint8_t note, uint8_t velocity) {
-  midi_node_t* node_ptr = (midi_node_t*)llist_pop_front(&midi_nodes_pool);
-  node_ptr->midi.type = midi::NoteOn;
-  node_ptr->midi.data1 = note;
-  node_ptr->midi.data2 = velocity;
-  node_ptr->midi.channel = channel;
+  midi_msg_t* midi_ptr = (midi_msg_t*)llist_pop_front(&midi_nodes_pool);
+  midi_ptr->type = midi::NoteOn;
+  midi_ptr->data1 = note;
+  midi_ptr->data2 = velocity;
+  midi_ptr->channel = channel;
   switch (e256_current_mode) {
     case EDIT_MODE:
-      llist_push_front(&midi_in, node_ptr);  // Add the node to the midi_in linked list
+      llist_push_front(&midi_in, midi_ptr);  // Add the node to the midi_in linked list
       break;
     case PLAY_MODE:
-      llist_push_front(&midi_out, node_ptr); // Add the node to the midi_out linked list
+      llist_push_front(&midi_out, midi_ptr); // Add the node to the midi_out linked list
       break;
     default:
       break;
@@ -167,17 +171,17 @@ void usb_read_noteOn(uint8_t channel, uint8_t note, uint8_t velocity) {
 };
 
 void usb_read_noteOff(uint8_t channel, uint8_t note, uint8_t velocity) {
-  midi_node_t* node_ptr = (midi_node_t*)llist_pop_front(&midi_nodes_pool);
-  node_ptr->midi.type = midi::NoteOff;
-  node_ptr->midi.data1 = note;
-  node_ptr->midi.data2 = velocity;
-  node_ptr->midi.channel = channel;
+  midi_msg_t* midi_ptr = (midi_msg_t*)llist_pop_front(&midi_nodes_pool);
+  midi_ptr->type = midi::NoteOff;
+  midi_ptr->data1 = note;
+  midi_ptr->data2 = velocity;
+  midi_ptr->channel = channel;
   switch (e256_current_mode) {
     case EDIT_MODE:
-      llist_push_front(&midi_in, node_ptr);  // Add the node to the midi_in linked list
+      llist_push_front(&midi_in, midi_ptr);  // Add the node to the midi_in linked list
       break;
     case PLAY_MODE:
-      llist_push_front(&midi_out, node_ptr); // Add the node to the midi_out linked list
+      llist_push_front(&midi_out, midi_ptr); // Add the node to the midi_out linked list
       break;
     default:
       break;
@@ -192,17 +196,17 @@ void usb_read_controlChange(uint8_t channel, uint8_t control, uint8_t value) {
       set_level((level_codes_t)control, value);
       break;
     default:
-      midi_node_t* node_ptr = (midi_node_t*)llist_pop_front(&midi_nodes_pool);  // Get a node from the MIDI nodes stack
-      node_ptr->midi.type = midi::ControlChange; // Set the MIDI type
-      node_ptr->midi.data1 = control;            // Set the MIDI note
-      node_ptr->midi.data2 = value;              // Set the MIDI velocity
-      node_ptr->midi.channel = channel;          // Set the MIDI channel
+    midi_msg_t* midi_ptr = (midi_msg_t*)llist_pop_front(&midi_nodes_pool);  // Get a node from the MIDI nodes stack
+      midi_ptr->type = midi::ControlChange; // Set the MIDI type
+      midi_ptr->data1 = control;            // Set the MIDI note
+      midi_ptr->data2 = value;              // Set the MIDI velocity
+      midi_ptr->channel = channel;          // Set the MIDI channel
       switch (e256_current_mode) {
         case EDIT_MODE:
-          llist_push_front(&midi_in, node_ptr);  // Add the node to the midi_in linked list
+          llist_push_front(&midi_in, midi_ptr);  // Add the node to the midi_in linked list
           break;
         case PLAY_MODE:
-          llist_push_front(&midi_out, node_ptr); // Add the node to the midi_out linked list
+          llist_push_front(&midi_out, midi_ptr); // Add the node to the midi_out linked list
           break;
         default:
           break;

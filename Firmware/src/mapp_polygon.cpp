@@ -75,6 +75,7 @@ void mapping_polygon_play(blob_t* blob_ptr) {
   //mapp_polygon_t* polygon_ptr = (mapp_polygon_t*)blob_ptr->action.mapping_ptr;
   //touch_3d_t* touch_ptr = (touch_3d_t*)blob_ptr->action.touch_ptr;
   // TODO: get the max width & max height and scale it to [0-1]
+
   #if defined(USB_MIDI_SERIAL) && defined(DEBUG_MAPPINGS_POLYGONS)
     Serial.printf("\nDEBUG_MAPPINGS_POLYGONS\tPoint %f %f is inside polygon %d\n", blob_ptr->centroid.x, blob_ptr->centroid.y, p);
   #endif
@@ -83,6 +84,11 @@ void mapping_polygon_play(blob_t* blob_ptr) {
 void mapping_polygon_create(const JsonObject &config) {
   mapp_polygon_t* polygon_ptr = (mapp_polygon_t*)llist_pop_front(&llist_polygons_pool);
   
+  polygon_ptr->common.is_blob_inside_func_ptr = &mapping_polygon_is_blob_inside;
+  polygon_ptr->common.blob_assign_func_ptr = &mapping_polygon_assign_blob;
+  polygon_ptr->common.blob_dispose_func_ptr = &mapping_polygon_dispose_blob;
+  polygon_ptr->common.play_func_ptr = &mapping_polygon_play;
+
   polygon_ptr->params.point_cnt = config["cnt"].as<uint8_t>();
   for (uint8_t j = 0; j < polygon_ptr->params.point_cnt; j++) {
     polygon_ptr->params.point[j].x = config["point"][j]["X"].as<float>();
@@ -107,11 +113,5 @@ void mapping_polygon_create(const JsonObject &config) {
     };
     v2 = v1;
   }
-  
-  polygon_ptr->common.is_blob_inside_func_ptr = &mapping_polygon_is_blob_inside;
-  polygon_ptr->common.blob_assign_func_ptr = &mapping_polygon_assign_blob;
-  polygon_ptr->common.blob_dispose_func_ptr = &mapping_polygon_dispose_blob;
-  polygon_ptr->common.play_func_ptr = &mapping_polygon_play;
-
   llist_push_back(&llist_mappings, polygon_ptr);
 };

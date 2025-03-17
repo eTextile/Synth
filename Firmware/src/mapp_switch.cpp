@@ -9,7 +9,7 @@
 struct mapp_switch_s;
 typedef struct mapp_switch_s mapp_switch_t;
 struct mapp_switch_s {
-  common_t common; //  interact_func_ptr / play_func_ptr;
+  common_t common;
   switch_t params;
   uint8_t active_blob_count;
   uint8_t touch_index;
@@ -35,13 +35,12 @@ bool mapping_switch_is_blob_inside(common_t* mapping_ptr, blob_t* blob_ptr) {
   return false;
 };
 
-// blob == valeurs physiqyes captées
-// touch == données du nieme blob
 bool mapping_switch_assign_blob(common_t* mapping_ptr, blob_t* blob_ptr) {
   mapp_switch_t* switch_ptr = (mapp_switch_t*)mapping_ptr;
   if (switch_ptr->touch_index < switch_ptr->params.touchs) {
     blob_ptr->action.mapping_ptr = switch_ptr;
     blob_ptr->action.touch_ptr = &switch_ptr->params.touch[switch_ptr->touch_index++];
+    Serial.println(switch_ptr->touch_index); // DEBUG!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     switch_ptr->active_blob_count++;
     return true;
   }
@@ -52,65 +51,62 @@ void mapping_switch_dispose_blob(common_t* mapping_ptr, blob_t* blob_ptr) {
   mapp_switch_t* switch_ptr = (mapp_switch_t*)mapping_ptr;
   blob_ptr->action.mapping_ptr = NULL;
   blob_ptr->action.touch_ptr = NULL;
-  if (--switch_ptr->active_blob_count == 0){
+  if (--switch_ptr->active_blob_count == 0) {
     switch_ptr->touch_index = 0;
   };
 };
 
 void mapping_switch_play(blob_t* blob_ptr) {
   mapp_switch_t* switch_ptr = (mapp_switch_t*)blob_ptr->action.mapping_ptr;
-  touch_3d_t* touch_ptr = (touch_3d_t*)blob_ptr->action.touch_ptr;
+  touch_2d_t* touch_ptr = (touch_2d_t*)blob_ptr->action.touch_ptr;
+    
+    Serial.println(touch_ptr->press.midi.type);
 
-    switch (switch_ptr->params.msg.midi.type) {
+    switch (touch_ptr->press.midi.type) {
       case midi::NoteOff:
         break;
+
       case midi::NoteOn:
         if (blob_ptr->status == NEW) {
+          Serial.println("PLAY_NOTE");
           touch_ptr->press.midi.type = midi::NoteOn;
           //touch_ptr->press.midi.data2 = ... // TODO: add the velocity to the blob values!
-          midi_send_out(touch_ptr->press.midi);
+          midi_send_out(&touch_ptr->press.midi);
           #if defined(USB_MIDI_SERIAL) && defined(DEBUG_MAPPINGS_SWITCHS)
-            Serial.printf("\nDEBUG_MAPPINGS_SWITCHS\tID:%d\tNOTE_ON:%d", i, touch_ptr->press.midi.data1);
+            Serial.printf("\nDEBUG_MAPPINGS_SWITCHS\tBLOB_ID:%d\tNOTE_ON:%d", blob_ptr->UID, touch_ptr->press.midi.data1);
           #endif
         }
-        else if ((!blob_ptr->status) == PRESENT) {
+        else if (blob_ptr->last_status == PRESENT && blob_ptr->status == MISSING) {
           touch_ptr->press.midi.type = midi::NoteOff;
-          midi_send_out(touch_ptr->press.midi);
-          #if defined(USB_MIDI_SERIAL) && defined(DEBUG_MAPPINGS)
-            Serial.printf("\nDEBUG_MAPPINGS_SWITCHS\tID:%d\tNOTE_OFF:%d", i, touch_ptr->press.midi.data1);
+          midi_send_out(&touch_ptr->press.midi);
+          #if defined(USB_MIDI_SERIAL) && defined(DEBUG_MAPPINGS_SWITCHS)
+            Serial.printf("\nDEBUG_MAPPINGS_SWITCHS\tBLOB_ID:%d\tNOTE_OFF:%d", blob_ptr->UID, touch_ptr->press.midi.data1);
           #endif
         }
-        else if (blob_ptr->status == MISSING && blob_ptr->last_status == PRESENT) {
-          touch_ptr->press.midi.type = midi::NoteOff;
-          midi_send_out(touch_ptr->press.midi);
-          #if defined(USB_MIDI_SERIAL) && defined(DEBUG_MAPPINGS_GRIDS)
-            Serial.printf("\nDEBUG_MAPPINGS_GRIDS\tKEY_VAL:%d\tKEY_UP_OFF:%d", touch_ptr->press.midi.data1, touch_ptr->press.midi.data2);
-          #endif
-        };
         break;
 
       case midi::AfterTouchPoly:
         if (blob_ptr->status == NEW) {
           touch_ptr->press.midi.type = midi::NoteOn;
-          midi_send_out(touch_ptr->press.midi);
+          midi_send_out(&touch_ptr->press.midi);
           #if defined(USB_MIDI_SERIAL) && defined(DEBUG_MAPPINGS_SWITCHS)
-            Serial.printf("\nDEBUG_MAPPINGS_SWITCHS\tID:%d\tNOTE_ON:%d", i, touch_ptr->press.midi.data1);
+            Serial.printf("\nDEBUG_MAPPINGS_SWITCHS\tBLOB_ID:%d\tNOTE_ON:%d", blob_ptr->UID, touch_ptr->press.midi.data1);
           #endif
         }
-        else if (blob_ptr->status == NEW) {
+        else if (blob_ptr->status == PRESENT) {
           touch_ptr->press.midi.type = midi::AfterTouchPoly;
-          midi_send_out(touch_ptr->press.midi);
+          midi_send_out(&touch_ptr->press.midi);
           #if defined(USB_MIDI_SERIAL) && defined(DEBUG_MAPPINGS_SWITCHS)
-            Serial.printf("\nDEBUG_MAPPINGS_SWITCHS\tID:%d\tC_CHANGE:%d", i, touch_ptr->press.midi.data2);
+            Serial.printf("\nDEBUG_MAPPINGS_SWITCHS\tBLOB_ID:%d\tC_CHANGE:%d", blob_ptr->UID, touch_ptr->press.midi.data2);
           #endif
         }
         break;
 
       case midi::ControlChange:
         touch_ptr->press.midi.data2 = blob_ptr->centroid.z;
-        midi_send_out(touch_ptr->press.midi);
+        midi_send_out(&touch_ptr->press.midi);
         #if defined(USB_MIDI_SERIAL) && defined(DEBUG_MAPPINGS_SWITCHS)
-          Serial.printf("\nDEBUG_MAPPINGS_SWITCHS\tID:%d\tC_CHANGE:%d", i, touch_ptr->press.midi.data2);
+          Serial.printf("\nDEBUG_MAPPINGS_SWITCHS\tBLOB_ID:%d\tC_CHANGE:%d", blob_ptr->UID, touch_ptr->press.midi.data2);
         #endif
         break;
 
@@ -131,14 +127,19 @@ void mapping_switch_play(blob_t* blob_ptr) {
 void mapping_switch_create(const JsonObject &config) {
   mapp_switch_t* switch_ptr = (mapp_switch_t*)llist_pop_front(&llist_switch_pool);
   
+  switch_ptr->common.is_blob_inside_func_ptr = &mapping_switch_is_blob_inside;
+  switch_ptr->common.blob_assign_func_ptr = &mapping_switch_assign_blob;
+  switch_ptr->common.blob_dispose_func_ptr = &mapping_switch_dispose_blob;
+  switch_ptr->common.play_func_ptr = &mapping_switch_play;
+  
   switch_ptr->params.touchs = config["touchs"].as<uint8_t>();
   switch_ptr->params.rect.from.x = config["from"][0].as<float>();
   switch_ptr->params.rect.from.y = config["from"][1].as<float>();
   switch_ptr->params.rect.to.x = config["to"][0].as<float>();
   switch_ptr->params.rect.to.y = config["to"][1].as<float>();
-    
+  
   midi_status_t status;
-  for (uint8_t i = 0; i<switch_ptr->params.touchs; i++){
+  for (uint8_t i = 0; i<switch_ptr->params.touchs; i++) {
     midi_msg_status_unpack(config["msg"][i]["press"]["midi"]["status"].as<uint8_t>(), &status);
     switch_ptr->params.touch[i].press.midi.type = status.type;
     switch_ptr->params.touch[i].press.midi.data1 = config["msg"][i]["press"]["midi"]["data1"].as<uint8_t>();
@@ -150,10 +151,5 @@ void mapping_switch_create(const JsonObject &config) {
       switch_ptr->params.touch[i].press.limit.max = config["msg"][i]["press"]["limit"]["max"].as<uint8_t>(); 
     }
   }
-  switch_ptr->common.is_blob_inside_func_ptr = &mapping_switch_is_blob_inside;
-  switch_ptr->common.blob_assign_func_ptr = &mapping_switch_assign_blob;
-  switch_ptr->common.blob_dispose_func_ptr = &mapping_switch_dispose_blob;
-  switch_ptr->common.play_func_ptr = &mapping_switch_play;
-  
   llist_push_back(&llist_mappings, switch_ptr);
 };

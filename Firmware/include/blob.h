@@ -15,7 +15,7 @@
 
 #include "llist.h"
 
-#define TIME_TO_LEAVE 2000
+#define TIME_TO_LEAVE 20
 
 extern llist_t llist_blobs; // Blobs linked list
 
@@ -107,16 +107,15 @@ typedef enum blob_status_e {
   MISSING
 } blob_status_t;
 
-typedef struct blob_s blob_t;
-
-//typedef void blob_action_func_t(blob_t*);
-
 typedef struct blob_action_s blob_action_t;
 struct blob_action_s {
-  //blob_action_func_t* func_ptr;
   void* mapping_ptr;
   void* touch_ptr;
 };
+
+typedef struct blob_s blob_t;
+
+//typedef void blob_action_func_t(blob_t*);
 
 struct blob_s {
   uint8_t UID;

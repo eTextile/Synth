@@ -9,7 +9,7 @@
 
 #define MIDI_NODES 128
 
-midi_node_t midi_nodes_array[MIDI_NODES] = {}; // Memory allocation for all MIDI I/O messages
+midi_msg_t midi_nodes_array[MIDI_NODES] = {}; // Memory allocation for all MIDI I/O messages
 
 llist_t midi_nodes_pool; // Main MIDI node stack
 llist_t midi_in;         // Main MIDI input linked list
@@ -38,15 +38,21 @@ void midi_bus_setup(void) {
 
 /*
 void midi_handle_input(const midi::Message<128u> &midiMsg) {
-  midi_node_t* node_ptr = (midi_node_t*)llist_pop_front(&midi_nodes_pool);  // Get a node from the MIDI nodes stack
-  node_ptr->midiMsg.type = midiMsg.type;           // Set the MIDI type
-  node_ptr->midiMsg.data1 = midiMsg.data1;         // Set the MIDI note
-  node_ptr->midiMsg.data2 = midiMsg.data2;         // Set the MIDI velocity
-  node_ptr->midiMsg.channel = midiMsg.channel;     // Set the MIDI channel
-  llist_push_front(&midi_in, node_ptr);             // Add the node to the midi_in linked list    
-  //llist_push_front(&midi_nodes_pool, node_ptr);  // Save the node to the midi_nodes_pool linked list
+  midi_msg_t* node_ptr = (midi_msg_t*)llist_pop_front(&midi_nodes_pool);  // Get a node from the MIDI nodes stack
+  node_ptr-type = midiMsg.type;         // Set the MIDI type
+  node_ptr->data1 = midiMsg.data1;      // Set the MIDI note
+  node_ptr->data2 = midiMsg.data2;      // Set the MIDI velocity
+  node_ptr->channel = midiMsg.channel;  // Set the MIDI channel
+  llist_push_front(&midi_in, node_ptr); // Add the node to the midi_in linked list    
 };
 */
+
+void midi_send_out(midi_msg_t* midiMsg) {
+  //llist_push_front(&midi_out, midiMsg); //?
+  midi_msg_t* midi_ptr = (midi_msg_t*)llist_pop_front(&midi_nodes_pool);
+  midi_ptr = midiMsg;
+  llist_push_front(&midi_out, midi_ptr);
+};
 
 void print_bytes(const uint8_t* data_ptr, size_t data_length) {
   Serial.printf("\nPRINT_BYTES / DATA_LENGTH: %d", data_length);
