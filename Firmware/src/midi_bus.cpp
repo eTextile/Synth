@@ -47,10 +47,12 @@ void midi_handle_input(const midi::Message<128u> &midiMsg) {
 };
 */
 
-void midi_send_out(midi_msg_t* midiMsg) {
-  //llist_push_front(&midi_out, midiMsg); //?
+void midi_send_out(midi_msg_t *midiMsg) {
+  //llist_push_front(&midi_out, midiMsg);
   midi_msg_t* midi_ptr = (midi_msg_t*)llist_pop_front(&midi_nodes_pool);
-  midi_ptr = midiMsg;
+  midi_ptr->channel = midiMsg->channel;
+  midi_ptr->data1 = midiMsg->data1;
+  midi_ptr->data2 = midiMsg->data2;
   llist_push_front(&midi_out, midi_ptr);
 };
 

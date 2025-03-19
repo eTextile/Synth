@@ -39,13 +39,12 @@ void setup() {
 void loop() {
   matrix_scan();
   matrix_interp();
-  matrix_find_blobs(); // TESTING
-  //update_controls();
+  matrix_find_blobs();
+  update_controls();
   //update_levels(); // USED FOR DEBUGING!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!! 
-  mapping_lib_update(); // USED FOR DEBUGING!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-  hardware_midi_transmit(); // USED FOR DEBUGING!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+  //mapping_lib_update(); // USED FOR DEBUGING!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+  //hardware_midi_transmit(); // USED FOR DEBUGING!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
  
-  /*
   switch (e256_current_mode) {
     case PENDING_MODE:
       usb_midi_recive();
@@ -78,7 +77,6 @@ void loop() {
       usb_midi_recive();
       break;
   };
-  */
 
   #if defined(USB_MIDI_SERIAL) && defined(DEBUG_FPS)
   if (millis() - fpsTimeStamp >= 1000) {

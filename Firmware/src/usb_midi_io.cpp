@@ -34,7 +34,7 @@ void usb_midi_recive(void) {
 };
 
 void usb_midi_pending_mode_timeout() {
-  if (e256_current_mode == PENDING_MODE && millis() - bootTime > PENDING_MODE_TIMEOUT) {
+  //if (e256_current_mode == PENDING_MODE && millis() - bootTime > PENDING_MODE_TIMEOUT) {
     #if defined(USB_MIDI_SERIAL) && defined(DEBUG_CONFIG)
       Serial.printf("\nPENDING_MODE_TIME_OUT");
     #endif
@@ -65,7 +65,7 @@ void usb_midi_pending_mode_timeout() {
         Serial.printf("\nNO_CONFIG_FILE_LOADED");
       #endif
     };
-  };
+  //};
 };
 
 void usb_midi_transmit() {

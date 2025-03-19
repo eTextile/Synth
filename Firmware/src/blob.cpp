@@ -64,7 +64,7 @@ void matrix_find_blobs(void) {
       common_t* mapping_ptr = (common_t*)is_dead_blob_ptr->action.mapping_ptr;
       if (mapping_ptr) {
         mapping_ptr->blob_dispose_func_ptr(mapping_ptr, is_dead_blob_ptr);
-        Serial.println("DISPOSE");
+        //Serial.println("DISPOSE");
       }
       llist_push_back(&llist_blobs_pool, is_dead_blob_ptr);
     }
@@ -228,6 +228,7 @@ void matrix_find_blobs(void) {
           blob_t* blob_ptr = (blob_t*)llist_find_node(&llist_blobs, new_blob_ptr, (llist_compare_func_t*)&is_blob_existing);
           
           if (blob_ptr) {
+            //Serial.println("PRESENT");
 
             blob_ptr->last_status = blob_ptr->status;
             blob_ptr->status = PRESENT;
@@ -247,7 +248,7 @@ void matrix_find_blobs(void) {
             blob_ptr->UID = set_id();
             blob_ptr->action.touch_ptr = NULL;
             blob_ptr->action.mapping_ptr = NULL;
-            Serial.println("NEW");
+            //Serial.println("NEW");
 
             llist_push_back(&llist_blobs, new_blob_ptr);
           }

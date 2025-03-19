@@ -6,7 +6,6 @@
 typedef struct switch_s switch_t;
 struct switch_s {
   rect_t rect;
-  msg_t msg;
   uint8_t touchs;
   touch_2d_t touch[MAX_SWITCH_TOUCHS];
 };
