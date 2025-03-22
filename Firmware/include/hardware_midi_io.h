@@ -11,7 +11,7 @@
 
 void hardware_midi_setup(void);
 void hardware_midi_recive(void);
-void hardware_midi_handle_input(const midi::Message<128u> &midiMsg);
+void hardware_midi_handle_input(const Message<128u> &midiMsg);
 void hardware_midi_transmit(void);
 
 #endif /*__HARDWARE_MIDI_IO_H__*/

@@ -59,6 +59,7 @@ void matrix_find_blobs(void) {
   // DEAD BLOBS REMOVER
   blob_t* is_dead_blob_ptr = NULL;
   while ((is_dead_blob_ptr = (blob_t*)llist_pop_front(&llist_blobs)) != NULL) {
+    
     if ((millis() - is_dead_blob_ptr->life_time_stamp) > TIME_TO_LEAVE) {
       // MAPPING BLOB DISPOSE
       common_t* mapping_ptr = (common_t*)is_dead_blob_ptr->action.mapping_ptr;
@@ -228,41 +229,43 @@ void matrix_find_blobs(void) {
           blob_t* blob_ptr = (blob_t*)llist_find_node(&llist_blobs, new_blob_ptr, (llist_compare_func_t*)&is_blob_existing);
           
           if (blob_ptr) {
-            //Serial.println("PRESENT");
-
             blob_ptr->last_status = blob_ptr->status;
             blob_ptr->status = PRESENT;
-
             blob_ptr->centroid.x = new_blob_ptr->centroid.x;
             blob_ptr->centroid.y = new_blob_ptr->centroid.y;
-            blob_ptr->centroid.z = new_blob_ptr->centroid.z;
-            //...
+            // Subtract threshold value
+            if (blob_depth > e256_ctr.levels[THRESHOLD].val) {
+              blob_ptr->centroid.z = (blob_depth - e256_ctr.levels[THRESHOLD].val);
+            }
+            else {
+              blob_ptr->centroid.z = 0;
+            }
+            blob_ptr->box.w = (blob_x2 - blob_x1);
+            blob_ptr->box.h = blob_height;
+            blob_ptr->life_time_stamp = millis();
             llist_push_back(&llist_blobs_pool, new_blob_ptr);
           }
           else {
-            blob_ptr = new_blob_ptr;
+            new_blob_ptr->last_status = MISSING;
+            new_blob_ptr->status = NEW;
+            new_blob_ptr->UID = set_id();
+            new_blob_ptr->action.touch_ptr = NULL;
+            new_blob_ptr->action.mapping_ptr = NULL;
 
-            blob_ptr->last_status = MISSING;
-            blob_ptr->status = NEW;
-
-            blob_ptr->UID = set_id();
-            blob_ptr->action.touch_ptr = NULL;
-            blob_ptr->action.mapping_ptr = NULL;
-            //Serial.println("NEW");
-
+            new_blob_ptr->centroid.x = new_blob_ptr->centroid.x;
+            new_blob_ptr->centroid.y = new_blob_ptr->centroid.y;
+            // Subtract threshold value
+            if (blob_depth > e256_ctr.levels[THRESHOLD].val) {
+              new_blob_ptr->centroid.z = (blob_depth - e256_ctr.levels[THRESHOLD].val);
+            }
+            else {
+              new_blob_ptr->centroid.z = 0;
+            }
+            new_blob_ptr->box.w = (blob_x2 - blob_x1);
+            new_blob_ptr->box.h = blob_height;
+            new_blob_ptr->life_time_stamp = millis();
             llist_push_back(&llist_blobs, new_blob_ptr);
           }
-          // Subtract threshold and avoid negative numbers
-          //blob_ptr->centroid.z = (blob_depth > e256_ctr.levels[THRESHOLD].val) ? (blob_depth - e256_ctr.levels[THRESHOLD].val) : 0;
-          if (blob_depth > e256_ctr.levels[THRESHOLD].val) {
-            blob_ptr->centroid.z = (blob_depth - e256_ctr.levels[THRESHOLD].val);
-          }
-          else {
-            blob_ptr->centroid.z = 0;
-          }          
-          blob_ptr->box.w = (blob_x2 - blob_x1);
-          blob_ptr->box.h = blob_height;
-          blob_ptr->life_time_stamp = millis();
         }
         posX = oldX;
         posY = oldY;

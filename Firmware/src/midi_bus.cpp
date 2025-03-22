@@ -19,8 +19,8 @@ llist_t midi_chord;      // Main MIDI chord linked list
 // Extract MIDI type and channel from MIDI status msg
 // https://www.midi.org/specifications-old/item/table-2-expanded-messages-list-status-bytes
 void midi_msg_status_unpack(uint8_t in_status, midi_status_t* out_status) {
-  out_status->type = (MidiType)((in_status >> 4) & 0xF); // Save the 4 MSB bits
-  out_status->channel = (in_status & 0xF) + 1; // Save the 4 LSB bits [0000 === chan 1]
+  out_status->type = (MidiType)(in_status & 0xF0); // Extract the midi-type from the status byte
+  out_status->channel = (in_status & 0xF) + 1; // Extract the midi-channel from the status byte
 };
 
 // Concatenate MIDI status msg from MIDI type and channel
@@ -37,7 +37,7 @@ void midi_bus_setup(void) {
 };
 
 /*
-void midi_handle_input(const midi::Message<128u> &midiMsg) {
+void midi_handle_input(const Message<128u> &midiMsg) {
   midi_msg_t* node_ptr = (midi_msg_t*)llist_pop_front(&midi_nodes_pool);  // Get a node from the MIDI nodes stack
   node_ptr-type = midiMsg.type;         // Set the MIDI type
   node_ptr->data1 = midiMsg.data1;      // Set the MIDI note
@@ -46,15 +46,6 @@ void midi_handle_input(const midi::Message<128u> &midiMsg) {
   llist_push_front(&midi_in, node_ptr); // Add the node to the midi_in linked list    
 };
 */
-
-void midi_send_out(midi_msg_t *midiMsg) {
-  //llist_push_front(&midi_out, midiMsg);
-  midi_msg_t* midi_ptr = (midi_msg_t*)llist_pop_front(&midi_nodes_pool);
-  midi_ptr->channel = midiMsg->channel;
-  midi_ptr->data1 = midiMsg->data1;
-  midi_ptr->data2 = midiMsg->data2;
-  llist_push_front(&midi_out, midi_ptr);
-};
 
 void print_bytes(const uint8_t* data_ptr, size_t data_length) {
   Serial.printf("\nPRINT_BYTES / DATA_LENGTH: %d", data_length);

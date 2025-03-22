@@ -31,11 +31,11 @@ ADC::Sync_result result; // Store ADC_0 & ADC_1
 
 #define CALIBRATION_CYCLES 10
 
-uint8_t rawFrameArray[RAW_FRAME] = {0}; // 1D Array to store E256 ofseted analog input values
-uint8_t offsetArray[RAW_FRAME] = {0};   // 1D Array to store E256 smallest values
+uint8_t raw_frame_array[RAW_FRAME] = {0}; // 1D Array to store E256 ofseted analog input values
+uint8_t offset_array[RAW_FRAME] = {0};   // 1D Array to store E256 smallest values
 
-image_t raw_frame;   // Memory allocation for raw frame values
-image_t offsetFrane; // Memory allocation for offset frame values
+image_t raw_frame;    // Memory allocation for raw frame values
+image_t offset_frame; // Memory allocation for offset frame values
 
 // Array to store all parameters used to configure the two 8:1 analog multiplexeurs ()
 // Each byte |ENA|A|B|C|ENA|A|B|C|
@@ -77,21 +77,21 @@ void scan_setup(void) {
   setup_adc();
 
   // image_t* raw_frame init config
-  raw_frame.data_ptr = &rawFrameArray[0];
+  raw_frame.data_ptr = &raw_frame_array[0];
   raw_frame.num_cols = RAW_COLS;
   raw_frame.num_rows = RAW_ROWS;
 
-  // image_t* offsetFrane init config
-  offsetFrane.data_ptr = &offsetArray[0];
-  offsetFrane.num_cols = RAW_COLS;
-  offsetFrane.num_rows = RAW_ROWS;
+  // image_t* offset_frame init config
+  offset_frame.data_ptr = &offset_array[0];
+  offset_frame.num_cols = RAW_COLS;
+  offset_frame.num_rows = RAW_ROWS;
 };
 
 // Columns are analog INPUT_PINS reded two by two
 // Rows are digital OUTPUT_PINS supplyed one by one sequentially with 3.3V
 void matrix_calibrate(void) {
 
-  memset(&offsetArray[0], 0, RAW_FRAME); // RAZ offsetArray (16x16)
+  memset(&offset_array[0], 0, RAW_FRAME); // RAZ offset_array (16x16)
 
   for (uint8_t i = 0; i < CALIBRATION_CYCLES; i++) {
     for (uint8_t cols = 0; cols < DUAL_COLS; cols++) { // ANNALOG_PINS [0-7] with [8-15]
@@ -107,8 +107,8 @@ void matrix_calibrate(void) {
         SPI1.transfer((uint8_t)((setRows >> 8) & 0xFF)); // Shift out one byte to setup one OUTPUT shift register
         SPI1.transfer(setDualCols[cols]);                // Shift out one byte that setup the two INPUT 8:1 analog multiplexers
         digitalWrite(SS1_PIN, HIGH);                     // Set the Slave Select Pin HIGH
-        uint8_t index_a = row * RAW_COLS + cols;          // Compute 1D array index_a
-        uint8_t index_b = index_a + DUAL_COLS;             // Compute 1D array index_b
+        uint8_t index_a = row * RAW_COLS + cols;         // Compute 1D array index_a
+        uint8_t index_b = index_a + DUAL_COLS;           // Compute 1D array index_b
 
         pinMode(ADC0_PIN, OUTPUT);
         pinMode(ADC1_PIN, OUTPUT);
@@ -124,8 +124,8 @@ void matrix_calibrate(void) {
           result = adc->analogSynchronizedRead(ADC1_PIN, ADC0_PIN);
         #endif
 
-        offsetArray[index_a] = max(offsetArray[index_a], result.result_adc0);
-        offsetArray[index_b] = max(offsetArray[index_b], result.result_adc1);
+        offset_array[index_a] = max(offset_array[index_a], result.result_adc0);
+        offset_array[index_b] = max(offset_array[index_b], result.result_adc1);
         
         #if defined(SET_ORIGIN_Y)
           setRows = setRows << 1;
@@ -172,19 +172,19 @@ void matrix_scan(void) {
       #endif
 
       uint8_t valA = result.result_adc0;
-      if (valA > offsetArray[index_a]) {
-        rawFrameArray[index_a] = min(127, (valA - offsetArray[index_a]));
+      if (valA > offset_array[index_a]) {
+        raw_frame_array[index_a] = min(127, (valA - offset_array[index_a]));
       }
       else {
-        rawFrameArray[index_a] = 0;
+        raw_frame_array[index_a] = 0;
       }
       
       uint8_t valB = result.result_adc1;
-      if (valB > offsetArray[index_b]) {
-        rawFrameArray[index_b] = min(127, (valB - offsetArray[index_b]));
+      if (valB > offset_array[index_b]) {
+        raw_frame_array[index_b] = min(127, (valB - offset_array[index_b]));
       }
       else {
-        rawFrameArray[index_b] = 0;
+        raw_frame_array[index_b] = 0;
       }
 
       #if defined(SET_ORIGIN_Y)

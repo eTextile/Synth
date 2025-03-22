@@ -70,7 +70,8 @@ void mapping_slider_play(blob_t* blob_ptr) {
             touch_ptr->pos.limit.min,
             touch_ptr->pos.limit.max)
           );
-          midi_send_out(&touch_ptr->pos.midi);
+          //midi_send_out(&touch_ptr->pos.midi);
+          llist_push_back(&midi_out, &touch_ptr->pos.midi);
           #if defined(USB_MIDI_SERIAL) && defined(DEBUG_MAPPINGS_SLIDERS)
             Serial.printf("\nDEBUG_MAPPINGS_SLIDERS\tID:%d\tVal:%d", i, touch_ptr->pos.midi.data2);
           #endif
@@ -85,7 +86,8 @@ void mapping_slider_play(blob_t* blob_ptr) {
             touch_ptr->pos.limit.min,
             touch_ptr->pos.limit.max)
           );
-          midi_send_out(&touch_ptr->pos.midi);
+          //midi_send_out(&touch_ptr->pos.midi);
+          llist_push_back(&midi_out, &touch_ptr->pos.midi);
           #if defined(USB_MIDI_SERIAL) && defined(DEBUG_MAPPINGS_SLIDERS)
             Serial.printf("\nDEBUG_MAPPINGS_SLIDERS\tID:%d\tVal:%d", i, touch_ptr->pos.midi.data2);
           #endif   
@@ -93,13 +95,13 @@ void mapping_slider_play(blob_t* blob_ptr) {
         break;
       };
       switch (touch_ptr->press.midi.type) {
-        case midi::NoteOff:
+        case NoteOff:
           break;
-        case midi::NoteOn:
+        case NoteOn:
           break;
-        case midi::AfterTouchPoly:
+        case AfterTouchPoly:
           break;
-        case midi::ControlChange:
+        case ControlChange:
           if (blob_ptr->centroid.z != blob_ptr->last_centroid.z) {
             /*
             round(map(
@@ -110,19 +112,20 @@ void mapping_slider_play(blob_t* blob_ptr) {
               touch_ptr->press.limit.max)
             */
             touch_ptr->press.midi.data2 = blob_ptr->centroid.z;
-            midi_send_out(&touch_ptr->press.midi);
+            //midi_send_out(&touch_ptr->press.midi);
+            llist_push_back(&midi_out, &touch_ptr->press.midi);
             #if defined(USB_MIDI_SERIAL) && defined(DEBUG_MAPPING_SLIDERS)
               Serial.printf("\nDEBUG_MAPPINGS_SLIDERS\tID:%d\tC_CHANGE:%d", i, mapp_grids->params.msg.midi.data2);
             #endif
           }
           break;
-        case midi::ProgramChange:
+        case ProgramChange:
           break;
-        case midi::AfterTouchChannel:
+        case AfterTouchChannel:
           break;
-        case midi::PitchBend:
+        case PitchBend:
           break;
-        case midi::SystemExclusive:
+        case SystemExclusive:
           break;
         default:
           // Not handled
@@ -162,8 +165,8 @@ void mapping_slider_create(const JsonObject &config) {
     slider_ptr->params.touch[j].press.midi.data1 = config["msg"][j]["press"]["midi"]["data1"].as<uint8_t>();
     slider_ptr->params.touch[j].press.midi.data2 = config["msg"][j]["press"]["midi"]["data2"].as<uint8_t>();
     slider_ptr->params.touch[j].press.midi.channel = status.channel;
-    if (slider_ptr->params.touch[j].pos.midi.type == midi::ControlChange ||
-      slider_ptr->params.touch[j].pos.midi.type == midi::AfterTouchPoly) {
+    if (slider_ptr->params.touch[j].pos.midi.type == ControlChange ||
+      slider_ptr->params.touch[j].pos.midi.type == AfterTouchPoly) {
       slider_ptr->params.touch[j].press.limit.min = config["msg"][j]["press"]["limit"]["min"].as<uint8_t>();
       slider_ptr->params.touch[j].press.limit.max = config["msg"][j]["press"]["limit"]["max"].as<uint8_t>();
     }

@@ -99,8 +99,6 @@ void usb_midi_transmit() {
       while (usbMIDI.read()); // Read and discard any incoming MIDI messages
       break;
     */
-   usbMIDI.sendSysEx(NEW_FRAME, interp_frame.data_ptr, false, 0);
-
     case EDIT_MODE:
       // Send all blobs values over USB using MIDI format
       for (lnode_t* node_ptr = ITERATOR_START_FROM_HEAD(&llist_blobs); node_ptr != NULL; node_ptr = ITERATOR_NEXT(node_ptr)) {
@@ -154,7 +152,7 @@ void usb_midi_send_info(uint8_t msg, uint8_t channel) {
 
 void usb_read_noteOn(uint8_t channel, uint8_t note, uint8_t velocity) {
   midi_msg_t* midi_ptr = (midi_msg_t*)llist_pop_front(&midi_nodes_pool);
-  midi_ptr->type = midi::NoteOn;
+  midi_ptr->type = NoteOn;
   midi_ptr->data1 = note;
   midi_ptr->data2 = velocity;
   midi_ptr->channel = channel;
@@ -172,7 +170,7 @@ void usb_read_noteOn(uint8_t channel, uint8_t note, uint8_t velocity) {
 
 void usb_read_noteOff(uint8_t channel, uint8_t note, uint8_t velocity) {
   midi_msg_t* midi_ptr = (midi_msg_t*)llist_pop_front(&midi_nodes_pool);
-  midi_ptr->type = midi::NoteOff;
+  midi_ptr->type = NoteOff;
   midi_ptr->data1 = note;
   midi_ptr->data2 = velocity;
   midi_ptr->channel = channel;
@@ -197,10 +195,10 @@ void usb_read_controlChange(uint8_t channel, uint8_t control, uint8_t value) {
       break;
     default:
     midi_msg_t* midi_ptr = (midi_msg_t*)llist_pop_front(&midi_nodes_pool);  // Get a node from the MIDI nodes stack
-      midi_ptr->type = midi::ControlChange; // Set the MIDI type
-      midi_ptr->data1 = control;            // Set the MIDI note
-      midi_ptr->data2 = value;              // Set the MIDI velocity
-      midi_ptr->channel = channel;          // Set the MIDI channel
+      midi_ptr->type = ControlChange; // Set the MIDI type
+      midi_ptr->data1 = control;      // Set the MIDI note
+      midi_ptr->data2 = value;        // Set the MIDI velocity
+      midi_ptr->channel = channel;    // Set the MIDI channel
       switch (e256_current_mode) {
         case EDIT_MODE:
           llist_push_front(&midi_in, midi_ptr);  // Add the node to the midi_in linked list
@@ -323,7 +321,7 @@ void usb_read_midi_clock() {
 #endif
 };
 
-// Send data via MIDI system exclusive message
+// Load mapping config via MIDI system exclusive message
 // As MIDI buffer is limited to (USB_MIDI_SYSEX_MAX) we must register the data in chunks!
 // Recive: [ SYSEX_BEGIN, SYSEX_DEVICE_ID, SYSEX_SIZE_MSB, SYSEX_SIZE_LSB, SYSEX_END ] 
 // Send: USBMIDI_CONFIG_ALLOC_DONE
@@ -356,8 +354,7 @@ void usb_read_systemExclusive(const uint8_t *data_ptr, uint16_t sysEx_chunk_size
     break;
 
   case UPLOAD_MODE:
-    //Serial.printf("\nCONFIG_UPLOAD: LENGTH:%d\tTHUNKS:%td\tCOMPLETE:%d", sysEx_data_length, sysEx_chunks, complete);
-    if (sysEx_chunks == 1 && complete) { // Only one chunk to load // FIXME!
+    if (sysEx_chunks == 1 && complete) { // Only one chunk to load
       memcpy(sysEx_chunk_ptr, data_ptr + 2, sizeof(uint8_t) * sysEx_chunk_size - 2); // -3 removing heder & footer size
       usb_midi_send_info((uint8_t)UPLOAD_DONE, MIDI_VERBOSITY_CHANNEL);
     }

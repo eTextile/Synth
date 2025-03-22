@@ -76,9 +76,12 @@ void mapping_knob_play(blob_t* blob_ptr) {
     } else {
       touch_ptr->theta.midi.data2 = atanf(posY / posX);
     }
-    midi_send_out(&touch_ptr->radius.midi);
-    midi_send_out(&touch_ptr->theta.midi);
-    midi_send_out(&touch_ptr->pressure.midi);
+    //midi_send_out(&touch_ptr->radius.midi);
+    //midi_send_out(&touch_ptr->theta.midi);
+    //midi_send_out(&touch_ptr->pressure.midi);
+    llist_push_back(&midi_out, &touch_ptr->radius.midi);
+    llist_push_back(&midi_out, &touch_ptr->theta.midi);
+    llist_push_back(&midi_out, &touch_ptr->pressure.midi);
     #if defined(USB_MIDI_SERIAL) && defined(DEBUG_MAPPINGS_KNOBS)
       Serial.printf("\nDEBUG_MAPPINGS_KNOBS:\tKnobsID:\t%d\tradius:\t%fTheta:\t%f", i, knob_ptr->params.touch[j].radius.midi.data2, knob_ptr->params.touch[j].theta.midi.data2);
     #endif
@@ -113,8 +116,8 @@ void mapping_knob_create(const JsonObject &config) {
     knob_ptr->params.touch[j].radius.midi.data1 = config["msg"][j]["radius"]["midi"]["data1"].as<uint8_t>();
     knob_ptr->params.touch[j].radius.midi.data2 = config["msg"][j]["radius"]["midi"]["data2"].as<uint8_t>();
     knob_ptr->params.touch[j].radius.midi.channel = status.channel;
-    if (knob_ptr->params.touch[j].radius.midi.type == midi::ControlChange ||
-      knob_ptr->params.touch[j].radius.midi.type == midi::AfterTouchPoly) {
+    if (knob_ptr->params.touch[j].radius.midi.type == ControlChange ||
+      knob_ptr->params.touch[j].radius.midi.type == AfterTouchPoly) {
       knob_ptr->params.touch[j].radius.limit.min = config["msg"][j]["radius"]["limit"]["min"].as<uint8_t>();
       knob_ptr->params.touch[j].radius.limit.max = config["msg"][j]["radius"]["limit"]["max"].as<uint8_t>();
     }
@@ -123,8 +126,8 @@ void mapping_knob_create(const JsonObject &config) {
     knob_ptr->params.touch[j].theta.midi.data1 = config["msg"][j]["theta"]["midi"]["data1"].as<uint8_t>();
     knob_ptr->params.touch[j].theta.midi.data2 = config["msg"][j]["theta"]["midi"]["data2"].as<uint8_t>();
     knob_ptr->params.touch[j].theta.midi.channel = status.channel;
-    if (knob_ptr->params.touch[j].theta.midi.type == midi::ControlChange ||
-      knob_ptr->params.touch[j].theta.midi.type == midi::AfterTouchPoly) {
+    if (knob_ptr->params.touch[j].theta.midi.type == ControlChange ||
+      knob_ptr->params.touch[j].theta.midi.type == AfterTouchPoly) {
       knob_ptr->params.touch[j].theta.limit.min = config["msg"][j]["theta"]["limit"]["min"].as<uint8_t>();
       knob_ptr->params.touch[j].theta.limit.max = config["msg"][j]["theta"]["limit"]["max"].as<uint8_t>();
     }
@@ -133,8 +136,8 @@ void mapping_knob_create(const JsonObject &config) {
     knob_ptr->params.touch[j].pressure.midi.data1 = config["msg"][j]["press"]["midi"]["data1"].as<uint8_t>();
     knob_ptr->params.touch[j].pressure.midi.data2 = config["msg"][j]["press"]["midi"]["data2"].as<uint8_t>();
     knob_ptr->params.touch[j].pressure.midi.channel = status.channel;
-    if (knob_ptr->params.touch[j].pressure.midi.type == midi::ControlChange ||
-      knob_ptr->params.touch[j].pressure.midi.type == midi::AfterTouchPoly) {
+    if (knob_ptr->params.touch[j].pressure.midi.type == ControlChange ||
+      knob_ptr->params.touch[j].pressure.midi.type == AfterTouchPoly) {
       knob_ptr->params.touch[j].pressure.limit.min = config["msg"][j]["press"]["limit"]["min"].as<uint8_t>();
       knob_ptr->params.touch[j].pressure.limit.max = config["msg"][j]["press"]["limit"]["max"].as<uint8_t>();
     }
