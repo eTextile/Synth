@@ -103,13 +103,11 @@ void usb_midi_transmit() {
       // Send all blobs values over USB using MIDI format
       for (lnode_t* node_ptr = ITERATOR_START_FROM_HEAD(&llist_blobs); node_ptr != NULL; node_ptr = ITERATOR_NEXT(node_ptr)) {
         blob_t* blob_ptr = (blob_t*)ITERATOR_DATA(node_ptr);
-        if (blob_ptr->status == NEW) {
+        if (blob_ptr->status == PRESENT && blob_ptr->last_status == MISSING) {
           usbMIDI.sendNoteOn(blob_ptr->UID, 1, BS); // sendNoteOn(note, velocity, channel);
           usbMIDI.send_now();
         }
         else if (blob_ptr->status == PRESENT) {
-          //if (millis() - blob_ptr->transmit_time_stamp > MIDI_TRANSMIT_INTERVAL) {
-          //blob_ptr->transmit_time_stamp = millis();
           blob_values[0] = blob_ptr->UID;
 
           uint8_t whole_part = (uint8_t)blob_ptr->centroid.x;
@@ -126,9 +124,8 @@ void usb_midi_transmit() {
           //blob_values[8] = blob_ptr->status; // TODO
 
           usbMIDI.sendSysEx(8, blob_values, false);
-          //};
         }
-        else if (blob_ptr->status == MISSING && blob_ptr->last_status == PRESENT) { ///////////////////////// TO_TEST!
+        else if (blob_ptr->status == RELEASED) { ///////////////////////// TO_TEST!
           usbMIDI.sendNoteOff(blob_ptr->UID, 0, BS); // sendNoteOff(note, velocity, channel);
           usbMIDI.send_now();
         };
@@ -191,7 +188,7 @@ void usb_read_noteOff(uint8_t channel, uint8_t note, uint8_t velocity) {
 void usb_read_controlChange(uint8_t channel, uint8_t control, uint8_t value) {
   switch (channel) {
     case MIDI_LEVELS_CHANNEL:
-      set_level((level_codes_t)control, value);
+      set_level((level_code_t)control, value);
       break;
     default:
     midi_msg_t* midi_ptr = (midi_msg_t*)llist_pop_front(&midi_nodes_pool);  // Get a node from the MIDI nodes stack

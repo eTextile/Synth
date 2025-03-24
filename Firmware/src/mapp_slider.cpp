@@ -35,15 +35,13 @@ bool mapping_slider_is_blob_inside(common_t* mapping_ptr, blob_t* blob_ptr) {
 
 // blob == valeurs physiqyes captées
 // touch == données du nieme blob
-bool mapping_slider_assign_blob(common_t* mapping_ptr, blob_t* blob_ptr) {
+void mapping_slider_assign_blob(common_t* mapping_ptr, blob_t* blob_ptr) {
   mapp_slider_t* slider_ptr = (mapp_slider_t*)mapping_ptr;
   if (slider_ptr->touch_index < slider_ptr->params.touchs) {
     blob_ptr->action.mapping_ptr = slider_ptr;
     blob_ptr->action.touch_ptr = &slider_ptr->params.touch[slider_ptr->touch_index++];
     slider_ptr->active_blob_count++;
-    return true;
   }
-  return false;
 };
 
 void mapping_slider_dispose_blob(common_t* mapping_ptr, blob_t* blob_ptr) {

@@ -8,23 +8,53 @@
 
 llist_t llist_mappings;
 
+const char* get_status_name(status_code_t code) {
+  const char* char_code = NULL;
+  switch (code) {
+    case PRESENT: char_code = "PRESENT"; break;
+    case MISSING: char_code = "MISSING"; break;
+    case RELEASED: char_code = "RELEASED"; break;
+  }
+  return char_code;
+};
+
 void mapping_lib_update(void) {
+
   for (lnode_t* blob_node_ptr = ITERATOR_START_FROM_HEAD(&llist_blobs); blob_node_ptr != NULL; blob_node_ptr = ITERATOR_NEXT(blob_node_ptr)) {
     blob_t* blob_ptr = (blob_t*)ITERATOR_DATA(blob_node_ptr);
+
     for (lnode_t* mapping_node_ptr = ITERATOR_START_FROM_HEAD(&llist_mappings); mapping_node_ptr != NULL; mapping_node_ptr = ITERATOR_NEXT(mapping_node_ptr)) {
       common_t* mapping_ptr = (common_t*)ITERATOR_DATA(mapping_node_ptr);
+      
       if (mapping_ptr->is_blob_inside_func_ptr(mapping_ptr, blob_ptr)) {
-        if (blob_ptr->action.mapping_ptr) {
-          mapping_ptr->play_func_ptr(blob_ptr);
-        } else {
+
+        if (!blob_ptr->action.mapping_ptr) {
           mapping_ptr->blob_assign_func_ptr(mapping_ptr, blob_ptr);
-          mapping_ptr->play_func_ptr(blob_ptr);
-        };
+          //mapping_ptr->start_func_ptr(blob_ptr);
+          Serial.printf("\n_____START_ASSIGN: %s\t Z_VAL: %d\t THRESHOLD: %d", get_status_name(blob_ptr->status), blob_ptr->centroid.z, e256_ctr.levels[THRESHOLD].val);
+        }
+        else {
+          if (blob_ptr->status == PRESENT && blob_ptr->last_status == RELEASED) {
+            //mapping_ptr->start_func_ptr(blob_ptr);
+            Serial.printf("\n_____START_EXISSTING: %s\t Z_VAL: %d\t THRESHOLD: %d", get_status_name(blob_ptr->status), blob_ptr->centroid.z, e256_ctr.levels[THRESHOLD].val);
+          }
+          else if (blob_ptr->status != RELEASED) {
+            //mapping_ptr->play_func_ptr(blob_ptr);
+            Serial.printf("\nPLAY_BLOB_STATUS: %s\t Z_VAL: %d\t THRESHOLD: %d", get_status_name(blob_ptr->status), blob_ptr->centroid.z, e256_ctr.levels[THRESHOLD].val);
+          }
+          else if (blob_ptr->status == RELEASED && blob_ptr->last_status == MISSING) {
+            //mapping_ptr->stop_func_ptr(blob_ptr);
+            Serial.printf("\n_____STOP_RELEASED: %s\t Z_VAL: %d\t THRESHOLD: %d", get_status_name(blob_ptr->status), blob_ptr->centroid.z, e256_ctr.levels[THRESHOLD].val);
+          }
+        }
+      }
+      else { // OUT OF MAPPING (RELEASED)
+        //mapping_ptr->stop_func_ptr(blob_ptr);
+        Serial.println("_____STOP_MAPPING_OUT");
       };
     };
   };
 };
-
 
 ///////////////////////////////////////////////
               /*__PATH__*/ 

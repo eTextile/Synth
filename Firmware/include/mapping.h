@@ -49,15 +49,18 @@ extern llist_t llist_mappings;
 typedef struct common_s common_t;
 
 typedef bool is_blob_inside_func_t(common_t*, blob_t*);
-typedef bool blob_assign_func_t(common_t*, blob_t*);
+typedef void blob_assign_func_t(common_t*, blob_t*);
 typedef void blob_dispose_func_t(common_t*, blob_t*);
-typedef void play_t(blob_t*);
+typedef void start_func_t(blob_t*);
+typedef void play_func_t(blob_t*);
+typedef void stop_func_t(blob_t*);
 
 struct common_s {
   is_blob_inside_func_t* is_blob_inside_func_ptr;
   blob_assign_func_t* blob_assign_func_ptr;
   blob_dispose_func_t* blob_dispose_func_ptr;
-  play_t* play_func_ptr;
+  play_func_t* play_func_ptr;
+  stop_func_t* stop_func_ptr;
 };
 
 void mapping_lib_update(void);

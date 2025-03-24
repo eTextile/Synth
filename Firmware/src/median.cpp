@@ -27,7 +27,8 @@ void runing_median(void) {
 
   for (lnode_t* node_ptr = ITERATOR_START_FROM_HEAD(&llist_blobs); node_ptr != NULL; node_ptr = ITERATOR_NEXT(node_ptr)) {
     blob_t* blob_ptr = (blob_t*)ITERATOR_DATA(node_ptr);
-    if (blob_ptr->status == NEW) {
+    
+    if (blob_ptr->status == PRESENT && blob_ptr->last_status == MISSING) {
       filter[blob_ptr->UID].count = 1; // Circular buffer fill index
       filter[blob_ptr->UID].index = 1; // Circular buffer runing index
     };

@@ -41,7 +41,7 @@
 #define SIZEOF_FRAME (NEW_FRAME * sizeof(uint8_t))
 #define BLOB_MIN_PIX 6    // Set the minimum blob pixels
 #define BLOB_MAX_PIX 1024 // Set the minimum blob pixels
-#define LAST_BLOB_DIST 8
+#define LAST_BLOB_DIST 10
 
 #define X_PADDING_LEFT   0
 #define X_PADDING_REIGHT 0
@@ -100,16 +100,16 @@
 
 #define MAX_CSLIDERS 2
 
-typedef enum level_codes_e {
+typedef enum level_code_e {
   THRESHOLD, // E256-LEDs: | 1 | 1 |
   SIG_IN,    // E256-LEDs: | 1 | 0 |
   SIG_OUT,   // E256-LEDs: | 0 | 1 |
   LINE_OUT   // E256-LEDs: | 0 | 0 |
-} level_codes_t;
+} level_code_t;
 
-extern level_codes_t e256_current_level;
+extern level_code_t e256_current_level;
 
-typedef enum mode_codes_e {
+typedef enum mode_code_e {
   PENDING_MODE,    // Waiting for mode
   SYNC_MODE,       // Hand chake mode
   CALIBRATE_MODE,  //
@@ -125,11 +125,11 @@ typedef enum mode_codes_e {
   FETCH_MODE,      // Send mapping config file
   STANDALONE_MODE, // Send mappings values over MIDI hardware
   ERROR_MODE       // Unexpected behaviour
-} mode_codes_t;
+} mode_code_t;
 
-extern mode_codes_t e256_current_mode;
+extern mode_code_t e256_current_mode;
 
-typedef enum verbosity_codes_e{
+typedef enum verbosity_code_e{
   PENDING_MODE_DONE,
   SYNC_MODE_DONE,
   CALIBRATE_MODE_DONE,
@@ -147,11 +147,11 @@ typedef enum verbosity_codes_e{
   FETCH_MODE_DONE,
   STANDALONE_MODE_DONE,
   DONE_ACTION
-} verbosity_codes_t;
+} verbosity_code_t;
 
-extern verbosity_codes_t e256_verbosity_code;
+extern verbosity_code_t e256_verbosity_code;
 
-typedef enum error_codes_e {
+typedef enum error_code_e {
   WAITING_FOR_CONFIG,
   CONNECTING_FLASH,
   FLASH_FULL,
@@ -164,9 +164,9 @@ typedef enum error_codes_e {
   CONFIG_APPLY_FAILED,
   UNKNOWN_SYSEX,
   TOO_MANY_BLOBS
-} error_codes_t;
+} error_code_t;
 
-extern error_codes_t e256_error_code;
+extern error_code_t e256_error_code;
 
 typedef struct leds_s leds_t;
 struct leds_s {
@@ -205,17 +205,17 @@ extern uint8_t* flash_config_ptr;
 extern size_t flash_config_size;
 
 void blink(uint8_t iter);
-void set_mode(mode_codes_t mode);
-void set_level(level_codes_t level, uint8_t value);
+void set_mode(mode_code_t mode);
+void set_level(level_code_t level, uint8_t value);
 
 void hardware_setup(void);
 void update_controls(void);
 bool load_flash_config(void);
 bool apply_config(uint8_t* conf_ptr, size_t conf_size);
 
-const char* get_mode_name(mode_codes_t code);
-const char* get_verbosity_name(verbosity_codes_t code);
-const char* get_level_name(level_codes_t code);
-const char* get_error_name(error_codes_t code);
+const char* get_mode_name(mode_code_t code);
+const char* get_verbosity_name(verbosity_code_t code);
+const char* get_level_name(level_code_t code);
+const char* get_error_name(error_code_t code);
 
 #endif /*__CONFIG_H__*/

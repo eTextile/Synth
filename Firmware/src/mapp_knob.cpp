@@ -33,15 +33,13 @@ bool mapping_knob_is_blob_inside(common_t* mapping_ptr, blob_t* blob_ptr) {
   return false;
 };
 
-bool mapping_knob_assign_blob(common_t* mapping_ptr, blob_t* blob_ptr) {
+void mapping_knob_assign_blob(common_t* mapping_ptr, blob_t* blob_ptr) {
   mapp_knob_t* knob_ptr = (mapp_knob_t*)mapping_ptr;
   if (knob_ptr->touch_index < knob_ptr->params.touchs) {
     blob_ptr->action.mapping_ptr = knob_ptr;
     blob_ptr->action.touch_ptr = &knob_ptr->params.touch[knob_ptr->touch_index++];
     knob_ptr->active_blob_count++;
-    return true;
   }
-  return false;
 };
 
 void mapping_knob_dispose_blob(common_t* mapping_ptr, blob_t* blob_ptr) {

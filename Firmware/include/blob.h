@@ -15,7 +15,8 @@
 
 #include "llist.h"
 
-#define TIME_TO_LEAVE 20
+#define BLOB_MISSING_TIME 10
+#define BLOB_TIME_TO_LEAVE 2000
 
 extern llist_t llist_blobs; // Blobs linked list
 
@@ -101,11 +102,11 @@ struct velocity_s {
   float z;
 };
 
-typedef enum blob_status_e {
-  NEW,
+typedef enum status_code_e {
   PRESENT,
-  MISSING
-} blob_status_t;
+  MISSING,
+  RELEASED
+} status_code_t;
 
 typedef struct blob_action_s blob_action_t;
 struct blob_action_s {
@@ -114,15 +115,12 @@ struct blob_action_s {
 };
 
 typedef struct blob_s blob_t;
-
-//typedef void blob_action_func_t(blob_t*);
-
 struct blob_s {
   uint8_t UID;
-  blob_status_t status;
-  blob_status_t last_status;
+  status_code_t status;
+  status_code_t last_status;
+  unsigned long int active_time_stamp;
   unsigned long int life_time_stamp;
-  unsigned long int transmit_time_stamp;
   box_t box;
   uint16_t pixels;
   vertrice_t centroid;

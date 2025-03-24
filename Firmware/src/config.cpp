@@ -36,7 +36,7 @@ union {
 Bounce BUTTON_L = Bounce();
 Bounce BUTTON_R = Bounce();
 
-const char* get_mode_name(mode_codes_t code) {
+const char* get_mode_name(mode_code_t code) {
   const char* char_code = NULL;
   switch (code) {
     case PENDING_MODE: char_code = "PENDING_MODE"; break;
@@ -58,7 +58,7 @@ const char* get_mode_name(mode_codes_t code) {
   return char_code;
 };
 
-const char* get_verbosity_name(verbosity_codes_t code) {
+const char* get_verbosity_name(verbosity_code_t code) {
   const char* char_code = NULL;
   switch (code) {
     case PENDING_MODE_DONE: char_code = "PENDING_MODE_DONE"; break;
@@ -82,7 +82,7 @@ const char* get_verbosity_name(verbosity_codes_t code) {
   return char_code;
 };
 
-const char* get_level_name(level_codes_t code) {
+const char* get_level_name(level_code_t code) {
   const char* char_code = NULL;
   switch (code) {
     case THRESHOLD: char_code = "THRESHOLD"; break;
@@ -93,7 +93,7 @@ const char* get_level_name(level_codes_t code) {
   return char_code;
 };
 
-const char* get_error_name(error_codes_t code) {
+const char* get_error_name(error_code_t code) {
   const char* char_code = NULL;
   switch (code) {
     case WAITING_FOR_CONFIG: char_code = "WAITING_FOR_CONFIG"; break;
@@ -135,7 +135,7 @@ Encoder e256_e(ENCODER_PIN_A, ENCODER_PIN_B);
 
 // The levels below can be selected using E256 built-in right switche
 level_t e256_l[4] = {
-  {{HIGH, HIGH, false}, 2, 50, 10, false}, // [0] THRESHOLD
+  {{HIGH, HIGH, false}, 2, 50, 15, false}, // [0] THRESHOLD
   {{HIGH, LOW, false}, 1, 31, 17, false},  // [1] SIG_IN
   {{LOW, HIGH, false}, 13, 31, 29, false}, // [2] SIG_OUT
   {{LOW, LOW, false}, 2, 60, 3, false}     // [3] LINE_OUT
@@ -147,11 +147,11 @@ control_t e256_ctr = {
   &e256_l[0]  // levels_ptr
 };
 
-mode_codes_t e256_current_mode = PENDING_MODE;
-//mode_codes_t e256_lastMode = PENDING_MODE;
-level_codes_t e256_current_level = THRESHOLD;
-verbosity_codes_t e256_verbosity_code;
-error_codes_t e256_error_code;
+mode_code_t e256_current_mode = PENDING_MODE;
+level_code_t e256_current_level = THRESHOLD;
+
+verbosity_code_t e256_verbosity_code;
+error_code_t e256_error_code;
 
 uint8_t* flash_config_ptr = NULL;
 size_t flash_config_size = 0;
@@ -186,7 +186,7 @@ void blink(uint8_t iter) {
   };
 };
 
-void set_mode(mode_codes_t mode) {
+void set_mode(mode_code_t mode) {
   e256_ctr.modes[(uint8_t)e256_current_mode].leds.update = false;
   e256_ctr.levels[(uint8_t)e256_current_level].leds.update = false;
   setup_leds(&e256_ctr.modes[(uint8_t)mode]);
@@ -198,7 +198,7 @@ void set_mode(mode_codes_t mode) {
   #endif
 };
 
-void set_level(level_codes_t level, uint8_t value) {
+void set_level(level_code_t level, uint8_t value) {
   e256_ctr.modes[(uint8_t)e256_current_mode].leds.update = false;
   e256_ctr.encoder->write(value << 2);
   setup_leds(&e256_ctr.levels[(uint8_t)level]);
@@ -284,7 +284,7 @@ inline void update_buttons() {
   // levels[3] = LINE_OUT
   if (BUTTON_R.rose() && BUTTON_R.previousDuration() < LONG_HOLD) {
     uint8_t tmp_level = (((uint8_t)e256_current_level) + 1) % 4; // Loop into level modes
-    set_level((level_codes_t)tmp_level, e256_ctr.levels[tmp_level].val);
+    set_level((level_code_t)tmp_level, e256_ctr.levels[tmp_level].val);
   };
 };
 
@@ -293,7 +293,7 @@ inline void setup_encoder(){
 }
 
 // Levels values adjustment using rotary encoder
-inline bool read_encoder(level_codes_t level) {
+inline bool read_encoder(level_code_t level) {
   uint8_t val = e256_ctr.encoder->read() >> 2;
   if (val != e256_ctr.levels[(uint8_t)level].val) {
     if (val > e256_ctr.levels[(uint8_t)level].max_val) {
@@ -348,7 +348,7 @@ inline void blink_leds(uint8_t mode) {
   };
 };
 
-inline void fade_leds(level_codes_t level) {
+inline void fade_leds(level_code_t level) {
   if (e256_ctr.levels[(uint8_t)level].leds.update) {
     e256_ctr.levels[(uint8_t)level].leds.update = false;
     uint8_t ledVal = constrain(map(e256_ctr.levels[(uint8_t)level].val, e256_ctr.levels[(uint8_t)level].min_val, e256_ctr.levels[(uint8_t)level].max_val, 0, 255), 0, 255);

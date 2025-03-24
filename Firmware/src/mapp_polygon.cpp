@@ -49,15 +49,13 @@ bool mapping_polygon_is_blob_inside(common_t* mapping_ptr, blob_t* blob_ptr) {
 
 // blob == valeurs physiqyes captées
 // touch == données du nieme blob
-bool mapping_polygon_assign_blob(common_t* mapping_ptr, blob_t* blob_ptr) {
+void mapping_polygon_assign_blob(common_t* mapping_ptr, blob_t* blob_ptr) {
   mapp_polygon_t* polygon_ptr = (mapp_polygon_t*)mapping_ptr;
   if (polygon_ptr->touch_index < polygon_ptr->params.touchs) {
     blob_ptr->action.mapping_ptr = polygon_ptr;
     blob_ptr->action.touch_ptr = &polygon_ptr->params.touch[polygon_ptr->touch_index++];
     polygon_ptr->active_blob_count++;
-    return true;
   }
-  return false;
 };
 
 void mapping_polygon_dispose_blob(common_t* mapping_ptr, blob_t* blob_ptr) {
