@@ -59,6 +59,7 @@ struct common_s {
   is_blob_inside_func_t* is_blob_inside_func_ptr;
   blob_assign_func_t* blob_assign_func_ptr;
   blob_dispose_func_t* blob_dispose_func_ptr;
+  start_func_t* start_func_ptr;
   play_func_t* play_func_ptr;
   stop_func_t* stop_func_ptr;
 };

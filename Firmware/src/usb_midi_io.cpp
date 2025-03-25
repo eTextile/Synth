@@ -125,7 +125,7 @@ void usb_midi_transmit() {
 
           usbMIDI.sendSysEx(8, blob_values, false);
         }
-        else if (blob_ptr->status == RELEASED) { ///////////////////////// TO_TEST!
+        else if (blob_ptr->status == RELEASED) {
           usbMIDI.sendNoteOff(blob_ptr->UID, 0, BS); // sendNoteOff(note, velocity, channel);
           usbMIDI.send_now();
         };

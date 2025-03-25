@@ -51,6 +51,10 @@ void mapping_knob_dispose_blob(common_t* mapping_ptr, blob_t* blob_ptr) {
   };
 };
 
+void mapping_knob_start(blob_t* blob_ptr) {
+
+};
+
 void mapping_knob_play(blob_t* blob_ptr) {
   mapp_knob_t* knob_ptr = (mapp_knob_t*)blob_ptr->action.mapping_ptr;
   knob_touch_t* touch_ptr = (knob_touch_t*)blob_ptr->action.touch_ptr;
@@ -86,6 +90,10 @@ void mapping_knob_play(blob_t* blob_ptr) {
   };
 };
 
+void mapping_knob_stop(blob_t* blob_ptr) {
+
+};
+
 void mapping_knob_create(const JsonObject &config) {
   mapp_knob_t* knob_ptr = (mapp_knob_t*)llist_pop_front(&llist_knobs_pool);
 
@@ -94,8 +102,11 @@ void mapping_knob_create(const JsonObject &config) {
   knob_ptr->common.is_blob_inside_func_ptr = &mapping_knob_is_blob_inside;
   knob_ptr->common.blob_assign_func_ptr = &mapping_knob_assign_blob;
   knob_ptr->common.blob_dispose_func_ptr = &mapping_knob_dispose_blob;
+  
+  knob_ptr->common.start_func_ptr = &mapping_knob_start;
   knob_ptr->common.play_func_ptr = &mapping_knob_play;
-
+  knob_ptr->common.stop_func_ptr = &mapping_knob_stop;
+  
   knob_ptr->params.rect.from.x = config["from"][0].as<float>();
   knob_ptr->params.rect.from.y = config["from"][1].as<float>();
   knob_ptr->params.rect.to.x = config["to"][0].as<float>();

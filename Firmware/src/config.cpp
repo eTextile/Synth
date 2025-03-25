@@ -477,9 +477,11 @@ bool apply_config(uint8_t* conf_ptr, size_t conf_size) {
   };
 };
 
-inline void setup_serial_flash(){
+inline void setup_serial_flash() {
   if (!SerialFlash.begin(FLASH_CHIP_SELECT)) {
-    usb_midi_send_info((uint8_t)CONNECTING_FLASH, MIDI_ERROR_CHANNEL);
+    #if defined(USB_MIDI_SERIAL)
+      usb_midi_send_info((uint8_t)CONNECTING_FLASH, MIDI_ERROR_CHANNEL);
+    #endif
   }
   else {
     SerialFlash.sleep();

@@ -59,7 +59,7 @@ void mapping_switch_start(blob_t* blob_ptr) {
   switch (touch_ptr->press.midi.type) {
     case NoteOn:
       touch_ptr->press.midi.type = NoteOn;
-      touch_ptr->press.midi.data2 = 127; // TODO: add dinamic velocity computation
+      touch_ptr->press.midi.data2 = blob_ptr->centroid.z; // TODO: add velocity computation
       llist_push_back(&midi_out, &touch_ptr->press.midi);
       break;
     case AfterTouchPoly:
@@ -81,7 +81,7 @@ void mapping_switch_start(blob_t* blob_ptr) {
     default:
       // Not handled in switch
       break;
-    };
+    }
 };
 
 void mapping_switch_play(blob_t* blob_ptr) {
@@ -109,7 +109,7 @@ void mapping_switch_play(blob_t* blob_ptr) {
     default:
       // Not handled in switch
       break;
-    };
+    }
 };
 
 void mapping_switch_stop(blob_t* blob_ptr) {
@@ -117,7 +117,7 @@ void mapping_switch_stop(blob_t* blob_ptr) {
   touch_ptr->press.midi.type = NoteOff;
   touch_ptr->press.midi.data2 = 0;
   llist_push_back(&midi_out, &touch_ptr->press.midi);
-}
+};
 
 void mapping_switch_create(const JsonObject &config) {
   mapp_switch_t* switch_ptr = (mapp_switch_t*)llist_pop_front(&llist_switch_pool);
@@ -126,7 +126,7 @@ void mapping_switch_create(const JsonObject &config) {
   switch_ptr->common.blob_assign_func_ptr = &mapping_switch_assign_blob;
   switch_ptr->common.blob_dispose_func_ptr = &mapping_switch_dispose_blob;
 
-  switch_ptr->common.play_func_ptr = &mapping_switch_start;
+  switch_ptr->common.start_func_ptr = &mapping_switch_start;
   switch_ptr->common.play_func_ptr = &mapping_switch_play;
   switch_ptr->common.stop_func_ptr = &mapping_switch_stop;
   

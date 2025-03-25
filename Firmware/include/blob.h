@@ -15,8 +15,8 @@
 
 #include "llist.h"
 
-#define BLOB_MISSING_TIME 10
-#define BLOB_TIME_TO_LEAVE 2000
+#define BLOB_MISSING_TIME 15
+#define BLOB_TIME_TO_LEAVE 2500
 
 extern llist_t llist_blobs; // Blobs linked list
 
@@ -119,12 +119,12 @@ struct blob_s {
   uint8_t UID;
   status_code_t status;
   status_code_t last_status;
-  unsigned long int active_time_stamp;
-  unsigned long int life_time_stamp;
+  uint32_t active_time_stamp;
+  uint32_t life_time_stamp;
   box_t box;
   uint16_t pixels;
   vertrice_t centroid;
-  vertrice_t last_centroid;
+  vertrice_t last_centroid; 
   velocity_t velocity;
   blob_action_t action;
 };

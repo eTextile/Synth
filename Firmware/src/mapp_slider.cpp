@@ -53,6 +53,10 @@ void mapping_slider_dispose_blob(common_t* mapping_ptr, blob_t* blob_ptr) {
   };
 };
 
+void mapping_slider_start(blob_t* blob_ptr) {
+  // TODO
+};
+
 void mapping_slider_play(blob_t* blob_ptr) {
   mapp_slider_t* slider_ptr = (mapp_slider_t*)blob_ptr->action.mapping_ptr;
   touch_2d_t* touch_ptr = (touch_2d_t*)blob_ptr->action.touch_ptr;
@@ -132,6 +136,10 @@ void mapping_slider_play(blob_t* blob_ptr) {
   //};
 };
 
+void mapping_slider_stop(blob_t* blob_ptr) {
+  // TODO
+};
+
 void mapping_slider_create(const JsonObject &config) {
   mapp_slider_t* slider_ptr = (mapp_slider_t*)llist_pop_front(&llist_sliders_pool);
   
@@ -140,7 +148,10 @@ void mapping_slider_create(const JsonObject &config) {
   slider_ptr->common.is_blob_inside_func_ptr = &mapping_slider_is_blob_inside;
   slider_ptr->common.blob_assign_func_ptr = &mapping_slider_assign_blob;
   slider_ptr->common.blob_dispose_func_ptr = &mapping_slider_dispose_blob;
+
+  slider_ptr->common.play_func_ptr = &mapping_slider_start;
   slider_ptr->common.play_func_ptr = &mapping_slider_play;
+  slider_ptr->common.play_func_ptr = &mapping_slider_stop;
 
   slider_ptr->params.touchs = config["touchs"].as<uint8_t>();
   slider_ptr->params.rect.from.x = config["from"][0].as<float>();
