@@ -103,6 +103,7 @@ void usb_midi_transmit() {
       // Send all blobs values over USB using MIDI format
       for (lnode_t* node_ptr = ITERATOR_START_FROM_HEAD(&llist_blobs); node_ptr != NULL; node_ptr = ITERATOR_NEXT(node_ptr)) {
         blob_t* blob_ptr = (blob_t*)ITERATOR_DATA(node_ptr);
+        
         if (blob_ptr->status == PRESENT && blob_ptr->last_status == MISSING) {
           usbMIDI.sendNoteOn(blob_ptr->UID, 1, BS); // sendNoteOn(note, velocity, channel);
           usbMIDI.send_now();
