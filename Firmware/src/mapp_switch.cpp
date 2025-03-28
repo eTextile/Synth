@@ -114,8 +114,8 @@ void mapping_switch_play(blob_t* blob_ptr) {
 
 void mapping_switch_stop(blob_t* blob_ptr) {
   touch_2d_t* touch_ptr = (touch_2d_t*)blob_ptr->action.touch_ptr;
-  touch_ptr->press.midi.type = NoteOff;
-  touch_ptr->press.midi.data2 = 0;
+  //touch_ptr->press.midi.type = NoteOff;
+  //touch_ptr->press.midi.data2 = 0;
   llist_push_back(&midi_out, &touch_ptr->press.midi);
 };
 
