@@ -61,10 +61,6 @@ void mapping_touchpad_play(blob_t* blob_ptr) {
   mapp_touchpad_t* touchpad_ptr = (mapp_touchpad_t*)blob_ptr->action.mapping_ptr;
   touch_3d_t* touch_ptr = (touch_3d_t*)blob_ptr->action.touch_ptr;
 
-  llist_push_back(&midi_out, &touch_ptr->press.midi);
-  llist_push_back(&midi_out, &touch_ptr->pos_x.midi);
-  llist_push_back(&midi_out, &touch_ptr->pos_y.midi);
-
   if (blob_ptr->centroid.x != blob_ptr->last_centroid.x) { // This is float :-(
     touch_ptr->pos_x.midi.data2 = round(map(
         blob_ptr->centroid.x,
@@ -91,23 +87,24 @@ void mapping_touchpad_play(blob_t* blob_ptr) {
   };
 
   switch (touch_ptr->press.midi.type) {
-
     case NoteOn:
         touch_ptr->press.midi.type = NoteOn;
-        touch_ptr->press.midi.data2 = 127; // TODO: add the velocity to the blob values!
+        //touch_ptr->press.midi.data2 = 127; // TODO: add the velocity to the blob values!
+        touch_ptr->press.midi.data2 = blob_ptr->centroid.z;
         llist_push_back(&midi_out, &touch_ptr->press.midi);
       break;
     case AfterTouchPoly:
       break;
     case ControlChange:
-      touch_ptr->press.midi.data2 = 
-        round(map(
+      if (blob_ptr->centroid.z != blob_ptr->last_centroid.z) {
+        touch_ptr->press.midi.data2 = map(
           blob_ptr->centroid.z,
           Z_MIN,
           Z_MAX,
           touch_ptr->press.limit.min,
-          touch_ptr->press.limit.max));
-      llist_push_back(&midi_out, &touch_ptr->press.midi);
+          touch_ptr->press.limit.max);
+        llist_push_back(&midi_out, &touch_ptr->press.midi);
+      };
       break;
     case ProgramChange:
       break;
@@ -122,15 +119,6 @@ void mapping_touchpad_play(blob_t* blob_ptr) {
       break;
   };
 
-  if (blob_ptr->centroid.z != blob_ptr->last_centroid.z) {
-    touch_ptr->press.midi.data2 = round(map(
-        blob_ptr->centroid.z,
-        Z_MIN,
-        Z_MAX,
-        touch_ptr->press.limit.min,
-        touch_ptr->press.limit.max));
-    llist_push_back(&midi_out, &touch_ptr->press.midi);
-  };
 };
 
 void mapping_touchpad_stop(blob_t* blob_ptr) {
@@ -139,7 +127,6 @@ void mapping_touchpad_stop(blob_t* blob_ptr) {
   touch_ptr->press.midi.data2 = 0;
   llist_push_back(&midi_out, &touch_ptr->press.midi);
 };
-
 
 void mapping_touchpad_create(const JsonObject &config) {
   mapp_touchpad_t* touchpad_ptr = (mapp_touchpad_t*)llist_pop_front(&llist_touchpads_pool);
