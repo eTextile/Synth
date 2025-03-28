@@ -30,6 +30,8 @@ typedef struct touch_2d_s touch_2d_t;
 struct touch_2d_s {
   msg_t pos;
   msg_t press;
+  uint8_t last_midi_pos;
+  uint8_t last_midi_press;
 };
 
 typedef struct touch_3d_s touch_3d_t;
@@ -37,6 +39,9 @@ struct touch_3d_s {
   msg_t pos_x;
   msg_t pos_y;
   msg_t press;
+  uint8_t last_midi_pos_x;
+  uint8_t last_midi_pos_y;
+  uint8_t last_midi_press;
 };
 
 typedef enum dir_e {

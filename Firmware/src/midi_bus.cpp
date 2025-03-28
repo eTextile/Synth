@@ -16,6 +16,13 @@ llist_t midi_in;         // Main MIDI input linked list
 llist_t midi_out;        // Main MIDI output linked list
 llist_t midi_chord;      // Main MIDI chord linked list
 
+void midi_bus_setup(void) {
+  llist_builder(&midi_nodes_pool, &midi_nodes_array[0], MIDI_NODES, sizeof(midi_nodes_array[0])); // Add X nodes to the midi_nodes_pool
+  llist_raz(&midi_in);
+  llist_raz(&midi_out);
+  llist_raz(&midi_chord);
+};
+
 // Extract MIDI type and channel from MIDI status msg
 // https://www.midi.org/specifications-old/item/table-2-expanded-messages-list-status-bytes
 void midi_msg_status_unpack(uint8_t in_status, midi_status_t* out_status) {
@@ -29,12 +36,16 @@ uint8_t midi_msg_status_pack(MidiType type, uint8_t channel) {
   return status;
 };
 
-void midi_bus_setup(void) {
-  llist_builder(&midi_nodes_pool, &midi_nodes_array[0], MIDI_NODES, sizeof(midi_nodes_array[0])); // Add X nodes to the midi_nodes_pool
-  llist_raz(&midi_in);
-  llist_raz(&midi_out);
-  llist_raz(&midi_chord);
+void midi_send_out(midi_msg_t* midi_ptr) {
+  midi_msg_t* node_ptr = (midi_msg_t*)llist_pop_front(&midi_nodes_pool);  // Get a node from the MIDI nodes stack
+  if (!node_ptr) Serial.printf("\nNo more nodes left in the pool");
+  node_ptr->type = midi_ptr->type;        // Set the MIDI type
+  node_ptr->data1 = midi_ptr->data1;      // Set the MIDI note/cc/...
+  node_ptr->data2 = midi_ptr->data2;      // Set the MIDI velocity
+  node_ptr->channel = midi_ptr->channel;  // Set the MIDI channel
+  llist_push_front(&midi_out, node_ptr);  // Add the node to the midi_out linked list
 };
+
 
 /*
 void midi_handle_input(const Message<128u> &midiMsg) {
@@ -53,5 +64,5 @@ void print_bytes(const uint8_t* data_ptr, size_t data_length) {
   for (size_t i = 0; i < data_length; i++) {
     Serial.printf("%c", char(*data_ptr));
     data_ptr++;
-  };
+  }
 };

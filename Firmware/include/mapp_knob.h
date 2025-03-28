@@ -7,7 +7,10 @@ typedef struct knob_touch_s knob_touch_t;
 struct knob_touch_s {
   msg_t radius;
   msg_t theta;
-  msg_t pressure;
+  msg_t press;
+  uint8_t last_midi_radius;
+  uint8_t last_midi_theta;
+  uint8_t last_midi_press;
 };
 
 typedef struct knob_s knob_t;

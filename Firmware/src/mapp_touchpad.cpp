@@ -33,14 +33,13 @@ bool mapping_touchpad_is_blob_inside(common_t* mapping_ptr, blob_t* blob_ptr) {
   return false;
 };
 
-// blob == valeurs physiqyes captées
-// touch == données du nieme blob
 void mapping_touchpad_assign_blob(common_t* mapping_ptr, blob_t* blob_ptr) {
   mapp_touchpad_t* touchpad_ptr = (mapp_touchpad_t*)mapping_ptr;
   if (touchpad_ptr->touch_index < touchpad_ptr->params.touchs) {
     blob_ptr->action.mapping_ptr = touchpad_ptr;
     blob_ptr->action.touch_ptr = &touchpad_ptr->params.touch[touchpad_ptr->touch_index++];
     touchpad_ptr->active_blob_count++;
+    //Serial.printf("\nTOUCHPAD_BLOB_COUNT_ASSIGN:%d", touchpad_ptr->active_blob_count);
   }
 };
 
@@ -50,50 +49,18 @@ void mapping_touchpad_dispose_blob(common_t* mapping_ptr, blob_t* blob_ptr) {
   blob_ptr->action.touch_ptr = NULL;
   if (--touchpad_ptr->active_blob_count == 0) {
     touchpad_ptr->touch_index = 0;
-  };
+    //Serial.printf("\nTOUCHPAD_BLOB_COUNT_DISPOSE:%d", touchpad_ptr->active_blob_count);
+  }
 };
 
 void mapping_touchpad_start(blob_t* blob_ptr) {
-  //
-}
-
-void mapping_touchpad_play(blob_t* blob_ptr) {
-  mapp_touchpad_t* touchpad_ptr = (mapp_touchpad_t*)blob_ptr->action.mapping_ptr;
   touch_3d_t* touch_ptr = (touch_3d_t*)blob_ptr->action.touch_ptr;
-
-  if (blob_ptr->centroid.x != blob_ptr->last_centroid.x) { // This is float :-(
-    touch_ptr->pos_x.midi.data2 = round(map(
-        blob_ptr->centroid.x,
-        touchpad_ptr->params.rect.from.x,
-        touchpad_ptr->params.rect.to.x,
-        touch_ptr->pos_x.limit.min,
-        touch_ptr->pos_x.limit.max));
-    // Change here!
-    //midi_send_out(&touch_ptr->pos_x.midi);
-    llist_push_back(&midi_out, &touch_ptr->pos_x.midi);
-  };
-
-  if (blob_ptr->centroid.y != blob_ptr->last_centroid.y) { // This is float :-(
-    touch_ptr->pos_y.last_val = touch_ptr->pos_y.midi.data2;
-    touch_ptr->pos_y.midi.data2 = round(map(
-        blob_ptr->centroid.y,
-        touchpad_ptr->params.rect.from.y,
-        touchpad_ptr->params.rect.to.y,
-        touch_ptr->pos_y.limit.min,
-        touch_ptr->pos_y.limit.max));
-    // Change here!
-    //midi_send_out(&touch_ptr->pos_y.midi);
-    llist_push_back(&midi_out, &touch_ptr->pos_y.midi);
-  };
 
   switch (touch_ptr->press.midi.type) {
     case NoteOn:
-        touch_ptr->press.midi.type = NoteOn;
-        //touch_ptr->press.midi.data2 = 127; // TODO: add the velocity to the blob values!
-        touch_ptr->press.midi.data2 = blob_ptr->centroid.z;
-        llist_push_back(&midi_out, &touch_ptr->press.midi);
-      break;
-    case AfterTouchPoly:
+      touch_ptr->press.midi.type = NoteOn;
+      touch_ptr->press.midi.data2 = blob_ptr->centroid.z;
+      midi_send_out(&touch_ptr->press.midi);
       break;
     case ControlChange:
       if (blob_ptr->centroid.z != blob_ptr->last_centroid.z) {
@@ -103,29 +70,76 @@ void mapping_touchpad_play(blob_t* blob_ptr) {
           Z_MAX,
           touch_ptr->press.limit.min,
           touch_ptr->press.limit.max);
-        llist_push_back(&midi_out, &touch_ptr->press.midi);
+        midi_send_out(&touch_ptr->press.midi);
       };
       break;
-    case ProgramChange:
-      break;
-    case AfterTouchChannel:
-      break;
-    case PitchBend:
-      break;
-    case SystemExclusive:
+    case AfterTouchPoly:
+      // Same as CC
       break;
     default:
-      // Not handled in switch
+      // Not handled in mapp_toucpad
       break;
+  }
+};
+
+void mapping_touchpad_play(blob_t* blob_ptr) {
+  mapp_touchpad_t* touchpad_ptr = (mapp_touchpad_t*)blob_ptr->action.mapping_ptr;
+  touch_3d_t* touch_ptr = (touch_3d_t*)blob_ptr->action.touch_ptr;
+
+  touch_ptr->last_midi_pos_x = touch_ptr->pos_x.midi.data2;
+  touch_ptr->pos_x.midi.data2 = round(map(
+    blob_ptr->centroid.x,
+    touchpad_ptr->params.rect.from.x,
+    touchpad_ptr->params.rect.to.x,
+    touch_ptr->pos_x.limit.min,
+    touch_ptr->pos_x.limit.max)
+  );
+  if (touch_ptr->pos_x.midi.data2 != touch_ptr->last_midi_pos_x) {
+    midi_send_out(&touch_ptr->pos_x.midi);
   };
 
+  touch_ptr->last_midi_pos_y = touch_ptr->pos_y.midi.data2;
+  touch_ptr->pos_y.midi.data2 = round(map(
+    blob_ptr->centroid.y,
+    touchpad_ptr->params.rect.from.y,
+    touchpad_ptr->params.rect.to.y,
+    touch_ptr->pos_y.limit.min,
+    touch_ptr->pos_y.limit.max)
+  );
+  if (touch_ptr->pos_y.midi.data2 != touch_ptr->last_midi_pos_y) {
+    midi_send_out(&touch_ptr->pos_y.midi);
+  };
+
+  switch (touch_ptr->press.midi.type) {
+    case NoteOn:
+      // NA
+      break;
+    case AfterTouchPoly:
+      break;
+    case ControlChange:
+      touch_ptr->last_midi_press = touch_ptr->press.midi.data2;
+      touch_ptr->press.midi.data2 = map(
+        blob_ptr->centroid.z,
+        Z_MIN,
+        Z_MAX,
+        touch_ptr->press.limit.min,
+        touch_ptr->press.limit.max);
+      if (touch_ptr->press.midi.data2 != touch_ptr->last_midi_press) {
+        midi_send_out(&touch_ptr->press.midi);
+      }
+      break;
+    default:
+      // Not handled in mapp_toucpad
+      break;
+  }
 };
 
 void mapping_touchpad_stop(blob_t* blob_ptr) {
   touch_3d_t* touch_ptr = (touch_3d_t*)blob_ptr->action.touch_ptr;
-  touch_ptr->press.midi.type = NoteOff;
-  touch_ptr->press.midi.data2 = 0;
-  llist_push_back(&midi_out, &touch_ptr->press.midi);
+  //touch_ptr->press.midi.type = NoteOff;
+  //touch_ptr->press.midi.data2 = 0;
+  //llist_push_back(&midi_out, &touch_ptr->press.midi);
+  midi_send_out(&touch_ptr->press.midi);
 };
 
 void mapping_touchpad_create(const JsonObject &config) {
@@ -172,8 +186,8 @@ void mapping_touchpad_create(const JsonObject &config) {
       if (status.type == ControlChange || status.type == AfterTouchPoly) {
         touchpad_ptr->params.touch[j].press.limit.min = config["msg"][j]["press"]["limit"]["min"].as<uint8_t>();
         touchpad_ptr->params.touch[j].press.limit.max = config["msg"][j]["press"]["limit"]["max"].as<uint8_t>();
-      };
-    };
-  };
+      }
+    }
+  }
   llist_push_back(&llist_mappings, touchpad_ptr);
 };

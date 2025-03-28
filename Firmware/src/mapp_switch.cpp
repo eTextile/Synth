@@ -42,6 +42,7 @@ void mapping_switch_assign_blob(common_t* mapping_ptr, blob_t* blob_ptr) {
     blob_ptr->action.touch_ptr = &switch_ptr->params.touch[switch_ptr->touch_index++];
     switch_ptr->active_blob_count++;
   }
+  //Serial.printf("\nSWITCH_BLOB_COUNT_ASSIGN: %d", switch_ptr->active_blob_count);
 };
 
 void mapping_switch_dispose_blob(common_t* mapping_ptr, blob_t* blob_ptr) {
@@ -51,72 +52,63 @@ void mapping_switch_dispose_blob(common_t* mapping_ptr, blob_t* blob_ptr) {
   if (--switch_ptr->active_blob_count == 0) {
     switch_ptr->touch_index = 0;
   }
+  //Serial.printf("\nSWITCH_BLOB_COUNT_DISPOSE: %d", switch_ptr->active_blob_count);
 };
 
 void mapping_switch_start(blob_t* blob_ptr) {
   touch_2d_t* touch_ptr = (touch_2d_t*)blob_ptr->action.touch_ptr;
-
   switch (touch_ptr->press.midi.type) {
     case NoteOn:
       touch_ptr->press.midi.type = NoteOn;
-      touch_ptr->press.midi.data2 = blob_ptr->centroid.z; // TODO: add velocity computation
-      llist_push_back(&midi_out, &touch_ptr->press.midi);
-      break;
-    case AfterTouchPoly:
+      //touch_ptr->press.midi.data2 = 127;
       touch_ptr->press.midi.data2 = blob_ptr->centroid.z;
-      llist_push_back(&midi_out, &touch_ptr->press.midi);
+      midi_send_out(&touch_ptr->press.midi);
       break;
     case ControlChange:
       touch_ptr->press.midi.data2 = blob_ptr->centroid.z;
-      llist_push_back(&midi_out, &touch_ptr->press.midi);
+      midi_send_out(&touch_ptr->press.midi);
       break;
-    case ProgramChange:
-      break;
-    case AfterTouchChannel:
-      break;
-    case PitchBend:
-      break;
-    case SystemExclusive:
+    case AfterTouchPoly:
+      touch_ptr->press.midi.data2 = blob_ptr->centroid.z;
+      midi_send_out(&touch_ptr->press.midi);
       break;
     default:
-      // Not handled in switch
+      // Not handled in mapp_switch
       break;
     }
 };
 
 void mapping_switch_play(blob_t* blob_ptr) {
   touch_2d_t* touch_ptr = (touch_2d_t*)blob_ptr->action.touch_ptr;
-
   switch (touch_ptr->press.midi.type) {
     case NoteOn:
-      break;
-    case AfterTouchPoly:
-      touch_ptr->press.midi.data2 = blob_ptr->centroid.z;
-      llist_push_back(&midi_out, &touch_ptr->press.midi);
+      // NA
       break;
     case ControlChange:
+      touch_ptr->last_midi_press = touch_ptr->press.midi.data2;
       touch_ptr->press.midi.data2 = blob_ptr->centroid.z;
-      llist_push_back(&midi_out, &touch_ptr->press.midi);
+      if (blob_ptr->centroid.z != touch_ptr->last_midi_press) {
+        midi_send_out(&touch_ptr->press.midi);
+      }
       break;
-    case ProgramChange:
-      break;
-    case AfterTouchChannel:
-      break;
-    case PitchBend:
-      break;
-    case SystemExclusive:
+    case AfterTouchPoly:
+      touch_ptr->last_midi_press = touch_ptr->press.midi.data2;
+      touch_ptr->press.midi.data2 = blob_ptr->centroid.z;
+      if (blob_ptr->centroid.z != touch_ptr->last_midi_press) {
+        midi_send_out(&touch_ptr->press.midi);
+      }
       break;
     default:
-      // Not handled in switch
+      // Not handled in mapp_switch
       break;
     }
 };
 
 void mapping_switch_stop(blob_t* blob_ptr) {
-  touch_2d_t* touch_ptr = (touch_2d_t*)blob_ptr->action.touch_ptr;
+  //touch_2d_t* touch_ptr = (touch_2d_t*)blob_ptr->action.touch_ptr;
   //touch_ptr->press.midi.type = NoteOff;
   //touch_ptr->press.midi.data2 = 0;
-  llist_push_back(&midi_out, &touch_ptr->press.midi);
+  //midi_send_out(&touch_ptr->press.midi);
 };
 
 void mapping_switch_create(const JsonObject &config) {

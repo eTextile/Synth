@@ -262,7 +262,7 @@ void matrix_find_blobs(void) {
             undefined_blob_ptr->box.w = (blob_x2 - blob_x1);
             undefined_blob_ptr->box.h = blob_height;
 
-            Serial.printf("\nBLOB_POS: X:%g Y:%g Z:%d", blob_ptr->centroid.x, blob_ptr->centroid.y, blob_ptr->centroid.z);
+            //Serial.printf("\nBLOB_POS: X:%g Y:%g Z:%d", blob_ptr->centroid.x, blob_ptr->centroid.y, blob_ptr->centroid.z);
 
             undefined_blob_ptr->life_time_stamp = millis();
             undefined_blob_ptr->active_time_stamp = millis();
