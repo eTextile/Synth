@@ -30,21 +30,21 @@ void mapping_lib_update(void) {
 
         if (!blob_ptr->action.mapping_ptr) {
           mapping_ptr->blob_assign_func_ptr(mapping_ptr, blob_ptr);
-          //mapping_ptr->start_func_ptr(blob_ptr);
-          Serial.printf("\n_____START_ASSIGN: %s\t Z_VAL: %d\t THRESHOLD: %d", get_status_name(blob_ptr->status), blob_ptr->centroid.z, e256_ctr.levels[THRESHOLD].val);
+          mapping_ptr->start_func_ptr(blob_ptr);
+          //Serial.printf("\n_____START_ASSIGN: %s\t Z_VAL: %d\t THRESHOLD: %d", get_status_name(blob_ptr->status), blob_ptr->centroid.z, e256_ctr.levels[THRESHOLD].val);
         }
         else {
           if (blob_ptr->status == PRESENT && blob_ptr->last_status == RELEASED) {
-            //mapping_ptr->start_func_ptr(blob_ptr);
-            Serial.printf("\n_____START_EXISSTING: %s\t Z_VAL: %d\t THRESHOLD: %d", get_status_name(blob_ptr->status), blob_ptr->centroid.z, e256_ctr.levels[THRESHOLD].val);
+            mapping_ptr->start_func_ptr(blob_ptr);
+            //Serial.printf("\n_____START_EXISSTING: %s\t Z_VAL: %d\t THRESHOLD: %d", get_status_name(blob_ptr->status), blob_ptr->centroid.z, e256_ctr.levels[THRESHOLD].val);
           }
           else if (blob_ptr->status != RELEASED) {
-            //mapping_ptr->play_func_ptr(blob_ptr);
-            Serial.printf("\nPLAY_BLOB_STATUS: %s\t Z_VAL: %d\t THRESHOLD: %d", get_status_name(blob_ptr->status), blob_ptr->centroid.z, e256_ctr.levels[THRESHOLD].val);
+            mapping_ptr->play_func_ptr(blob_ptr);
+            //Serial.printf("\nPLAY_BLOB_STATUS: %s\t Z_VAL: %d\t THRESHOLD: %d", get_status_name(blob_ptr->status), blob_ptr->centroid.z, e256_ctr.levels[THRESHOLD].val);
           }
           else if (blob_ptr->status == RELEASED && blob_ptr->last_status == MISSING) {
-            //mapping_ptr->stop_func_ptr(blob_ptr);
-            Serial.printf("\n_____STOP_RELEASED: %s\t Z_VAL: %d\t THRESHOLD: %d", get_status_name(blob_ptr->status), blob_ptr->centroid.z, e256_ctr.levels[THRESHOLD].val);
+            mapping_ptr->stop_func_ptr(blob_ptr);
+            //Serial.printf("\n_____STOP_RELEASED: %s\t Z_VAL: %d\t THRESHOLD: %d", get_status_name(blob_ptr->status), blob_ptr->centroid.z, e256_ctr.levels[THRESHOLD].val);
           }
         }
       }
