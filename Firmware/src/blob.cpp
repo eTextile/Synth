@@ -226,8 +226,8 @@ void matrix_find_blobs(void) {
           
           //if (undefined_blob_ptr == NULL) Serial.println ("LL_BUG"); // DEBUG
 
-          undefined_blob_ptr->centroid.x = (constrain(blob_cx / blob_pixels, X_MIN, X_MAX) - X_MIN);
-          undefined_blob_ptr->centroid.y = (constrain(blob_cy / blob_pixels, Y_MIN, Y_MAX) - Y_MIN);
+          undefined_blob_ptr->centroid.x = blob_cx / blob_pixels;
+          undefined_blob_ptr->centroid.y = blob_cy / blob_pixels;
 
           blob_t* blob_ptr = (blob_t*)llist_find_node(&llist_blobs, undefined_blob_ptr, (llist_compare_func_t*)&is_blob_existing);
           
@@ -239,17 +239,14 @@ void matrix_find_blobs(void) {
             //blob_ptr->last_centroid.y = blob_ptr->centroid.y;
             //blob_ptr->last_centroid.z = blob_ptr->centroid.z;
 
-            blob_ptr->centroid.x = undefined_blob_ptr->centroid.x;
+            blob_ptr->centroid.x = undefined_blob_ptr->centroid.x; 
             blob_ptr->centroid.y = undefined_blob_ptr->centroid.y;
-            // Subtract threshold value
-            if (blob_depth > e256_ctr.levels[THRESHOLD].val) {
-              blob_ptr->centroid.z = (blob_depth - e256_ctr.levels[THRESHOLD].val);
-            }
-            else {
-              blob_ptr->centroid.z = 0;
-            }
+            blob_ptr->centroid.z = min(blob_depth, 127);
             blob_ptr->box.w = (blob_x2 - blob_x1);
             blob_ptr->box.h = blob_height;
+
+            //Serial.printf("\nBLOB_POS: X:%g Y:%g Z:%d", blob_ptr->centroid.x, blob_ptr->centroid.y, blob_ptr->centroid.z);
+
             blob_ptr->life_time_stamp = millis();
             blob_ptr->active_time_stamp = millis();
             llist_push_back(&llist_blobs_pool, undefined_blob_ptr);
@@ -260,15 +257,13 @@ void matrix_find_blobs(void) {
             undefined_blob_ptr->status = PRESENT;
             undefined_blob_ptr->action.touch_ptr = NULL;
             undefined_blob_ptr->action.mapping_ptr = NULL;
-            // Subtract threshold value
-            if (blob_depth > e256_ctr.levels[THRESHOLD].val) {
-              undefined_blob_ptr->centroid.z = (blob_depth - e256_ctr.levels[THRESHOLD].val);
-            }
-            else {
-              undefined_blob_ptr->centroid.z = 0;
-            }
+
+            undefined_blob_ptr->centroid.z = min(blob_depth, 127);
             undefined_blob_ptr->box.w = (blob_x2 - blob_x1);
             undefined_blob_ptr->box.h = blob_height;
+
+            Serial.printf("\nBLOB_POS: X:%g Y:%g Z:%d", blob_ptr->centroid.x, blob_ptr->centroid.y, blob_ptr->centroid.z);
+
             undefined_blob_ptr->life_time_stamp = millis();
             undefined_blob_ptr->active_time_stamp = millis();
             llist_push_back(&llist_blobs, undefined_blob_ptr);
