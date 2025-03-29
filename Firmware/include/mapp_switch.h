@@ -7,7 +7,7 @@ typedef struct switch_s switch_t;
 struct switch_s {
   rect_t rect;
   uint8_t touchs;
-  touch_2d_t touch[MAX_SWITCH_TOUCHS];
+  touch_1d_t touch[MAX_SWITCH_TOUCHS];
 };
 
 void mapping_switchs_alloc(uint8_t switchs_cnt);

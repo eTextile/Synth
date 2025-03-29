@@ -37,38 +37,45 @@ bool mapping_switch_is_blob_inside(common_t* mapping_ptr, blob_t* blob_ptr) {
 
 void mapping_switch_assign_blob(common_t* mapping_ptr, blob_t* blob_ptr) {
   mapp_switch_t* switch_ptr = (mapp_switch_t*)mapping_ptr;
-  if (switch_ptr->touch_index < switch_ptr->params.touchs) {
+  if (switch_ptr->active_blob_count < switch_ptr->params.touchs) {
     blob_ptr->action.mapping_ptr = switch_ptr;
-    blob_ptr->action.touch_ptr = &switch_ptr->params.touch[switch_ptr->touch_index++];
+    blob_ptr->action.touch_ptr = &switch_ptr->params.touch[switch_ptr->touch_index];
+    switch_ptr->touch_index++;
     switch_ptr->active_blob_count++;
   }
-  //Serial.printf("\nSWITCH_BLOB_COUNT_ASSIGN: %d", switch_ptr->active_blob_count);
+  Serial.printf("\nSWITCH_ASSIGN / BLOB_COUNT: %d", switch_ptr->active_blob_count);
 };
 
 void mapping_switch_dispose_blob(common_t* mapping_ptr, blob_t* blob_ptr) {
   mapp_switch_t* switch_ptr = (mapp_switch_t*)mapping_ptr;
   blob_ptr->action.mapping_ptr = NULL;
   blob_ptr->action.touch_ptr = NULL;
-  if (--switch_ptr->active_blob_count == 0) {
+  switch_ptr->active_blob_count--;
+  if (switch_ptr->active_blob_count == 0) {
     switch_ptr->touch_index = 0;
   }
-  //Serial.printf("\nSWITCH_BLOB_COUNT_DISPOSE: %d", switch_ptr->active_blob_count);
+  Serial.printf("\nSWITCH_DISPOSE / BLOB_COUNT: %d", switch_ptr->active_blob_count);
 };
 
 void mapping_switch_start(blob_t* blob_ptr) {
-  touch_2d_t* touch_ptr = (touch_2d_t*)blob_ptr->action.touch_ptr;
+  touch_1d_t* touch_ptr = (touch_1d_t*)blob_ptr->action.touch_ptr;
+
+  Serial.printf("\nSWITCH_START / TOUCH_PRESS: %d", touch_ptr->last_midi_press);
+
   switch (touch_ptr->press.midi.type) {
     case NoteOn:
       touch_ptr->press.midi.type = NoteOn;
-      //touch_ptr->press.midi.data2 = 127;
+      touch_ptr->last_midi_press = touch_ptr->press.midi.data2;
       touch_ptr->press.midi.data2 = blob_ptr->centroid.z;
       midi_send_out(&touch_ptr->press.midi);
       break;
     case ControlChange:
+      touch_ptr->last_midi_press = touch_ptr->press.midi.data2;
       touch_ptr->press.midi.data2 = blob_ptr->centroid.z;
       midi_send_out(&touch_ptr->press.midi);
       break;
     case AfterTouchPoly:
+      touch_ptr->last_midi_press = touch_ptr->press.midi.data2;
       touch_ptr->press.midi.data2 = blob_ptr->centroid.z;
       midi_send_out(&touch_ptr->press.midi);
       break;
@@ -79,7 +86,7 @@ void mapping_switch_start(blob_t* blob_ptr) {
 };
 
 void mapping_switch_play(blob_t* blob_ptr) {
-  touch_2d_t* touch_ptr = (touch_2d_t*)blob_ptr->action.touch_ptr;
+  touch_1d_t* touch_ptr = (touch_1d_t*)blob_ptr->action.touch_ptr;
   switch (touch_ptr->press.midi.type) {
     case NoteOn:
       // NA
@@ -105,7 +112,7 @@ void mapping_switch_play(blob_t* blob_ptr) {
 };
 
 void mapping_switch_stop(blob_t* blob_ptr) {
-  //touch_2d_t* touch_ptr = (touch_2d_t*)blob_ptr->action.touch_ptr;
+  //touch_1d_t* touch_ptr = (touch_1d_t*)blob_ptr->action.touch_ptr;
   //touch_ptr->press.midi.type = NoteOff;
   //touch_ptr->press.midi.data2 = 0;
   //midi_send_out(&touch_ptr->press.midi);
@@ -130,6 +137,7 @@ void mapping_switch_create(const JsonObject &config) {
   
   midi_status_t status;
   for (uint8_t i = 0; i<switch_ptr->params.touchs; i++) {
+    switch_ptr->params.touch[i].last_midi_press = 0;
     midi_msg_status_unpack(config["msg"][i]["press"]["midi"]["status"].as<uint8_t>(), &status);
     switch_ptr->params.touch[i].press.midi.type = status.type;
     switch_ptr->params.touch[i].press.midi.data1 = config["msg"][i]["press"]["midi"]["data1"].as<uint8_t>();

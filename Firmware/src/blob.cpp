@@ -239,7 +239,7 @@ void matrix_find_blobs(void) {
             //blob_ptr->last_centroid.y = blob_ptr->centroid.y;
             //blob_ptr->last_centroid.z = blob_ptr->centroid.z;
 
-            blob_ptr->centroid.x = undefined_blob_ptr->centroid.x; 
+            blob_ptr->centroid.x = undefined_blob_ptr->centroid.x;
             blob_ptr->centroid.y = undefined_blob_ptr->centroid.y;
             blob_ptr->centroid.z = min(blob_depth, 127);
             blob_ptr->box.w = (blob_x2 - blob_x1);

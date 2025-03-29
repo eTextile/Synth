@@ -21,8 +21,8 @@ uint16_t fps = 0;
 
 void setup() {
   #if defined(USB_MIDI_SERIAL)
-    //while (!Serial);
-    //Serial.printf("\nVERSION:\t%s", VERSION);
+    while (!Serial);
+    Serial.printf("\nVERSION:\t%s", VERSION);
   #endif
   hardware_setup();
   scan_setup();
@@ -63,13 +63,15 @@ void loop() {
       break;
     case PLAY_MODE:
       usb_midi_recive();
+      mapping_lib_update(); // USED FOR DEBUGING!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+      usb_midi_transmit(); // USED FOR DEBUGING!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
       hardware_midi_transmit();
       break;
     case STANDALONE_MODE:
       update_levels();
       mapping_lib_update();
-      //usb_midi_recive(); // USED FOR DEBUGING!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-      //usb_midi_transmit(); // USED FOR DEBUGING!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+      usb_midi_recive(); // USED FOR DEBUGING!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+      usb_midi_transmit(); // USED FOR DEBUGING!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
       //hardware_midi_recive();
       hardware_midi_transmit();
       break;

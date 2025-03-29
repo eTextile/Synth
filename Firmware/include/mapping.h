@@ -26,6 +26,12 @@ struct rect_s {
   point_t to;
 };
 
+typedef struct touch_1d_s touch_1d_t;
+struct touch_1d_s {
+  msg_t press;
+  uint8_t last_midi_press;
+};
+
 typedef struct touch_2d_s touch_2d_t;
 struct touch_2d_s {
   msg_t pos;

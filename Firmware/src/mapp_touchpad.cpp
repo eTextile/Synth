@@ -35,7 +35,7 @@ bool mapping_touchpad_is_blob_inside(common_t* mapping_ptr, blob_t* blob_ptr) {
 
 void mapping_touchpad_assign_blob(common_t* mapping_ptr, blob_t* blob_ptr) {
   mapp_touchpad_t* touchpad_ptr = (mapp_touchpad_t*)mapping_ptr;
-  if (touchpad_ptr->touch_index < touchpad_ptr->params.touchs) {
+  if (touchpad_ptr->active_blob_count < touchpad_ptr->params.touchs) {
     blob_ptr->action.mapping_ptr = touchpad_ptr;
     blob_ptr->action.touch_ptr = &touchpad_ptr->params.touch[touchpad_ptr->touch_index++];
     touchpad_ptr->active_blob_count++;
@@ -148,7 +148,10 @@ void mapping_touchpad_create(const JsonObject &config) {
   touchpad_ptr->common.is_blob_inside_func_ptr = &mapping_touchpad_is_blob_inside;
   touchpad_ptr->common.blob_assign_func_ptr = &mapping_touchpad_assign_blob;
   touchpad_ptr->common.blob_dispose_func_ptr = &mapping_touchpad_dispose_blob;
+
+  touchpad_ptr->common.start_func_ptr = &mapping_touchpad_start;
   touchpad_ptr->common.play_func_ptr = &mapping_touchpad_play;
+  touchpad_ptr->common.stop_func_ptr = &mapping_touchpad_stop;
 
   touchpad_ptr->params.touchs = config["touchs"].as<uint8_t>();
   touchpad_ptr->params.rect.from.x = config["from"][0].as<float>();
