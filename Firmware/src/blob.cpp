@@ -57,22 +57,23 @@ inline uint8_t set_id(void) {
 void matrix_find_blobs(void) {
 
   // DEAD BLOBS REMOVER
-  blob_t* blob_status_ptr = NULL;
-  while ((blob_status_ptr = (blob_t*)llist_pop_front(&llist_blobs)) != NULL) {
-    blob_status_ptr->last_status = blob_status_ptr->status;
+  blob_t* tmp_blob_ptr = NULL;
+  while ((tmp_blob_ptr = (blob_t*)llist_pop_front(&llist_blobs)) != NULL) {
+    tmp_blob_ptr->last_status = tmp_blob_ptr->status;
 
-    if ((millis() - blob_status_ptr->active_time_stamp) < BLOB_MISSING_TIME) {
-      blob_status_ptr->status = MISSING;
-      llist_push_front(&blobs_to_keep, blob_status_ptr);
+    if ((millis() - tmp_blob_ptr->active_time_stamp) < BLOB_MISSING_TIME) {
+      tmp_blob_ptr->status = MISSING;
+      llist_push_front(&blobs_to_keep, tmp_blob_ptr);
     }
-    else if ((millis() - blob_status_ptr->life_time_stamp) > BLOB_TIME_TO_LEAVE) {
-      common_t* mapping_ptr = (common_t*)blob_status_ptr->action.mapping_ptr;
-      if (mapping_ptr) mapping_ptr->blob_dispose_func_ptr(mapping_ptr, blob_status_ptr);
-      llist_push_back(&llist_blobs_pool, blob_status_ptr);
+    else if ((millis() - tmp_blob_ptr->life_time_stamp) > BLOB_TIME_TO_LEAVE) {
+      common_t* mapping_ptr = (common_t*)tmp_blob_ptr->action.mapping_ptr;
+      if (mapping_ptr) mapping_ptr->blob_dispose_func_ptr(mapping_ptr, tmp_blob_ptr);
+      Serial.printf("\n_BLOB_DISPOSE_MAPPING / BLOB: %p -> MAPPING: %p", tmp_blob_ptr, mapping_ptr);
+      llist_push_back(&llist_blobs_pool, tmp_blob_ptr);
     }
     else {
-      blob_status_ptr->status = RELEASED;
-      llist_push_front(&blobs_to_keep, blob_status_ptr);
+      tmp_blob_ptr->status = RELEASED;
+      llist_push_front(&blobs_to_keep, tmp_blob_ptr);
     }
   }
   llist_swap_llist(&llist_blobs, &blobs_to_keep);

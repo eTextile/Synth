@@ -105,6 +105,7 @@ void mapping_knob_create(const JsonObject &config) {
   knob_ptr->common.play_func_ptr = &mapping_knob_play;
   knob_ptr->common.stop_func_ptr = &mapping_knob_stop;
   
+  knob_ptr->params.touchs = config["touchs"].as<uint8_t>();
   knob_ptr->params.rect.from.x = config["from"][0].as<float>();
   knob_ptr->params.rect.from.y = config["from"][1].as<float>();
   knob_ptr->params.rect.to.x = config["to"][0].as<float>();
@@ -117,7 +118,7 @@ void mapping_knob_create(const JsonObject &config) {
   knob_ptr->params.center.y = (knob_ptr->params.rect.from.y + knob_ptr->params.radius);
   
   midi_status_t status;
-  for (uint8_t j = 0; j<config["touchs"].as<uint8_t>(); j++){
+  for (uint8_t j = 0; j<knob_ptr->params.touchs; j++){
     midi_msg_status_unpack(config["msg"][j]["radius"]["midi"]["status"].as<uint8_t>(), &status);
     knob_ptr->params.touch[j].radius.midi.type = status.type;
     knob_ptr->params.touch[j].radius.midi.data1 = config["msg"][j]["radius"]["midi"]["data1"].as<uint8_t>();
@@ -138,7 +139,7 @@ void mapping_knob_create(const JsonObject &config) {
       knob_ptr->params.touch[j].theta.limit.min = config["msg"][j]["theta"]["limit"]["min"].as<uint8_t>();
       knob_ptr->params.touch[j].theta.limit.max = config["msg"][j]["theta"]["limit"]["max"].as<uint8_t>();
     }
-    midi_msg_status_unpack(config["msg"][j]["pressure"]["midi"]["status"].as<uint8_t>(), &status);
+    midi_msg_status_unpack(config["msg"][j]["press"]["midi"]["status"].as<uint8_t>(), &status);
     knob_ptr->params.touch[j].press.midi.type = status.type;
     knob_ptr->params.touch[j].press.midi.data1 = config["msg"][j]["press"]["midi"]["data1"].as<uint8_t>();
     knob_ptr->params.touch[j].press.midi.data2 = config["msg"][j]["press"]["midi"]["data2"].as<uint8_t>();

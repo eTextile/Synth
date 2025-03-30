@@ -34,20 +34,20 @@ struct touch_1d_s {
 
 typedef struct touch_2d_s touch_2d_t;
 struct touch_2d_s {
-  msg_t pos;
   msg_t press;
-  uint8_t last_midi_pos;
   uint8_t last_midi_press;
+  msg_t pos;
+  uint8_t last_midi_pos;
 };
 
 typedef struct touch_3d_s touch_3d_t;
 struct touch_3d_s {
-  msg_t pos_x;
-  msg_t pos_y;
   msg_t press;
-  uint8_t last_midi_pos_x;
-  uint8_t last_midi_pos_y;
   uint8_t last_midi_press;
+  msg_t pos_x;
+  uint8_t last_midi_pos_x;
+  msg_t pos_y;
+  uint8_t last_midi_pos_y;
 };
 
 typedef enum dir_e {
@@ -62,6 +62,7 @@ typedef struct common_s common_t;
 typedef bool is_blob_inside_func_t(common_t*, blob_t*);
 typedef void blob_assign_func_t(common_t*, blob_t*);
 typedef void blob_dispose_func_t(common_t*, blob_t*);
+
 typedef void start_func_t(blob_t*);
 typedef void play_func_t(blob_t*);
 typedef void stop_func_t(blob_t*);
