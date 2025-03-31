@@ -68,6 +68,9 @@ typedef void play_func_t(blob_t*);
 typedef void stop_func_t(blob_t*);
 
 struct common_s {
+  uint8_t* touchs;
+  uint8_t* active_blob_count_ptr;
+  uint8_t* touch_index_ptr;
   is_blob_inside_func_t* is_blob_inside_func_ptr;
   blob_assign_func_t* blob_assign_func_ptr;
   blob_dispose_func_t* blob_dispose_func_ptr;

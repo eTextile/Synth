@@ -90,6 +90,9 @@ void mapping_polygon_stop(blob_t* blob_ptr) {
 void mapping_polygon_create(const JsonObject &config) {
   mapp_polygon_t* polygon_ptr = (mapp_polygon_t*)llist_pop_front(&llist_polygons_pool);
   
+  polygon_ptr->common.active_blob_count_ptr = &polygon_ptr->active_blob_count;
+  polygon_ptr->common.touch_index_ptr = &polygon_ptr->touch_index;
+
   polygon_ptr->common.is_blob_inside_func_ptr = &mapping_polygon_is_blob_inside;
   polygon_ptr->common.blob_assign_func_ptr = &mapping_polygon_assign_blob;
   polygon_ptr->common.blob_dispose_func_ptr = &mapping_polygon_dispose_blob;
@@ -97,6 +100,9 @@ void mapping_polygon_create(const JsonObject &config) {
   polygon_ptr->common.start_func_ptr = &mapping_polygon_start;
   polygon_ptr->common.play_func_ptr = &mapping_polygon_play;
   polygon_ptr->common.stop_func_ptr = &mapping_polygon_stop;
+
+  polygon_ptr->params.touchs = config["touchs"].as<uint8_t>();
+  polygon_ptr->common.touchs = &polygon_ptr->params.touchs;
 
   polygon_ptr->params.point_cnt = config["cnt"].as<uint8_t>();
   for (uint8_t j = 0; j < polygon_ptr->params.point_cnt; j++) {

@@ -445,7 +445,7 @@ bool config_load_mappings(const JsonObject config) {
     //Serial.println("CONFIG_LOAD_SWITCHS");
   };
   if (config_load_mappings_sliders(config["slider"])) {
-    //Serial.println("CONFIG_LOAD_SLIDER");
+    Serial.println("CONFIG_LOAD_SLIDER");
   };
   if (config_load_mappings_knobs(config["knob"])) {
     //Serial.println("CONFIG_LOAD_KNOBS");

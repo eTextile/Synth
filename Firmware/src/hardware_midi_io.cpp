@@ -53,8 +53,7 @@ void hardware_midi_transmit(void) {
   for (lnode_t* midi_node_ptr = ITERATOR_START_FROM_HEAD(&midi_out); midi_node_ptr != NULL; midi_node_ptr = ITERATOR_NEXT(midi_node_ptr)) {
     midi_msg_t* midi_ptr = (midi_msg_t*)ITERATOR_DATA(midi_node_ptr);
     MIDI.send(midi_ptr->type, midi_ptr->data1, midi_ptr->data2, midi_ptr->channel);
-
-    Serial.printf("\nMIDI_SEND: TYPE: %s\t DATA1: %d\t DATA2: %d\t CHAN:%d", get_type_name(midi_ptr->type), midi_ptr->data1, midi_ptr->data2, midi_ptr->channel);    
+    //Serial.printf("\nMIDI_SEND: TYPE: %s\t DATA1: %d\t DATA2: %d\t CHAN:%d", get_type_name(midi_ptr->type), midi_ptr->data1, midi_ptr->data2, midi_ptr->channel);    
   };
   while (usbMIDI.read()); // Read and discard any incoming MIDI messages
   llist_concat_nodes(&midi_nodes_pool, &midi_out); // Save/rescure all midi_out nodes

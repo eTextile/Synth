@@ -21,8 +21,8 @@ uint16_t fps = 0;
 
 void setup() {
   #if defined(USB_MIDI_SERIAL)
-    while (!Serial);
-    Serial.printf("\nVERSION:\t%s", VERSION);
+    //while (!Serial);
+    //Serial.printf("\nVERSION:\t%s", VERSION);
   #endif
   hardware_setup();
   scan_setup();

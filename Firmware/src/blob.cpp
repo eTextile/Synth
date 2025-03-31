@@ -61,14 +61,13 @@ void matrix_find_blobs(void) {
   while ((tmp_blob_ptr = (blob_t*)llist_pop_front(&llist_blobs)) != NULL) {
     tmp_blob_ptr->last_status = tmp_blob_ptr->status;
 
-    if ((millis() - tmp_blob_ptr->active_time_stamp) < BLOB_MISSING_TIME) {
+    if ((millis() - tmp_blob_ptr->active_time_stamp) < BLOB_MISSING_TIME) { // MOVE IT TO MAPPING_COMON
       tmp_blob_ptr->status = MISSING;
       llist_push_front(&blobs_to_keep, tmp_blob_ptr);
     }
     else if ((millis() - tmp_blob_ptr->life_time_stamp) > BLOB_TIME_TO_LEAVE) {
       common_t* mapping_ptr = (common_t*)tmp_blob_ptr->action.mapping_ptr;
       if (mapping_ptr) mapping_ptr->blob_dispose_func_ptr(mapping_ptr, tmp_blob_ptr);
-      Serial.printf("\n_BLOB_DISPOSE_MAPPING / BLOB: %p -> MAPPING: %p", tmp_blob_ptr, mapping_ptr);
       llist_push_back(&llist_blobs_pool, tmp_blob_ptr);
     }
     else {

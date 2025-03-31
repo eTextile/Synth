@@ -145,6 +145,9 @@ void mapping_touchpad_stop(blob_t* blob_ptr) {
 void mapping_touchpad_create(const JsonObject &config) {
   mapp_touchpad_t* touchpad_ptr = (mapp_touchpad_t*)llist_pop_front(&llist_touchpads_pool);
 
+  touchpad_ptr->common.active_blob_count_ptr = &touchpad_ptr->active_blob_count;
+  touchpad_ptr->common.touch_index_ptr = &touchpad_ptr->touch_index;
+
   touchpad_ptr->common.is_blob_inside_func_ptr = &mapping_touchpad_is_blob_inside;
   touchpad_ptr->common.blob_assign_func_ptr = &mapping_touchpad_assign_blob;
   touchpad_ptr->common.blob_dispose_func_ptr = &mapping_touchpad_dispose_blob;
@@ -154,6 +157,8 @@ void mapping_touchpad_create(const JsonObject &config) {
   touchpad_ptr->common.stop_func_ptr = &mapping_touchpad_stop;
 
   touchpad_ptr->params.touchs = config["touchs"].as<uint8_t>();
+  touchpad_ptr->common.touchs = &touchpad_ptr->params.touchs;
+
   touchpad_ptr->params.rect.from.x = config["from"][0].as<float>();
   touchpad_ptr->params.rect.from.y = config["from"][1].as<float>();
   touchpad_ptr->params.rect.to.x = config["to"][0].as<float>();
@@ -162,33 +167,33 @@ void mapping_touchpad_create(const JsonObject &config) {
 
   if (touchpad_ptr->params.touchs < MAX_TOUCHPAD_TOUCHS) {
     midi_status_t status;
-    for (uint8_t j = 0; j<touchpad_ptr->params.touchs; j++){
-      midi_msg_status_unpack(config["msg"][j]["pos_x"]["midi"]["status"].as<uint8_t>(), &status);
-      touchpad_ptr->params.touch[j].pos_x.midi.type = status.type;
-      touchpad_ptr->params.touch[j].pos_x.midi.data1 = config["msg"][j]["pos_x"]["midi"]["data1"].as<uint8_t>();
-      touchpad_ptr->params.touch[j].pos_x.midi.data2 = config["msg"][j]["pos_x"]["midi"]["data2"].as<uint8_t>();
-      touchpad_ptr->params.touch[j].pos_x.midi.channel = status.channel;
+    for (uint8_t i = 0; i<touchpad_ptr->params.touchs; i++){
+      midi_msg_status_unpack(config["msg"][i]["pos_x"]["midi"]["status"].as<uint8_t>(), &status);
+      touchpad_ptr->params.touch[i].pos_x.midi.type = status.type;
+      touchpad_ptr->params.touch[i].pos_x.midi.data1 = config["msg"][i]["pos_x"]["midi"]["data1"].as<uint8_t>();
+      touchpad_ptr->params.touch[i].pos_x.midi.data2 = config["msg"][i]["pos_x"]["midi"]["data2"].as<uint8_t>();
+      touchpad_ptr->params.touch[i].pos_x.midi.channel = status.channel;
       if (status.type == ControlChange || status.type == AfterTouchPoly) {
-        touchpad_ptr->params.touch[j].pos_x.limit.min = config["msg"][j]["pos_x"]["limit"]["min"].as<uint8_t>();
-        touchpad_ptr->params.touch[j].pos_x.limit.max = config["msg"][j]["pos_x"]["limit"]["max"].as<uint8_t>();
+        touchpad_ptr->params.touch[i].pos_x.limit.min = config["msg"][i]["pos_x"]["limit"]["min"].as<uint8_t>();
+        touchpad_ptr->params.touch[i].pos_x.limit.max = config["msg"][i]["pos_x"]["limit"]["max"].as<uint8_t>();
       }
-      midi_msg_status_unpack(config["msg"][j]["pos_y"]["midi"]["status"].as<uint8_t>(), &status);
-      touchpad_ptr->params.touch[j].pos_y.midi.type = status.type;
-      touchpad_ptr->params.touch[j].pos_y.midi.data1 = config["msg"][j]["pos_y"]["midi"]["data1"].as<uint8_t>();
-      touchpad_ptr->params.touch[j].pos_y.midi.data2 = config["msg"][j]["pos_y"]["midi"]["data2"].as<uint8_t>();
-      touchpad_ptr->params.touch[j].pos_y.midi.channel = status.channel;
+      midi_msg_status_unpack(config["msg"][i]["pos_y"]["midi"]["status"].as<uint8_t>(), &status);
+      touchpad_ptr->params.touch[i].pos_y.midi.type = status.type;
+      touchpad_ptr->params.touch[i].pos_y.midi.data1 = config["msg"][i]["pos_y"]["midi"]["data1"].as<uint8_t>();
+      touchpad_ptr->params.touch[i].pos_y.midi.data2 = config["msg"][i]["pos_y"]["midi"]["data2"].as<uint8_t>();
+      touchpad_ptr->params.touch[i].pos_y.midi.channel = status.channel;
       if (status.type == ControlChange || status.type == AfterTouchPoly) {
-        touchpad_ptr->params.touch[j].pos_y.limit.min = config["msg"][j]["pos_y"]["limit"]["min"].as<uint8_t>();
-        touchpad_ptr->params.touch[j].pos_y.limit.max = config["msg"][j]["pos_y"]["limit"]["max"].as<uint8_t>();
+        touchpad_ptr->params.touch[i].pos_y.limit.min = config["msg"][i]["pos_y"]["limit"]["min"].as<uint8_t>();
+        touchpad_ptr->params.touch[i].pos_y.limit.max = config["msg"][i]["pos_y"]["limit"]["max"].as<uint8_t>();
       }
-      midi_msg_status_unpack(config["msg"][j]["press"]["midi"]["status"].as<uint8_t>(), &status);
-      touchpad_ptr->params.touch[j].press.midi.type = status.type;
-      touchpad_ptr->params.touch[j].press.midi.data1 = config["msg"][j]["press"]["midi"]["data1"].as<uint8_t>();
-      touchpad_ptr->params.touch[j].press.midi.data2 = config["msg"][j]["press"]["midi"]["data2"].as<uint8_t>();
-      touchpad_ptr->params.touch[j].press.midi.channel = status.channel;
+      midi_msg_status_unpack(config["msg"][i]["press"]["midi"]["status"].as<uint8_t>(), &status);
+      touchpad_ptr->params.touch[i].press.midi.type = status.type;
+      touchpad_ptr->params.touch[i].press.midi.data1 = config["msg"][i]["press"]["midi"]["data1"].as<uint8_t>();
+      touchpad_ptr->params.touch[i].press.midi.data2 = config["msg"][i]["press"]["midi"]["data2"].as<uint8_t>();
+      touchpad_ptr->params.touch[i].press.midi.channel = status.channel;
       if (status.type == ControlChange || status.type == AfterTouchPoly) {
-        touchpad_ptr->params.touch[j].press.limit.min = config["msg"][j]["press"]["limit"]["min"].as<uint8_t>();
-        touchpad_ptr->params.touch[j].press.limit.max = config["msg"][j]["press"]["limit"]["max"].as<uint8_t>();
+        touchpad_ptr->params.touch[i].press.limit.min = config["msg"][i]["press"]["limit"]["min"].as<uint8_t>();
+        touchpad_ptr->params.touch[i].press.limit.max = config["msg"][i]["press"]["limit"]["max"].as<uint8_t>();
       }
     }
   }
