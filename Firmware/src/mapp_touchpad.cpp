@@ -33,14 +33,16 @@ bool mapping_touchpad_is_blob_inside(common_t* mapping_ptr, blob_t* blob_ptr) {
   return false;
 };
 
-void mapping_touchpad_assign_blob(common_t* mapping_ptr, blob_t* blob_ptr) {
+boolean mapping_touchpad_assign_blob(common_t* mapping_ptr, blob_t* blob_ptr) {
   mapp_touchpad_t* touchpad_ptr = (mapp_touchpad_t*)mapping_ptr;
   if (touchpad_ptr->active_blob_count < touchpad_ptr->params.touchs) {
     blob_ptr->action.mapping_ptr = touchpad_ptr;
     blob_ptr->action.touch_ptr = &touchpad_ptr->params.touch[touchpad_ptr->touch_index++];
     touchpad_ptr->active_blob_count++;
     //Serial.printf("\nTOUCHPAD_BLOB_COUNT_ASSIGN:%d", touchpad_ptr->active_blob_count);
+    return true;
   }
+  return false;
 };
 
 void mapping_touchpad_dispose_blob(common_t* mapping_ptr, blob_t* blob_ptr) {
@@ -145,9 +147,6 @@ void mapping_touchpad_stop(blob_t* blob_ptr) {
 void mapping_touchpad_create(const JsonObject &config) {
   mapp_touchpad_t* touchpad_ptr = (mapp_touchpad_t*)llist_pop_front(&llist_touchpads_pool);
 
-  touchpad_ptr->common.active_blob_count_ptr = &touchpad_ptr->active_blob_count;
-  touchpad_ptr->common.touch_index_ptr = &touchpad_ptr->touch_index;
-
   touchpad_ptr->common.is_blob_inside_func_ptr = &mapping_touchpad_is_blob_inside;
   touchpad_ptr->common.blob_assign_func_ptr = &mapping_touchpad_assign_blob;
   touchpad_ptr->common.blob_dispose_func_ptr = &mapping_touchpad_dispose_blob;
@@ -157,7 +156,6 @@ void mapping_touchpad_create(const JsonObject &config) {
   touchpad_ptr->common.stop_func_ptr = &mapping_touchpad_stop;
 
   touchpad_ptr->params.touchs = config["touchs"].as<uint8_t>();
-  touchpad_ptr->common.touchs = &touchpad_ptr->params.touchs;
 
   touchpad_ptr->params.rect.from.x = config["from"][0].as<float>();
   touchpad_ptr->params.rect.from.y = config["from"][1].as<float>();

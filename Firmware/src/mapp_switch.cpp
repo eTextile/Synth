@@ -35,14 +35,16 @@ bool mapping_switch_is_blob_inside(common_t* mapping_ptr, blob_t* blob_ptr) {
   return false;
 };
 
-void mapping_switch_assign_blob(common_t* mapping_ptr, blob_t* blob_ptr) {
+boolean mapping_switch_assign_blob(common_t* mapping_ptr, blob_t* blob_ptr) {
   mapp_switch_t* switch_ptr = (mapp_switch_t*)mapping_ptr;
   if (switch_ptr->active_blob_count < switch_ptr->params.touchs) {
     blob_ptr->action.mapping_ptr = switch_ptr;
     blob_ptr->action.touch_ptr = &switch_ptr->params.touch[switch_ptr->touch_index];
     switch_ptr->touch_index++;
     switch_ptr->active_blob_count++;
+    return true;
   }
+  return false;
   Serial.printf("\nSWITCH_ASSIGN / BLOB_COUNT: %d", switch_ptr->active_blob_count);
 };
 
@@ -120,9 +122,6 @@ void mapping_switch_stop(blob_t* blob_ptr) {
 
 void mapping_switch_create(const JsonObject &config) {
   mapp_switch_t* switch_ptr = (mapp_switch_t*)llist_pop_front(&llist_switch_pool);
-  
-  switch_ptr->common.active_blob_count_ptr = &switch_ptr->active_blob_count;
-  switch_ptr->common.touch_index_ptr = &switch_ptr->touch_index;
 
   switch_ptr->common.is_blob_inside_func_ptr = &mapping_switch_is_blob_inside;
   switch_ptr->common.blob_assign_func_ptr = &mapping_switch_assign_blob;
@@ -133,7 +132,6 @@ void mapping_switch_create(const JsonObject &config) {
   switch_ptr->common.stop_func_ptr = &mapping_switch_stop;
   
   switch_ptr->params.touchs = config["touchs"].as<uint8_t>();
-  switch_ptr->common.touchs = &switch_ptr->params.touchs;
 
   switch_ptr->params.rect.from.x = config["from"][0].as<float>();
   switch_ptr->params.rect.from.y = config["from"][1].as<float>();

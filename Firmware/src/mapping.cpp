@@ -28,8 +28,7 @@ void mapping_lib_update(void) {
       if (mapping_ptr->is_blob_inside_func_ptr(mapping_ptr, blob_ptr)) {
 
         if (blob_ptr->action.mapping_ptr == NULL) {
-          if (*mapping_ptr->active_blob_count_ptr < *mapping_ptr->touchs) {
-            mapping_ptr->blob_assign_func_ptr(mapping_ptr, blob_ptr);
+          if (mapping_ptr->blob_assign_func_ptr(mapping_ptr, blob_ptr)){
             mapping_ptr->start_func_ptr(blob_ptr);
             Serial.printf("\n_MAPPING_START_PLAYING: %s\t Z_VAL: %d\t THRESHOLD: %d", get_status_name(blob_ptr->status), blob_ptr->centroid.z, e256_ctr.levels[THRESHOLD].val);
           }

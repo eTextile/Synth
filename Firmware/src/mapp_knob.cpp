@@ -33,13 +33,15 @@ bool mapping_knob_is_blob_inside(common_t* mapping_ptr, blob_t* blob_ptr) {
   return false;
 };
 
-void mapping_knob_assign_blob(common_t* mapping_ptr, blob_t* blob_ptr) {
+boolean mapping_knob_assign_blob(common_t* mapping_ptr, blob_t* blob_ptr) {
   mapp_knob_t* knob_ptr = (mapp_knob_t*)mapping_ptr;
   if (knob_ptr->active_blob_count < knob_ptr->params.touchs) {
     blob_ptr->action.mapping_ptr = knob_ptr;
     blob_ptr->action.touch_ptr = &knob_ptr->params.touch[knob_ptr->touch_index++];
     knob_ptr->active_blob_count++;
+    return true;
   }
+  return false;
 };
 
 void mapping_knob_dispose_blob(common_t* mapping_ptr, blob_t* blob_ptr) {
@@ -95,9 +97,6 @@ void mapping_knob_stop(blob_t* blob_ptr) {
 void mapping_knob_create(const JsonObject &config) {
   mapp_knob_t* knob_ptr = (mapp_knob_t*)llist_pop_front(&llist_knobs_pool);
 
-  knob_ptr->common.active_blob_count_ptr = &knob_ptr->active_blob_count;
-  knob_ptr->common.touch_index_ptr = &knob_ptr->touch_index;
-
   knob_ptr->common.is_blob_inside_func_ptr = &mapping_knob_is_blob_inside;
   knob_ptr->common.blob_assign_func_ptr = &mapping_knob_assign_blob;
   knob_ptr->common.blob_dispose_func_ptr = &mapping_knob_dispose_blob;
@@ -107,7 +106,6 @@ void mapping_knob_create(const JsonObject &config) {
   knob_ptr->common.stop_func_ptr = &mapping_knob_stop;
   
   knob_ptr->params.touchs = config["touchs"].as<uint8_t>();
-  knob_ptr->common.touchs = &knob_ptr->params.touchs;
 
   knob_ptr->params.rect.from.x = config["from"][0].as<float>();
   knob_ptr->params.rect.from.y = config["from"][1].as<float>();

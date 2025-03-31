@@ -34,7 +34,7 @@ bool mapping_slider_is_blob_inside(common_t* mapping_ptr, blob_t* blob_ptr) {
   return false;
 };
 
-void mapping_slider_assign_blob(common_t* mapping_ptr, blob_t* blob_ptr) {
+boolean mapping_slider_assign_blob(common_t* mapping_ptr, blob_t* blob_ptr) {
   mapp_slider_t* slider_ptr = (mapp_slider_t*)mapping_ptr;
   
   if (slider_ptr->active_blob_count < slider_ptr->params.touchs) {
@@ -44,7 +44,9 @@ void mapping_slider_assign_blob(common_t* mapping_ptr, blob_t* blob_ptr) {
     blob_ptr->action.touch_ptr = &slider_ptr->params.touch[slider_ptr->touch_index];
     slider_ptr->touch_index++;
     slider_ptr->active_blob_count++;
+    return true;
   }
+  return false;
   //Serial.printf("\n_SLIDER_ASSIGN / ACTIVE_BLOB_COUNT: %d\tSLIDER_TOUCHS: %d",slider_ptr->active_blob_count, slider_ptr->params.touchs);
 };
 
@@ -191,9 +193,6 @@ void mapping_slider_stop(blob_t* blob_ptr) {
 void mapping_slider_create(const JsonObject &config) {
   mapp_slider_t* slider_ptr = (mapp_slider_t*)llist_pop_front(&llist_sliders_pool);
 
-  slider_ptr->common.active_blob_count_ptr = &slider_ptr->active_blob_count;
-  slider_ptr->common.touch_index_ptr = &slider_ptr->touch_index;
-
   slider_ptr->common.is_blob_inside_func_ptr = &mapping_slider_is_blob_inside;
   slider_ptr->common.blob_assign_func_ptr = &mapping_slider_assign_blob;
   slider_ptr->common.blob_dispose_func_ptr = &mapping_slider_dispose_blob;
@@ -203,7 +202,6 @@ void mapping_slider_create(const JsonObject &config) {
   slider_ptr->common.stop_func_ptr = &mapping_slider_stop;
 
   slider_ptr->params.touchs = config["touchs"].as<uint8_t>();
-  slider_ptr->common.touchs = &slider_ptr->params.touchs;
 
   slider_ptr->params.rect.from.x = config["from"][0].as<float>();
   slider_ptr->params.rect.from.y = config["from"][1].as<float>();
