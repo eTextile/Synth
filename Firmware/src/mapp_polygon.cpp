@@ -97,7 +97,7 @@ void mapping_polygon_create(const JsonObject &config) {
   polygon_ptr->common.blob_dispose_func_ptr = &mapping_polygon_dispose_blob;
 
   polygon_ptr->common.start_func_ptr = &mapping_polygon_start;
-  polygon_ptr->common.play_func_ptr = &mapping_polygon_play;
+  polygon_ptr->common.continue_func_ptr = &mapping_polygon_play;
   polygon_ptr->common.stop_func_ptr = &mapping_polygon_stop;
 
   polygon_ptr->params.touchs = config["touchs"].as<uint8_t>();

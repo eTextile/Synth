@@ -34,7 +34,7 @@ void usb_midi_recive(void) {
 };
 
 void usb_midi_pending_mode_timeout() {
-  //if (e256_current_mode == PENDING_MODE && millis() - bootTime > PENDING_MODE_TIMEOUT) {
+  if (e256_current_mode == PENDING_MODE && millis() - bootTime > PENDING_MODE_TIMEOUT) {
     #if defined(USB_MIDI_SERIAL) && defined(DEBUG_CONFIG)
       Serial.printf("\nPENDING_MODE_TIME_OUT");
     #endif
@@ -64,8 +64,8 @@ void usb_midi_pending_mode_timeout() {
       #if defined(USB_MIDI_SERIAL) && defined(DEBUG_CONFIG)
         Serial.printf("\nNO_CONFIG_FILE_LOADED");
       #endif
-    };
-  //};
+    }
+  }
 };
 
 void usb_midi_transmit() {
@@ -104,7 +104,7 @@ void usb_midi_transmit() {
       for (lnode_t* node_ptr = ITERATOR_START_FROM_HEAD(&llist_blobs); node_ptr != NULL; node_ptr = ITERATOR_NEXT(node_ptr)) {
         blob_t* blob_ptr = (blob_t*)ITERATOR_DATA(node_ptr);
         
-        if (blob_ptr->status == PRESENT && blob_ptr->last_status == MISSING) {
+        if (blob_ptr->status == PRESENT && blob_ptr->last_status == RELEASED) {
           usbMIDI.sendNoteOn(blob_ptr->UID, 1, BS); // sendNoteOn(note, velocity, channel);
           usbMIDI.send_now();
         }
@@ -126,7 +126,7 @@ void usb_midi_transmit() {
 
           usbMIDI.sendSysEx(8, blob_values, false);
         }
-        else if (blob_ptr->status == RELEASED) {
+        else if (blob_ptr->status == RELEASED && blob_ptr->last_status == MISSING) {
           usbMIDI.sendNoteOff(blob_ptr->UID, 0, BS); // sendNoteOff(note, velocity, channel);
           usbMIDI.send_now();
         };

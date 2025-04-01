@@ -152,7 +152,7 @@ void mapping_touchpad_create(const JsonObject &config) {
   touchpad_ptr->common.blob_dispose_func_ptr = &mapping_touchpad_dispose_blob;
 
   touchpad_ptr->common.start_func_ptr = &mapping_touchpad_start;
-  touchpad_ptr->common.play_func_ptr = &mapping_touchpad_play;
+  touchpad_ptr->common.continue_func_ptr = &mapping_touchpad_play;
   touchpad_ptr->common.stop_func_ptr = &mapping_touchpad_stop;
 
   touchpad_ptr->params.touchs = config["touchs"].as<uint8_t>();

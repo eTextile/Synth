@@ -27,7 +27,6 @@ void mapping_lib_update(void) {
       common_t* mapping_ptr = (common_t*)ITERATOR_DATA(mapping_node_ptr);
       
       if (mapping_ptr->is_blob_inside_func_ptr(mapping_ptr, blob_ptr)) {
-
         if (blob_ptr->action.mapping_ptr == NULL) {
           if (mapping_ptr->blob_assign_func_ptr(mapping_ptr, blob_ptr)){
             mapping_ptr->start_func_ptr(blob_ptr);
@@ -37,8 +36,8 @@ void mapping_lib_update(void) {
           if (blob_ptr->status == PRESENT && blob_ptr->last_status == RELEASED) {
             mapping_ptr->start_func_ptr(blob_ptr);
           }
-          else if (blob_ptr->status != RELEASED) {
-            mapping_ptr->play_func_ptr(blob_ptr);
+          else if (blob_ptr->status == PRESENT) {
+            mapping_ptr->continue_func_ptr(blob_ptr); //CONTINUE
           }
           else if (blob_ptr->status == RELEASED && blob_ptr->last_status == MISSING) {
             mapping_ptr->stop_func_ptr(blob_ptr);

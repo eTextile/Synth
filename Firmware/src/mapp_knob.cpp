@@ -102,7 +102,7 @@ void mapping_knob_create(const JsonObject &config) {
   knob_ptr->common.blob_dispose_func_ptr = &mapping_knob_dispose_blob;
   
   knob_ptr->common.start_func_ptr = &mapping_knob_start;
-  knob_ptr->common.play_func_ptr = &mapping_knob_play;
+  knob_ptr->common.continue_func_ptr = &mapping_knob_play;
   knob_ptr->common.stop_func_ptr = &mapping_knob_stop;
   
   knob_ptr->params.touchs = config["touchs"].as<uint8_t>();

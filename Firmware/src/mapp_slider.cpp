@@ -198,7 +198,7 @@ void mapping_slider_create(const JsonObject &config) {
   slider_ptr->common.blob_dispose_func_ptr = &mapping_slider_dispose_blob;
 
   slider_ptr->common.start_func_ptr = &mapping_slider_start;
-  slider_ptr->common.play_func_ptr = &mapping_slider_play;
+  slider_ptr->common.continue_func_ptr = &mapping_slider_play;
   slider_ptr->common.stop_func_ptr = &mapping_slider_stop;
 
   slider_ptr->params.touchs = config["touchs"].as<uint8_t>();

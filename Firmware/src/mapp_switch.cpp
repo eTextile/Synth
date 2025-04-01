@@ -128,7 +128,7 @@ void mapping_switch_create(const JsonObject &config) {
   switch_ptr->common.blob_dispose_func_ptr = &mapping_switch_dispose_blob;
 
   switch_ptr->common.start_func_ptr = &mapping_switch_start;
-  switch_ptr->common.play_func_ptr = &mapping_switch_play;
+  switch_ptr->common.continue_func_ptr = &mapping_switch_play;
   switch_ptr->common.stop_func_ptr = &mapping_switch_stop;
   
   switch_ptr->params.touchs = config["touchs"].as<uint8_t>();
