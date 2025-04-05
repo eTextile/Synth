@@ -75,7 +75,7 @@ void mapping_polygon_start(blob_t* blob_ptr) {
 
 // Use to detect if a blob is inside a polygon
 // We can draw polygons to define zones et/ou zones overlaps playing MIDI_NOTES
-void mapping_polygon_play(blob_t* blob_ptr) {
+void mapping_spolygon_continue(blob_t* blob_ptr) {
   //mapp_polygon_t* polygon_ptr = (mapp_polygon_t*)blob_ptr->action.mapping_ptr;
   //touch_3d_t* touch_ptr = (touch_3d_t*)blob_ptr->action.touch_ptr;
   // TODO: get the max width & max height and scale it to [0-1]
@@ -97,7 +97,7 @@ void mapping_polygon_create(const JsonObject &config) {
   polygon_ptr->common.blob_dispose_func_ptr = &mapping_polygon_dispose_blob;
 
   polygon_ptr->common.start_func_ptr = &mapping_polygon_start;
-  polygon_ptr->common.continue_func_ptr = &mapping_polygon_play;
+  polygon_ptr->common.continue_func_ptr = &mapping_spolygon_continue;
   polygon_ptr->common.stop_func_ptr = &mapping_polygon_stop;
 
   polygon_ptr->params.touchs = config["touchs"].as<uint8_t>();
