@@ -135,7 +135,7 @@ Encoder e256_e(ENCODER_PIN_A, ENCODER_PIN_B);
 
 // The levels below can be selected using E256 built-in right switche
 level_t e256_l[4] = {
-  {{HIGH, HIGH, false}, 2, 50, 15, false}, // [0] THRESHOLD
+  {{HIGH, HIGH, false}, 2, 50, 4, false},  // [0] THRESHOLD
   {{HIGH, LOW, false}, 1, 31, 17, false},  // [1] SIG_IN
   {{LOW, HIGH, false}, 13, 31, 29, false}, // [2] SIG_OUT
   {{LOW, LOW, false}, 2, 60, 3, false}     // [3] LINE_OUT
@@ -229,7 +229,7 @@ bool flash_file(const char *fileName, uint8_t* data_ptr, uint16_t size) {
       usb_midi_send_info((uint8_t)FLASH_FULL, MIDI_ERROR_CHANNEL);
       return false;
     };
-    if (sysEx_data_length < FLASH_SIZE) {
+    if (sysEx_data_length < FLASH_CHIP_SIZE) {
       tmpFile.write(data_ptr, size);
       tmpFile.close();
       SerialFlash.sleep();

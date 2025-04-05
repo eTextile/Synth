@@ -26,7 +26,7 @@
 #define ENCODER_PIN_A 22
 #define ENCODER_PIN_B 9
 #define FLASH_CHIP_SELECT 6
-#define FLASH_SIZE 16777216 // 128 Mb
+#define FLASH_CHIP_SIZE 16777216 // 128 Mb
 #define BAUD_RATE 230400
 #define RAW_COLS 16
 #define RAW_ROWS 16
@@ -39,9 +39,12 @@
 #define NEW_ROWS (RAW_ROWS * SCALE_Y)
 #define NEW_FRAME (NEW_COLS * NEW_ROWS)
 #define SIZEOF_FRAME (NEW_FRAME * sizeof(uint8_t))
-#define BLOB_MIN_PIX 6    // Set the minimum blob pixels
-#define BLOB_MAX_PIX 1024 // Set the minimum blob pixels
-#define LAST_BLOB_DIST 10
+
+#define BLOB_MIN_PIX 6          // Set the minimum blob pixels
+#define BLOB_MAX_PIX 1024       // Set the maximum blob pixels
+#define BLOB_LAST_DIST 4        //
+#define BLOB_MISSING_TIME 10    //
+#define BLOB_TIME_TO_LEAVE 1000 //
 
 #define X_PADDING_LEFT   0
 #define X_PADDING_REIGHT 0

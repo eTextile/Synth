@@ -337,7 +337,7 @@ for (lnode_t* node_ptr = ITERATOR_START_FROM_HEAD(&llist_previous_blobs); node_p
 
 bool is_blob_existing(blob_t* blob_ptr, blob_t* undefined_blob_ptr) {
   float dist = sqrtf(pow(blob_ptr->centroid.x - undefined_blob_ptr->centroid.x, 2) + pow(blob_ptr->centroid.y - undefined_blob_ptr->centroid.y, 2));
-  if (dist < LAST_BLOB_DIST) {
+  if (dist < BLOB_LAST_DIST) {
     return true;
   };
   return false;

@@ -46,7 +46,6 @@ void midi_send_out(midi_msg_t* midi_ptr) {
   llist_push_front(&midi_out, node_ptr);  // Add the node to the midi_out linked list
 };
 
-
 /*
 void midi_handle_input(const Message<128u> &midiMsg) {
   midi_msg_t* node_ptr = (midi_msg_t*)llist_pop_front(&midi_nodes_pool);  // Get a node from the MIDI nodes stack

@@ -15,9 +15,6 @@
 
 #include "llist.h"
 
-#define BLOB_MISSING_TIME 15
-#define BLOB_TIME_TO_LEAVE 2500
-
 extern llist_t llist_blobs; // Blobs linked list
 
 typedef enum blob_params_e {
