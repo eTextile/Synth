@@ -129,7 +129,7 @@ void mapping_slider_start(blob_t* blob_ptr) {
   //Serial.printf("\nSLIDER_START / TOUCH_LAST_MIDI_POS: %d", touch_ptr->last_midi_pos);
 };
 
-void mapping_slider_play(blob_t* blob_ptr) {
+void mapping_slider_continue(blob_t* blob_ptr) {
   mapp_slider_t* slider_ptr = (mapp_slider_t*)blob_ptr->action.mapping_ptr;
   touch_2d_t* touch_ptr = (touch_2d_t*)blob_ptr->action.touch_ptr;
 
@@ -198,7 +198,7 @@ void mapping_slider_create(const JsonObject &config) {
   slider_ptr->common.blob_dispose_func_ptr = &mapping_slider_dispose_blob;
 
   slider_ptr->common.start_func_ptr = &mapping_slider_start;
-  slider_ptr->common.continue_func_ptr = &mapping_slider_play;
+  slider_ptr->common.continue_func_ptr = &mapping_slider_continue;
   slider_ptr->common.stop_func_ptr = &mapping_slider_stop;
 
   slider_ptr->params.touchs = config["touchs"].as<uint8_t>();

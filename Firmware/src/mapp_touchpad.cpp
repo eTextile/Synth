@@ -84,7 +84,7 @@ void mapping_touchpad_start(blob_t* blob_ptr) {
   }
 };
 
-void mapping_touchpad_play(blob_t* blob_ptr) {
+void mapping_touchpad_continue(blob_t* blob_ptr) {
   mapp_touchpad_t* touchpad_ptr = (mapp_touchpad_t*)blob_ptr->action.mapping_ptr;
   touch_3d_t* touch_ptr = (touch_3d_t*)blob_ptr->action.touch_ptr;
 
@@ -152,7 +152,7 @@ void mapping_touchpad_create(const JsonObject &config) {
   touchpad_ptr->common.blob_dispose_func_ptr = &mapping_touchpad_dispose_blob;
 
   touchpad_ptr->common.start_func_ptr = &mapping_touchpad_start;
-  touchpad_ptr->common.continue_func_ptr = &mapping_touchpad_play;
+  touchpad_ptr->common.continue_func_ptr = &mapping_touchpad_continue;
   touchpad_ptr->common.stop_func_ptr = &mapping_touchpad_stop;
 
   touchpad_ptr->params.touchs = config["touchs"].as<uint8_t>();

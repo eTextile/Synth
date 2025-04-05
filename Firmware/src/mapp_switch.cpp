@@ -87,7 +87,7 @@ void mapping_switch_start(blob_t* blob_ptr) {
     }
 };
 
-void mapping_switch_play(blob_t* blob_ptr) {
+void mapping_switch_continue(blob_t* blob_ptr) {
   touch_1d_t* touch_ptr = (touch_1d_t*)blob_ptr->action.touch_ptr;
   switch (touch_ptr->press.midi.type) {
     case NoteOn:
@@ -128,7 +128,7 @@ void mapping_switch_create(const JsonObject &config) {
   switch_ptr->common.blob_dispose_func_ptr = &mapping_switch_dispose_blob;
 
   switch_ptr->common.start_func_ptr = &mapping_switch_start;
-  switch_ptr->common.continue_func_ptr = &mapping_switch_play;
+  switch_ptr->common.continue_func_ptr = &mapping_switch_continue;
   switch_ptr->common.stop_func_ptr = &mapping_switch_stop;
   
   switch_ptr->params.touchs = config["touchs"].as<uint8_t>();

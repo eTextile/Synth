@@ -57,7 +57,7 @@ void mapping_knob_start(blob_t* blob_ptr) {
   // TODO
 };
 
-void mapping_knob_play(blob_t* blob_ptr) {
+void mapping_knob_continue(blob_t* blob_ptr) {
   mapp_knob_t* knob_ptr = (mapp_knob_t*)blob_ptr->action.mapping_ptr;
   knob_touch_t* touch_ptr = (knob_touch_t*)blob_ptr->action.touch_ptr;
   
@@ -102,7 +102,7 @@ void mapping_knob_create(const JsonObject &config) {
   knob_ptr->common.blob_dispose_func_ptr = &mapping_knob_dispose_blob;
   
   knob_ptr->common.start_func_ptr = &mapping_knob_start;
-  knob_ptr->common.continue_func_ptr = &mapping_knob_play;
+  knob_ptr->common.continue_func_ptr = &mapping_knob_continue;
   knob_ptr->common.stop_func_ptr = &mapping_knob_stop;
   
   knob_ptr->params.touchs = config["touchs"].as<uint8_t>();
