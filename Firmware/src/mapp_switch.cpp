@@ -37,7 +37,7 @@ bool mapping_switch_is_blob_inside(common_t* mapping_ptr, blob_t* blob_ptr) {
 
 boolean mapping_switch_assign_blob(common_t* mapping_ptr, blob_t* blob_ptr) {
   mapp_switch_t* switch_ptr = (mapp_switch_t*)mapping_ptr;
-  if (switch_ptr->active_blob_count < switch_ptr->params.touchs) {
+  if (switch_ptr->touch_index < switch_ptr->params.touchs) {
     blob_ptr->action.mapping_ptr = switch_ptr;
     blob_ptr->action.touch_ptr = &switch_ptr->params.touch[switch_ptr->touch_index];
     switch_ptr->touch_index++;

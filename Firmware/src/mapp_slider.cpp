@@ -37,7 +37,7 @@ bool mapping_slider_is_blob_inside(common_t* mapping_ptr, blob_t* blob_ptr) {
 boolean mapping_slider_assign_blob(common_t* mapping_ptr, blob_t* blob_ptr) {
   mapp_slider_t* slider_ptr = (mapp_slider_t*)mapping_ptr;
   
-  if (slider_ptr->active_blob_count < slider_ptr->params.touchs) {
+  if (slider_ptr->touch_index < slider_ptr->params.touchs) {
     Serial.printf("\n_SLIDER_ASSIGN / BLOB_PTR: %p -> SLIDER_PTR: %p", blob_ptr, slider_ptr);
     Serial.printf("\n_SLIDER_ASSIGN / TOUCH_INDEX: %d", slider_ptr->touch_index);
     blob_ptr->action.mapping_ptr = slider_ptr;
