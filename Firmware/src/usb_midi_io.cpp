@@ -34,7 +34,7 @@ void usb_midi_recive(void) {
 };
 
 void usb_midi_pending_mode_timeout() {
-  if (e256_current_mode == PENDING_MODE && millis() - bootTime > PENDING_MODE_TIMEOUT) {
+  //if (e256_current_mode == PENDING_MODE && millis() - bootTime > PENDING_MODE_TIMEOUT) {
     #if defined(USB_MIDI_SERIAL) && defined(DEBUG_CONFIG)
       Serial.printf("\nPENDING_MODE_TIME_OUT");
     #endif
@@ -65,7 +65,7 @@ void usb_midi_pending_mode_timeout() {
         Serial.printf("\nNO_CONFIG_FILE_LOADED");
       #endif
     }
-  }
+  //}
 };
 
 void usb_midi_transmit() {
@@ -117,13 +117,13 @@ void usb_midi_transmit() {
         blob_values[6] = blob_ptr->box.h;
         blob_values[7] = blob_ptr->centroid.z;
 
-        blob_values[8] = blob_ptr->status; // TESTING
-        blob_values[9] = blob_ptr->last_status; // TESTING
+        blob_values[8] = blob_ptr->status;
+        blob_values[9] = blob_ptr->last_status;
 
         usbMIDI.sendSysEx(10, blob_values, false);
         //usbMIDI.send_now();
+        while (usbMIDI.read()); // Read and discard any incoming MIDI messages
       };
-      while (usbMIDI.read()); // Read and discard any incoming MIDI messages
       break;
 
     case PLAY_MODE:
@@ -142,38 +142,55 @@ void usb_midi_send_info(uint8_t msg, uint8_t channel) {
 
 void usb_read_noteOn(uint8_t channel, uint8_t note, uint8_t velocity) {
   midi_msg_t* midi_ptr = (midi_msg_t*)llist_pop_front(&midi_nodes_pool);
-  midi_ptr->type = NoteOn;
-  midi_ptr->data1 = note;
-  midi_ptr->data2 = velocity;
-  midi_ptr->channel = channel;
-  switch (e256_current_mode) {
-    case EDIT_MODE:
-      llist_push_front(&midi_in, midi_ptr);  // Add the node to the midi_in linked list
-      break;
-    case PLAY_MODE:
-      llist_push_front(&midi_out, midi_ptr); // Add the node to the midi_out linked list
-      break;
-    default:
-      break;
-  };
+
+  if (midi_ptr) {
+    midi_ptr->type = NoteOn;
+    midi_ptr->data1 = note;
+    midi_ptr->data2 = velocity;
+    midi_ptr->channel = channel;
+    switch (e256_current_mode) {
+      case EDIT_MODE:
+        llist_push_front(&midi_in, midi_ptr);  // Add the node to the midi_in linked list
+        break;
+      case PLAY_MODE:
+        llist_push_front(&midi_out, midi_ptr); // Add the node to the midi_out linked list
+        break;
+      default:
+        break;
+    };
+  }
+  else {
+    #if defined(USB_MIDI_SERIAL)
+      Serial.printf("\nNo more nodes left in the : midi_nodes_pool");
+    #endif
+    set_mode(ERROR_MODE);
+  }
 };
 
 void usb_read_noteOff(uint8_t channel, uint8_t note, uint8_t velocity) {
   midi_msg_t* midi_ptr = (midi_msg_t*)llist_pop_front(&midi_nodes_pool);
-  midi_ptr->type = NoteOff;
-  midi_ptr->data1 = note;
-  midi_ptr->data2 = velocity;
-  midi_ptr->channel = channel;
-  switch (e256_current_mode) {
-    case EDIT_MODE:
-      llist_push_front(&midi_in, midi_ptr);  // Add the node to the midi_in linked list
-      break;
-    case PLAY_MODE:
-      llist_push_front(&midi_out, midi_ptr); // Add the node to the midi_out linked list
-      break;
-    default:
-      break;
-  };
+  if (midi_ptr) {
+    midi_ptr->type = NoteOff;
+    midi_ptr->data1 = note;
+    midi_ptr->data2 = velocity;
+    midi_ptr->channel = channel;
+    switch (e256_current_mode) {
+      case EDIT_MODE:
+        llist_push_front(&midi_in, midi_ptr);  // Add the node to the midi_in linked list
+        break;
+      case PLAY_MODE:
+        llist_push_front(&midi_out, midi_ptr); // Add the node to the midi_out linked list
+        break;
+      default:
+        break;
+    }
+  }
+  else {
+    #if defined(USB_MIDI_SERIAL)
+      Serial.printf("\nNo more nodes left in the : midi_nodes_pool");
+    #endif
+    set_mode(ERROR_MODE);
+  }
 };
 
 // Used by USB_MIDI
@@ -184,7 +201,9 @@ void usb_read_controlChange(uint8_t channel, uint8_t control, uint8_t value) {
       set_level((level_code_t)control, value);
       break;
     default:
-    midi_msg_t* midi_ptr = (midi_msg_t*)llist_pop_front(&midi_nodes_pool);  // Get a node from the MIDI nodes stack
+    midi_msg_t* midi_ptr = (midi_msg_t*)llist_pop_front(&midi_nodes_pool);
+
+    if (midi_ptr) {
       midi_ptr->type = ControlChange; // Set the MIDI type
       midi_ptr->data1 = control;      // Set the MIDI note
       midi_ptr->data2 = value;        // Set the MIDI velocity
@@ -200,7 +219,14 @@ void usb_read_controlChange(uint8_t channel, uint8_t control, uint8_t value) {
           break;
       }
       break;
-  };
+    }
+    else {
+      #if defined(USB_MIDI_SERIAL)
+        Serial.printf("\nNo more nodes left in the : midi_nodes_pool");
+      #endif
+      set_mode(ERROR_MODE);
+    }
+  }
 };
 
 void usb_read_programChange(uint8_t channel, uint8_t program) {

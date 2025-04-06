@@ -35,11 +35,16 @@ bool mapping_touchpad_is_blob_inside(common_t* mapping_ptr, blob_t* blob_ptr) {
 
 boolean mapping_touchpad_assign_blob(common_t* mapping_ptr, blob_t* blob_ptr) {
   mapp_touchpad_t* touchpad_ptr = (mapp_touchpad_t*)mapping_ptr;
-  if (touchpad_ptr->active_blob_count < touchpad_ptr->params.touchs) {
+
+  if (touchpad_ptr->touch_index < touchpad_ptr->params.touchs) {
+    //Serial.printf("\n_TOUCHPAD_ASSIGN / BLOB_PTR: %p -> TOUCHPAD_PTR: %p", blob_ptr, touchpad_ptr);
+    //Serial.printf("\n_TOUCHPAD_MAX_TOUCHS: %d", touchpad_ptr->params.touchs);
+    //Serial.printf("\n_TOUCHPAD_ASSIGN / TOUCH_INDEX: %d", touchpad_ptr->touch_index);
     blob_ptr->action.mapping_ptr = touchpad_ptr;
-    blob_ptr->action.touch_ptr = &touchpad_ptr->params.touch[touchpad_ptr->touch_index++];
+    blob_ptr->action.touch_ptr = &touchpad_ptr->params.touch[touchpad_ptr->touch_index];
+    touchpad_ptr->touch_index++;
     touchpad_ptr->active_blob_count++;
-    //Serial.printf("\nTOUCHPAD_BLOB_COUNT_ASSIGN:%d", touchpad_ptr->active_blob_count);
+    //Serial.printf("\n_TOUCHPAD_ASSIGN / ACTIVE_BLOB_COUNT: %d",touchpad_ptr->active_blob_count);
     return true;
   }
   return false;
@@ -47,17 +52,24 @@ boolean mapping_touchpad_assign_blob(common_t* mapping_ptr, blob_t* blob_ptr) {
 
 void mapping_touchpad_dispose_blob(common_t* mapping_ptr, blob_t* blob_ptr) {
   mapp_touchpad_t* touchpad_ptr = (mapp_touchpad_t*)mapping_ptr;
+
+  //Serial.printf("\n_TOUCHPAD_DISPOSE / BLOB_PTR: %p -> TOUCHPAD_PTR: %p", blob_ptr, mapping_ptr);
+  
   blob_ptr->action.mapping_ptr = NULL;
   blob_ptr->action.touch_ptr = NULL;
-  if (--touchpad_ptr->active_blob_count == 0) {
+  touchpad_ptr->active_blob_count--;
+  if (touchpad_ptr->active_blob_count == 0) {
     touchpad_ptr->touch_index = 0;
-    //Serial.printf("\nTOUCHPAD_BLOB_COUNT_DISPOSE:%d", touchpad_ptr->active_blob_count);
   }
+  //Serial.printf("\n_TOUCHPAD_DISPOSE / TOUCH_INDEX: %d", touchpad_ptr->touch_index);
+  //Serial.printf("\n_TOUCHPAD_DISPOSE / ACTIVE_BLOB_COUNT: %d", touchpad_ptr->active_blob_count);
 };
 
 void mapping_touchpad_start(blob_t* blob_ptr) {
   touch_3d_t* touch_ptr = (touch_3d_t*)blob_ptr->action.touch_ptr;
 
+  //Serial.printf("\n_TOUCHPAD_START");
+  touch_ptr->last_midi_press = touch_ptr->press.midi.data2;
   switch (touch_ptr->press.midi.type) {
     case NoteOn:
       touch_ptr->press.midi.type = NoteOn;
@@ -65,15 +77,13 @@ void mapping_touchpad_start(blob_t* blob_ptr) {
       midi_send_out(&touch_ptr->press.midi);
       break;
     case ControlChange:
-      if (blob_ptr->centroid.z != blob_ptr->last_centroid.z) {
-        touch_ptr->press.midi.data2 = map(
-          blob_ptr->centroid.z,
-          Z_MIN,
-          Z_MAX,
-          touch_ptr->press.limit.min,
-          touch_ptr->press.limit.max);
+      touch_ptr->press.midi.data2 = map(
+        blob_ptr->centroid.z,
+        Z_MIN,
+        Z_MAX,
+        touch_ptr->press.limit.min,
+        touch_ptr->press.limit.max);
         midi_send_out(&touch_ptr->press.midi);
-      };
       break;
     case AfterTouchPoly:
       // Same as CC
@@ -116,8 +126,6 @@ void mapping_touchpad_continue(blob_t* blob_ptr) {
     case NoteOn:
       // NA
       break;
-    case AfterTouchPoly:
-      break;
     case ControlChange:
       touch_ptr->last_midi_press = touch_ptr->press.midi.data2;
       touch_ptr->press.midi.data2 = map(
@@ -130,6 +138,8 @@ void mapping_touchpad_continue(blob_t* blob_ptr) {
         midi_send_out(&touch_ptr->press.midi);
       }
       break;
+    case AfterTouchPoly:
+      break;
     default:
       // Not handled in mapp_toucpad
       break;
@@ -138,9 +148,10 @@ void mapping_touchpad_continue(blob_t* blob_ptr) {
 
 void mapping_touchpad_stop(blob_t* blob_ptr) {
   touch_3d_t* touch_ptr = (touch_3d_t*)blob_ptr->action.touch_ptr;
-  touch_ptr->press.midi.type = NoteOff;
+
+  //Serial.printf("\n_TOUCHPAD_STOP");
+  //touch_ptr->press.midi.type = NoteOff;
   touch_ptr->press.midi.data2 = 0;
-  //llist_push_back(&midi_out, &touch_ptr->press.midi);
   midi_send_out(&touch_ptr->press.midi);
 };
 

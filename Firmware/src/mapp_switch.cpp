@@ -42,10 +42,10 @@ boolean mapping_switch_assign_blob(common_t* mapping_ptr, blob_t* blob_ptr) {
     blob_ptr->action.touch_ptr = &switch_ptr->params.touch[switch_ptr->touch_index];
     switch_ptr->touch_index++;
     switch_ptr->active_blob_count++;
+    Serial.printf("\nSWITCH_ASSIGN / BLOB_COUNT: %d", switch_ptr->active_blob_count);
     return true;
   }
   return false;
-  Serial.printf("\nSWITCH_ASSIGN / BLOB_COUNT: %d", switch_ptr->active_blob_count);
 };
 
 void mapping_switch_dispose_blob(common_t* mapping_ptr, blob_t* blob_ptr) {

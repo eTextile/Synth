@@ -23,7 +23,7 @@ void llist_setup(void) {
   llist_raz(&llist_nodes_pool);
   for (uint16_t i = 0; i < LLIST_NODES_POOL; i++) {
     llist_push_node_front(&llist_nodes_pool, &llist_nodes_array[i]);
-  };
+  }
 };
 
 static lnode_t* llist_alloc_node(void) {
@@ -32,15 +32,17 @@ static lnode_t* llist_alloc_node(void) {
     node_ptr->data_ptr = NULL;
     return node_ptr;
   }
-  /* TODO: handle error > no more nodes left in the pool */
-  Serial.println("no more nodes left in the pool");
+  #if defined(USB_MIDI_SERIAL)
+    Serial.println("no more nodes left in the pool!");
+  #endif
+  set_mode(ERROR_MODE);
   return NULL;
-}
+};
 
 static void llist_free_node(lnode_t* node_ptr) {
   node_ptr->data_ptr = NULL;
   llist_push_node_front(&llist_nodes_pool, node_ptr);
-}
+};
 
 void llist_builder(llist_t* llist_ptr, void* nodes_array_ptr, const int item_count, const int item_size) {
   uint8_t* item_ptr = (uint8_t*)nodes_array_ptr;
@@ -48,7 +50,7 @@ void llist_builder(llist_t* llist_ptr, void* nodes_array_ptr, const int item_cou
   for (uint16_t i = 0; i < item_count; i++) {
     llist_push_front(llist_ptr, item_ptr);
     item_ptr += item_size;
-  };
+  }
 };
 
 static lnode_t* llist_pop_node_front(llist_t* llist_ptr) {
@@ -64,7 +66,7 @@ static lnode_t* llist_pop_node_front(llist_t* llist_ptr) {
   }
   else {
     return NULL;
-  };
+  }
 };
 
 static void llist_push_node_front(llist_t* llist_ptr, lnode_t* node_ptr) {
@@ -75,7 +77,7 @@ static void llist_push_node_front(llist_t* llist_ptr, lnode_t* node_ptr) {
   else {
     node_ptr->next_ptr = NULL;
     llist_ptr->head_ptr = llist_ptr->tail_ptr = node_ptr;
-  };
+  }
 };
 
 static void llist_push_node_back(llist_t* llist_ptr, lnode_t* node_ptr) {
@@ -86,7 +88,7 @@ static void llist_push_node_back(llist_t* llist_ptr, lnode_t* node_ptr) {
   }
   else {
     llist_ptr->head_ptr = llist_ptr->tail_ptr = node_ptr;
-  };
+  }
 };
 
 void* llist_pop_front(llist_t* llist_ptr) {
@@ -98,7 +100,7 @@ void* llist_pop_front(llist_t* llist_ptr) {
   }
   else {
     return NULL;
-  };
+  }
 };
 
 void llist_push_front(llist_t* llist_ptr, void* data_ptr) {
@@ -106,7 +108,7 @@ void llist_push_front(llist_t* llist_ptr, void* data_ptr) {
   if (node_ptr) {
     node_ptr->data_ptr = data_ptr;
     llist_push_node_front(llist_ptr, node_ptr);
-  };
+  }
 };
 
 void llist_push_back(llist_t* llist_ptr, void* data_ptr) {
@@ -114,7 +116,7 @@ void llist_push_back(llist_t* llist_ptr, void* data_ptr) {
   if (node_ptr) {
     node_ptr->data_ptr = data_ptr;
     llist_push_node_back(llist_ptr, node_ptr);
-  };
+  }
 };
 
 void llist_swap_llist(llist_t* llistA_ptr, llist_t* llistB_ptr) {
@@ -125,7 +127,7 @@ void llist_swap_llist(llist_t* llistA_ptr, llist_t* llistB_ptr) {
     llistA_ptr->tail_ptr = llistB_ptr->tail_ptr;
     llistB_ptr->head_ptr = tmp_head_ptr;
     llistB_ptr->tail_ptr = tmp_tail_ptr;
-  };
+  }
 };
 
 void llist_concat_nodes(llist_t* dst_ptr, llist_t* src_ptr) {
@@ -139,8 +141,8 @@ void llist_concat_nodes(llist_t* dst_ptr, llist_t* src_ptr) {
       dst_ptr->head_ptr = src_ptr->head_ptr;
       dst_ptr->tail_ptr = src_ptr->tail_ptr;
       src_ptr->tail_ptr = src_ptr->head_ptr = NULL;
-    };
-  };
+    }
+  }
 };
 
 void* llist_find_node(llist_t* llist_ptr, void* data_ptr, llist_compare_func_t* func_ptr) {

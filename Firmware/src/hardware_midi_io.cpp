@@ -38,15 +38,23 @@ void hardware_midi_handle_input(const Message<128u> &midiMsg) {
   // midiMsg struct is C++
   // Can it be refact for zero-copy ?
   midi_msg_t* midi_ptr = (midi_msg_t*)llist_pop_front(&midi_nodes_pool);  // Get a node from the MIDI nodes stack  
-  midi_ptr->type = midiMsg.type;       // Set the MIDI type
-  midi_ptr->data1 = midiMsg.data1;     // Set the MIDI note
-  midi_ptr->data2 = midiMsg.data2;     // Set the MIDI velocity
-  midi_ptr->channel = midiMsg.channel; // Set the MIDI channel
-  #if defined(MIDI_THRU)
-    llist_push_front(&midi_out, midi_ptr);  // Add the node to the midi_out linked list
-  #else
-    llist_push_front(&midi_in, midi_ptr);   // Add the node to the midi_in linked list
-  #endif
+  if (midi_ptr) {
+    midi_ptr->type = midiMsg.type;       // Set the MIDI type
+    midi_ptr->data1 = midiMsg.data1;     // Set the MIDI note
+    midi_ptr->data2 = midiMsg.data2;     // Set the MIDI velocity
+    midi_ptr->channel = midiMsg.channel; // Set the MIDI channel
+    #if defined(MIDI_THRU)
+      llist_push_front(&midi_out, midi_ptr);
+    #else
+      llist_push_front(&midi_in, midi_ptr);
+    #endif
+  }
+  else {
+    #if defined(USB_MIDI_SERIAL)
+      Serial.printf("\nNo more nodes left in the : midi_nodes_pool");
+    #endif
+    set_mode(ERROR_MODE);
+  }
 };
 
 void hardware_midi_transmit(void) {

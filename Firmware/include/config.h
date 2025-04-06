@@ -14,7 +14,7 @@
 
 #define PROJECT "ETEXTILE-SYNTHESIZER"
 #define NAME "256"
-#define VERSION "1.0.22"
+#define VERSION "1.0.23"
 #define SENSOR_UID 1 // Unique sensor ID
 #define FLASH_BUFFER_SIZE 4096
 
@@ -42,9 +42,9 @@
 
 #define BLOB_MIN_PIX 6          // Set the minimum blob pixels
 #define BLOB_MAX_PIX 1024       // Set the maximum blob pixels
-#define BLOB_LAST_DIST 4        //
-#define BLOB_MISSING_TIME 10    //
-#define BLOB_TIME_TO_LEAVE 1000 //
+#define BLOB_LAST_DIST 5        // TESTING
+#define BLOB_MISSING_TIME 10    // TESTING
+#define BLOB_TIME_TO_LEAVE 200  // TESTING
 
 #define X_PADDING_LEFT   0
 #define X_PADDING_REIGHT 0

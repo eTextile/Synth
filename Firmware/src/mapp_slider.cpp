@@ -38,22 +38,22 @@ boolean mapping_slider_assign_blob(common_t* mapping_ptr, blob_t* blob_ptr) {
   mapp_slider_t* slider_ptr = (mapp_slider_t*)mapping_ptr;
   
   if (slider_ptr->active_blob_count < slider_ptr->params.touchs) {
-    //Serial.printf("\n_SLIDER_ASSIGN / TOUCH_INDEX: %d", slider_ptr->touch_index);
-    //Serial.printf("\n_SLIDER_ASSIGN / BLOB_PTR: %p -> SLIDER_PTR: %p", blob_ptr, slider_ptr);
+    Serial.printf("\n_SLIDER_ASSIGN / BLOB_PTR: %p -> SLIDER_PTR: %p", blob_ptr, slider_ptr);
+    Serial.printf("\n_SLIDER_ASSIGN / TOUCH_INDEX: %d", slider_ptr->touch_index);
     blob_ptr->action.mapping_ptr = slider_ptr;
     blob_ptr->action.touch_ptr = &slider_ptr->params.touch[slider_ptr->touch_index];
     slider_ptr->touch_index++;
     slider_ptr->active_blob_count++;
+    Serial.printf("\n_SLIDER_ASSIGN / ACTIVE_BLOB_COUNT: %d\tSLIDER_TOUCHS: %d",slider_ptr->active_blob_count, slider_ptr->params.touchs);
     return true;
   }
   return false;
-  //Serial.printf("\n_SLIDER_ASSIGN / ACTIVE_BLOB_COUNT: %d\tSLIDER_TOUCHS: %d",slider_ptr->active_blob_count, slider_ptr->params.touchs);
 };
 
 void mapping_slider_dispose_blob(common_t* mapping_ptr, blob_t* blob_ptr) {
   mapp_slider_t* slider_ptr = (mapp_slider_t*)mapping_ptr;
 
-  //Serial.printf("\nSLIDER_DISPOSE / BLOB_DISPOSE_MAPPING / BLOB: %p x MAPPING: %p", blob_ptr, mapping_ptr);
+  Serial.printf("\nSLIDER_DISPOSE / BLOB_DISPOSE_MAPPING / BLOB: %p x MAPPING: %p", blob_ptr, mapping_ptr);
 
   blob_ptr->action.mapping_ptr = NULL;
   blob_ptr->action.touch_ptr = NULL;
@@ -62,8 +62,8 @@ void mapping_slider_dispose_blob(common_t* mapping_ptr, blob_t* blob_ptr) {
     slider_ptr->touch_index = 0;
   }
 
-  //Serial.printf("\nSLIDER_DISPOSE / TOUCH_INDEX: %d", slider_ptr->touch_index);
-  //Serial.printf("\nSLIDER_DISPOSE / ACTIVE_BLOB_COUNT: %d", slider_ptr->active_blob_count);
+  //Serial.printf("\n_SLIDER_DISPOSE / TOUCH_INDEX: %d", slider_ptr->touch_index);
+  //Serial.printf("\n_SLIDER_DISPOSE / ACTIVE_BLOB_COUNT: %d", slider_ptr->active_blob_count);
 };
 
 void mapping_slider_start(blob_t* blob_ptr) {
@@ -72,14 +72,13 @@ void mapping_slider_start(blob_t* blob_ptr) {
 
   //Serial.printf("\nSLIDER_START");
 
+  touch_ptr->last_midi_press = touch_ptr->press.midi.data2;
   switch (touch_ptr->press.midi.type) {
     case NoteOn:
-      touch_ptr->last_midi_press = touch_ptr->pos.midi.data2;
       touch_ptr->press.midi.data2 = blob_ptr->centroid.z;
       midi_send_out(&touch_ptr->press.midi);
       break;
     case ControlChange:
-      touch_ptr->last_midi_press = touch_ptr->pos.midi.data2;
       touch_ptr->press.midi.data2 = map(
         blob_ptr->centroid.z,
         Z_MIN,
@@ -87,7 +86,7 @@ void mapping_slider_start(blob_t* blob_ptr) {
         touch_ptr->press.limit.min,
         touch_ptr->press.limit.max
       );
-        midi_send_out(&touch_ptr->press.midi);
+      midi_send_out(&touch_ptr->press.midi);
       break;
     case AfterTouchPoly:
       // Same as CC
@@ -97,9 +96,9 @@ void mapping_slider_start(blob_t* blob_ptr) {
       break;
   }
 
+  touch_ptr->last_midi_pos = touch_ptr->pos.midi.data2;
   switch (slider_ptr->params.dir) {
     case HORIZONTAL:
-      touch_ptr->last_midi_pos = touch_ptr->pos.midi.data2;
       touch_ptr->pos.midi.data2 = round(map(
         blob_ptr->centroid.x,
         slider_ptr->params.rect.from.x,
@@ -107,9 +106,6 @@ void mapping_slider_start(blob_t* blob_ptr) {
         touch_ptr->pos.limit.min,
         touch_ptr->pos.limit.max)
       );
-      if (touch_ptr->pos.midi.data2 != touch_ptr->last_midi_pos) {
-        midi_send_out(&touch_ptr->pos.midi);
-      }
       break;
     case VERTICAL:
       touch_ptr->last_midi_pos = touch_ptr->pos.midi.data2;
@@ -120,11 +116,11 @@ void mapping_slider_start(blob_t* blob_ptr) {
         touch_ptr->pos.limit.min,
         touch_ptr->pos.limit.max)
       );
-      if (touch_ptr->pos.midi.data2 != touch_ptr->last_midi_pos) {
-        midi_send_out(&touch_ptr->pos.midi);
-      }
       break;
-  };
+  }
+  if (touch_ptr->pos.midi.data2 != touch_ptr->last_midi_pos) {
+    midi_send_out(&touch_ptr->pos.midi);
+  }
   //Serial.printf("\nSLIDER_START / TOUCH_LAST_MIDI_PRESS: %d", touch_ptr->last_midi_press);
   //Serial.printf("\nSLIDER_START / TOUCH_LAST_MIDI_POS: %d", touch_ptr->last_midi_pos);
 };
@@ -191,6 +187,7 @@ void mapping_slider_stop(blob_t* blob_ptr) {
 };
 
 void mapping_slider_create(const JsonObject &config) {
+  
   mapp_slider_t* slider_ptr = (mapp_slider_t*)llist_pop_front(&llist_sliders_pool);
 
   slider_ptr->common.is_blob_inside_func_ptr = &mapping_slider_is_blob_inside;
