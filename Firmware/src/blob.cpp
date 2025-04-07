@@ -253,8 +253,8 @@ void matrix_find_blobs(void) {
           }
           else {
             undefined_blob_ptr->UID = set_id();
-            undefined_blob_ptr->last_status = MISSING;
             undefined_blob_ptr->status = PRESENT;
+            undefined_blob_ptr->last_status = RELEASED;
             undefined_blob_ptr->action.touch_ptr = NULL;
             undefined_blob_ptr->action.mapping_ptr = NULL;
 
@@ -341,4 +341,14 @@ bool is_blob_existing(blob_t* blob_ptr, blob_t* undefined_blob_ptr) {
     return true;
   };
   return false;
+};
+
+const char* get_blob_status_name(status_code_t code) {
+  const char* char_code = NULL;
+  switch (code) {
+    case PRESENT: char_code = "PRESENT"; break;
+    case MISSING: char_code = "MISSING"; break;
+    case RELEASED: char_code = "RELEASED"; break;
+  }
+  return char_code;
 };
