@@ -130,5 +130,6 @@ void blob_setup(void);
 void matrix_find_blobs(void);
 
 bool is_blob_existing(blob_t* blob_ptr, blob_t* new_blob_ptr);
+const char* get_blob_status_name(status_code_t code);
 
 #endif /*__BLOB_H__*/

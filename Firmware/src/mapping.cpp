@@ -8,16 +8,6 @@
 
 llist_t llist_mappings;
 
-const char* get_status_name(status_code_t code) {
-  const char* char_code = NULL;
-  switch (code) {
-    case PRESENT: char_code = "PRESENT"; break;
-    case MISSING: char_code = "MISSING"; break;
-    case RELEASED: char_code = "RELEASED"; break;
-  }
-  return char_code;
-};
-
 void mapping_lib_update(void) {
 
   for (lnode_t* blob_node_ptr = ITERATOR_START_FROM_HEAD(&llist_blobs); blob_node_ptr != NULL; blob_node_ptr = ITERATOR_NEXT(blob_node_ptr)) {
