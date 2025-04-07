@@ -11,7 +11,7 @@ struct slider_s {
   touch_2d_t touch[MAX_SLIDER_TOUCHS];
 };
 
-void mapping_sliders_alloc(uint8_t sliders_cnt);
+bool mapping_sliders_alloc(uint8_t sliders_cnt);
 void mapping_slider_create(const JsonObject &config);
 
 #endif /*__MAPPING_SLIDER_H__*/

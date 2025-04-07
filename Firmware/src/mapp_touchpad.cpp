@@ -18,8 +18,12 @@ static mapp_touchpad_t mapp_touchpads[MAX_TOUCHPADS];
 
 llist_t llist_touchpads_pool;
 
-void mapping_touchpads_alloc(uint8_t touchpads_cnt) {
-  llist_builder(&llist_touchpads_pool, &mapp_touchpads[0], touchpads_cnt, sizeof(mapp_touchpads[0]));
+bool mapping_touchpads_alloc(uint8_t touchpads_cnt) {
+  if (touchpads_cnt < MAX_TOUCHPADS) {
+    llist_builder(&llist_touchpads_pool, &mapp_touchpads[0], touchpads_cnt, sizeof(mapp_touchpads[0]));
+    return true;
+  }
+  return false;
 };
 
 bool mapping_touchpad_is_blob_inside(common_t* mapping_ptr, blob_t* blob_ptr) {
@@ -33,7 +37,7 @@ bool mapping_touchpad_is_blob_inside(common_t* mapping_ptr, blob_t* blob_ptr) {
   return false;
 };
 
-boolean mapping_touchpad_assign_blob(common_t* mapping_ptr, blob_t* blob_ptr) {
+bool mapping_touchpad_assign_blob(common_t* mapping_ptr, blob_t* blob_ptr) {
   mapp_touchpad_t* touchpad_ptr = (mapp_touchpad_t*)mapping_ptr;
 
   if (touchpad_ptr->touch_index < touchpad_ptr->params.touchs) {
@@ -148,8 +152,6 @@ void mapping_touchpad_continue(blob_t* blob_ptr) {
 
 void mapping_touchpad_stop(blob_t* blob_ptr) {
   touch_3d_t* touch_ptr = (touch_3d_t*)blob_ptr->action.touch_ptr;
-
-  //Serial.printf("\n_TOUCHPAD_STOP");
   //touch_ptr->press.midi.type = NoteOff;
   touch_ptr->press.midi.data2 = 0;
   midi_send_out(&touch_ptr->press.midi);

@@ -18,8 +18,12 @@ static mapp_slider_t mapp_sliders[MAX_SLIDERS];
 
 llist_t llist_sliders_pool;
 
-void mapping_sliders_alloc(uint8_t sliders_cnt) {
-  llist_builder(&llist_sliders_pool, &mapp_sliders[0], sliders_cnt, sizeof(mapp_sliders[0]));
+bool mapping_sliders_alloc(uint8_t sliders_cnt) {
+  if (sliders_cnt < MAX_SLIDERS) {
+    llist_builder(&llist_sliders_pool, &mapp_sliders[0], sliders_cnt, sizeof(mapp_sliders[0]));
+    return true;
+  }
+  return false;
 };
 
 bool mapping_slider_is_blob_inside(common_t* mapping_ptr, blob_t* blob_ptr) {
@@ -34,7 +38,7 @@ bool mapping_slider_is_blob_inside(common_t* mapping_ptr, blob_t* blob_ptr) {
   return false;
 };
 
-boolean mapping_slider_assign_blob(common_t* mapping_ptr, blob_t* blob_ptr) {
+bool mapping_slider_assign_blob(common_t* mapping_ptr, blob_t* blob_ptr) {
   mapp_slider_t* slider_ptr = (mapp_slider_t*)mapping_ptr;
   
   if (slider_ptr->touch_index < slider_ptr->params.touchs) {

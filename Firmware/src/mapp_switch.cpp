@@ -19,8 +19,12 @@ static mapp_switch_t mapp_switches[MAX_SWITCHS];
 
 llist_t llist_switch_pool;
 
-void mapping_switchs_alloc(uint8_t switchs_cnt) {
-  llist_builder(&llist_switch_pool, &mapp_switches[0], switchs_cnt, sizeof(mapp_switches[0]));
+bool mapping_switchs_alloc(uint8_t switchs_cnt) {
+  if (switchs_cnt < MAX_SWITCHS) {
+    llist_builder(&llist_switch_pool, &mapp_switches[0], switchs_cnt, sizeof(mapp_switches[0]));
+    return true;
+  }
+  return false;
 };
 
 // Test if the blob is within the key limit
@@ -35,7 +39,7 @@ bool mapping_switch_is_blob_inside(common_t* mapping_ptr, blob_t* blob_ptr) {
   return false;
 };
 
-boolean mapping_switch_assign_blob(common_t* mapping_ptr, blob_t* blob_ptr) {
+bool mapping_switch_assign_blob(common_t* mapping_ptr, blob_t* blob_ptr) {
   mapp_switch_t* switch_ptr = (mapp_switch_t*)mapping_ptr;
   if (switch_ptr->touch_index < switch_ptr->params.touchs) {
     blob_ptr->action.mapping_ptr = switch_ptr;

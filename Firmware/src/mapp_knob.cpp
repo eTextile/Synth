@@ -18,8 +18,12 @@ static mapp_knob_t mapp_knobs[MAX_KNOBS];
 
 llist_t llist_knobs_pool;
 
-void mapping_knobs_alloc(uint8_t knobs_cnt) {
-  llist_builder(&llist_knobs_pool, &mapp_knobs[0], knobs_cnt, sizeof(mapp_knobs[0]));
+bool mapping_knobs_alloc(uint8_t knobs_cnt) {
+  if (knobs_cnt < MAX_KNOBS) {
+    llist_builder(&llist_knobs_pool, &mapp_knobs[0], knobs_cnt, sizeof(mapp_knobs[0]));
+    return true;
+  }
+  return false;
 };
 
 bool mapping_knob_is_blob_inside(common_t* mapping_ptr, blob_t* blob_ptr) {
@@ -33,7 +37,7 @@ bool mapping_knob_is_blob_inside(common_t* mapping_ptr, blob_t* blob_ptr) {
   return false;
 };
 
-boolean mapping_knob_assign_blob(common_t* mapping_ptr, blob_t* blob_ptr) {
+bool mapping_knob_assign_blob(common_t* mapping_ptr, blob_t* blob_ptr) {
   mapp_knob_t* knob_ptr = (mapp_knob_t*)mapping_ptr;
   if (knob_ptr->touch_index < knob_ptr->params.touchs) {
     blob_ptr->action.mapping_ptr = knob_ptr;

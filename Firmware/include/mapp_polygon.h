@@ -14,7 +14,7 @@ struct polygon_s {
   touch_3d_t touch[MAX_POLYGON_TOUCHS];
 };
 
-void mapping_polygons_alloc(uint8_t polygons_cnt);
+bool mapping_polygons_alloc(uint8_t polygons_cnt);
 void mapping_polygon_create(const JsonObject &config);
 
 #endif /*__MAPPING_POLYGON_H__*/

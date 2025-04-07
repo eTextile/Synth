@@ -23,7 +23,7 @@ struct knob_s {
   knob_touch_t touch[MAX_KNOB_TOUCHS];
 };
 
-void mapping_knobs_alloc(uint8_t knobs_cnt);
+bool mapping_knobs_alloc(uint8_t knobs_cnt);
 void mapping_knob_create(const JsonObject &config);
 
 #endif /*__MAPPING_KNOB_H__*/

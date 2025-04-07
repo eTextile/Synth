@@ -10,7 +10,7 @@ struct switch_s {
   touch_1d_t touch[MAX_SWITCH_TOUCHS];
 };
 
-void mapping_switchs_alloc(uint8_t switchs_cnt);
+bool mapping_switchs_alloc(uint8_t switchs_cnt);
 void mapping_switch_create(const JsonObject &config);
 
 #endif /*__MAPPING_SWITCH_H__*/

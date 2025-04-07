@@ -122,11 +122,7 @@ void usb_midi_transmit() {
 
         usbMIDI.sendSysEx(10, blob_values, false);
         usbMIDI.send_now();
-
-        #if defined(USB_MIDI_SERIAL)
-           Serial.printf("\nBLOB_STATUS: %s BLOB_LAST_STATUS: %s", get_blob_status_name(blob_ptr->status), get_blob_status_name(blob_ptr->last_status));
-        #endif
-        
+        //Serial.printf("\nBLOB_STATUS: %s BLOB_LAST_STATUS: %s", get_blob_status_name(blob_ptr->status), get_blob_status_name(blob_ptr->last_status));
       };
       while (usbMIDI.read()); // Read and discard any incoming MIDI messages
 

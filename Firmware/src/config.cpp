@@ -380,11 +380,13 @@ bool config_load_mappings_switchs(const JsonArray &config) {
     return false;
   };
   uint8_t n = config.size();
-  mapping_switchs_alloc(n);
-  for (uint8_t i = 0; i < n; i++) {
-    mapping_switch_create(config[i]);
-  };
-  return true;
+  if (mapping_switchs_alloc(n)) {
+    for (uint8_t i = 0; i < n; i++) {
+      mapping_switch_create(config[i]);
+    }
+    return true;
+  }
+  return false;
 };
 
 bool config_load_mappings_sliders(const JsonArray& config) {
@@ -392,11 +394,13 @@ bool config_load_mappings_sliders(const JsonArray& config) {
     return false;
   };
   uint8_t n = config.size();
-  mapping_sliders_alloc(n);
-  for (uint8_t i = 0; i < n; i++) {
-    mapping_slider_create(config[i]);
-  };
-  return true;
+  if (mapping_sliders_alloc(n)) {
+    for (uint8_t i = 0; i < n; i++) {
+      mapping_slider_create(config[i]);
+    };
+    return true;
+  }
+  return false;
 };
 
 bool config_load_mappings_knobs(const JsonArray& config) {
@@ -404,11 +408,13 @@ bool config_load_mappings_knobs(const JsonArray& config) {
     return false;
   };
   uint8_t n = config.size();
-  mapping_knobs_alloc(n);
-  for (uint8_t i = 0; i < n; i++) {
-    mapping_knob_create(config[i]);
-  };
-  return true;
+  if (mapping_knobs_alloc(n)) {
+    for (uint8_t i = 0; i < n; i++) {
+      mapping_knob_create(config[i]);
+    };
+    return true;
+  }
+  return false;
 };
 
 bool config_load_mappings_touchpads(const JsonArray& config) {
@@ -416,11 +422,13 @@ bool config_load_mappings_touchpads(const JsonArray& config) {
     return false;
   };
   uint8_t n = config.size();
-  mapping_touchpads_alloc(n);
-  for (uint8_t i = 0; i < n; i++) {
-    mapping_touchpad_create(config[i]);
-  };
-  return true;
+  if (mapping_touchpads_alloc(n)) {
+    for (uint8_t i = 0; i < n; i++) {
+      mapping_touchpad_create(config[i]);
+    }
+    return true;
+  }
+  return false;
 };
 
 bool config_load_mappings_polygons(const JsonArray& config) {
@@ -428,11 +436,13 @@ bool config_load_mappings_polygons(const JsonArray& config) {
     return false;
   };
   uint8_t n = config.size();
-  mapping_polygons_alloc(n);
-  for (uint8_t i = 0; i < n; i++) {
-    mapping_polygon_create(config[i]);
-  };
-  return true;
+  if (mapping_polygons_alloc(n)) {
+    for (uint8_t i = 0; i < n; i++) {
+      mapping_polygon_create(config[i]);
+    };
+    return true;
+  }
+  return false;
 };
 
 bool config_load_mappings(const JsonObject config) {

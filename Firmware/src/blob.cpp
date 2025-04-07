@@ -255,8 +255,8 @@ void matrix_find_blobs(void) {
             undefined_blob_ptr->UID = set_id();
             undefined_blob_ptr->status = PRESENT;
             undefined_blob_ptr->last_status = RELEASED;
-            undefined_blob_ptr->action.touch_ptr = NULL;
-            undefined_blob_ptr->action.mapping_ptr = NULL;
+            //undefined_blob_ptr->action.touch_ptr = NULL;
+           // undefined_blob_ptr->action.mapping_ptr = NULL;
 
             undefined_blob_ptr->centroid.z = min(blob_depth, 127);
             undefined_blob_ptr->box.w = (blob_x2 - blob_x1);

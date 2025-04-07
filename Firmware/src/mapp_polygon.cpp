@@ -21,8 +21,12 @@ static mapp_polygon_t mapp_polygons[MAX_POLYGONS];
 
 llist_t llist_polygons_pool;
 
-void mapping_polygons_alloc(uint8_t polygons_cnt) {
-  llist_builder(&llist_polygons_pool, &mapp_polygons[0], polygons_cnt, sizeof(mapp_polygons[0]));
+bool mapping_polygons_alloc(uint8_t polygons_cnt) {
+  if (polygons_cnt < MAX_POLYGONS) {
+    llist_builder(&llist_polygons_pool, &mapp_polygons[0], polygons_cnt, sizeof(mapp_polygons[0]));
+    return true;
+  }
+  return false;
 };
 
 // Test if the blob is within the polygon
@@ -49,7 +53,7 @@ bool mapping_polygon_is_blob_inside(common_t* mapping_ptr, blob_t* blob_ptr) {
 
 // blob == valeurs physiqyes captées
 // touch == données du nieme blob
-boolean mapping_polygon_assign_blob(common_t* mapping_ptr, blob_t* blob_ptr) {
+bool mapping_polygon_assign_blob(common_t* mapping_ptr, blob_t* blob_ptr) {
   mapp_polygon_t* polygon_ptr = (mapp_polygon_t*)mapping_ptr;
   if (polygon_ptr->touch_index < polygon_ptr->params.touchs) {
     blob_ptr->action.mapping_ptr = polygon_ptr;

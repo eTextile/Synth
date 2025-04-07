@@ -10,7 +10,7 @@ struct touchpad_s {
   touch_3d_t touch[MAX_TOUCHPAD_TOUCHS];
 };
 
-void mapping_touchpads_alloc(uint8_t touchpads_cnt);
+bool mapping_touchpads_alloc(uint8_t touchpads_cnt);
 void mapping_touchpad_create(const JsonObject &config);
 
 #endif /*__MAPPING_TOUCHPAD_H__*/
