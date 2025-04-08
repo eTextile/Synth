@@ -56,8 +56,7 @@ inline uint8_t set_id(void) {
 /////////////////////////////// Connected-component labeling / CCL
 void matrix_find_blobs(void) {
 
-  // DEAD BLOBS REMOVER
-  blob_t* tmp_blob_ptr = NULL;
+  blob_t* tmp_blob_ptr = NULL; 
   while ((tmp_blob_ptr = (blob_t*)llist_pop_front(&llist_blobs)) != NULL) {
     tmp_blob_ptr->last_status = tmp_blob_ptr->status;
 
@@ -65,12 +64,12 @@ void matrix_find_blobs(void) {
       tmp_blob_ptr->status = MISSING;
       llist_push_front(&blobs_to_keep, tmp_blob_ptr);
     }
-    else if ((millis() - tmp_blob_ptr->life_time_stamp) > BLOB_TIME_TO_LEAVE) {
+    else if ((millis() - tmp_blob_ptr->life_time_stamp) > BLOB_TIME_TO_LEAVE) { // DEAD BLOBS REMOVER
       common_t* mapping_ptr = (common_t*)tmp_blob_ptr->action.mapping_ptr;
       if (mapping_ptr) mapping_ptr->blob_dispose_func_ptr(mapping_ptr, tmp_blob_ptr);
       llist_push_back(&llist_blobs_pool, tmp_blob_ptr);
     }
-    else {
+    else { // BLOB_MISSING_TIME > blob < BLOB_TIME_TO_LEAVE
       tmp_blob_ptr->status = RELEASED;
       llist_push_front(&blobs_to_keep, tmp_blob_ptr);
     }
@@ -221,7 +220,6 @@ void matrix_find_blobs(void) {
         }; // END while_A
 
         if (blob_pixels > BLOB_MIN_PIX && blob_pixels < BLOB_MAX_PIX && blob_count < MAX_BLOBS) {
-          blob_count++;
           blob_t* undefined_blob_ptr = (blob_t*)llist_pop_front(&llist_blobs_pool);
           
           //if (undefined_blob_ptr == NULL) Serial.println ("LL_BUG"); // DEBUG
@@ -252,6 +250,7 @@ void matrix_find_blobs(void) {
             llist_push_back(&llist_blobs_pool, undefined_blob_ptr);
           }
           else {
+            blob_count++;
             undefined_blob_ptr->UID = set_id();
             undefined_blob_ptr->status = PRESENT;
             undefined_blob_ptr->last_status = RELEASED;
