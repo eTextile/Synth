@@ -19,28 +19,32 @@ void mapping_lib_update(void) {
       if (mapping_ptr->is_blob_inside_func_ptr(mapping_ptr, blob_ptr)) {
 
         if (blob_ptr->action.mapping_ptr == NULL) {
-          if (mapping_ptr->blob_assign_func_ptr(mapping_ptr, blob_ptr)){
+          if (mapping_ptr->blob_assign_func_ptr(mapping_ptr, blob_ptr)) {
             mapping_ptr->start_func_ptr(blob_ptr);
-            Serial.printf("\n_ASSIGN");
+            //Serial.printf("\n_ASSIGN_START");
           }
         }
         else {
           if (blob_ptr->status == PRESENT && blob_ptr->last_status == RELEASED) {
             mapping_ptr->start_func_ptr(blob_ptr);
-            Serial.printf("\n_START");
+            //Serial.printf("\n_START");
           }
           else if (blob_ptr->status == PRESENT) {
             mapping_ptr->continue_func_ptr(blob_ptr);
-            Serial.printf("\n_PRESENT");
+           // Serial.printf("\n_PRESENT");
           }
           else if (blob_ptr->status == RELEASED && blob_ptr->last_status == MISSING) {
             mapping_ptr->stop_func_ptr(blob_ptr);
-            Serial.printf("\n_RELEASED");
+            //Serial.printf("\n_RELEASED_IN");
           }
         }
+        
       }
       else { // OUT OF MAPPING (RELEASED)
-        mapping_ptr->stop_func_ptr(blob_ptr);
+        if (blob_ptr->status == RELEASED && blob_ptr->last_status == MISSING) {
+          mapping_ptr->stop_func_ptr(blob_ptr);
+          //Serial.printf("\n_RELEASED_OUT");
+        }
       }
     }
   }
