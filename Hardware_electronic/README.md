@@ -85,6 +85,7 @@ As experienced with most audio software it is not possible to use auto-mapping f
 -  Matt Venn : for his [teensy 4.0 Open-Hardware sound_card](https://github.com/mattvenn/teensy-audio-fx) made with KiCad ;-)
 
 ## TODO
+- add MIDI THRU
 - Make a casing
 - Make eTextile-Synthesizer/Dasy PCB
-- ...
+

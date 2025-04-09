@@ -162,7 +162,7 @@ void usb_read_noteOn(uint8_t channel, uint8_t note, uint8_t velocity) {
     };
   }
   else {
-    #if defined(USB_MIDI_SERIAL)
+    #if defined(USB_MIDI_SERIAL) && defined(DEBUG_LLIST)
       Serial.printf("\nNo more nodes left in the : midi_nodes_pool");
     #endif
     set_mode(ERROR_MODE);
@@ -188,7 +188,7 @@ void usb_read_noteOff(uint8_t channel, uint8_t note, uint8_t velocity) {
     }
   }
   else {
-    #if defined(USB_MIDI_SERIAL)
+    #if defined(USB_MIDI_SERIAL) && defined(DEBUG_LLIST)
       Serial.printf("\nNo more nodes left in the : midi_nodes_pool");
     #endif
     set_mode(ERROR_MODE);
@@ -223,7 +223,7 @@ void usb_read_controlChange(uint8_t channel, uint8_t control, uint8_t value) {
       break;
     }
     else {
-      #if defined(USB_MIDI_SERIAL)
+      #if defined(USB_MIDI_SERIAL) && defined(DEBUG_LLIST)
         Serial.printf("\nNo more nodes left in the : midi_nodes_pool");
       #endif
       set_mode(ERROR_MODE);

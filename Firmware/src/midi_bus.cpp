@@ -46,7 +46,7 @@ void midi_send_out(midi_msg_t* midi_ptr) {
     llist_push_front(&midi_out, node_ptr);  // Add the node to the midi_out linked list
   }
   else {
-    #if defined(USB_MIDI_SERIAL)
+    #if defined(USB_MIDI_SERIAL) && defined(DEBUG_LLIST)
       Serial.printf("\nNo more nodes left in the : midi_nodes_pool");
     #endif
     set_mode(ERROR_MODE);
@@ -64,7 +64,7 @@ void midi_handle_input(const Message<128u> &midiMsg) {
     llist_push_front(&midi_in, node_ptr); // Add the node to the midi_in linked list
     }
     else {
-      #if defined(USB_MIDI_SERIAL)
+      #if defined(USB_MIDI_SERIAL) && defined(DEBUG_LLIST)
         Serial.printf("\nNo more nodes left in the : midi_nodes_pool");
       #endif
       set_mode(ERROR_MODE);

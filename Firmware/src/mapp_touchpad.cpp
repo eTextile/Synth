@@ -46,9 +46,10 @@ bool mapping_touchpad_assign_blob(common_t* mapping_ptr, blob_t* blob_ptr) {
     //Serial.printf("\n_TOUCHPAD_ASSIGN / TOUCH_INDEX: %d", touchpad_ptr->touch_index);
     blob_ptr->action.mapping_ptr = touchpad_ptr;
     blob_ptr->action.touch_ptr = &touchpad_ptr->params.touch[touchpad_ptr->touch_index];
+
     touchpad_ptr->touch_index++;
     touchpad_ptr->active_blob_count++;
-    //Serial.printf("\n_TOUCHPAD_ASSIGN / ACTIVE_BLOB_COUNT: %d",touchpad_ptr->active_blob_count);
+    //Serial.printf("\n_TOUCHPAD_ASSIGN / ACTIVE_BLOB_COUNT: %d",touchpad_ptr->active_blob_count); // DEBUG
     return true;
   }
   return false;

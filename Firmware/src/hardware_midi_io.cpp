@@ -50,7 +50,7 @@ void hardware_midi_handle_input(const Message<128u> &midiMsg) {
     #endif
   }
   else {
-    #if defined(USB_MIDI_SERIAL)
+    #if defined(USB_MIDI_SERIAL) && defined(DEBUG_LLIST)
       Serial.printf("\nNo more nodes left in the : midi_nodes_pool");
     #endif
     set_mode(ERROR_MODE);
