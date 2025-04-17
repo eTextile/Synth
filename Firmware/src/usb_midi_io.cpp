@@ -117,14 +117,25 @@ void usb_midi_transmit() {
         blob_values[6] = blob_ptr->box.h;
         blob_values[7] = blob_ptr->centroid.z;
 
-        blob_values[8] = blob_ptr->status;
-        blob_values[9] = blob_ptr->last_status;
+        blob_values[8] = (uint8_t)blob_ptr->status;
+        blob_values[9] = (uint8_t)blob_ptr->last_status;
 
         usbMIDI.sendSysEx(10, blob_values, false);
         usbMIDI.send_now();
         //Serial.printf("\nBLOB_STATUS: %s BLOB_LAST_STATUS: %s", get_blob_status_name(blob_ptr->status), get_blob_status_name(blob_ptr->last_status));
       };
       while (usbMIDI.read()); // Read and discard any incoming MIDI messages
+      
+      /*
+      // TODO: send MIDI mapping msg to the host app.
+      for (lnode_t* midi_node_ptr = ITERATOR_START_FROM_HEAD(&midi_out); midi_node_ptr != NULL; midi_node_ptr = ITERATOR_NEXT(midi_node_ptr)) {
+        midi_msg_t* midi_ptr = (midi_msg_t*)ITERATOR_DATA(midi_node_ptr);
+        usbMIDI.send(midi_ptr->type, midi_ptr->data1, midi_ptr->data2, midi_ptr->channel);
+        //Serial.printf("\nMIDI_SEND: TYPE: %s\t DATA1: %d\t DATA2: %d\t CHAN:%d", get_type_name(midi_ptr->type), midi_ptr->data1, midi_ptr->data2, midi_ptr->channel);    
+      };
+      while (usbMIDI.read()); // Read and discard any incoming MIDI messages
+      */
+      llist_concat_nodes(&midi_nodes_pool, &midi_out); // Save/rescure all midi_out nodes
 
       break;
 
@@ -163,7 +174,7 @@ void usb_read_noteOn(uint8_t channel, uint8_t note, uint8_t velocity) {
   }
   else {
     #if defined(USB_MIDI_SERIAL) && defined(DEBUG_LLIST)
-      Serial.printf("\nNo more nodes left in the : midi_nodes_pool");
+      Serial.printf("\nNo more nodes left in the : midi_nodes_pool -> see usb_read_noteOn()");
     #endif
     set_mode(ERROR_MODE);
   }
@@ -189,7 +200,7 @@ void usb_read_noteOff(uint8_t channel, uint8_t note, uint8_t velocity) {
   }
   else {
     #if defined(USB_MIDI_SERIAL) && defined(DEBUG_LLIST)
-      Serial.printf("\nNo more nodes left in the : midi_nodes_pool");
+      Serial.printf("\nNo more nodes left in the : midi_nodes_pool -> see usb_read_noteOff()");
     #endif
     set_mode(ERROR_MODE);
   }
@@ -199,12 +210,13 @@ void usb_read_noteOff(uint8_t channel, uint8_t note, uint8_t velocity) {
 // If the CC comes from usb it is forwarded to midi_out acting as MIDI thru
 void usb_read_controlChange(uint8_t channel, uint8_t control, uint8_t value) {
   switch (channel) {
+
     case MIDI_LEVELS_CHANNEL:
-      set_level((level_code_t)control, value);
+      set_level((level_code_t)control, value); // TODO: move it to the system-exclusive communication line
       break;
+
     default:
     midi_msg_t* midi_ptr = (midi_msg_t*)llist_pop_front(&midi_nodes_pool);
-
     if (midi_ptr) {
       midi_ptr->type = ControlChange; // Set the MIDI type
       midi_ptr->data1 = control;      // Set the MIDI note
@@ -224,7 +236,7 @@ void usb_read_controlChange(uint8_t channel, uint8_t control, uint8_t value) {
     }
     else {
       #if defined(USB_MIDI_SERIAL) && defined(DEBUG_LLIST)
-        Serial.printf("\nNo more nodes left in the : midi_nodes_pool");
+        Serial.printf("\nNo more nodes left in the : midi_nodes_pool -> see usb_read_controlChange()");
       #endif
       set_mode(ERROR_MODE);
     }

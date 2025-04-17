@@ -100,9 +100,11 @@ struct velocity_s {
 };
 
 typedef enum status_code_e {
+  NEW,
   PRESENT,
   MISSING,
-  RELEASED
+  RELEASED,
+  FREE
 } status_code_t;
 
 typedef struct blob_action_s blob_action_t;
@@ -116,7 +118,6 @@ struct blob_s {
   uint8_t UID;
   status_code_t status;
   status_code_t last_status;
-  uint32_t active_time_stamp;
   uint32_t life_time_stamp;
   box_t box;
   uint16_t pixels;

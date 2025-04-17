@@ -47,7 +47,7 @@ void midi_send_out(midi_msg_t* midi_ptr) {
   }
   else {
     #if defined(USB_MIDI_SERIAL) && defined(DEBUG_LLIST)
-      Serial.printf("\nNo more nodes left in the : midi_nodes_pool");
+      Serial.printf("\nNo more nodes left in the : midi_nodes_pool -> see midi_send_out()");
     #endif
     set_mode(ERROR_MODE);
   }
@@ -65,7 +65,7 @@ void midi_handle_input(const Message<128u> &midiMsg) {
     }
     else {
       #if defined(USB_MIDI_SERIAL) && defined(DEBUG_LLIST)
-        Serial.printf("\nNo more nodes left in the : midi_nodes_pool");
+        Serial.printf("\nNo more nodes left in the : midi_nodes_pool -> see midi_handle_input()");
       #endif
       set_mode(ERROR_MODE);
     }

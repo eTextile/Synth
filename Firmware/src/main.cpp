@@ -37,14 +37,10 @@ void setup() {
 };
 
 void loop() {
-  matrix_scan();
-  matrix_interp();
-  matrix_find_blobs();
+
   update_controls();
-  //update_levels(); // USED FOR DEBUGING!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!! 
-  //mapping_lib_update(); // USED FOR DEBUGING!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-  //hardware_midi_transmit(); // USED FOR DEBUGING!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
- 
+  update_levels();
+
   switch (e256_current_mode) {
     case PENDING_MODE:
       usb_midi_recive();
@@ -54,24 +50,29 @@ void loop() {
       usb_midi_recive();
       break;
     case MATRIX_MODE_RAW:
+      matrix_scan();
+      matrix_interp();
       usb_midi_recive();
       usb_midi_transmit();
       break;
     case EDIT_MODE:
       usb_midi_recive();
+      matrix_scan();
+      matrix_interp();
+      matrix_find_blobs();
+      mapping_lib_update();
       usb_midi_transmit();
+      hardware_midi_transmit();
       break;
     case PLAY_MODE:
       usb_midi_recive();
-      //mapping_lib_update(); // USED FOR DEBUGING!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-      //usb_midi_transmit(); // USED FOR DEBUGING!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
       hardware_midi_transmit();
       break;
     case STANDALONE_MODE:
-      update_levels();
+      matrix_scan();
+      matrix_interp();
+      matrix_find_blobs();
       mapping_lib_update();
-      //usb_midi_recive(); // USED FOR DEBUGING!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-      //usb_midi_transmit(); // USED FOR DEBUGING!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
       //hardware_midi_recive();
       hardware_midi_transmit();
       break;

@@ -32,8 +32,8 @@ static lnode_t* llist_alloc_node(void) {
     node_ptr->data_ptr = NULL;
     return node_ptr;
   }
-  #if defined(USB_MIDI_SERIAL)
-    Serial.println("no more nodes left in the pool!");
+  #if defined(USB_MIDI_SERIAL) && defined(DEBUG_LLIST)
+    Serial.println("no more nodes left in the : llist_nodes_pool -> see llist_alloc_node()");
   #endif
   set_mode(ERROR_MODE);
   return NULL;

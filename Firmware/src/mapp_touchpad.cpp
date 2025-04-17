@@ -62,6 +62,7 @@ void mapping_touchpad_dispose_blob(common_t* mapping_ptr, blob_t* blob_ptr) {
   
   blob_ptr->action.mapping_ptr = NULL;
   blob_ptr->action.touch_ptr = NULL;
+  
   touchpad_ptr->active_blob_count--;
   if (touchpad_ptr->active_blob_count == 0) {
     touchpad_ptr->touch_index = 0;

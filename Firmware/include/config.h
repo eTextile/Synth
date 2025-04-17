@@ -40,11 +40,12 @@
 #define NEW_FRAME (NEW_COLS * NEW_ROWS)
 #define SIZEOF_FRAME (NEW_FRAME * sizeof(uint8_t))
 
-#define BLOB_MIN_PIX 6          // Set the minimum blob pixels
-#define BLOB_MAX_PIX 1024       // Set the maximum blob pixels
-#define BLOB_LAST_DIST 5        // TESTING
-#define BLOB_MISSING_TIME 10    // TESTING
-#define BLOB_TIME_TO_LEAVE 200  // TESTING
+#define BLOB_MIN_PIX 6         // Set the minimum blob pixels
+#define BLOB_MAX_PIX 1024      // Set the maximum blob pixels
+
+#define BLOB_LAST_DIST 7       // This is the minimum distance used to identify two corresponding blobs contains int two sequential frames
+#define BLOB_MISSING_TIME 250  // After this amount of time the blob is set to RELEASED
+#define BLOB_RELEASE_TIME 1000 // After this amount of time the blob is set to FREE
 
 #define X_PADDING_LEFT   0
 #define X_PADDING_REIGHT 0
