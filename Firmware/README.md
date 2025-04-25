@@ -28,8 +28,8 @@
     - if [FLASH_CONFIG_LOAD_DONE]
       - Right after the device will send it **current config file** using (MIDI_SYSTEM_EXCLUSIVE_MSG)
       - then the web app will load the config on the sceen
-      - This config can be modified and re-uplod to the device, **erasing the previous config file** :-(
-      - A config manager is would be cool :-)
+      - This config can be modified and re-uplod to the device, **erasing the previous config file**
+        - A config manager would be cool :-)
     - if [FLASH_CONFIG_LOAD_FAILED]
       - The web app will prompt **NO CONFIG FILE IN THE DEVICE!**
       - you will then start from scratch
@@ -94,7 +94,7 @@ Path of the lib_deps installation :
   - ADC_INPUT : 2500 FPS
   - ADC_INPUT / BILINEAR_INTERPOLATION : ...
   - ADC_INPUT / BILINEAR_INTERPOLATION / BLOB_TRACKING : 550 FPS
-  - ADC_INPUT / BILINEAR_INTERPOLATION / BLOB_TRACKING / AUDIO : ...
+  - ADC_INPUT / BILINEAR_INTERPOLATION / BLOB_TRACKING / MAPPING_LIB : ...
 
 ## Copyright
 Except as otherwise noted, all files in the eTextile-Synthesizer project folder

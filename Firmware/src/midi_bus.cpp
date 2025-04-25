@@ -73,6 +73,19 @@ void midi_handle_input(const Message<128u> &midiMsg) {
 };
 */
 
+const char* get_type_name(MidiType code) {
+  const char* char_code = NULL;
+  switch (code) {
+    case NoteOn: char_code = "NOTE_ON"; break;
+    case NoteOff: char_code = "NOTE_OFF"; break;
+    case ControlChange: char_code = "C_CHANGE"; break;
+    case AfterTouchPoly: char_code = "P_AFTERTOUCHPOLY"; break;
+    default:
+      break;
+  }
+  return char_code;
+};
+
 void print_bytes(const uint8_t* data_ptr, size_t data_length) {
   Serial.printf("\nPRINT_BYTES / DATA_LENGTH: %d", data_length);
   Serial.printf("\nPRINT_BYTES / DATA: ");

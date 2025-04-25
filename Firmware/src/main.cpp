@@ -32,8 +32,22 @@ void setup() {
   hardware_midi_setup();
   usb_midi_setup();
   midi_bus_setup();
+  matrix_calibrate();
+
+  if (load_applay_config()){
+    #if defined(USB_MIDI_SERIAL) && defined(DEBUG_CONFIG)
+      Serial.printf("\nCONFIG_FILE_LOADED_APPLAYED");
+    #endif
+    blink(5);
+    delay(1000);
+    bootTime = millis();
+  }
+  else {
+    #if defined(USB_MIDI_SERIAL) && defined(DEBUG_CONFIG)
+      Serial.printf("\nNO_CONFIG_FILE");
+    #endif
+  }
   set_mode(PENDING_MODE);
-  bootTime = millis();
 };
 
 void loop() {
@@ -42,44 +56,63 @@ void loop() {
   update_levels();
 
   switch (e256_current_mode) {
+
     case PENDING_MODE:
       usb_midi_recive();
-      usb_midi_pending_mode_timeout();
+      if ((millis() - bootTime) > PENDING_MODE_TIMEOUT) {
+        set_mode(STANDALONE_MODE);
+        blink(10);
+      }
       break;
+
     case SYNC_MODE:
       usb_midi_recive();
       break;
+
     case MATRIX_MODE_RAW:
-      matrix_scan();
-      matrix_interp();
       usb_midi_recive();
-      usb_midi_transmit();
+      matrix_scan();
+      usb_midi_transmit_raw_matrix();
+      //usb_midi_transmit_interp_matrix(); // FIXME
       break;
+
     case EDIT_MODE:
       usb_midi_recive();
       matrix_scan();
       matrix_interp();
       matrix_find_blobs();
-      mapping_lib_update();
-      usb_midi_transmit();
-      hardware_midi_transmit();
+      usb_midi_transmit_blobs();
       break;
+
+    case THROUGH_MODE:
+      usb_midi_recive();
+      hardware_midi_transmit_mappings_midi_msg();
+      break;
+      
     case PLAY_MODE:
       usb_midi_recive();
-      hardware_midi_transmit();
-      break;
-    case STANDALONE_MODE:
       matrix_scan();
       matrix_interp();
       matrix_find_blobs();
       mapping_lib_update();
-      //hardware_midi_recive();
-      hardware_midi_transmit();
+      hardware_midi_transmit_mappings_midi_msg();
+      usb_midi_transmit_mappings_midi_msg();
       break;
+
+    case STANDALONE_MODE:
+      //hardware_midi_recive();
+      matrix_scan();
+      matrix_interp();
+      matrix_find_blobs();
+      mapping_lib_update();
+      hardware_midi_transmit_mappings_midi_msg();
+      break;
+
     default:
       usb_midi_recive();
       break;
   };
+  llist_concat_nodes(&midi_nodes_pool, &midi_out); // Save/rescure all midi_out nodes
 
   #if defined(USB_MIDI_SERIAL) && defined(DEBUG_FPS)
   if (millis() - fpsTimeStamp >= 1000) {

@@ -45,6 +45,7 @@ const char* get_mode_name(mode_code_t code) {
     case MATRIX_MODE_RAW: char_code = "MATRIX_MODE_RAW"; break;
     case MAPPING_MODE: char_code = "MAPPING_MODE"; break;
     case EDIT_MODE: char_code = "EDIT_MODE"; break;
+    case THROUGH_MODE: char_code = "THROUGH_MODE"; break;
     case PLAY_MODE: char_code = "PLAY_MODE"; break;
     case ALLOCATE_MODE: char_code = "ALLOCATE_MODE"; break;
     case UPLOAD_MODE: char_code = "UPLOAD_MODE"; break;
@@ -67,6 +68,7 @@ const char* get_verbosity_name(verbosity_code_t code) {
     case MATRIX_MODE_RAW_DONE: char_code = "MATRIX_MODE_RAW_DONE"; break;
     case MAPPING_MODE_DONE: char_code = "MAPPING_MODE_DONE"; break;
     case EDIT_MODE_DONE: char_code = "EDIT_MODE_DONE"; break;
+    case THROUGH_MODE_DONE: char_code = "THROUGH_MODE_DONE"; break;
     case PLAY_MODE_DONE: char_code = "PLAY_MODE_DONE"; break;
     case ALLOCATE_MODE_DONE: char_code = "ALLOCATE_MODE_DONE"; break;
     case ALLOCATE_DONE: char_code = "ALLOCATE_DONE"; break;
@@ -112,22 +114,23 @@ const char* get_error_name(error_code_t code) {
   return char_code;
 };
 
-e256_mode_t e256_m[15] = {
+e256_mode_t e256_m[16] = {
   {{HIGH, LOW, false}, 50, 50, true},     // [0] PENDING_MODE
   {{HIGH, LOW, false}, 500, 500, true},   // [1] SYNC_MODE
   {{HIGH, LOW, false}, 15, 15, true},     // [2] CALIBRATE_MODE
   {{HIGH, HIGH, false}, 200, 200, true},  // [3] MATRIX_MODE_RAW
   {{HIGH, HIGH, false}, 400, 400, true},  // [4] MAPPING_MODE
   {{HIGH, LOW, false}, 1000, 50, true},   // [5] EDIT_MODE
-  {{HIGH, LOW, false}, 50, 1000, true},   // [6] PLAY_MODE
-  {{HIGH, LOW, false}, 1000, 1000, true}, // [7] ALLOCATE_MODE
-  {{HIGH, LOW, false}, 1000, 1000, true}, // [8] UPLOAD_MODE
-  {{HIGH, LOW, false}, 1000, 1000, true}, // [9] APPLY_MODE
-  {{HIGH, LOW, false}, 1000, 1000, true}, // [10] WRITE_MODE
-  {{HIGH, LOW, false}, 1000, 1000, true}, // [11] LOAD_MODE
-  {{HIGH, LOW, false}, 1000, 1000, true}, // [12] FETCH_MODE
-  {{HIGH, LOW, false}, 2500, 2500, true}, // [13] STANDALONE_MODE
-  {{HIGH, HIGH, false}, 10, 10, true}     // [14] ERROR_MODE
+  {{HIGH, LOW, false}, 1500, 500, true},  // [6] THROUGH_MODE
+  {{HIGH, LOW, false}, 50, 1000, true},   // [7] PLAY_MODE
+  {{HIGH, LOW, false}, 1000, 1000, true}, // [8] ALLOCATE_MODE
+  {{HIGH, LOW, false}, 1000, 1000, true}, // [9] UPLOAD_MODE
+  {{HIGH, LOW, false}, 1000, 1000, true}, // [10] APPLY_MODE
+  {{HIGH, LOW, false}, 1000, 1000, true}, // [11] WRITE_MODE
+  {{HIGH, LOW, false}, 1000, 1000, true}, // [12] LOAD_MODE
+  {{HIGH, LOW, false}, 1000, 1000, true}, // [13] FETCH_MODE
+  {{HIGH, LOW, false}, 2500, 2500, true}, // [14] STANDALONE_MODE
+  {{HIGH, HIGH, false}, 10, 10, true}     // [15] ERROR_MODE
 };
 
 // The E256 built-in encoder is used to adjust levels
@@ -469,7 +472,7 @@ bool config_load_mappings(const JsonObject config) {
   return true;
 };
 
-bool apply_config(uint8_t* conf_ptr, size_t conf_size) {
+static bool apply_config(uint8_t* conf_ptr, size_t conf_size) {
   //DynamicJsonDocument e256_config(conf_size);
   //StaticJsonDocument<4095> e256_config;
   JsonDocument e256_config;
@@ -485,6 +488,31 @@ bool apply_config(uint8_t* conf_ptr, size_t conf_size) {
   } else {
     return false;
   };
+};
+
+bool load_applay_config() {
+  if (load_flash_config()) {
+    #if defined(USB_MIDI_SERIAL) && defined(DEBUG_CONFIG)
+      Serial.printf("\nFLASH_CONFIG_LOAD_DONE: ");
+      print_bytes(flash_config_ptr, flash_config_size);
+    #endif
+    if (apply_config(flash_config_ptr, flash_config_size)) {
+      #if defined(USB_MIDI_SERIAL) && defined(DEBUG_CONFIG)
+        Serial.printf("\nAPPLY_MODE_DONE");
+      #endif
+      return true;
+    }
+    else {
+      #if defined(USB_MIDI_SERIAL) && defined(DEBUG_CONFIG)
+        Serial.printf("\nCONFIG_APPLY_FAILED");
+      #endif
+      return false;
+      //set_mode(ERROR_MODE);
+    }
+  }
+  else {
+    return false;
+  } 
 };
 
 inline void setup_serial_flash() {

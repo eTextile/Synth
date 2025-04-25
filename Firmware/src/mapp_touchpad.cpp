@@ -57,12 +57,10 @@ bool mapping_touchpad_assign_blob(common_t* mapping_ptr, blob_t* blob_ptr) {
 
 void mapping_touchpad_dispose_blob(common_t* mapping_ptr, blob_t* blob_ptr) {
   mapp_touchpad_t* touchpad_ptr = (mapp_touchpad_t*)mapping_ptr;
-
   //Serial.printf("\n_TOUCHPAD_DISPOSE / BLOB_PTR: %p -> TOUCHPAD_PTR: %p", blob_ptr, mapping_ptr);
-  
   blob_ptr->action.mapping_ptr = NULL;
   blob_ptr->action.touch_ptr = NULL;
-  
+
   touchpad_ptr->active_blob_count--;
   if (touchpad_ptr->active_blob_count == 0) {
     touchpad_ptr->touch_index = 0;
@@ -73,15 +71,23 @@ void mapping_touchpad_dispose_blob(common_t* mapping_ptr, blob_t* blob_ptr) {
 
 void mapping_touchpad_start(blob_t* blob_ptr) {
   touch_3d_t* touch_ptr = (touch_3d_t*)blob_ptr->action.touch_ptr;
-
   //Serial.printf("\n_TOUCHPAD_START");
+
   touch_ptr->last_midi_press = touch_ptr->press.midi.data2;
   switch (touch_ptr->press.midi.type) {
     case NoteOn:
-      touch_ptr->press.midi.type = NoteOn;
-      touch_ptr->press.midi.data2 = blob_ptr->centroid.z;
+      //touch_ptr->press.midi.data2 = blob_ptr->centroid.z;
+      touch_ptr->press.midi.data2 = 127;
       midi_send_out(&touch_ptr->press.midi);
+      touch_ptr->press.midi.type = NoteOff;
       break;
+      /*
+    case NoteOff:
+      touch_ptr->press.midi.data2 = 0;
+      midi_send_out(&touch_ptr->press.midi);
+      touch_ptr->press.midi.type = NoteOn;
+      break;
+      */
     case ControlChange:
       touch_ptr->press.midi.data2 = map(
         blob_ptr->centroid.z,
@@ -91,8 +97,11 @@ void mapping_touchpad_start(blob_t* blob_ptr) {
         touch_ptr->press.limit.max);
         midi_send_out(&touch_ptr->press.midi);
       break;
-    case AfterTouchPoly:
-      // Same as CC
+    case AfterTouchPoly: // FIXME
+      touch_ptr->press.midi.type = NoteOn;
+      touch_ptr->press.midi.data2 = blob_ptr->centroid.z;
+      midi_send_out(&touch_ptr->press.midi);
+      touch_ptr->press.midi.type = AfterTouchPoly;
       break;
     default:
       // Not handled in mapp_toucpad
@@ -103,6 +112,7 @@ void mapping_touchpad_start(blob_t* blob_ptr) {
 void mapping_touchpad_continue(blob_t* blob_ptr) {
   mapp_touchpad_t* touchpad_ptr = (mapp_touchpad_t*)blob_ptr->action.mapping_ptr;
   touch_3d_t* touch_ptr = (touch_3d_t*)blob_ptr->action.touch_ptr;
+  //Serial.printf("\n_TOUCHPAD_CONTINUE");
 
   touch_ptr->last_midi_pos_x = touch_ptr->pos_x.midi.data2;
   touch_ptr->pos_x.midi.data2 = round(map(
@@ -129,9 +139,6 @@ void mapping_touchpad_continue(blob_t* blob_ptr) {
   };
 
   switch (touch_ptr->press.midi.type) {
-    case NoteOn:
-      // NA
-      break;
     case ControlChange:
       touch_ptr->last_midi_press = touch_ptr->press.midi.data2;
       touch_ptr->press.midi.data2 = map(
@@ -145,6 +152,19 @@ void mapping_touchpad_continue(blob_t* blob_ptr) {
       }
       break;
     case AfterTouchPoly:
+      touch_ptr->press.midi.type = ControlChange;
+      touch_ptr->press.midi.data1 = 64; // Add it to the config!?
+      touch_ptr->last_midi_press = touch_ptr->press.midi.data2;
+        touch_ptr->press.midi.data2 = map(
+          blob_ptr->centroid.z,
+          Z_MIN,
+          Z_MAX,
+          touch_ptr->press.limit.min,
+          touch_ptr->press.limit.max);
+      if (touch_ptr->press.midi.data2 != touch_ptr->last_midi_press) {
+        midi_send_out(&touch_ptr->press.midi);
+      }
+      touch_ptr->press.midi.type = AfterTouchPoly;
       break;
     default:
       // Not handled in mapp_toucpad
@@ -154,9 +174,33 @@ void mapping_touchpad_continue(blob_t* blob_ptr) {
 
 void mapping_touchpad_stop(blob_t* blob_ptr) {
   touch_3d_t* touch_ptr = (touch_3d_t*)blob_ptr->action.touch_ptr;
-  //touch_ptr->press.midi.type = NoteOff;
-  touch_ptr->press.midi.data2 = 0;
-  midi_send_out(&touch_ptr->press.midi);
+  //Serial.printf("\n_TOUCHPAD_STOP");
+
+  switch (touch_ptr->press.midi.type) {
+    /*
+    case NoteOn:
+      touch_ptr->press.midi.data2 = blob_ptr->centroid.z;
+      midi_send_out(&touch_ptr->press.midi);
+      break;
+    */
+    case NoteOff:
+      touch_ptr->press.midi.data2 = blob_ptr->centroid.z;
+      midi_send_out(&touch_ptr->press.midi);
+      touch_ptr->press.midi.type = NoteOn;
+      break;
+    case ControlChange:
+      // N/A
+      break;
+    case AfterTouchPoly:
+      touch_ptr->press.midi.type = NoteOff;
+      touch_ptr->press.midi.data1 = 64; // Add it to the config!?
+      midi_send_out(&touch_ptr->press.midi);
+      break;
+    default:
+      // Not handled in mapp_toucpad
+      break;
+  }
+
 };
 
 void mapping_touchpad_create(const JsonObject &config) {

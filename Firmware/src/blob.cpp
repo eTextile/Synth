@@ -380,7 +380,7 @@ for (lnode_t* node_ptr = ITERATOR_START_FROM_HEAD(&llist_previous_blobs); node_p
 bool is_blob_existing(blob_t* blob_ptr, blob_t* undefined_blob_ptr) {
   float dist = sqrtf(pow(blob_ptr->centroid.x - undefined_blob_ptr->centroid.x, 2) + pow(blob_ptr->centroid.y - undefined_blob_ptr->centroid.y, 2));
   
-  Serial.printf("\nDIST: %f", dist);
+  //Serial.printf("\nDIST: %f", dist);
 
   if (dist < BLOB_LAST_DIST) {
     return true;
@@ -391,11 +391,11 @@ bool is_blob_existing(blob_t* blob_ptr, blob_t* undefined_blob_ptr) {
 const char* get_blob_status_name(status_code_t code) {
   const char* char_code = NULL;
   switch (code) {
+    case FREE: char_code = "FREE"; break;
     case NEW: char_code = "NEW"; break;
     case PRESENT: char_code = "PRESENT"; break;
     case MISSING: char_code = "MISSING"; break;
     case RELEASED: char_code = "RELEASED"; break;
-    case FREE: char_code = "FREE"; break;
   }
   return char_code;
 };

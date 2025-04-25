@@ -14,18 +14,21 @@
 #include "midi_bus.h"
 #include "allocate.h"
 
+#include "hardware_midi_io.h"
+
 uint32_t bootTime = 0;
 size_t sysEx_data_length = 0;
 uint8_t* sysEx_data_ptr = NULL;
 
 // Setup the USB_MIDI communication port
-void usb_midi_setup() {
+void usb_midi_setup(void) {
   usbMIDI.begin();
-  usbMIDI.setHandleProgramChange(usb_read_programChange);
-  usbMIDI.setHandleNoteOn(usb_read_noteOn);
-  usbMIDI.setHandleNoteOff(usb_read_noteOff);
-  usbMIDI.setHandleControlChange(usb_read_controlChange);
-  usbMIDI.setHandleSystemExclusive(usb_read_systemExclusive);
+  usbMIDI.setHandleProgramChange(usb_read_program_change);
+  usbMIDI.setHandleNoteOn(usb_read_note_on);
+  usbMIDI.setHandleNoteOff(usb_read_note_off);
+  usbMIDI.setHandleControlChange(usb_read_control_change);
+  usbMIDI.setHandleAfterTouchPoly(usb_read_after_touch_poly); // TESTING
+  usbMIDI.setHandleSystemExclusive(usb_read_system_exclusive);
   usbMIDI.setHandleClock(usb_read_midi_clock);
 };
 
@@ -33,118 +36,68 @@ void usb_midi_recive(void) {
   usbMIDI.read(); // Is there a MIDI incoming messages on any channel
 };
 
-void usb_midi_pending_mode_timeout() {
-  //if (e256_current_mode == PENDING_MODE && millis() - bootTime > PENDING_MODE_TIMEOUT) {
-    #if defined(USB_MIDI_SERIAL) && defined(DEBUG_CONFIG)
-      Serial.printf("\nPENDING_MODE_TIME_OUT");
-    #endif
-    if(load_flash_config()) {
-      #if defined(USB_MIDI_SERIAL) && defined(DEBUG_CONFIG)
-        Serial.printf("\nFLASH_CONFIG_LOAD_DONE: ");
-        print_bytes(flash_config_ptr, flash_config_size);
-      #endif
-      if (apply_config(flash_config_ptr, flash_config_size)) {
-        #if defined(USB_MIDI_SERIAL) && defined(DEBUG_CONFIG)
-          Serial.printf("\nAPPLY_MODE_DONE");
-        #endif
-      }
-      else {
-        #if defined(USB_MIDI_SERIAL) && defined(DEBUG_CONFIG)
-          Serial.printf("\nCONFIG_APPLY_FAILED");
-        #endif
-        //set_mode(ERROR_MODE);
-      }
-      matrix_calibrate();
-      blink(10);
-      set_mode(STANDALONE_MODE);
-    }
-    else {
-      bootTime = millis();
-      set_mode(PENDING_MODE);
-      #if defined(USB_MIDI_SERIAL) && defined(DEBUG_CONFIG)
-        Serial.printf("\nNO_CONFIG_FILE_LOADED");
-      #endif
-    }
-  //}
+void usb_midi_transmit_raw_matrix(void) {
+  static uint32_t usbTransmitTimeStamp = 0;
+
+  if (millis() - usbTransmitTimeStamp > MIDI_TRANSMIT_INTERVAL) {
+    usbTransmitTimeStamp = millis();
+    usbMIDI.sendSysEx(RAW_FRAME, raw_frame.data_ptr, false);
+    usbMIDI.send_now();
+  }
+  while (usbMIDI.read()); // Read and discard any incoming MIDI messages
 };
 
-void usb_midi_transmit() {
+
+void usb_midi_transmit_interp_matrix(void) {
   static uint32_t usbTransmitTimeStamp = 0;
-  uint8_t blob_values[10] = {0};
-  switch (e256_current_mode) {
-    case PENDING_MODE:
-      // Nothing to do
-      break;
-    case SYNC_MODE:
-      // Nothing to do
-      break;
-    case MATRIX_MODE_RAW:
-      if (millis() - usbTransmitTimeStamp > MIDI_TRANSMIT_INTERVAL) {
-        usbTransmitTimeStamp = millis();
-        usbMIDI.sendSysEx(RAW_FRAME, raw_frame.data_ptr, false);
-        usbMIDI.send_now();
-      };
-      while (usbMIDI.read()); // Read and discard any incoming MIDI messages
-      break;
-    /*
-    case MATRIX_MODE_INTERP:
-      // NOT_WORKING > see https://forum.pjrc.com/threads/28282-How-big-is-the-MIDI-receive-buffer
-      // Interpolation will be made on the web_app side!
-      if (millis() - usbTransmitTimeStamp > MIDI_TRANSMIT_INTERVAL) {
-        usbTransmitTimeStamp = millis();
-        usbMIDI.sendSysEx(NEW_FRAME, interp_frame.data_ptr, false, 0);
-        usbMIDI.send_now();
-      };
-      while (usbMIDI.read()); // Read and discard any incoming MIDI messages
-      break;
-    */
-    case EDIT_MODE:
-      // Send all blobs values over USB using MIDI format
-      for (lnode_t* node_ptr = ITERATOR_START_FROM_HEAD(&llist_blobs); node_ptr != NULL; node_ptr = ITERATOR_NEXT(node_ptr)) {
-        blob_t* blob_ptr = (blob_t*)ITERATOR_DATA(node_ptr);
 
-        blob_values[0] = blob_ptr->UID;
-
-        uint8_t whole_part = (uint8_t)blob_ptr->centroid.x;
-        blob_values[1] = whole_part;
-        blob_values[2] = (uint8_t)((blob_ptr->centroid.x - whole_part) * 100); // Fractional part
-
-        whole_part = (uint8_t)blob_ptr->centroid.y;
-        blob_values[3] = whole_part;
-        blob_values[4] = (uint8_t)((blob_ptr->centroid.y - whole_part) * 100); // Fractional part
-
-        blob_values[5] = blob_ptr->box.w;
-        blob_values[6] = blob_ptr->box.h;
-        blob_values[7] = blob_ptr->centroid.z;
-
-        blob_values[8] = (uint8_t)blob_ptr->status;
-        blob_values[9] = (uint8_t)blob_ptr->last_status;
-
-        usbMIDI.sendSysEx(10, blob_values, false);
-        usbMIDI.send_now();
-        //Serial.printf("\nBLOB_STATUS: %s BLOB_LAST_STATUS: %s", get_blob_status_name(blob_ptr->status), get_blob_status_name(blob_ptr->last_status));
-      };
-      while (usbMIDI.read()); // Read and discard any incoming MIDI messages
-      
-      /*
-      // TODO: send MIDI mapping msg to the host app.
-      for (lnode_t* midi_node_ptr = ITERATOR_START_FROM_HEAD(&midi_out); midi_node_ptr != NULL; midi_node_ptr = ITERATOR_NEXT(midi_node_ptr)) {
-        midi_msg_t* midi_ptr = (midi_msg_t*)ITERATOR_DATA(midi_node_ptr);
-        usbMIDI.send(midi_ptr->type, midi_ptr->data1, midi_ptr->data2, midi_ptr->channel);
-        //Serial.printf("\nMIDI_SEND: TYPE: %s\t DATA1: %d\t DATA2: %d\t CHAN:%d", get_type_name(midi_ptr->type), midi_ptr->data1, midi_ptr->data2, midi_ptr->channel);    
-      };
-      while (usbMIDI.read()); // Read and discard any incoming MIDI messages
-      */
-      llist_concat_nodes(&midi_nodes_pool, &midi_out); // Save/rescure all midi_out nodes
-
-      break;
-
-    case PLAY_MODE:
-        // NA 
-      break;
-    default:
-      break;
+  // NOT_WORKING > see https://forum.pjrc.com/threads/28282-How-big-is-the-MIDI-receive-buffer
+  // Interpolation will be made on the web_app side!
+  if (millis() - usbTransmitTimeStamp > MIDI_TRANSMIT_INTERVAL) {
+    usbTransmitTimeStamp = millis();
+    usbMIDI.sendSysEx(NEW_FRAME, interp_frame.data_ptr, false, 0);
+    usbMIDI.send_now();
   };
+  while (usbMIDI.read()); // Read and discard any incoming MIDI messages
+};
+
+void usb_midi_transmit_blobs(void) {
+  uint8_t blob_values[10] = {0};
+
+  for (lnode_t* node_ptr = ITERATOR_START_FROM_HEAD(&llist_blobs); node_ptr != NULL; node_ptr = ITERATOR_NEXT(node_ptr)) {
+    blob_t* blob_ptr = (blob_t*)ITERATOR_DATA(node_ptr);
+
+    blob_values[0] = blob_ptr->UID;
+
+    uint8_t whole_part = (uint8_t)blob_ptr->centroid.x;
+    blob_values[1] = whole_part;
+    blob_values[2] = (uint8_t)((blob_ptr->centroid.x - whole_part) * 100); // Fractional part
+
+    whole_part = (uint8_t)blob_ptr->centroid.y;
+    blob_values[3] = whole_part;
+    blob_values[4] = (uint8_t)((blob_ptr->centroid.y - whole_part) * 100); // Fractional part
+
+    blob_values[5] = blob_ptr->box.w;
+    blob_values[6] = blob_ptr->box.h;
+    blob_values[7] = blob_ptr->centroid.z;
+
+    blob_values[8] = (uint8_t)blob_ptr->status;
+    blob_values[9] = (uint8_t)blob_ptr->last_status;
+
+    usbMIDI.sendSysEx(10, blob_values, false);
+    usbMIDI.send_now();
+    //Serial.printf("\nBLOB_STATUS: %s BLOB_LAST_STATUS: %s", get_blob_status_name(blob_ptr->status), get_blob_status_name(blob_ptr->last_status));
+  };
+  while (usbMIDI.read()); // Read and discard any incoming MIDI messages
+};
+
+void usb_midi_transmit_mappings_midi_msg(void) {
+  // Send mappings MIDI messages to the host application
+  for (lnode_t* midi_node_ptr = ITERATOR_START_FROM_HEAD(&midi_out); midi_node_ptr != NULL; midi_node_ptr = ITERATOR_NEXT(midi_node_ptr)) {
+    midi_msg_t* midi_ptr = (midi_msg_t*)ITERATOR_DATA(midi_node_ptr);
+    usbMIDI.send((uint8_t)midi_ptr->type, midi_ptr->data1, midi_ptr->data2, midi_ptr->channel, 0);
+  }
+  while (usbMIDI.read()); // Read and discard any incoming MIDI messages
 };
 
 void usb_midi_send_info(uint8_t msg, uint8_t channel) {
@@ -153,54 +106,39 @@ void usb_midi_send_info(uint8_t msg, uint8_t channel) {
   while (usbMIDI.read());
 };
 
-void usb_read_noteOn(uint8_t channel, uint8_t note, uint8_t velocity) {
+void usb_read_note_on(uint8_t channel, uint8_t note, uint8_t velocity) {
   midi_msg_t* midi_ptr = (midi_msg_t*)llist_pop_front(&midi_nodes_pool);
-
   if (midi_ptr) {
     midi_ptr->type = NoteOn;
     midi_ptr->data1 = note;
     midi_ptr->data2 = velocity;
     midi_ptr->channel = channel;
-    switch (e256_current_mode) {
-      case EDIT_MODE:
-        llist_push_front(&midi_in, midi_ptr);  // Add the node to the midi_in linked list
-        break;
-      case PLAY_MODE:
-        llist_push_front(&midi_out, midi_ptr); // Add the node to the midi_out linked list
-        break;
-      default:
-        break;
-    };
+    if (e256_current_mode == THROUGH_MODE) {
+      llist_push_front(&midi_out, midi_ptr); // Add the node to the midi_out linked list
+    }
   }
   else {
     #if defined(USB_MIDI_SERIAL) && defined(DEBUG_LLIST)
-      Serial.printf("\nNo more nodes left in the : midi_nodes_pool -> see usb_read_noteOn()");
+      Serial.printf("\nNo more nodes left in the : midi_nodes_pool -> see usb_read_note_on()");
     #endif
     set_mode(ERROR_MODE);
   }
 };
 
-void usb_read_noteOff(uint8_t channel, uint8_t note, uint8_t velocity) {
+void usb_read_note_off(uint8_t channel, uint8_t note, uint8_t velocity) {
   midi_msg_t* midi_ptr = (midi_msg_t*)llist_pop_front(&midi_nodes_pool);
   if (midi_ptr) {
     midi_ptr->type = NoteOff;
     midi_ptr->data1 = note;
     midi_ptr->data2 = velocity;
     midi_ptr->channel = channel;
-    switch (e256_current_mode) {
-      case EDIT_MODE:
-        llist_push_front(&midi_in, midi_ptr);  // Add the node to the midi_in linked list
-        break;
-      case PLAY_MODE:
-        llist_push_front(&midi_out, midi_ptr); // Add the node to the midi_out linked list
-        break;
-      default:
-        break;
+    if (e256_current_mode == THROUGH_MODE) {
+      llist_push_front(&midi_out, midi_ptr); // Add the node to the midi_out linked list
     }
   }
   else {
     #if defined(USB_MIDI_SERIAL) && defined(DEBUG_LLIST)
-      Serial.printf("\nNo more nodes left in the : midi_nodes_pool -> see usb_read_noteOff()");
+      Serial.printf("\nNo more nodes left in the : midi_nodes_pool -> see usb_read_note_off()");
     #endif
     set_mode(ERROR_MODE);
   }
@@ -208,43 +146,47 @@ void usb_read_noteOff(uint8_t channel, uint8_t note, uint8_t velocity) {
 
 // Used by USB_MIDI
 // If the CC comes from usb it is forwarded to midi_out acting as MIDI thru
-void usb_read_controlChange(uint8_t channel, uint8_t control, uint8_t value) {
-  switch (channel) {
-
-    case MIDI_LEVELS_CHANNEL:
-      set_level((level_code_t)control, value); // TODO: move it to the system-exclusive communication line
-      break;
-
-    default:
-    midi_msg_t* midi_ptr = (midi_msg_t*)llist_pop_front(&midi_nodes_pool);
-    if (midi_ptr) {
-      midi_ptr->type = ControlChange; // Set the MIDI type
-      midi_ptr->data1 = control;      // Set the MIDI note
-      midi_ptr->data2 = value;        // Set the MIDI velocity
-      midi_ptr->channel = channel;    // Set the MIDI channel
-      switch (e256_current_mode) {
-        case EDIT_MODE:
-          llist_push_front(&midi_in, midi_ptr);  // Add the node to the midi_in linked list
-          break;
-        case PLAY_MODE:
-          llist_push_front(&midi_out, midi_ptr); // Add the node to the midi_out linked list
-          break;
-        default:
-          break;
-      }
-      break;
+void usb_read_control_change(uint8_t channel, uint8_t control, uint8_t value) {
+  midi_msg_t* midi_ptr = (midi_msg_t*)llist_pop_front(&midi_nodes_pool);
+  if (midi_ptr) {
+    midi_ptr->type = ControlChange; // Set the MIDI type
+    midi_ptr->data1 = control;      // Set the MIDI control
+    midi_ptr->data2 = value;        // Set the MIDI value
+    midi_ptr->channel = channel;    // Set the MIDI channel
+    if (e256_current_mode == THROUGH_MODE) {
+      llist_push_front(&midi_out, midi_ptr); // Add the node to the midi_out linked list
     }
-    else {
-      #if defined(USB_MIDI_SERIAL) && defined(DEBUG_LLIST)
-        Serial.printf("\nNo more nodes left in the : midi_nodes_pool -> see usb_read_controlChange()");
-      #endif
-      set_mode(ERROR_MODE);
-    }
+  }
+  else {
+    #if defined(USB_MIDI_SERIAL) && defined(DEBUG_LLIST)
+      Serial.printf("\nNo more nodes left in the : midi_nodes_pool -> see usb_read_control_change()");
+    #endif
+    set_mode(ERROR_MODE);
   }
 };
 
-void usb_read_programChange(uint8_t channel, uint8_t program) {
-  
+// Used by USB_MIDI
+// If the CC comes from usb it is forwarded to midi_out acting as MIDI thru
+void usb_read_after_touch_poly(uint8_t channel, uint8_t note, uint8_t pressure) {
+  midi_msg_t* midi_ptr = (midi_msg_t*)llist_pop_front(&midi_nodes_pool);
+  if (midi_ptr) {
+    midi_ptr->type = AfterTouchPoly; // Set the MIDI type
+    midi_ptr->data1 = note;          // Set the MIDI note
+    midi_ptr->data2 = pressure;      // Set the MIDI pressure
+    midi_ptr->channel = channel;     // Set the MIDI channel
+    if (e256_current_mode == THROUGH_MODE) {
+      llist_push_front(&midi_out, midi_ptr); // Add the node to the midi_out linked list
+    }
+  }
+  else {
+    #if defined(USB_MIDI_SERIAL) && defined(DEBUG_LLIST)
+      Serial.printf("\nNo more nodes left in the : midi_nodes_pool -> see usb_read_control_change()");
+    #endif
+    set_mode(ERROR_MODE);
+  }
+};
+
+void usb_read_program_change(uint8_t channel, uint8_t program) {
   switch (channel) {
     case MIDI_MODES_CHANNEL:
       //Serial.printf("\nRECEIVED:\t%s", get_mode_name((enum_mode_codes_t)program));
@@ -275,6 +217,11 @@ void usb_read_programChange(uint8_t channel, uint8_t program) {
           usb_midi_send_info((uint8_t)EDIT_MODE_DONE, MIDI_VERBOSITY_CHANNEL);
           break;
 
+        case THROUGH_MODE:
+          set_mode(THROUGH_MODE);
+          usb_midi_send_info((uint8_t)THROUGH_MODE_DONE, MIDI_VERBOSITY_CHANNEL);
+          break;
+
         case PLAY_MODE:
           set_mode(PLAY_MODE);
           usb_midi_send_info((uint8_t)PLAY_MODE_DONE, MIDI_VERBOSITY_CHANNEL);
@@ -295,7 +242,6 @@ void usb_read_programChange(uint8_t channel, uint8_t program) {
 
         case FETCH_MODE:
           usbMIDI.sendSysEx(flash_config_size, flash_config_ptr, false);
-          //usbMIDI.send_now();
           usb_midi_send_info((uint8_t)FETCH_MODE_DONE, MIDI_VERBOSITY_CHANNEL);
           break;
         
@@ -328,7 +274,9 @@ void usb_read_programChange(uint8_t channel, uint8_t program) {
         case CALIBRATE_MODE:
           matrix_calibrate();
           blink(10);
-          usb_midi_send_info((uint8_t)CALIBRATE_MODE_DONE, MIDI_VERBOSITY_CHANNEL);
+          #if defined(USB_MIDI_SERIAL)
+            usb_midi_send_info((uint8_t)CALIBRATE_MODE_DONE, MIDI_VERBOSITY_CHANNEL);
+          #endif
           break;
 
         case ERROR_MODE:
@@ -345,7 +293,7 @@ void usb_read_programChange(uint8_t channel, uint8_t program) {
 };
 
 // TODO
-void usb_read_midi_clock() {
+void usb_read_midi_clock(void) {
 #if defined(USB_MIDI_SERIAL) && defined(DEBUG_CONFIG)
   Serial.println("Clock");
 #endif
@@ -358,7 +306,9 @@ void usb_read_midi_clock() {
 // Recive: [ SYSEX_BEGIN, SYSEX_DEVICE_ID, SYSEX_DATA, SYSEX_END ]
 // Send: USBMIDI_CONFIG_LOAD_DONE
 
-void usb_read_systemExclusive(const uint8_t *data_ptr, uint16_t sysEx_chunk_size, bool complete) {
+// TODO: set_level((level_code_t)control, value); // TODO: move it to the system-exclusive communication line
+
+void usb_read_system_exclusive(const uint8_t *data_ptr, uint16_t sysEx_chunk_size, bool complete) {
   static uint8_t *sysEx_chunk_ptr = NULL;
   static uint16_t sysEx_last_chunk_size = 0;
   static uint8_t sysEx_chunks = 0;

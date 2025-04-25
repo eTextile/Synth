@@ -100,11 +100,11 @@ struct velocity_s {
 };
 
 typedef enum status_code_e {
+  FREE,
   NEW,
   PRESENT,
   MISSING,
-  RELEASED,
-  FREE
+  RELEASED
 } status_code_t;
 
 typedef struct blob_action_s blob_action_t;

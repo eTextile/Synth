@@ -44,8 +44,8 @@
 #define BLOB_MAX_PIX 1024      // Set the maximum blob pixels
 
 #define BLOB_LAST_DIST 7       // This is the minimum distance used to identify two corresponding blobs contains int two sequential frames
-#define BLOB_MISSING_TIME 250  // After this amount of time the blob is set to RELEASED
-#define BLOB_RELEASE_TIME 1000 // After this amount of time the blob is set to FREE
+#define BLOB_MISSING_TIME 50   // After this amount of time the blob is set to RELEASED
+#define BLOB_RELEASE_TIME 500 // After this amount of time the blob is set to FREE
 
 #define X_PADDING_LEFT   0
 #define X_PADDING_REIGHT 0
@@ -120,6 +120,7 @@ typedef enum mode_code_e {
   MATRIX_MODE_RAW, // Send matrix analog sensor values (16x16) over USB using MIDI format
   MAPPING_MODE,    //
   EDIT_MODE,       // Send all blobs values over USB_MIDI
+  THROUGH_MODE,    // 
   PLAY_MODE,       // Recive mappings values from USB_MIDI and forward them to USB_HARDWARE
   ALLOCATE_MODE,   //
   UPLOAD_MODE,     //
@@ -140,6 +141,7 @@ typedef enum verbosity_code_e{
   MATRIX_MODE_RAW_DONE,
   MAPPING_MODE_DONE,
   EDIT_MODE_DONE,
+  THROUGH_MODE_DONE,
   PLAY_MODE_DONE,
   ALLOCATE_MODE_DONE,
   ALLOCATE_DONE,
@@ -214,6 +216,8 @@ void set_level(level_code_t level, uint8_t value);
 
 void hardware_setup(void);
 void update_controls(void);
+
+bool load_applay_config(void);
 bool load_flash_config(void);
 bool apply_config(uint8_t* conf_ptr, size_t conf_size);
 
