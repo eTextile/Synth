@@ -15,6 +15,7 @@ struct mapp_polygon_s {
   polygon_t params;
   uint8_t active_blob_count;
   uint8_t touch_index;
+  MidiType mode_z;
 };
 
 static mapp_polygon_t mapp_polygons[MAX_POLYGONS];
@@ -76,6 +77,9 @@ void mapping_polygon_dispose_blob(common_t* mapping_ptr, blob_t* blob_ptr) {
 };
 
 void mapping_polygon_start(blob_t* blob_ptr) {
+  //mapp_polygon_t* switch_ptr = (mapp_polygon_t*)blob_ptr->action.mapping_ptr;
+  //touch_3d_t* touch_ptr = (touch_3d_t*)blob_ptr->action.touch_ptr;
+
   // TODO
 };
 
@@ -107,6 +111,7 @@ void mapping_polygon_create(const JsonObject &config) {
   polygon_ptr->common.stop_func_ptr = &mapping_polygon_stop;
 
   polygon_ptr->params.touchs = config["touchs"].as<uint8_t>();
+  polygon_ptr->params.mode_z = config["mode_z"].as<MidiType>();
 
   polygon_ptr->params.point_cnt = config["cnt"].as<uint8_t>();
   for (uint8_t j = 0; j < polygon_ptr->params.point_cnt; j++) {

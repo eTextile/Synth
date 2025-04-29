@@ -39,14 +39,12 @@ bool mapping_touchpad_is_blob_inside(common_t* mapping_ptr, blob_t* blob_ptr) {
 
 bool mapping_touchpad_assign_blob(common_t* mapping_ptr, blob_t* blob_ptr) {
   mapp_touchpad_t* touchpad_ptr = (mapp_touchpad_t*)mapping_ptr;
-
   if (touchpad_ptr->touch_index < touchpad_ptr->params.touchs) {
     //Serial.printf("\n_TOUCHPAD_ASSIGN / BLOB_PTR: %p -> TOUCHPAD_PTR: %p", blob_ptr, touchpad_ptr);
-    //Serial.printf("\n_TOUCHPAD_MAX_TOUCHS: %d", touchpad_ptr->params.touchs);
     //Serial.printf("\n_TOUCHPAD_ASSIGN / TOUCH_INDEX: %d", touchpad_ptr->touch_index);
     blob_ptr->action.mapping_ptr = touchpad_ptr;
     blob_ptr->action.touch_ptr = &touchpad_ptr->params.touch[touchpad_ptr->touch_index];
-
+    
     touchpad_ptr->touch_index++;
     touchpad_ptr->active_blob_count++;
     //Serial.printf("\n_TOUCHPAD_ASSIGN / ACTIVE_BLOB_COUNT: %d",touchpad_ptr->active_blob_count); // DEBUG
@@ -70,38 +68,43 @@ void mapping_touchpad_dispose_blob(common_t* mapping_ptr, blob_t* blob_ptr) {
 };
 
 void mapping_touchpad_start(blob_t* blob_ptr) {
+  mapp_touchpad_t* touchpad_ptr = (mapp_touchpad_t*)blob_ptr->action.mapping_ptr;
   touch_3d_t* touch_ptr = (touch_3d_t*)blob_ptr->action.touch_ptr;
-  //Serial.printf("\n_TOUCHPAD_START");
 
-  touch_ptr->last_midi_press = touch_ptr->press.midi.data2;
-  switch (touch_ptr->press.midi.type) {
+  Serial.printf("\n_TOUCHPAD_START: %s", get_type_name(touchpad_ptr->params.mode_z));
+
+  switch (touchpad_ptr->params.mode_z) {
     case NoteOn:
-      //touch_ptr->press.midi.data2 = blob_ptr->centroid.z;
-      touch_ptr->press.midi.data2 = 127;
-      midi_send_out(&touch_ptr->press.midi);
-      touch_ptr->press.midi.type = NoteOff;
+      //touch_ptr->note.midi.type = NoteOn; // Note nead
+      touch_ptr->note.midi.data2 = blob_ptr->centroid.z;
+      //touch_ptr->note.midi.data2 = 127;
+      midi_send_out(&touch_ptr->note.midi);
       break;
-      /*
     case NoteOff:
-      touch_ptr->press.midi.data2 = 0;
-      midi_send_out(&touch_ptr->press.midi);
-      touch_ptr->press.midi.type = NoteOn;
+      touch_ptr->note.midi.type = NoteOn;
+      touch_ptr->note.midi.data2 = blob_ptr->centroid.z;
+      midi_send_out(&touch_ptr->note.midi);
       break;
-      */
     case ControlChange:
+      touch_ptr->last_midi_press = touch_ptr->press.midi.data2;
       touch_ptr->press.midi.data2 = map(
         blob_ptr->centroid.z,
         Z_MIN,
         Z_MAX,
         touch_ptr->press.limit.min,
-        touch_ptr->press.limit.max);
-        midi_send_out(&touch_ptr->press.midi);
+        touch_ptr->press.limit.max
+      );
+      midi_send_out(&touch_ptr->press.midi);
       break;
-    case AfterTouchPoly: // FIXME
-      touch_ptr->press.midi.type = NoteOn;
+    case AfterTouchPoly:
+      // Send controlChange before NoteOn
+      touch_ptr->last_midi_press = touch_ptr->press.midi.data2;
       touch_ptr->press.midi.data2 = blob_ptr->centroid.z;
       midi_send_out(&touch_ptr->press.midi);
-      touch_ptr->press.midi.type = AfterTouchPoly;
+
+      touch_ptr->note.midi.type = NoteOn;
+      touch_ptr->note.midi.data2 = blob_ptr->centroid.z;
+      midi_send_out(&touch_ptr->note.midi);
       break;
     default:
       // Not handled in mapp_toucpad
@@ -112,7 +115,8 @@ void mapping_touchpad_start(blob_t* blob_ptr) {
 void mapping_touchpad_continue(blob_t* blob_ptr) {
   mapp_touchpad_t* touchpad_ptr = (mapp_touchpad_t*)blob_ptr->action.mapping_ptr;
   touch_3d_t* touch_ptr = (touch_3d_t*)blob_ptr->action.touch_ptr;
-  //Serial.printf("\n_TOUCHPAD_CONTINUE");
+
+  Serial.printf("\n_TOUCHPAD_CONTINUE: %s", get_type_name(touchpad_ptr->params.mode_z));
 
   touch_ptr->last_midi_pos_x = touch_ptr->pos_x.midi.data2;
   touch_ptr->pos_x.midi.data2 = round(map(
@@ -138,69 +142,52 @@ void mapping_touchpad_continue(blob_t* blob_ptr) {
     midi_send_out(&touch_ptr->pos_y.midi);
   };
 
-  switch (touch_ptr->press.midi.type) {
-    case ControlChange:
-      touch_ptr->last_midi_press = touch_ptr->press.midi.data2;
-      touch_ptr->press.midi.data2 = map(
-        blob_ptr->centroid.z,
-        Z_MIN,
-        Z_MAX,
-        touch_ptr->press.limit.min,
-        touch_ptr->press.limit.max);
-      if (touch_ptr->press.midi.data2 != touch_ptr->last_midi_press) {
-        midi_send_out(&touch_ptr->press.midi);
-      }
-      break;
-    case AfterTouchPoly:
-      touch_ptr->press.midi.type = ControlChange;
-      touch_ptr->press.midi.data1 = 64; // Add it to the config!?
-      touch_ptr->last_midi_press = touch_ptr->press.midi.data2;
-        touch_ptr->press.midi.data2 = map(
-          blob_ptr->centroid.z,
-          Z_MIN,
-          Z_MAX,
-          touch_ptr->press.limit.min,
-          touch_ptr->press.limit.max);
-      if (touch_ptr->press.midi.data2 != touch_ptr->last_midi_press) {
-        midi_send_out(&touch_ptr->press.midi);
-      }
-      touch_ptr->press.midi.type = AfterTouchPoly;
-      break;
-    default:
-      // Not handled in mapp_toucpad
-      break;
+  if (touchpad_ptr->params.mode_z == ControlChange || touchpad_ptr->params.mode_z == AfterTouchPoly) {
+    touch_ptr->last_midi_press = touch_ptr->press.midi.data2;
+    touch_ptr->press.midi.data2 = map(
+      blob_ptr->centroid.z,
+      Z_MIN,
+      Z_MAX,
+      touch_ptr->press.limit.min,
+      touch_ptr->press.limit.max
+    );
+    if (touch_ptr->press.midi.data2 != touch_ptr->last_midi_press) {
+      midi_send_out(&touch_ptr->press.midi);
+    }
   }
 };
 
 void mapping_touchpad_stop(blob_t* blob_ptr) {
+  mapp_touchpad_t* touchpad_ptr = (mapp_touchpad_t*)blob_ptr->action.mapping_ptr;
   touch_3d_t* touch_ptr = (touch_3d_t*)blob_ptr->action.touch_ptr;
-  //Serial.printf("\n_TOUCHPAD_STOP");
 
-  switch (touch_ptr->press.midi.type) {
-    /*
+  Serial.printf("\n_TOUCHPAD_STOP: %s", get_type_name(touchpad_ptr->params.mode_z));
+
+  switch (touchpad_ptr->params.mode_z) {
     case NoteOn:
-      touch_ptr->press.midi.data2 = blob_ptr->centroid.z;
-      midi_send_out(&touch_ptr->press.midi);
+      touch_ptr->note.midi.type = NoteOff;
+      touch_ptr->note.midi.data2 = 0;
+      midi_send_out(&touch_ptr->note.midi);
       break;
-    */
     case NoteOff:
-      touch_ptr->press.midi.data2 = blob_ptr->centroid.z;
-      midi_send_out(&touch_ptr->press.midi);
-      touch_ptr->press.midi.type = NoteOn;
+      touch_ptr->note.midi.data2 = 0;
+      midi_send_out(&touch_ptr->note.midi);
       break;
     case ControlChange:
-      // N/A
+      touch_ptr->press.midi.data2 = 0; // USE or NOT_USE!?
+      midi_send_out(&touch_ptr->press.midi);
       break;
     case AfterTouchPoly:
-      touch_ptr->press.midi.type = NoteOff;
-      touch_ptr->press.midi.data1 = 64; // Add it to the config!?
+      touch_ptr->note.midi.type = NoteOff;
+      touch_ptr->note.midi.data2 = 0;
+      midi_send_out(&touch_ptr->note.midi);
+      touch_ptr->press.midi.data2 = 0;
       midi_send_out(&touch_ptr->press.midi);
       break;
     default:
       // Not handled in mapp_toucpad
       break;
   }
-
 };
 
 void mapping_touchpad_create(const JsonObject &config) {
@@ -215,42 +202,69 @@ void mapping_touchpad_create(const JsonObject &config) {
   touchpad_ptr->common.stop_func_ptr = &mapping_touchpad_stop;
 
   touchpad_ptr->params.touchs = config["touchs"].as<uint8_t>();
-
   touchpad_ptr->params.rect.from.x = config["from"][0].as<float>();
   touchpad_ptr->params.rect.from.y = config["from"][1].as<float>();
   touchpad_ptr->params.rect.to.x = config["to"][0].as<float>();
   touchpad_ptr->params.rect.to.y = config["to"][1].as<float>();
-  //touchpad_ptr->params.mode = config["mode_z"].as<uint8_t>();
+  touchpad_ptr->params.mode_z = config["mode_z"].as<MidiType>();
 
   if (touchpad_ptr->params.touchs < MAX_TOUCHPAD_TOUCHS) {
     midi_status_t status;
-    for (uint8_t i = 0; i<touchpad_ptr->params.touchs; i++){
+    for (uint8_t i = 0; i<touchpad_ptr->params.touchs; i++) {
       midi_msg_status_unpack(config["msg"][i]["pos_x"]["midi"]["status"].as<uint8_t>(), &status);
-      touchpad_ptr->params.touch[i].pos_x.midi.type = status.type;
+      touchpad_ptr->params.touch[i].pos_x.midi.type = ControlChange;
       touchpad_ptr->params.touch[i].pos_x.midi.data1 = config["msg"][i]["pos_x"]["midi"]["data1"].as<uint8_t>();
       touchpad_ptr->params.touch[i].pos_x.midi.data2 = config["msg"][i]["pos_x"]["midi"]["data2"].as<uint8_t>();
       touchpad_ptr->params.touch[i].pos_x.midi.channel = status.channel;
-      if (status.type == ControlChange || status.type == AfterTouchPoly) {
+      if (status.type == ControlChange) {
         touchpad_ptr->params.touch[i].pos_x.limit.min = config["msg"][i]["pos_x"]["limit"]["min"].as<uint8_t>();
         touchpad_ptr->params.touch[i].pos_x.limit.max = config["msg"][i]["pos_x"]["limit"]["max"].as<uint8_t>();
       }
+
       midi_msg_status_unpack(config["msg"][i]["pos_y"]["midi"]["status"].as<uint8_t>(), &status);
-      touchpad_ptr->params.touch[i].pos_y.midi.type = status.type;
+      touchpad_ptr->params.touch[i].pos_y.midi.type = ControlChange;
       touchpad_ptr->params.touch[i].pos_y.midi.data1 = config["msg"][i]["pos_y"]["midi"]["data1"].as<uint8_t>();
       touchpad_ptr->params.touch[i].pos_y.midi.data2 = config["msg"][i]["pos_y"]["midi"]["data2"].as<uint8_t>();
       touchpad_ptr->params.touch[i].pos_y.midi.channel = status.channel;
-      if (status.type == ControlChange || status.type == AfterTouchPoly) {
+      if (status.type == ControlChange) {
         touchpad_ptr->params.touch[i].pos_y.limit.min = config["msg"][i]["pos_y"]["limit"]["min"].as<uint8_t>();
         touchpad_ptr->params.touch[i].pos_y.limit.max = config["msg"][i]["pos_y"]["limit"]["max"].as<uint8_t>();
       }
-      midi_msg_status_unpack(config["msg"][i]["press"]["midi"]["status"].as<uint8_t>(), &status);
-      touchpad_ptr->params.touch[i].press.midi.type = status.type;
-      touchpad_ptr->params.touch[i].press.midi.data1 = config["msg"][i]["press"]["midi"]["data1"].as<uint8_t>();
-      touchpad_ptr->params.touch[i].press.midi.data2 = config["msg"][i]["press"]["midi"]["data2"].as<uint8_t>();
-      touchpad_ptr->params.touch[i].press.midi.channel = status.channel;
-      if (status.type == ControlChange || status.type == AfterTouchPoly) {
+      
+      switch (touchpad_ptr->params.mode_z) {
+      case NoteOn:
+        midi_msg_status_unpack(config["msg"][i]["note"]["midi"]["status"].as<uint8_t>(), &status);
+        touchpad_ptr->params.touch[i].note.midi.type = NoteOn;
+        touchpad_ptr->params.touch[i].note.midi.data1 = config["msg"][i]["note"]["midi"]["data1"].as<uint8_t>();
+        touchpad_ptr->params.touch[i].note.midi.data2 = config["msg"][i]["note"]["midi"]["data2"].as<uint8_t>();
+        touchpad_ptr->params.touch[i].note.midi.channel = status.channel;
+        break;
+      case ControlChange:
+        midi_msg_status_unpack(config["msg"][i]["press"]["midi"]["status"].as<uint8_t>(), &status);
+        touchpad_ptr->params.touch[i].press.midi.type = status.type;
+        touchpad_ptr->params.touch[i].press.midi.data1 = config["msg"][i]["press"]["midi"]["data1"].as<uint8_t>();
+        touchpad_ptr->params.touch[i].press.midi.data2 = config["msg"][i]["press"]["midi"]["data2"].as<uint8_t>();
+        touchpad_ptr->params.touch[i].press.midi.channel = status.channel;
         touchpad_ptr->params.touch[i].press.limit.min = config["msg"][i]["press"]["limit"]["min"].as<uint8_t>();
         touchpad_ptr->params.touch[i].press.limit.max = config["msg"][i]["press"]["limit"]["max"].as<uint8_t>();
+        break;
+      case AfterTouchPoly:
+        midi_msg_status_unpack(config["msg"][i]["note"]["midi"]["status"].as<uint8_t>(), &status);
+        touchpad_ptr->params.touch[i].note.midi.type = status.type;
+        touchpad_ptr->params.touch[i].note.midi.data1 = config["msg"][i]["note"]["midi"]["data1"].as<uint8_t>();
+        touchpad_ptr->params.touch[i].note.midi.data2 = config["msg"][i]["note"]["midi"]["data2"].as<uint8_t>();
+        touchpad_ptr->params.touch[i].note.midi.channel = status.channel;
+
+        midi_msg_status_unpack(config["msg"][i]["press"]["midi"]["status"].as<uint8_t>(), &status);
+        touchpad_ptr->params.touch[i].press.midi.type = status.type;
+        touchpad_ptr->params.touch[i].press.midi.data1 = config["msg"][i]["press"]["midi"]["data1"].as<uint8_t>();
+        touchpad_ptr->params.touch[i].press.midi.data2 = config["msg"][i]["press"]["midi"]["data2"].as<uint8_t>();
+        touchpad_ptr->params.touch[i].press.midi.channel = status.channel;
+        touchpad_ptr->params.touch[i].press.limit.min = config["msg"][i]["press"]["limit"]["min"].as<uint8_t>();
+        touchpad_ptr->params.touch[i].press.limit.max = config["msg"][i]["press"]["limit"]["max"].as<uint8_t>();
+        break;
+      default:
+        break;
       }
     }
   }

@@ -8,6 +8,7 @@ struct switch_s {
   rect_t rect;
   uint8_t touchs;
   touch_1d_t touch[MAX_SWITCH_TOUCHS];
+  MidiType mode_z;
 };
 
 bool mapping_switchs_alloc(uint8_t switchs_cnt);

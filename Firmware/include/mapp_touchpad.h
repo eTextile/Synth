@@ -8,6 +8,7 @@ struct touchpad_s {
   rect_t rect;
   uint8_t touchs;
   touch_3d_t touch[MAX_TOUCHPAD_TOUCHS];
+  MidiType mode_z;
 };
 
 bool mapping_touchpads_alloc(uint8_t touchpads_cnt);

@@ -259,7 +259,7 @@ inline void update_buttons() {
   // ACTION: BUTTON_L long pressure
   // FONCTION: save the mapping config file to the permanent flash memory
   if (BUTTON_L.rose() && BUTTON_L.previousDuration() > LONG_HOLD) {
-    if (sysEx_data_length > 0){
+    if (sysEx_data_length > 0) {
       if (flash_file("config.json", sysEx_data_ptr, sysEx_data_length)){
         usb_midi_send_info((uint8_t)WRITE_MODE_DONE, MIDI_VERBOSITY_CHANNEL);
       }
@@ -325,7 +325,7 @@ inline void update_encoder() {
     levelToggle = true;
     set_level(e256_current_level, e256_ctr.levels[e256_current_level].val);
   }
-  if (millis() - levelTimeStamp > LEVEL_TIMEOUT && levelToggle){
+  if (millis() - levelTimeStamp > LEVEL_TIMEOUT && levelToggle) {
     levelToggle = false;
     set_mode(e256_current_mode);
   };
@@ -472,7 +472,7 @@ bool config_load_mappings(const JsonObject config) {
   return true;
 };
 
-static bool apply_config(uint8_t* conf_ptr, size_t conf_size) {
+bool apply_config(uint8_t* conf_ptr, size_t conf_size) {
   //DynamicJsonDocument e256_config(conf_size);
   //StaticJsonDocument<4095> e256_config;
   JsonDocument e256_config;

@@ -14,13 +14,13 @@ midi_msg_t midi_nodes_array[MIDI_NODES] = {}; // Memory allocation for all MIDI 
 llist_t midi_nodes_pool; // Main MIDI node stack
 llist_t midi_in;         // Main MIDI input linked list
 llist_t midi_out;        // Main MIDI output linked list
-llist_t midi_chord;      // Main MIDI chord linked list
+//llist_t midi_chord;      // Main MIDI chord linked list
 
 void midi_bus_setup(void) {
   llist_builder(&midi_nodes_pool, &midi_nodes_array[0], MIDI_NODES, sizeof(midi_nodes_array[0])); // Add X nodes to the midi_nodes_pool
   llist_raz(&midi_in);
   llist_raz(&midi_out);
-  llist_raz(&midi_chord);
+  //llist_raz(&midi_chord);
 };
 
 // Extract MIDI type and channel from MIDI status msg

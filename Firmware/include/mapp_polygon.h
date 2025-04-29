@@ -12,6 +12,7 @@ struct polygon_s {
   bool is_inside;
   uint8_t touchs;
   touch_3d_t touch[MAX_POLYGON_TOUCHS];
+  MidiType mode_z;
 };
 
 bool mapping_polygons_alloc(uint8_t polygons_cnt);

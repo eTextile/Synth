@@ -95,8 +95,8 @@ void loop() {
       matrix_interp();
       matrix_find_blobs();
       mapping_lib_update();
-      hardware_midi_transmit_mappings_midi_msg();
       usb_midi_transmit_mappings_midi_msg();
+      hardware_midi_transmit_mappings_midi_msg(); // tmp
       break;
 
     case STANDALONE_MODE:

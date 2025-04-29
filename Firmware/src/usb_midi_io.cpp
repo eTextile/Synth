@@ -27,7 +27,7 @@ void usb_midi_setup(void) {
   usbMIDI.setHandleNoteOn(usb_read_note_on);
   usbMIDI.setHandleNoteOff(usb_read_note_off);
   usbMIDI.setHandleControlChange(usb_read_control_change);
-  usbMIDI.setHandleAfterTouchPoly(usb_read_after_touch_poly); // TESTING
+  usbMIDI.setHandleAfterTouchPoly(usb_read_after_touch_poly);
   usbMIDI.setHandleSystemExclusive(usb_read_system_exclusive);
   usbMIDI.setHandleClock(usb_read_midi_clock);
 };
@@ -38,7 +38,6 @@ void usb_midi_recive(void) {
 
 void usb_midi_transmit_raw_matrix(void) {
   static uint32_t usbTransmitTimeStamp = 0;
-
   if (millis() - usbTransmitTimeStamp > MIDI_TRANSMIT_INTERVAL) {
     usbTransmitTimeStamp = millis();
     usbMIDI.sendSysEx(RAW_FRAME, raw_frame.data_ptr, false);
@@ -50,7 +49,6 @@ void usb_midi_transmit_raw_matrix(void) {
 
 void usb_midi_transmit_interp_matrix(void) {
   static uint32_t usbTransmitTimeStamp = 0;
-
   // NOT_WORKING > see https://forum.pjrc.com/threads/28282-How-big-is-the-MIDI-receive-buffer
   // Interpolation will be made on the web_app side!
   if (millis() - usbTransmitTimeStamp > MIDI_TRANSMIT_INTERVAL) {
@@ -63,7 +61,6 @@ void usb_midi_transmit_interp_matrix(void) {
 
 void usb_midi_transmit_blobs(void) {
   uint8_t blob_values[10] = {0};
-
   for (lnode_t* node_ptr = ITERATOR_START_FROM_HEAD(&llist_blobs); node_ptr != NULL; node_ptr = ITERATOR_NEXT(node_ptr)) {
     blob_t* blob_ptr = (blob_t*)ITERATOR_DATA(node_ptr);
 
@@ -149,10 +146,10 @@ void usb_read_note_off(uint8_t channel, uint8_t note, uint8_t velocity) {
 void usb_read_control_change(uint8_t channel, uint8_t control, uint8_t value) {
   midi_msg_t* midi_ptr = (midi_msg_t*)llist_pop_front(&midi_nodes_pool);
   if (midi_ptr) {
-    midi_ptr->type = ControlChange; // Set the MIDI type
-    midi_ptr->data1 = control;      // Set the MIDI control
-    midi_ptr->data2 = value;        // Set the MIDI value
-    midi_ptr->channel = channel;    // Set the MIDI channel
+    midi_ptr->type = ControlChange;
+    midi_ptr->data1 = control;
+    midi_ptr->data2 = value;
+    midi_ptr->channel = channel;
     if (e256_current_mode == THROUGH_MODE) {
       llist_push_front(&midi_out, midi_ptr); // Add the node to the midi_out linked list
     }
@@ -170,10 +167,10 @@ void usb_read_control_change(uint8_t channel, uint8_t control, uint8_t value) {
 void usb_read_after_touch_poly(uint8_t channel, uint8_t note, uint8_t pressure) {
   midi_msg_t* midi_ptr = (midi_msg_t*)llist_pop_front(&midi_nodes_pool);
   if (midi_ptr) {
-    midi_ptr->type = AfterTouchPoly; // Set the MIDI type
-    midi_ptr->data1 = note;          // Set the MIDI note
-    midi_ptr->data2 = pressure;      // Set the MIDI pressure
-    midi_ptr->channel = channel;     // Set the MIDI channel
+    midi_ptr->type = AfterTouchPoly;
+    midi_ptr->data1 = note;
+    midi_ptr->data2 = pressure;
+    midi_ptr->channel = channel;
     if (e256_current_mode == THROUGH_MODE) {
       llist_push_front(&midi_out, midi_ptr); // Add the node to the midi_out linked list
     }
@@ -237,19 +234,19 @@ void usb_read_program_change(uint8_t channel, uint8_t program) {
           }
           else {
             usb_midi_send_info((uint8_t)NO_CONFIG_FILE, MIDI_ERROR_CHANNEL);
-          };
+          }
           break;
 
         case FETCH_MODE:
           usbMIDI.sendSysEx(flash_config_size, flash_config_ptr, false);
           usb_midi_send_info((uint8_t)FETCH_MODE_DONE, MIDI_VERBOSITY_CHANNEL);
           break;
-        
+
         case ALLOCATE_MODE:
           e256_current_mode = ALLOCATE_MODE;
           usb_midi_send_info((uint8_t)ALLOCATE_MODE_DONE, MIDI_VERBOSITY_CHANNEL);
           break;
-        
+
         case UPLOAD_MODE:
           e256_current_mode = UPLOAD_MODE;
           usb_midi_send_info((uint8_t)UPLOAD_MODE_DONE, MIDI_VERBOSITY_CHANNEL);
@@ -267,7 +264,7 @@ void usb_read_program_change(uint8_t channel, uint8_t program) {
             #if defined(USB_MIDI_SERIAL) && defined(DEBUG_CONFIG)
               Serial.printf("\nCONFIG_APPLY_FAILED");
             #endif
-            //set_mode(ERROR_MODE);
+            set_mode(ERROR_MODE);
           }
           break;
 
@@ -279,17 +276,12 @@ void usb_read_program_change(uint8_t channel, uint8_t program) {
           #endif
           break;
 
-        case ERROR_MODE:
-          set_mode(ERROR_MODE);
-          //usb_midi_send_info((uint8_t)ERROR_MODE_DONE, MIDI_VERBOSITY_CHANNEL);
-          break;
-
         default:
           //Serial.println("OUT_OFF_RANGE!"); // DROP!
           break;
-      };
+      }
       break;
-  };
+  }
 };
 
 // TODO

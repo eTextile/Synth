@@ -118,10 +118,10 @@ typedef enum mode_code_e {
   SYNC_MODE,       // Hand chake mode
   CALIBRATE_MODE,  //
   MATRIX_MODE_RAW, // Send matrix analog sensor values (16x16) over USB using MIDI format
-  MAPPING_MODE,    //
-  EDIT_MODE,       // Send all blobs values over USB_MIDI
-  THROUGH_MODE,    // 
-  PLAY_MODE,       // Recive mappings values from USB_MIDI and forward them to USB_HARDWARE
+  MAPPING_MODE,    // 
+  EDIT_MODE,       // Send all blobs values over USB_MIDI OUTPUT
+  THROUGH_MODE,    // Forward mappings values to the MIDI_HARDWARE OUTPUT
+  PLAY_MODE,       // Send mappings values to the USB_MIDI OUTPUT
   ALLOCATE_MODE,   //
   UPLOAD_MODE,     //
   APPLY_MODE,      //

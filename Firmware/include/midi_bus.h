@@ -16,7 +16,7 @@ using namespace midi;
 extern llist_t midi_nodes_pool; // Main MIDI node stack
 extern llist_t midi_in;         // Main MIDI Input linked list
 extern llist_t midi_out;        // Main MIDI Output linked list
-extern llist_t midi_chord;      // Main MIDI chord linked list
+//extern llist_t midi_chord;      // Main MIDI chord linked list
 
 typedef struct midi_msg_s midi_msg_t;
 struct midi_msg_s {
@@ -42,7 +42,6 @@ struct msg_s {
 // MIDI status bytes: https://github.com/PaulStoffregen/MIDI/blob/master/src/midi_Defs.h
 typedef struct midi_status_s midi_status_t;
 struct midi_status_s {
-  //uint8_t type;
   MidiType type;
   uint8_t channel;
 };

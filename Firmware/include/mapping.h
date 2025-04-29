@@ -30,24 +30,30 @@ typedef struct touch_1d_s touch_1d_t;
 struct touch_1d_s {
   msg_t press;
   uint8_t last_midi_press;
+  msg_t note;
+  //uint8_t last_midi_note; // NOT_USED!
 };
 
 typedef struct touch_2d_s touch_2d_t;
 struct touch_2d_s {
-  msg_t press;
-  uint8_t last_midi_press;
   msg_t pos;
   uint8_t last_midi_pos;
+  msg_t press;
+  uint8_t last_midi_press;
+  msg_t note;
+  //uint8_t last_midi_note; // NOT_USED!
 };
 
 typedef struct touch_3d_s touch_3d_t;
 struct touch_3d_s {
-  msg_t press;
-  uint8_t last_midi_press;
   msg_t pos_x;
   uint8_t last_midi_pos_x;
   msg_t pos_y;
   uint8_t last_midi_pos_y;
+  msg_t press;
+  uint8_t last_midi_press;
+  msg_t note;
+  //uint8_t last_midi_note; // NOT_USED!
 };
 
 typedef enum dir_e {

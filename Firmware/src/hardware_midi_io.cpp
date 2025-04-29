@@ -13,7 +13,7 @@ MIDI_CREATE_INSTANCE(HardwareSerial, Serial3, MIDI);
 
 void hardware_midi_setup(void) {
   MIDI.begin(MIDI_INPUT_CHANNEL); // Launch MIDI hardware and listen to channel 1
-  MIDI.setHandleMessage(hardware_midi_handle_input);
+  //MIDI.setHandleMessage(hardware_midi_handle_input);
 };
 
 /*
@@ -23,6 +23,7 @@ void hardware_midi_recive(void) {
 };
 */
 
+/*
 void hardware_midi_handle_input(const Message<128u> &midiMsg) {
   // midiMsg struct is C++
   // Can it be refact for zero-copy ?
@@ -45,6 +46,7 @@ void hardware_midi_handle_input(const Message<128u> &midiMsg) {
     set_mode(ERROR_MODE);
   }
 };
+*/
 
 void hardware_midi_transmit_mappings_midi_msg(void) {
   for (lnode_t* midi_node_ptr = ITERATOR_START_FROM_HEAD(&midi_out); midi_node_ptr != NULL; midi_node_ptr = ITERATOR_NEXT(midi_node_ptr)) {
