@@ -132,7 +132,7 @@ void mapping_slider_start(blob_t* blob_ptr) {
       midi_send_out(&touch_ptr->note.midi);
       break;
     default:
-      // Not handled in mapp_toucpad
+      // Not handled in mapp_slider
       break;
   }
   //Serial.printf("\nSLIDER_START / TOUCH_LAST_MIDI_PRESS: %d", touch_ptr->last_midi_press);
@@ -213,7 +213,7 @@ void mapping_slider_stop(blob_t* blob_ptr) {
       midi_send_out(&touch_ptr->press.midi);
       break;
     default:
-      // Not handled in mapp_toucpad
+      // Not handled in mapp_slider
       break;
   }
 };
