@@ -72,7 +72,7 @@ void mapping_slider_start(blob_t* blob_ptr) {
   mapp_slider_t* slider_ptr = (mapp_slider_t*)blob_ptr->action.mapping_ptr;
   touch_2d_t* touch_ptr = (touch_2d_t*)blob_ptr->action.touch_ptr;
 
-  Serial.printf("\nSLIDER_START: %s", get_type_name(slider_ptr->params.mode_z));
+  //Serial.printf("\nSLIDER_START: %s", get_type_name(slider_ptr->params.mode_z));
   
   // Send controlChange before NoteOn
   touch_ptr->last_midi_pos = touch_ptr->pos.midi.data2;
@@ -143,7 +143,7 @@ void mapping_slider_continue(blob_t* blob_ptr) {
   mapp_slider_t* slider_ptr = (mapp_slider_t*)blob_ptr->action.mapping_ptr;
   touch_2d_t* touch_ptr = (touch_2d_t*)blob_ptr->action.touch_ptr;
 
-  Serial.printf("\nSLIDER_CONTINUE: %s", get_type_name(slider_ptr->params.mode_z));
+  //Serial.printf("\nSLIDER_CONTINUE: %s", get_type_name(slider_ptr->params.mode_z));
 
   touch_ptr->last_midi_pos = touch_ptr->pos.midi.data2;
   switch (slider_ptr->params.dir) {
@@ -189,7 +189,7 @@ void mapping_slider_stop(blob_t* blob_ptr) {
   mapp_slider_t* slider_ptr = (mapp_slider_t*)blob_ptr->action.mapping_ptr;
   touch_1d_t* touch_ptr = (touch_1d_t*)blob_ptr->action.touch_ptr;
 
-  Serial.printf("\nSLIDER_STOP: %s", get_type_name(slider_ptr->params.mode_z));
+  //Serial.printf("\nSLIDER_STOP: %s", get_type_name(slider_ptr->params.mode_z));
 
   switch (slider_ptr->params.mode_z) {
     case NoteOn:

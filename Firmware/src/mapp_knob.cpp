@@ -66,7 +66,7 @@ void mapping_knob_start(blob_t* blob_ptr) {
   mapp_knob_t* knob_ptr = (mapp_knob_t*)blob_ptr->action.mapping_ptr;
   touch_3d_t* touch_ptr = (touch_3d_t*)blob_ptr->action.touch_ptr;
   
-  Serial.printf("\n_KNOB_START: %s", get_type_name(knob_ptr->params.mode_z));
+  //Serial.printf("\n_KNOB_START: %s", get_type_name(knob_ptr->params.mode_z));
 
   switch (knob_ptr->params.mode_z) {
     case NoteOn:
@@ -111,7 +111,7 @@ void mapping_knob_continue(blob_t* blob_ptr) {
   mapp_knob_t* knob_ptr = (mapp_knob_t*)blob_ptr->action.mapping_ptr;
   knob_touch_t* touch_ptr = (knob_touch_t*)blob_ptr->action.touch_ptr;
   
-  Serial.printf("\n_KNOB_CONTINUE: %s", get_type_name(knob_ptr->params.mode_z));
+  //Serial.printf("\n_KNOB_CONTINUE: %s", get_type_name(knob_ptr->params.mode_z));
 
   float x = blob_ptr->centroid.x - knob_ptr->params.center.x;
   float y = blob_ptr->centroid.y - knob_ptr->params.center.y;
@@ -157,7 +157,7 @@ void mapping_knob_stop(blob_t* blob_ptr) {
   mapp_knob_t* knob_ptr = (mapp_knob_t*)blob_ptr->action.mapping_ptr;
   knob_touch_t* touch_ptr = (knob_touch_t*)blob_ptr->action.touch_ptr;
 
-  Serial.printf("\n_TOUCHPAD_STOP: %s", get_type_name(knob_ptr->params.mode_z));
+  //Serial.printf("\n_TOUCHPAD_STOP: %s", get_type_name(knob_ptr->params.mode_z));
 
   switch (knob_ptr->params.mode_z) {
     case NoteOn:

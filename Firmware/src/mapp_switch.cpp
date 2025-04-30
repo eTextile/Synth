@@ -68,13 +68,11 @@ void mapping_switch_start(blob_t* blob_ptr) {
   mapp_switch_t* switch_ptr = (mapp_switch_t*)blob_ptr->action.mapping_ptr;
   touch_1d_t* touch_ptr = (touch_1d_t*)blob_ptr->action.touch_ptr;
 
-  Serial.printf("\nSWITCH_START: %s", get_type_name(switch_ptr->params.mode_z));
+  //Serial.printf("\nSWITCH_START: %s", get_type_name(switch_ptr->params.mode_z));
 
   switch (switch_ptr->params.mode_z) {
     case NoteOn:
-      //touch_ptr->note.midi.type = NoteOn; // Note nead
       touch_ptr->note.midi.data2 = blob_ptr->centroid.z;
-      //touch_ptr->note.midi.data2 = 127;
       midi_send_out(&touch_ptr->note.midi);
       break;
     case NoteOff:
@@ -98,7 +96,6 @@ void mapping_switch_start(blob_t* blob_ptr) {
       touch_ptr->last_midi_press = touch_ptr->press.midi.data2;
       touch_ptr->press.midi.data2 = blob_ptr->centroid.z;
       midi_send_out(&touch_ptr->press.midi);
-
       touch_ptr->note.midi.type = NoteOn;
       touch_ptr->note.midi.data2 = blob_ptr->centroid.z;
       midi_send_out(&touch_ptr->note.midi);
@@ -113,7 +110,7 @@ void mapping_switch_continue(blob_t* blob_ptr) {
   mapp_switch_t* switch_ptr = (mapp_switch_t*)blob_ptr->action.mapping_ptr;
   touch_1d_t* touch_ptr = (touch_1d_t*)blob_ptr->action.touch_ptr;
 
-  Serial.printf("\nSWITCH_CONTINUE: %s", get_type_name(switch_ptr->params.mode_z));
+  //Serial.printf("\nSWITCH_CONTINUE: %s", get_type_name(switch_ptr->params.mode_z));
 
   if (switch_ptr->params.mode_z == ControlChange || switch_ptr->params.mode_z == AfterTouchPoly) {
     touch_ptr->last_midi_press = touch_ptr->press.midi.data2;
@@ -128,7 +125,7 @@ void mapping_switch_stop(blob_t* blob_ptr) {
   mapp_switch_t* switch_ptr = (mapp_switch_t*)blob_ptr->action.mapping_ptr;
   touch_1d_t* touch_ptr = (touch_1d_t*)blob_ptr->action.touch_ptr;
 
-  Serial.printf("\nSWITCH_STOP %s", get_type_name(switch_ptr->params.mode_z));
+  //Serial.printf("\nSWITCH_STOP %s", get_type_name(switch_ptr->params.mode_z));
 
   switch (switch_ptr->params.mode_z) {
     case NoteOn:

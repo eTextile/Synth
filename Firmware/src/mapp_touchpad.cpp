@@ -71,7 +71,7 @@ void mapping_touchpad_start(blob_t* blob_ptr) {
   mapp_touchpad_t* touchpad_ptr = (mapp_touchpad_t*)blob_ptr->action.mapping_ptr;
   touch_3d_t* touch_ptr = (touch_3d_t*)blob_ptr->action.touch_ptr;
 
-  Serial.printf("\n_TOUCHPAD_START: %s", get_type_name(touchpad_ptr->params.mode_z));
+  //Serial.printf("\n_TOUCHPAD_START: %s", get_type_name(touchpad_ptr->params.mode_z));
 
   switch (touchpad_ptr->params.mode_z) {
     case NoteOn:
@@ -116,7 +116,7 @@ void mapping_touchpad_continue(blob_t* blob_ptr) {
   mapp_touchpad_t* touchpad_ptr = (mapp_touchpad_t*)blob_ptr->action.mapping_ptr;
   touch_3d_t* touch_ptr = (touch_3d_t*)blob_ptr->action.touch_ptr;
 
-  Serial.printf("\n_TOUCHPAD_CONTINUE: %s", get_type_name(touchpad_ptr->params.mode_z));
+  //Serial.printf("\n_TOUCHPAD_CONTINUE: %s", get_type_name(touchpad_ptr->params.mode_z));
 
   touch_ptr->last_midi_pos_x = touch_ptr->pos_x.midi.data2;
   touch_ptr->pos_x.midi.data2 = round(map(
@@ -161,7 +161,7 @@ void mapping_touchpad_stop(blob_t* blob_ptr) {
   mapp_touchpad_t* touchpad_ptr = (mapp_touchpad_t*)blob_ptr->action.mapping_ptr;
   touch_3d_t* touch_ptr = (touch_3d_t*)blob_ptr->action.touch_ptr;
 
-  Serial.printf("\n_TOUCHPAD_STOP: %s", get_type_name(touchpad_ptr->params.mode_z));
+  //Serial.printf("\n_TOUCHPAD_STOP: %s", get_type_name(touchpad_ptr->params.mode_z));
 
   switch (touchpad_ptr->params.mode_z) {
     case NoteOn:
@@ -181,8 +181,8 @@ void mapping_touchpad_stop(blob_t* blob_ptr) {
       touch_ptr->note.midi.type = NoteOff;
       touch_ptr->note.midi.data2 = 0;
       midi_send_out(&touch_ptr->note.midi);
-      touch_ptr->press.midi.data2 = 0;
-      midi_send_out(&touch_ptr->press.midi);
+      //touch_ptr->press.midi.data2 = 0;
+      //midi_send_out(&touch_ptr->press.midi);
       break;
     default:
       // Not handled in mapp_toucpad
