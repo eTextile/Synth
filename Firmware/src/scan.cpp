@@ -32,7 +32,7 @@ ADC::Sync_result result; // Store ADC_0 & ADC_1
 #define CALIBRATION_CYCLES 10
 
 uint8_t raw_frame_array[RAW_FRAME] = {0}; // 1D Array to store E256 ofseted analog input values
-uint8_t offset_array[RAW_FRAME] = {0};   // 1D Array to store E256 smallest values
+uint8_t offset_frame_array[RAW_FRAME] = {0};   // 1D Array to store E256 smallest values
 
 image_t raw_frame;    // Memory allocation for raw frame values
 image_t offset_frame; // Memory allocation for offset frame values
@@ -82,7 +82,7 @@ void scan_setup(void) {
   raw_frame.num_rows = RAW_ROWS;
 
   // image_t* offset_frame init config
-  offset_frame.data_ptr = &offset_array[0];
+  offset_frame.data_ptr = &offset_frame_array[0];
   offset_frame.num_cols = RAW_COLS;
   offset_frame.num_rows = RAW_ROWS;
 };
@@ -91,7 +91,7 @@ void scan_setup(void) {
 // Rows are digital OUTPUT_PINS supplyed one by one sequentially with 3.3V
 void matrix_calibrate(void) {
 
-  memset(&offset_array[0], 0, RAW_FRAME); // RAZ offset_array (16x16)
+  memset(&offset_frame_array[0], 0, RAW_FRAME); // RAZ offset_frame_array (16x16)
 
   for (uint8_t i = 0; i < CALIBRATION_CYCLES; i++) {
     for (uint8_t cols = 0; cols < DUAL_COLS; cols++) { // ANNALOG_PINS [0-7] with [8-15]
@@ -124,8 +124,8 @@ void matrix_calibrate(void) {
           result = adc->analogSynchronizedRead(ADC1_PIN, ADC0_PIN);
         #endif
 
-        offset_array[index_a] = max(offset_array[index_a], result.result_adc0);
-        offset_array[index_b] = max(offset_array[index_b], result.result_adc1);
+        offset_frame_array[index_a] = max(offset_frame_array[index_a], result.result_adc0);
+        offset_frame_array[index_b] = max(offset_frame_array[index_b], result.result_adc1);
         
         #if defined(SET_ORIGIN_Y)
           setRows = setRows << 1;
@@ -172,16 +172,16 @@ void matrix_scan(void) {
       #endif
 
       uint8_t valA = result.result_adc0;
-      if (valA > offset_array[index_a]) {
-        raw_frame_array[index_a] = min(127, (valA - offset_array[index_a]));
+      if (valA > offset_frame_array[index_a]) {
+        raw_frame_array[index_a] = min(127, (valA - offset_frame_array[index_a]));
       }
       else {
         raw_frame_array[index_a] = 0;
       }
       
       uint8_t valB = result.result_adc1;
-      if (valB > offset_array[index_b]) {
-        raw_frame_array[index_b] = min(127, (valB - offset_array[index_b]));
+      if (valB > offset_frame_array[index_b]) {
+        raw_frame_array[index_b] = min(127, (valB - offset_frame_array[index_b]));
       }
       else {
         raw_frame_array[index_b] = 0;
