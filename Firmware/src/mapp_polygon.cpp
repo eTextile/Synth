@@ -76,28 +76,58 @@ void mapping_polygon_dispose_blob(common_t* mapping_ptr, blob_t* blob_ptr) {
   };
 };
 
-void mapping_polygon_start(blob_t* blob_ptr) {
-  //mapp_polygon_t* switch_ptr = (mapp_polygon_t*)blob_ptr->action.mapping_ptr;
-  //touch_3d_t* touch_ptr = (touch_3d_t*)blob_ptr->action.touch_ptr;
 
-  // TODO
+void mapping_polygon_start(blob_t* blob_ptr) {
+  mapp_polygon_t* polygon_ptr = (mapp_polygon_t*)blob_ptr->action.mapping_ptr;
+  touch_3d_t* touch_ptr = (touch_3d_t*)blob_ptr->action.touch_ptr;
+
+  switch (polygon_ptr->params.mode_z) {
+    case NoteOn:
+      send_blob_press_note_on(&touch_ptr->note.msg, blob_ptr);
+      break;
+    case ControlChange:
+      send_blob_press_control_change(&touch_ptr->press, blob_ptr);
+      break;
+    case AfterTouchPoly:
+      // Send controlChange before NoteOn
+      send_blob_press_control_change(&touch_ptr->press, blob_ptr);
+      send_blob_press_note_on(&touch_ptr->note.msg, blob_ptr);
+      break;
+    default:
+      // Not handled in mapping_touchpad
+      break;
+  }
 };
 
-// Use to detect if a blob is inside a polygon
-// We can draw polygons to define zones et/ou zones overlaps playing MIDI_NOTES
-void mapping_spolygon_continue(blob_t* blob_ptr) {
-  //mapp_polygon_t* polygon_ptr = (mapp_polygon_t*)blob_ptr->action.mapping_ptr;
-  //touch_3d_t* touch_ptr = (touch_3d_t*)blob_ptr->action.touch_ptr;
-  // TODO: get the max width & max height and scale it to [0-1]
+void mapping_polygon_continue(blob_t* blob_ptr) {
+  mapp_polygon_t* polygon_ptr = (mapp_polygon_t*)blob_ptr->action.mapping_ptr;
+  touch_1d_t* touch_ptr = (touch_1d_t*)blob_ptr->action.touch_ptr;
 
-  #if defined(USB_MIDI_SERIAL) && defined(DEBUG_MAPPINGS_POLYGONS)
-    Serial.printf("\nDEBUG_MAPPINGS_POLYGONS\tPoint %f %f is inside polygon %d\n", blob_ptr->centroid.x, blob_ptr->centroid.y, p);
-  #endif
+  if (polygon_ptr->params.mode_z != NoteOn) {
+    send_blob_press_control_change(&touch_ptr->press, blob_ptr);
+  }
 };
 
 void mapping_polygon_stop(blob_t* blob_ptr) {
-  // TODO
+  mapp_polygon_t* polygon_ptr = (mapp_polygon_t*)blob_ptr->action.mapping_ptr;
+  touch_1d_t* touch_ptr = (touch_1d_t*)blob_ptr->action.touch_ptr;
+
+  switch (polygon_ptr->params.mode_z) {
+    case NoteOn:
+      send_blob_press_note_off(&touch_ptr->note.msg, blob_ptr);
+      break;
+    case ControlChange:
+      // N/A
+      break;
+    case AfterTouchPoly:
+      send_blob_press_note_off(&touch_ptr->note.msg, blob_ptr);
+      break;
+    default:
+      // Not handled in mapp_switch
+      break;
+  }
 };
+
 
 void mapping_polygon_create(const JsonObject &config) {
   mapp_polygon_t* polygon_ptr = (mapp_polygon_t*)llist_pop_front(&llist_polygons_pool);
@@ -107,17 +137,19 @@ void mapping_polygon_create(const JsonObject &config) {
   polygon_ptr->common.blob_dispose_func_ptr = &mapping_polygon_dispose_blob;
 
   polygon_ptr->common.start_func_ptr = &mapping_polygon_start;
-  polygon_ptr->common.continue_func_ptr = &mapping_spolygon_continue;
+  polygon_ptr->common.continue_func_ptr = &mapping_polygon_continue;
   polygon_ptr->common.stop_func_ptr = &mapping_polygon_stop;
 
   polygon_ptr->params.touchs = config["touchs"].as<uint8_t>();
   polygon_ptr->params.mode_z = config["mode_z"].as<MidiType>();
 
   polygon_ptr->params.point_cnt = config["cnt"].as<uint8_t>();
-  for (uint8_t j = 0; j < polygon_ptr->params.point_cnt; j++) {
-    polygon_ptr->params.point[j].x = config["point"][j]["X"].as<float>();
-    polygon_ptr->params.point[j].y = config["point"][j]["Y"].as<float>();
+
+  for (uint8_t i = 0; i < polygon_ptr->params.point_cnt; i++) {
+    polygon_ptr->params.point[i].x = config["point"][i]["X"].as<float>();
+    polygon_ptr->params.point[i].y = config["point"][i]["Y"].as<float>();
   };
+  
   // For line equation y = mx + c, we pre-compute m and c for all edges of a given polygon
   float x1, x2, y1, y2;
   uint8_t v1, v2 = (polygon_ptr->params.point_cnt - 1);

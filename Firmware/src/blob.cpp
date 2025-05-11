@@ -27,7 +27,7 @@ blob_t blob_array[MAX_BLOBS] = {0};    // Store blobs
 llist_t llist_context_pool;            // Context nodes pool
 llist_t llist_context;                 // Context nodes linked list
 llist_t llist_blobs_pool;              // Blobs nodes pool
-llist_t blobs_to_keep;                 // 
+llist_t blobs_to_keep;                 // Tmp 
 llist_t llist_blobs;                   // Blobs nodes linked list
 
 void blob_setup(void) {
@@ -61,16 +61,13 @@ void matrix_find_blobs(void) {
 
   while ((tmp_blob_ptr = (blob_t*)llist_pop_front(&llist_blobs)) != NULL) {
     if (tmp_blob_ptr->status == FREE) {
-      common_t* mapping_ptr = (common_t*)tmp_blob_ptr->action.mapping_ptr;
-      if (mapping_ptr) mapping_ptr->blob_dispose_func_ptr(mapping_ptr, tmp_blob_ptr);
+      common_t* blob_mapping_ptr = (common_t*)tmp_blob_ptr->action.mapping_ptr;
+      if (blob_mapping_ptr) blob_mapping_ptr->blob_dispose_func_ptr(blob_mapping_ptr, tmp_blob_ptr);
       llist_push_back(&llist_blobs_pool, tmp_blob_ptr);
     }
     else {
       tmp_blob_ptr->last_status = tmp_blob_ptr->status;
       tmp_blob_ptr->status = MISSING;
-
-      //Serial.printf("\nA_STATUS: %s\tLAST_STATUS: %s", get_blob_status_name(tmp_blob_ptr->status), get_blob_status_name(tmp_blob_ptr->last_status));
-
       llist_push_back(&blobs_to_keep, tmp_blob_ptr);
     }
   }
@@ -296,16 +293,17 @@ void matrix_find_blobs(void) {
     }
   }
 
-  // At last but we test the blobs that have disappeared but which are still in the list
+  // At last we test the blobs that have disappeared but which are still in the list
   blob_t* lost_blob_ptr = NULL;
 
   while ((lost_blob_ptr = (blob_t*)llist_pop_front(&llist_blobs)) != NULL) {
     if (lost_blob_ptr->status == MISSING) {
-      if ((millis() - lost_blob_ptr->life_time_stamp) < BLOB_MISSING_TIME) {
+      uint32_t blob_life_time = (millis() - lost_blob_ptr->life_time_stamp);
+      if (blob_life_time < BLOB_MISSING_TIME) {
         //lost_blob_ptr->status = MISSING; // NOT NEAD!
       }
       else {
-        if ((millis() - lost_blob_ptr->life_time_stamp) < BLOB_RELEASE_TIME) {
+        if (blob_life_time < BLOB_RELEASE_TIME) {
           lost_blob_ptr->status = RELEASED;
         }
         else {
@@ -318,70 +316,67 @@ void matrix_find_blobs(void) {
   llist_swap_llist(&llist_blobs, &blobs_to_keep);
 
   #if defined(RUNING_MEDIAN)
-    runing_median();
+  runing_median();
   #endif
 
-#if defined(VELOCITY)
-for (lnode_t* node_ptr = ITERATOR_START_FROM_HEAD(&llist_previous_blobs); node_ptr != NULL; node_ptr = ITERATOR_NEXT(node_ptr)) {
-  blob_t* blob_ptr = (blob_t*)ITERATOR_DATA(node_ptr);
-  if (blob_ptr->status == NEW) {
-    blob_ptr->velocity.time_stamp = millis();
-    blob_ptr->last_centroid = blob_ptr->centroid;
-  }
-  else if (blob_ptr->status == PRESENT) {
-    if (millis() - blob_ptr->velocity.time_stamp > 5) {
-      blob_ptr->velocity.timeStamp = millis();
-      float vx = fabs(blob_ptr->centroid.x - blob_ptr->last_centroid.x);
-      float vy = fabs(blob_ptr->centroid.y - blob_ptr->last_centroid.y);
-      blob_ptr->velocity.xy = sqrtf(vx * vx + vy * vy);
-      blob_ptr->velocity.z = blob_ptr->centroid.z - blob_ptr->last_centroid.z;
+  #if defined(VELOCITY)
+  for (lnode_t* node_ptr = ITERATOR_START_FROM_HEAD(&llist_previous_blobs); node_ptr != NULL; node_ptr = ITERATOR_NEXT(node_ptr)) {
+    blob_t* blob_ptr = (blob_t*)ITERATOR_DATA(node_ptr);
+    if (blob_ptr->status == NEW) {
+      blob_ptr->velocity.time_stamp = millis();
       blob_ptr->last_centroid = blob_ptr->centroid;
     }
-  }
-};
-#endif
+    else if (blob_ptr->status == PRESENT) {
+      if (millis() - blob_ptr->velocity.time_stamp > 5) {
+        blob_ptr->velocity.timeStamp = millis();
+        float vx = fabs(blob_ptr->centroid.x - blob_ptr->last_centroid.x);
+        float vy = fabs(blob_ptr->centroid.y - blob_ptr->last_centroid.y);
+        blob_ptr->velocity.xy = sqrtf(vx * vx + vy * vy);
+        blob_ptr->velocity.z = blob_ptr->centroid.z - blob_ptr->last_centroid.z;
+        blob_ptr->last_centroid = blob_ptr->centroid;
+      }
+    }
+  };
+  #endif
 
-#if defined(USB_MIDI_SERIAL) && defined(DEBUG_BITMAP)
+  #if defined(USB_MIDI_SERIAL) && defined(DEBUG_BITMAP)
   for (uint8_t row_pos = 0; row_pos < NEW_ROWS; row_pos++) {
-    uint8_t* rowPos_ptr = &bitmap_array[0] + row_pos * NEW_ROWS;
+    uint8_t* row_pos_ptr = &bitmap_array[0] + row_pos * NEW_ROWS;
     for (int col_pos = 0; col_pos < NEW_COLS; col_pos++) {
-      Serial.printf("%d-", IMAGE_GET_PIXEL_FAST(rowPos_ptr, col_pos));
+      Serial.printf("%d-", IMAGE_GET_PIXEL_FAST(row_pos_ptr, col_pos));
     };
     Serial.printf("\n");
   };
   Serial.printf("\n");
-#endif
+  #endif
 
-#if defined(USB_MIDI_SERIAL) && defined(DEBUG_BLOBS)
+  #if defined(USB_MIDI_SERIAL) && defined(DEBUG_BLOBS)
   for (lnode_t* node_ptr = ITERATOR_START_FROM_HEAD(&llist_blobs); node_ptr != NULL; node_ptr = ITERATOR_NEXT(node_ptr)) {
     blob_t* blob_ptr = (blob_t*)ITERATOR_DATA(node_ptr);
     //Serial.printf("\nDEBUG_BLOBS:%d\tS:%d\tX:%f\tY:%f\tZ:%d\tW:%d\tH:%d\tVXY:%f\tVZ:%f",
     Serial.printf("\nDEBUG_BLOBS:%d\tS:%d\tX:%f\tY:%f\tZ:%d\tW:%d\tH:%d",
-                  blob_ptr->UID,
-                  blob_ptr->status,
-                  blob_ptr->centroid.x,
-                  blob_ptr->centroid.y,
-                  blob_ptr->centroid.z,
-                  blob_ptr->box.w,
-                  blob_ptr->box.h
-                  //blob_ptr->velocity.xy,
-                  //blob_ptr->velocity.z
-                 );
+      blob_ptr->UID,
+      blob_ptr->status,
+      blob_ptr->centroid.x,
+      blob_ptr->centroid.y,
+      blob_ptr->centroid.z,
+      blob_ptr->box.w,
+      blob_ptr->box.h
+      //blob_ptr->velocity.xy,
+      //blob_ptr->velocity.z
+    );
   };
   #endif
 
   #if defined(USB_MIDI_SERIAL) && defined(DEBUG_FIND_BLOBS)
-    if ((lnode_t*)llist_blobs.head_ptr != NULL) {
-      Serial.printf("\n___________DEBUG_FIND_BLOBS / END_OF_FRAME");
-    }
+  if ((lnode_t*)llist_blobs.head_ptr != NULL) {
+    Serial.printf("\n___________DEBUG_FIND_BLOBS / END_OF_FRAME");
+  }
   #endif
 };
 
 bool is_blob_existing(blob_t* blob_ptr, blob_t* undefined_blob_ptr) {
   float dist = sqrtf(pow(blob_ptr->centroid.x - undefined_blob_ptr->centroid.x, 2) + pow(blob_ptr->centroid.y - undefined_blob_ptr->centroid.y, 2));
-  
-  //Serial.printf("\nDIST: %f", dist);
-
   if (dist < BLOB_LAST_DIST) {
     return true;
   }

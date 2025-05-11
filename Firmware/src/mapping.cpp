@@ -20,33 +20,26 @@ void mapping_lib_update(void) {
 
         if (blob_ptr->action.mapping_ptr == NULL) {
           if (mapping_ptr->blob_assign_func_ptr(mapping_ptr, blob_ptr)) {
-            Serial.printf("\n_BLOB_ASSIGN_START");
             mapping_ptr->start_func_ptr(blob_ptr);
           }
         }
         else {
           if (blob_ptr->status == NEW) {
-            Serial.printf("\n_BLOB_START");
             mapping_ptr->start_func_ptr(blob_ptr);
           }
           else if (blob_ptr->status == PRESENT) {
-            Serial.printf("\n_BLOB_PRESENT");
             mapping_ptr->continue_func_ptr(blob_ptr);
           }
-          else if (blob_ptr->status == RELEASED && blob_ptr->last_status == MISSING) { // FIXME
-            Serial.printf("\n_BLOB_RELEASED_IN");
+          else if (blob_ptr->status == RELEASED && blob_ptr->last_status == MISSING) {
             mapping_ptr->stop_func_ptr(blob_ptr);
           }
           else if (blob_ptr->status == FREE) {
-            common_t* mapping_ptr = (common_t*)blob_ptr->action.mapping_ptr;
-            if (mapping_ptr) mapping_ptr->blob_dispose_func_ptr(mapping_ptr, blob_ptr);
-            Serial.printf("\n_BLOB_FREE");
+            // N/A
           }
         }
       }
       else { // RELEASESING THE BLOB OUT OF THE MAPPING
         if (blob_ptr->status == RELEASED && blob_ptr->last_status == MISSING) {
-          Serial.printf("\n_BLOB_RELEASED_OUT");
           mapping_ptr->stop_func_ptr(blob_ptr);
         }
       }

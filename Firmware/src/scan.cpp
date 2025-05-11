@@ -39,7 +39,7 @@ image_t offset_frame; // Memory allocation for offset frame values
 
 // Array to store all parameters used to configure the two 8:1 analog multiplexeurs ()
 // Each byte |ENA|A|B|C|ENA|A|B|C|
-uint8_t setDualCols[DUAL_COLS] = {
+uint8_t set_dual_cols[DUAL_COLS] = {
 #if defined(SET_ORIGIN_X)
   0x33, 0x00, 0x11, 0x22, 0x44, 0x66, 0x77, 0x55
 #else
@@ -96,16 +96,16 @@ void matrix_calibrate(void) {
   for (uint8_t i = 0; i < CALIBRATION_CYCLES; i++) {
     for (uint8_t cols = 0; cols < DUAL_COLS; cols++) { // ANNALOG_PINS [0-7] with [8-15]
       #if defined(SET_ORIGIN_Y)
-        uint16_t setRows = 0x1; // Reset to [0000 0000 0000 0001]
+        uint16_t set_rows = 0x1; // Reset to [0000 0000 0000 0001]
       #else
-        uint16_t setRows = 0x8000; // Reset to [1000 0000 0000 0000]
+        uint16_t set_rows = 0x8000; // Reset to [1000 0000 0000 0000]
       #endif
       for (uint8_t row = 0; row < RAW_ROWS; row++) {     // DIGITAL_PINS [0-15]
         digitalWrite(SS1_PIN, LOW);                      // Set the Slave Select Pin LOW
-        //SPI1.transfer16(setRows);                      // Set up the two OUTPUT shift registers (FIXME)
-        SPI1.transfer((uint8_t)(setRows & 0xFF));        // Shift out one byte to setup one OUTPUT shift register
-        SPI1.transfer((uint8_t)((setRows >> 8) & 0xFF)); // Shift out one byte to setup one OUTPUT shift register
-        SPI1.transfer(setDualCols[cols]);                // Shift out one byte that setup the two INPUT 8:1 analog multiplexers
+        //SPI1.transfer16(set_rows);                      // Set up the two OUTPUT shift registers (FIXME)
+        SPI1.transfer((uint8_t)(set_rows & 0xFF));        // Shift out one byte to setup one OUTPUT shift register
+        SPI1.transfer((uint8_t)((set_rows >> 8) & 0xFF)); // Shift out one byte to setup one OUTPUT shift register
+        SPI1.transfer(set_dual_cols[cols]);                // Shift out one byte that setup the two INPUT 8:1 analog multiplexers
         digitalWrite(SS1_PIN, HIGH);                     // Set the Slave Select Pin HIGH
         uint8_t index_a = row * RAW_COLS + cols;         // Compute 1D array index_a
         uint8_t index_b = index_a + DUAL_COLS;           // Compute 1D array index_b
@@ -128,9 +128,9 @@ void matrix_calibrate(void) {
         offset_frame_array[index_b] = max(offset_frame_array[index_b], result.result_adc1);
         
         #if defined(SET_ORIGIN_Y)
-          setRows = setRows << 1;
+          set_rows = set_rows << 1;
         #else
-          setRows = setRows >> 1;
+          set_rows = set_rows >> 1;
         #endif
       };
     };
@@ -142,16 +142,16 @@ void matrix_calibrate(void) {
 void matrix_scan(void) {
   for (uint8_t cols = 0; cols < DUAL_COLS; cols++) { // ANNALOG_PINS [0-7] with [8-15]
     #if defined(SET_ORIGIN_Y)
-      uint16_t setRows = 0x1; // alive to [0000 0000 0000 0001]
+      uint16_t set_rows = 0x1; // alive to [0000 0000 0000 0001]
     #else
-      uint16_t setRows = 0x8000; // Reset to [1000 0000 0000 0000]
+      uint16_t set_rows = 0x8000; // Reset to [1000 0000 0000 0000]
     #endif
     for (uint8_t row = 0; row < RAW_ROWS; row++) {     // DIGITAL_PINS [0-15]
       digitalWrite(SS1_PIN, LOW);                      // Set the Slave Select Pin LOW
-      //SPI1.transfer16(setRows);                      // Set up the two OUTPUT shift registers (FIXME!)      
-      SPI1.transfer((uint8_t)(setRows & 0xFF));        // Shift out one byte to setup one OUTPUT shift register
-      SPI1.transfer((uint8_t)((setRows >> 8) & 0xFF)); // Shift out one byte to setup one OUTPUT shift register
-      SPI1.transfer(setDualCols[cols]);                // Shift out one byte that setup the two INPUT 8:1 analog multiplexers
+      //SPI1.transfer16(set_rows);                      // Set up the two OUTPUT shift registers (FIXME!)      
+      SPI1.transfer((uint8_t)(set_rows & 0xFF));        // Shift out one byte to setup one OUTPUT shift register
+      SPI1.transfer((uint8_t)((set_rows >> 8) & 0xFF)); // Shift out one byte to setup one OUTPUT shift register
+      SPI1.transfer(set_dual_cols[cols]);                // Shift out one byte that setup the two INPUT 8:1 analog multiplexers
       digitalWrite(SS1_PIN, HIGH);                     // Set the Slave Select Pin HIGH
 
       uint8_t index_a = row * RAW_COLS + cols;  // Compute 1D array index_a
@@ -188,9 +188,9 @@ void matrix_scan(void) {
       }
 
       #if defined(SET_ORIGIN_Y)
-        setRows = setRows << 1;
+        set_rows = set_rows << 1;
       #else
-        setRows = setRows >> 1;
+        set_rows = set_rows >> 1;
       #endif
     };
   };

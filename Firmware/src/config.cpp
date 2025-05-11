@@ -42,7 +42,7 @@ const char* get_mode_name(mode_code_t code) {
     case PENDING_MODE: char_code = "PENDING_MODE"; break;
     case SYNC_MODE: char_code = "SYNC_MODE"; break;
     case CALIBRATE_MODE: char_code = "CALIBRATE_MODE"; break;
-    case MATRIX_MODE_RAW: char_code = "MATRIX_MODE_RAW"; break;
+    case MATRIX_RAW_MODE: char_code = "MATRIX_RAW_MODE"; break;
     case MAPPING_MODE: char_code = "MAPPING_MODE"; break;
     case EDIT_MODE: char_code = "EDIT_MODE"; break;
     case THROUGH_MODE: char_code = "THROUGH_MODE"; break;
@@ -65,7 +65,7 @@ const char* get_verbosity_name(verbosity_code_t code) {
     case PENDING_MODE_DONE: char_code = "PENDING_MODE_DONE"; break;
     case SYNC_MODE_DONE: char_code = "SYNC_MODE_DONE"; break;
     case CALIBRATE_MODE_DONE: char_code = "CALIBRATE_MODE_DONE"; break;
-    case MATRIX_MODE_RAW_DONE: char_code = "MATRIX_MODE_RAW_DONE"; break;
+    case MATRIX_RAW_MODE_DONE: char_code = "MATRIX_RAW_MODE_DONE"; break;
     case MAPPING_MODE_DONE: char_code = "MAPPING_MODE_DONE"; break;
     case EDIT_MODE_DONE: char_code = "EDIT_MODE_DONE"; break;
     case THROUGH_MODE_DONE: char_code = "THROUGH_MODE_DONE"; break;
@@ -74,7 +74,7 @@ const char* get_verbosity_name(verbosity_code_t code) {
     case ALLOCATE_DONE: char_code = "ALLOCATE_DONE"; break;
     case UPLOAD_MODE_DONE: char_code = "UPLOAD_MODE_DONE"; break;
     case UPLOAD_DONE: char_code = "UPLOAD_MODE_DONE"; break;
-    case APPLY_MODE_DONE: char_code = "APPLY_MODE_DONE"; break;
+    case CONFIG_APPLY_DONE: char_code = "CONFIG_APPLY_DONE"; break;
     case WRITE_MODE_DONE: char_code = "WRITE_MODE_DONE"; break;
     case LOAD_MODE_DONE: char_code = "LOAD_MODE_DONE"; break;
     case FETCH_MODE_DONE: char_code = "FETCH_MODE_DONE"; break;
@@ -118,7 +118,7 @@ e256_mode_t e256_m[16] = {
   {{HIGH, LOW, false}, 50, 50, true},     // [0] PENDING_MODE
   {{HIGH, LOW, false}, 500, 500, true},   // [1] SYNC_MODE
   {{HIGH, LOW, false}, 15, 15, true},     // [2] CALIBRATE_MODE
-  {{HIGH, HIGH, false}, 200, 200, true},  // [3] MATRIX_MODE_RAW
+  {{HIGH, HIGH, false}, 200, 200, true},  // [3] MATRIX_RAW_MODE
   {{HIGH, HIGH, false}, 400, 400, true},  // [4] MAPPING_MODE
   {{HIGH, LOW, false}, 1000, 50, true},   // [5] EDIT_MODE
   {{HIGH, LOW, false}, 1500, 500, true},  // [6] THROUGH_MODE
@@ -170,7 +170,7 @@ inline void setup_buttons() {
   BUTTON_R.interval(25);                        // Debounce interval of 25 millis
 };
 
-void setup_leds(void* ptr){
+void setup_leds(void* ptr) {
   leds_t* leds_ptr = (leds_t*)ptr;
   pinMode(LED_PIN_D1, OUTPUT);
   pinMode(LED_PIN_D2, OUTPUT);
@@ -178,15 +178,15 @@ void setup_leds(void* ptr){
   digitalWrite(LED_PIN_D2, leds_ptr->D2);
 };
 
-void blink(uint8_t iter) {
+void blink(uint8_t iter, uint16_t delay_time) {
   for (uint8_t i = 0; i<iter; i++){
     digitalWrite(LED_PIN_D1, HIGH);
     digitalWrite(LED_PIN_D2, HIGH);
-    delay(50);
+    delay(delay_time);
     digitalWrite(LED_PIN_D1, LOW);
     digitalWrite(LED_PIN_D2, LOW);
-    delay(50);
-  };
+    delay(delay_time);
+  }
 };
 
 void set_mode(mode_code_t mode) {
@@ -212,13 +212,13 @@ void set_level(level_code_t level, uint8_t value) {
   #endif
 };
 
-bool flash_file(const char *fileName, uint8_t* data_ptr, uint16_t size) {
+static bool flash_file(const char *fileName, uint8_t* data_ptr, uint16_t size) {
   if (sysEx_data_length != 0) {
     SerialFlash.wakeup();
     while (!SerialFlash.ready());
     if (SerialFlash.exists(fileName)) {
       SerialFlash.remove(fileName);
-    };
+    }
     // Create a new file and open it for writing
     SerialFlashFile tmpFile;
     if (SerialFlash.create(fileName, size)) {
@@ -226,12 +226,12 @@ bool flash_file(const char *fileName, uint8_t* data_ptr, uint16_t size) {
       if (!tmpFile){
         usb_midi_send_info((uint8_t)WHILE_OPEN_FLASH_FILE, MIDI_ERROR_CHANNEL);
         return false;
-      };
+      }
     }
     else {
       usb_midi_send_info((uint8_t)FLASH_FULL, MIDI_ERROR_CHANNEL);
       return false;
-    };
+    }
     if (sysEx_data_length < FLASH_CHIP_SIZE) {
       tmpFile.write(data_ptr, size);
       tmpFile.close();
@@ -241,8 +241,8 @@ bool flash_file(const char *fileName, uint8_t* data_ptr, uint16_t size) {
     else {
       usb_midi_send_info((uint8_t)FILE_TO_BIG, MIDI_ERROR_CHANNEL);
       return false;
-    };
-  };
+    }
+  }
   return false;
 };
 
@@ -254,8 +254,8 @@ inline void update_buttons() {
   // FONCTION: CALIBRATE THE SENSOR MATRIX
   if (BUTTON_L.rose() && BUTTON_L.previousDuration() < LONG_HOLD) {
     matrix_calibrate();
-    blink(10);
-  };
+    blink(10, 50);
+  }
   // ACTION: BUTTON_L long pressure
   // FONCTION: save the mapping config file to the permanent flash memory
   if (BUTTON_L.rose() && BUTTON_L.previousDuration() > LONG_HOLD) {
@@ -270,15 +270,15 @@ inline void update_buttons() {
           print_bytes(sysEx_data_ptr, sysEx_data_length);
         #endif
         set_mode(ERROR_MODE);
-      };
-    };
-  };
+      }
+    }
+  }
   // ACTION: BUTTON_R long pressure
   // FONCTION: PENDING_MODE (waiting for mode)
   // LEDs: blink slowly (500ms) alternately
   if (BUTTON_R.rose() && BUTTON_R.previousDuration() > LONG_HOLD) {
     //set_mode(PENDING_MODE);
-  };
+  }
   // ACTION: BUTTON_R short pressure
   // FONCTION: SELECT_LEVEL
   // levels[0] = THRESHOLD
@@ -288,10 +288,10 @@ inline void update_buttons() {
   if (BUTTON_R.rose() && BUTTON_R.previousDuration() < LONG_HOLD) {
     uint8_t tmp_level = (((uint8_t)e256_current_level) + 1) % 4; // Loop into level modes
     set_level((level_code_t)tmp_level, e256_ctr.levels[tmp_level].val);
-  };
+  }
 };
 
-inline void setup_encoder(){
+static void setup_encoder() {
   e256_ctr.encoder->write(e256_ctr.levels[(uint8_t)e256_current_level].val << 2);
 }
 
@@ -308,27 +308,28 @@ inline bool read_encoder(level_code_t level) {
     else {
       e256_ctr.levels[(uint8_t)level].val = val;
       e256_ctr.levels[(uint8_t)level].leds.update = true;
-    };
+    }
     return true;
   }
   else {
     return false;
-  };
+  }
 };
 
 // Update levels[level] of each mode using the rotary encoder
 inline void update_encoder() {
-  static uint32_t levelTimeStamp = 0;
-  static bool levelToggle = false;
+  static uint32_t level_time_stamp = 0;
+  static bool level_toggle = false;
+
   if (read_encoder(e256_current_level)) {
-    levelTimeStamp = millis();
-    levelToggle = true;
+    level_toggle = true;
     set_level(e256_current_level, e256_ctr.levels[e256_current_level].val);
+    level_time_stamp = millis();
   }
-  if (millis() - levelTimeStamp > LEVEL_TIMEOUT && levelToggle) {
-    levelToggle = false;
+  else if (millis() - level_time_stamp > LEVEL_TIMEOUT && level_toggle) {
+    level_toggle = false;
     set_mode(e256_current_mode);
-  };
+  }
 };
 
 inline void blink_leds(uint8_t mode) {
@@ -347,8 +348,8 @@ inline void blink_leds(uint8_t mode) {
     }
     else if (millis() - ledsTimeStamp > e256_ctr.modes[mode].timeOn + e256_ctr.modes[mode].timeOff) {
     ledsTimeStamp = millis();
-    };
-  };
+    }
+  }
 };
 
 inline void fade_leds(level_code_t level) {
@@ -357,7 +358,7 @@ inline void fade_leds(level_code_t level) {
     uint8_t ledVal = constrain(map(e256_ctr.levels[(uint8_t)level].val, e256_ctr.levels[(uint8_t)level].min_val, e256_ctr.levels[(uint8_t)level].max_val, 0, 255), 0, 255);
     analogWrite(LED_PIN_D1, abs(255 - ledVal));
     analogWrite(LED_PIN_D2, ledVal);
-  };
+  }
 };
 
 // Update LEDs according to the mode and rotary encoder values
@@ -378,10 +379,10 @@ inline void update_leds() {
   uint8_t channel;  // MIDI channel (0-15)
 */
 
-bool config_load_mappings_switchs(const JsonArray &config) {
+static bool config_load_mappings_switchs(const JsonArray &config) {
   if (config.isNull()) {
     return false;
-  };
+  }
   uint8_t n = config.size();
   if (mapping_switchs_alloc(n)) {
     for (uint8_t i = 0; i < n; i++) {
@@ -392,38 +393,38 @@ bool config_load_mappings_switchs(const JsonArray &config) {
   return false;
 };
 
-bool config_load_mappings_sliders(const JsonArray& config) {
+static bool config_load_mappings_sliders(const JsonArray& config) {
   if (config.isNull()) {
     return false;
-  };
+  }
   uint8_t n = config.size();
   if (mapping_sliders_alloc(n)) {
     for (uint8_t i = 0; i < n; i++) {
       mapping_slider_create(config[i]);
-    };
+    }
     return true;
   }
   return false;
 };
 
-bool config_load_mappings_knobs(const JsonArray& config) {
+static bool config_load_mappings_knobs(const JsonArray& config) {
   if (config.isNull()) {
     return false;
-  };
+  }
   uint8_t n = config.size();
   if (mapping_knobs_alloc(n)) {
     for (uint8_t i = 0; i < n; i++) {
       mapping_knob_create(config[i]);
-    };
+    }
     return true;
   }
   return false;
 };
 
-bool config_load_mappings_touchpads(const JsonArray& config) {
+static bool config_load_mappings_touchpads(const JsonArray& config) {
   if (config.isNull()) {
     return false;
-  };
+  }
   uint8_t n = config.size();
   if (mapping_touchpads_alloc(n)) {
     for (uint8_t i = 0; i < n; i++) {
@@ -434,7 +435,7 @@ bool config_load_mappings_touchpads(const JsonArray& config) {
   return false;
 };
 
-bool config_load_mappings_polygons(const JsonArray& config) {
+static bool config_load_mappings_polygons(const JsonArray& config) {
   if (config.isNull()) {
     return false;
   };
@@ -442,37 +443,37 @@ bool config_load_mappings_polygons(const JsonArray& config) {
   if (mapping_polygons_alloc(n)) {
     for (uint8_t i = 0; i < n; i++) {
       mapping_polygon_create(config[i]);
-    };
+    }
     return true;
   }
   return false;
 };
 
-bool config_load_mappings(const JsonObject config) {
+bool mappings_load_config(const JsonObject config) {
   if (config.isNull()) {
     //usb_midi_send_info((uint8_t)CONFIG_FILE_IS_NULL, MIDI_ERROR_CHANNEL);
     //Serial.println("CONFIG_ERROR");
     return false;
-  };
-  if (config_load_mappings_switchs(config["switch"])) {
-    //Serial.println("CONFIG_LOAD_SWITCHS");
-  };
-  if (config_load_mappings_sliders(config["slider"])) {
-    Serial.println("CONFIG_LOAD_SLIDER");
-  };
-  if (config_load_mappings_knobs(config["knob"])) {
-    //Serial.println("CONFIG_LOAD_KNOBS");
-  };
-  if (config_load_mappings_touchpads(config["touchpad"])) {
-    //Serial.println("CONFIG_LOAD_TOUCHPAD");
-  };
-  if (config_load_mappings_polygons(config["polygon"])) {
-    //Serial.println("CONFIG_LOAD_POLYGON");
-  };
+  }
+  if (!config_load_mappings_switchs(config["switch"])) {
+    //Serial.println("CONFIG_LOAD_SWITCHS: FAILD");
+  }
+  if (!config_load_mappings_sliders(config["slider"])) {
+    //Serial.println("CONFIG_LOAD_SLIDERS: FAILD");
+  }
+  if (!config_load_mappings_knobs(config["knob"])) {
+    //Serial.println("CONFIG_LOAD_KNOBS: FAILD");
+  }
+  if (!config_load_mappings_touchpads(config["touchpad"])) {
+    //Serial.println("CONFIG_LOAD_TOUCHPADS: FAILD");
+  }
+  if (!config_load_mappings_polygons(config["polygon"])) {
+    //Serial.println("CONFIG_LOAD_POLYGONS: FAILD");
+  }
   return true;
 };
 
-bool apply_config(uint8_t* conf_ptr, size_t conf_size) {
+bool mappings_apply_config(uint8_t* conf_ptr, size_t conf_size) {
   //DynamicJsonDocument e256_config(conf_size);
   //StaticJsonDocument<4095> e256_config;
   JsonDocument e256_config;
@@ -482,37 +483,18 @@ bool apply_config(uint8_t* conf_ptr, size_t conf_size) {
       Serial.printf("\nDESERIALIZATION_ERROR:\t%s", error.c_str());
     #endif
     return false;
-  };
-  if (config_load_mappings(e256_config["mappings"])) {
+  }
+  if (mappings_load_config(e256_config["mappings"])) {
+    #if defined(USB_MIDI_SERIAL) && defined(DEBUG_CONFIG)
+      Serial.printf("\nCONFIG_APPLY_DONE");
+    #endif
     return true;
   } else {
-    return false;
-  };
-};
-
-bool load_applay_config() {
-  if (load_flash_config()) {
     #if defined(USB_MIDI_SERIAL) && defined(DEBUG_CONFIG)
-      Serial.printf("\nFLASH_CONFIG_LOAD_DONE: ");
-      print_bytes(flash_config_ptr, flash_config_size);
+      Serial.printf("\nCONFIG_APPLY_FAILED");
     #endif
-    if (apply_config(flash_config_ptr, flash_config_size)) {
-      #if defined(USB_MIDI_SERIAL) && defined(DEBUG_CONFIG)
-        Serial.printf("\nAPPLY_MODE_DONE");
-      #endif
-      return true;
-    }
-    else {
-      #if defined(USB_MIDI_SERIAL) && defined(DEBUG_CONFIG)
-        Serial.printf("\nCONFIG_APPLY_FAILED");
-      #endif
-      return false;
-      //set_mode(ERROR_MODE);
-    }
-  }
-  else {
     return false;
-  } 
+  }
 };
 
 inline void setup_serial_flash() {
@@ -536,23 +518,30 @@ bool load_flash_config() {
     configFile.read(flash_config_ptr, flash_config_size);
     configFile.close();
     SerialFlash.sleep();
+    #if defined(USB_MIDI_SERIAL) && defined(DEBUG_CONFIG)
+      Serial.printf("\nFLASH_CONFIG_LOADED");
+      //print_bytes(flash_config_ptr, flash_config_size);
+    #endif
     return true;
   }
   else {
+    #if defined(USB_MIDI_SERIAL) && defined(DEBUG_CONFIG)
+      Serial.printf("\nCONFIG_FILE_MISSING");
+    #endif
     return false;
-  };
+  }
 };
 
-void hardware_setup(){
+void hardware_setup() {
+  pinMode(LED_PIN_D1, OUTPUT);
+  pinMode(LED_PIN_D2, OUTPUT);
   setup_buttons();
   setup_encoder();
   setup_serial_flash();
 };
 
-void update_controls(){
+void update_controls() {
   update_buttons();
   update_encoder();
   update_leds();
 };
-
-

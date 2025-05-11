@@ -9,6 +9,9 @@
 
 #include "config.h"
 #include "llist.h"
+#include "blob.h"
+
+//#include "mapping.h" // TESTING
 
 #include <MIDI.h>  // https://github.com/FortySevenEffects/arduino_midi_library > https://github.com/PaulStoffregen/MIDI
 using namespace midi;
@@ -32,13 +35,6 @@ struct midi_limit_s {
   uint8_t max; // [0-127]
 };
 
-typedef struct msg_s msg_t; // TODO: RENAMEING!
-struct msg_s {
-  midi_msg_t midi;
-  midi_limit_t limit;
-  uint8_t last_val;
-};
-
 // MIDI status bytes: https://github.com/PaulStoffregen/MIDI/blob/master/src/midi_Defs.h
 typedef struct midi_status_s midi_status_t;
 struct midi_status_s {
@@ -47,9 +43,16 @@ struct midi_status_s {
 };
 
 void midi_bus_setup(void);
+
 uint8_t midi_msg_status_pack(MidiType type, uint8_t channel);
 void midi_msg_status_unpack(uint8_t in_status, midi_status_t* out_status);
+
 void midi_send_out(midi_msg_t* midi_ptr);
+
+void send_blob_press_note_on(midi_msg_t* midi_msg_ptr, blob_t* blob_ptr);
+void send_blob_press_note_off(midi_msg_t* midi_msg_ptr, blob_t* blob_ptr);
+void send_blob_press_control_change(void* touch_ptr, blob_t* blob_ptr);
+
 const char* get_type_name(MidiType code);
 void print_bytes(const uint8_t* data_ptr, size_t length);
 

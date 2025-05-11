@@ -28,12 +28,12 @@ void usb_midi_setup(void) {
   usbMIDI.setHandleNoteOff(usb_read_note_off);
   usbMIDI.setHandleControlChange(usb_read_control_change);
   usbMIDI.setHandleAfterTouchPoly(usb_read_after_touch_poly);
+  usbMIDI.setHandlePitchChange(usb_read_pitch_bend);
   usbMIDI.setHandleSystemExclusive(usb_read_system_exclusive);
-  usbMIDI.setHandleClock(usb_read_midi_clock);
 };
 
 void usb_midi_recive(void) {
-  usbMIDI.read(); // Is there a MIDI incoming messages on any channel
+  usbMIDI.read(); // Is there incoming MIDI messages on any channel
 };
 
 void usb_midi_transmit_raw_matrix(void) {
@@ -46,11 +46,10 @@ void usb_midi_transmit_raw_matrix(void) {
   while (usbMIDI.read()); // Read and discard any incoming MIDI messages
 };
 
-
 void usb_midi_transmit_interp_matrix(void) {
   static uint32_t usbTransmitTimeStamp = 0;
   // NOT_WORKING > see https://forum.pjrc.com/threads/28282-How-big-is-the-MIDI-receive-buffer
-  // Interpolation will be made on the web_app side!
+  // Interpolation could be made on the web_app side!
   if (millis() - usbTransmitTimeStamp > MIDI_TRANSMIT_INTERVAL) {
     usbTransmitTimeStamp = millis();
     usbMIDI.sendSysEx(NEW_FRAME, interp_frame.data_ptr, false, 0);
@@ -88,8 +87,8 @@ void usb_midi_transmit_blobs(void) {
   while (usbMIDI.read()); // Read and discard any incoming MIDI messages
 };
 
+// Send mappings MIDI messages to the host application
 void usb_midi_transmit_mappings_midi_msg(void) {
-  // Send mappings MIDI messages to the host application
   for (lnode_t* midi_node_ptr = ITERATOR_START_FROM_HEAD(&midi_out); midi_node_ptr != NULL; midi_node_ptr = ITERATOR_NEXT(midi_node_ptr)) {
     midi_msg_t* midi_ptr = (midi_msg_t*)ITERATOR_DATA(midi_node_ptr);
     usbMIDI.send((uint8_t)midi_ptr->type, midi_ptr->data1, midi_ptr->data2, midi_ptr->channel, 0);
@@ -97,8 +96,9 @@ void usb_midi_transmit_mappings_midi_msg(void) {
   while (usbMIDI.read()); // Read and discard any incoming MIDI messages
 };
 
-void usb_midi_send_info(uint8_t msg, uint8_t channel) {
-  usbMIDI.sendProgramChange(msg, channel); // ProgramChange(program, channel);
+// Send verbosity codes to the host application
+void usb_midi_send_info(uint8_t program, uint8_t channel) {
+  usbMIDI.sendProgramChange(program, channel);
   usbMIDI.send_now();
   while (usbMIDI.read());
 };
@@ -111,7 +111,7 @@ void usb_read_note_on(uint8_t channel, uint8_t note, uint8_t velocity) {
     midi_ptr->data2 = velocity;
     midi_ptr->channel = channel;
     if (e256_current_mode == THROUGH_MODE) {
-      llist_push_front(&midi_out, midi_ptr); // Add the node to the midi_out linked list
+      llist_push_front(&midi_out, midi_ptr);
     }
   }
   else {
@@ -130,7 +130,7 @@ void usb_read_note_off(uint8_t channel, uint8_t note, uint8_t velocity) {
     midi_ptr->data2 = velocity;
     midi_ptr->channel = channel;
     if (e256_current_mode == THROUGH_MODE) {
-      llist_push_front(&midi_out, midi_ptr); // Add the node to the midi_out linked list
+      llist_push_front(&midi_out, midi_ptr);
     }
   }
   else {
@@ -141,8 +141,6 @@ void usb_read_note_off(uint8_t channel, uint8_t note, uint8_t velocity) {
   }
 };
 
-// Used by USB_MIDI
-// If the CC comes from usb it is forwarded to midi_out acting as MIDI thru
 void usb_read_control_change(uint8_t channel, uint8_t control, uint8_t value) {
   midi_msg_t* midi_ptr = (midi_msg_t*)llist_pop_front(&midi_nodes_pool);
   if (midi_ptr) {
@@ -151,7 +149,7 @@ void usb_read_control_change(uint8_t channel, uint8_t control, uint8_t value) {
     midi_ptr->data2 = value;
     midi_ptr->channel = channel;
     if (e256_current_mode == THROUGH_MODE) {
-      llist_push_front(&midi_out, midi_ptr); // Add the node to the midi_out linked list
+      llist_push_front(&midi_out, midi_ptr);
     }
   }
   else {
@@ -162,8 +160,6 @@ void usb_read_control_change(uint8_t channel, uint8_t control, uint8_t value) {
   }
 };
 
-// Used by USB_MIDI
-// If the CC comes from usb it is forwarded to midi_out acting as MIDI thru
 void usb_read_after_touch_poly(uint8_t channel, uint8_t note, uint8_t pressure) {
   midi_msg_t* midi_ptr = (midi_msg_t*)llist_pop_front(&midi_nodes_pool);
   if (midi_ptr) {
@@ -177,128 +173,128 @@ void usb_read_after_touch_poly(uint8_t channel, uint8_t note, uint8_t pressure) 
   }
   else {
     #if defined(USB_MIDI_SERIAL) && defined(DEBUG_LLIST)
-      Serial.printf("\nNo more nodes left in the : midi_nodes_pool -> see usb_read_control_change()");
+      Serial.printf("\nNo more nodes left in the : midi_nodes_pool -> see usb_read_after_touch_poly()");
+    #endif
+    set_mode(ERROR_MODE);
+  }
+};
+
+void usb_read_pitch_bend(uint8_t channel, int pitch) {
+  midi_msg_t* midi_ptr = (midi_msg_t*)llist_pop_front(&midi_nodes_pool);
+  if (midi_ptr) {
+    midi_ptr->type = PitchBend;
+    //midi_ptr->data1 = pitch; // Msb
+    //midi_ptr->data2 = pitch; // Lsb
+    midi_ptr->channel = channel;
+    if (e256_current_mode == THROUGH_MODE) {
+      llist_push_front(&midi_out, midi_ptr); // Add the node to the midi_out linked list
+    }
+  }
+  else {
+    #if defined(USB_MIDI_SERIAL) && defined(DEBUG_LLIST)
+      Serial.printf("\nNo more nodes left in the : midi_nodes_pool -> see usb_read_pitch_bend()");
     #endif
     set_mode(ERROR_MODE);
   }
 };
 
 void usb_read_program_change(uint8_t channel, uint8_t program) {
-  switch (channel) {
-    case MIDI_MODES_CHANNEL:
-      //Serial.printf("\nRECEIVED:\t%s", get_mode_name((enum_mode_codes_t)program));
-      switch (program) {
+  if (channel == MIDI_MODES_CHANNEL) {
+    switch (program) {
 
-        case PENDING_MODE:
-          set_mode(PENDING_MODE);
-          usb_midi_send_info((uint8_t)PENDING_MODE_DONE, MIDI_VERBOSITY_CHANNEL);
-          break;
+      case PENDING_MODE:
+        set_mode(PENDING_MODE);
+        usb_midi_send_info((uint8_t)PENDING_MODE_DONE, MIDI_VERBOSITY_CHANNEL);
+        break;
 
-        case SYNC_MODE:
-          set_mode(SYNC_MODE);
-          usb_midi_send_info((uint8_t)SYNC_MODE_DONE, MIDI_VERBOSITY_CHANNEL);
-          break;
+      case SYNC_MODE:
+        set_mode(SYNC_MODE);
+        usb_midi_send_info((uint8_t)SYNC_MODE_DONE, MIDI_VERBOSITY_CHANNEL);
+        break;
 
-        case MATRIX_MODE_RAW:
-          set_mode(MATRIX_MODE_RAW);
-          usb_midi_send_info((uint8_t)MATRIX_MODE_RAW_DONE, MIDI_VERBOSITY_CHANNEL);
-          break;
+      case MATRIX_RAW_MODE:
+        set_mode(MATRIX_RAW_MODE);
+        usb_midi_send_info((uint8_t)MATRIX_RAW_MODE_DONE, MIDI_VERBOSITY_CHANNEL);
+        break;
 
-        case MAPPING_MODE:
-          set_mode(MAPPING_MODE);
-          usb_midi_send_info((uint8_t)MAPPING_MODE_DONE, MIDI_VERBOSITY_CHANNEL);
-          break;
+      case MAPPING_MODE:
+        set_mode(MAPPING_MODE);
+        usb_midi_send_info((uint8_t)MAPPING_MODE_DONE, MIDI_VERBOSITY_CHANNEL);
+        break;
 
-        case EDIT_MODE:
-          set_mode(EDIT_MODE);
-          usb_midi_send_info((uint8_t)EDIT_MODE_DONE, MIDI_VERBOSITY_CHANNEL);
-          break;
+      case EDIT_MODE:
+        set_mode(EDIT_MODE);
+        usb_midi_send_info((uint8_t)EDIT_MODE_DONE, MIDI_VERBOSITY_CHANNEL);
+        break;
 
-        case THROUGH_MODE:
-          set_mode(THROUGH_MODE);
-          usb_midi_send_info((uint8_t)THROUGH_MODE_DONE, MIDI_VERBOSITY_CHANNEL);
-          break;
+      case THROUGH_MODE:
+        set_mode(THROUGH_MODE);
+        usb_midi_send_info((uint8_t)THROUGH_MODE_DONE, MIDI_VERBOSITY_CHANNEL);
+        break;
 
-        case PLAY_MODE:
-          set_mode(PLAY_MODE);
-          usb_midi_send_info((uint8_t)PLAY_MODE_DONE, MIDI_VERBOSITY_CHANNEL);
-          break;
+      case PLAY_MODE:
+        set_mode(PLAY_MODE);
+        usb_midi_send_info((uint8_t)PLAY_MODE_DONE, MIDI_VERBOSITY_CHANNEL);
+        break;
 
-        case LOAD_MODE:
-          if(load_flash_config()) {
-            #if defined(USB_MIDI_SERIAL) && defined(DEBUG_CONFIG)
-              Serial.printf("\nSEND_FLASH_CONFIG: ");
-              print_bytes(flash_config_ptr, flash_config_size);
-            #endif
-            usb_midi_send_info((uint8_t)LOAD_MODE_DONE, MIDI_VERBOSITY_CHANNEL);
-          }
-          else {
-            usb_midi_send_info((uint8_t)NO_CONFIG_FILE, MIDI_ERROR_CHANNEL);
-          }
-          break;
+      case LOAD_MODE:
+        if(load_flash_config()) {
+          usb_midi_send_info((uint8_t)LOAD_MODE_DONE, MIDI_VERBOSITY_CHANNEL);
+        }
+        else {
+          usb_midi_send_info((uint8_t)NO_CONFIG_FILE, MIDI_ERROR_CHANNEL);
+        }
+        break;
 
-        case FETCH_MODE:
-          usbMIDI.sendSysEx(flash_config_size, flash_config_ptr, false);
-          usb_midi_send_info((uint8_t)FETCH_MODE_DONE, MIDI_VERBOSITY_CHANNEL);
-          break;
+      case FETCH_MODE:
+        usbMIDI.sendSysEx(flash_config_size, flash_config_ptr, false);
+        usb_midi_send_info((uint8_t)FETCH_MODE_DONE, MIDI_VERBOSITY_CHANNEL);
+        break;
 
-        case ALLOCATE_MODE:
-          e256_current_mode = ALLOCATE_MODE;
-          usb_midi_send_info((uint8_t)ALLOCATE_MODE_DONE, MIDI_VERBOSITY_CHANNEL);
-          break;
+      case ALLOCATE_MODE:
+        e256_current_mode = ALLOCATE_MODE;
+        usb_midi_send_info((uint8_t)ALLOCATE_MODE_DONE, MIDI_VERBOSITY_CHANNEL);
+        break;
 
-        case UPLOAD_MODE:
-          e256_current_mode = UPLOAD_MODE;
-          usb_midi_send_info((uint8_t)UPLOAD_MODE_DONE, MIDI_VERBOSITY_CHANNEL);
-          break;
+      case UPLOAD_MODE:
+        e256_current_mode = UPLOAD_MODE;
+        usb_midi_send_info((uint8_t)UPLOAD_MODE_DONE, MIDI_VERBOSITY_CHANNEL);
+        break;
 
-        case APPLY_MODE:
-          if (apply_config(sysEx_data_ptr, sysEx_data_length)) {
-            usb_midi_send_info((uint8_t)APPLY_MODE_DONE, MIDI_VERBOSITY_CHANNEL);
-            #if defined(USB_MIDI_SERIAL) && defined(DEBUG_CONFIG)
-              Serial.printf("\nnCONFIG_APPLY_DONE");
-            #endif
-          }
-          else {
-            usb_midi_send_info((uint8_t)CONFIG_APPLY_FAILED, MIDI_ERROR_CHANNEL);
-            #if defined(USB_MIDI_SERIAL) && defined(DEBUG_CONFIG)
-              Serial.printf("\nCONFIG_APPLY_FAILED");
-            #endif
-            set_mode(ERROR_MODE);
-          }
-          break;
+      case APPLY_MODE:
+        if (mappings_apply_config(sysEx_data_ptr, sysEx_data_length)) {
+          usb_midi_send_info((uint8_t)CONFIG_APPLY_DONE, MIDI_VERBOSITY_CHANNEL);
+        }
+        else {
+          usb_midi_send_info((uint8_t)CONFIG_APPLY_FAILED, MIDI_ERROR_CHANNEL);
+          set_mode(ERROR_MODE);
+        }
+        break;
 
-        case CALIBRATE_MODE:
-          matrix_calibrate();
-          blink(10);
-          #if defined(USB_MIDI_SERIAL)
-            usb_midi_send_info((uint8_t)CALIBRATE_MODE_DONE, MIDI_VERBOSITY_CHANNEL);
-          #endif
-          break;
+      case CALIBRATE_MODE:
+        matrix_calibrate();
+        blink(10, 50);
+        usb_midi_send_info((uint8_t)CALIBRATE_MODE_DONE, MIDI_VERBOSITY_CHANNEL);
+        break;
 
-        default:
-          //Serial.println("OUT_OFF_RANGE!"); // DROP!
-          break;
-      }
-      break;
+      default:
+        #if defined(USB_MIDI_SERIAL) && defined(DEBUG_MODES)
+          Serial.println("MODE_NOT_HANDLED!"); // DROP!
+        #endif
+        break;
+    }
   }
 };
 
-// TODO
-void usb_read_midi_clock(void) {
-#if defined(USB_MIDI_SERIAL) && defined(DEBUG_CONFIG)
-  Serial.println("Clock");
-#endif
-};
-
-// Load mapping config via MIDI system exclusive message
+// Load mappings config via MIDI system exclusive message
 // As MIDI buffer is limited to (USB_MIDI_SYSEX_MAX) we must register the data in chunks!
 // Recive: [ SYSEX_BEGIN, SYSEX_DEVICE_ID, SYSEX_SIZE_MSB, SYSEX_SIZE_LSB, SYSEX_END ] 
 // Send: USBMIDI_CONFIG_ALLOC_DONE
 // Recive: [ SYSEX_BEGIN, SYSEX_DEVICE_ID, SYSEX_DATA, SYSEX_END ]
 // Send: USBMIDI_CONFIG_LOAD_DONE
 
-// TODO: set_level((level_code_t)control, value); // TODO: move it to the system-exclusive communication line
+// TODO: add set_levels to the system-exclusive communication line
+// set_levels((level_code_t)control, value);
 
 void usb_read_system_exclusive(const uint8_t *data_ptr, uint16_t sysEx_chunk_size, bool complete) {
   static uint8_t *sysEx_chunk_ptr = NULL;

@@ -113,11 +113,12 @@ typedef enum level_code_e {
 
 extern level_code_t e256_current_level;
 
+// VERBOSITY MODES CONSTANTS
 typedef enum mode_code_e {
   PENDING_MODE,    // Waiting for mode
   SYNC_MODE,       // Hand chake mode
-  CALIBRATE_MODE,  //
-  MATRIX_MODE_RAW, // Send matrix analog sensor values (16x16) over USB using MIDI format
+  CALIBRATE_MODE,  // Proceed to the all matrix calibration
+  MATRIX_RAW_MODE, // Send matrix analog sensor raw values (16x16) over USB using MIDI format
   MAPPING_MODE,    // 
   EDIT_MODE,       // Send all blobs values over USB_MIDI OUTPUT
   THROUGH_MODE,    // Forward mappings values to the MIDI_HARDWARE OUTPUT
@@ -134,11 +135,12 @@ typedef enum mode_code_e {
 
 extern mode_code_t e256_current_mode;
 
+// VERBOSITY MODES CONSTANTS ACKNOWLEDGMENT
 typedef enum verbosity_code_e{
   PENDING_MODE_DONE,
   SYNC_MODE_DONE,
   CALIBRATE_MODE_DONE,
-  MATRIX_MODE_RAW_DONE,
+  MATRIX_RAW_MODE_DONE,
   MAPPING_MODE_DONE,
   EDIT_MODE_DONE,
   THROUGH_MODE_DONE,
@@ -147,7 +149,7 @@ typedef enum verbosity_code_e{
   ALLOCATE_DONE,
   UPLOAD_MODE_DONE,
   UPLOAD_DONE,
-  APPLY_MODE_DONE,
+  CONFIG_APPLY_DONE,
   WRITE_MODE_DONE,
   LOAD_MODE_DONE,
   FETCH_MODE_DONE,
@@ -210,16 +212,15 @@ extern control_t e256_ctr;
 extern uint8_t* flash_config_ptr;
 extern size_t flash_config_size;
 
-void blink(uint8_t iter);
+void blink(uint8_t iter, uint16_t delay_time);
 void set_mode(mode_code_t mode);
 void set_level(level_code_t level, uint8_t value);
 
 void hardware_setup(void);
 void update_controls(void);
 
-bool load_applay_config(void);
 bool load_flash_config(void);
-bool apply_config(uint8_t* conf_ptr, size_t conf_size);
+bool mappings_apply_config(uint8_t* conf_ptr, size_t conf_size);
 
 const char* get_mode_name(mode_code_t code);
 const char* get_verbosity_name(verbosity_code_t code);

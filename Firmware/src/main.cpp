@@ -34,20 +34,16 @@ void setup() {
   midi_bus_setup();
   matrix_calibrate();
 
-  if (load_applay_config()){
-    #if defined(USB_MIDI_SERIAL) && defined(DEBUG_CONFIG)
-      Serial.printf("\nCONFIG_FILE_LOADED_APPLAYED");
-    #endif
-    blink(5);
-    delay(1000);
-    bootTime = millis();
-  }
-  else {
-    #if defined(USB_MIDI_SERIAL) && defined(DEBUG_CONFIG)
-      Serial.printf("\nNO_CONFIG_FILE");
-    #endif
+  if (load_flash_config()) {
+    if (mappings_apply_config(flash_config_ptr, flash_config_size)) {
+      blink(20, 30);
+    }
+    else {
+      set_mode(ERROR_MODE);
+    }
   }
   set_mode(PENDING_MODE);
+  bootTime = millis();
 };
 
 void loop() {
@@ -61,7 +57,7 @@ void loop() {
       usb_midi_recive();
       if ((millis() - bootTime) > PENDING_MODE_TIMEOUT) {
         set_mode(STANDALONE_MODE);
-        blink(10);
+        blink(10, 50);
       }
       break;
 
@@ -69,13 +65,18 @@ void loop() {
       usb_midi_recive();
       break;
 
-    case MATRIX_MODE_RAW:
+    case MATRIX_RAW_MODE:
       usb_midi_recive();
       matrix_scan();
       usb_midi_transmit_raw_matrix();
-      //usb_midi_transmit_interp_matrix(); // FIXME
       break;
-
+    /*
+    case MATRIX_INTERP_MODE: // FIXME
+      usb_midi_recive();
+      matrix_scan();
+      usb_midi_transmit_interp_matrix();
+      break;
+    */
     case EDIT_MODE:
       usb_midi_recive();
       matrix_scan();

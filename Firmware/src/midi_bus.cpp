@@ -6,6 +6,7 @@
 
 #include "midi_bus.h"
 #include "blob.h"
+#include "mapping.h"
 
 #define MIDI_NODES 128
 
@@ -53,6 +54,32 @@ void midi_send_out(midi_msg_t* midi_ptr) {
   }
 };
 
+void send_blob_press_note_on(midi_msg_t* midi_msg_ptr, blob_t* blob_ptr) {
+  midi_msg_ptr->type = NoteOn;
+  midi_msg_ptr->data2 = blob_ptr->centroid.x; // TODO: improve "velocity" sensing
+  midi_send_out(midi_msg_ptr);
+};
+
+void send_blob_press_note_off(midi_msg_t* midi_msg_ptr, blob_t* blob_ptr) {
+  midi_msg_ptr->type = NoteOff;
+  midi_msg_ptr->data2 = 0;
+  midi_send_out(midi_msg_ptr);
+};
+
+void send_blob_press_control_change(void* touch_ptr, blob_t* blob_ptr) {
+  direction_t* _touch_ptr = (direction_t*)touch_ptr;
+
+  _touch_ptr->last_val = _touch_ptr->msg.data2;
+  _touch_ptr->msg.data2 = map(
+    blob_ptr->centroid.z,
+    Z_MIN,
+    Z_MAX,
+    _touch_ptr->limit.min,
+    _touch_ptr->limit.max
+  );
+  midi_send_out(&_touch_ptr->msg);
+};
+
 /*
 void midi_handle_input(const Message<128u> &midiMsg) {
   midi_msg_t* node_ptr = (midi_msg_t*)llist_pop_front(&midi_nodes_pool);
@@ -80,6 +107,7 @@ const char* get_type_name(MidiType code) {
     case NoteOff: char_code = "NOTE_OFF"; break;
     case ControlChange: char_code = "C_CHANGE"; break;
     case AfterTouchPoly: char_code = "P_AFTERTOUCHPOLY"; break;
+    case PitchBend: char_code = "PITCH_BEND"; break;
     default:
       break;
   }

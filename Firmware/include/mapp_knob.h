@@ -5,14 +5,10 @@
 
 typedef struct knob_touch_s knob_touch_t;
 struct knob_touch_s {
-  msg_t radius;
-  uint8_t last_midi_radius;
-  msg_t theta;
-  uint8_t last_midi_theta;
-  msg_t press;
-  uint8_t last_midi_press;
-  msg_t note;
-  //uint8_t last_midi_note; // NOT_USED!
+  direction_t press;
+  direction_t note;
+  direction_t radius;
+  direction_t theta;
 };
 
 typedef struct knob_s knob_t;
