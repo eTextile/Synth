@@ -183,8 +183,8 @@ void usb_read_pitch_bend(uint8_t channel, int pitch) {
   midi_msg_t* midi_ptr = (midi_msg_t*)llist_pop_front(&midi_nodes_pool);
   if (midi_ptr) {
     midi_ptr->type = PitchBend;
-    //midi_ptr->data1 = pitch; // Msb
-    //midi_ptr->data2 = pitch; // Lsb
+    midi_ptr->data1 = pitch & 0x7F; // Lsb
+    midi_ptr->data2 = pitch >> 7;   // Msb
     midi_ptr->channel = channel;
     if (e256_current_mode == THROUGH_MODE) {
       llist_push_front(&midi_out, midi_ptr); // Add the node to the midi_out linked list
