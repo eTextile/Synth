@@ -82,15 +82,15 @@ void mapping_polygon_start(blob_t* blob_ptr) {
 
   switch (polygon_ptr->params.mode_z) {
     case NoteOn:
-      send_blob_press_note_on(&touch_ptr->note.msg, blob_ptr);
+      mapping_send_note_on(&touch_ptr->note, blob_ptr);
       break;
     case ControlChange:
-      send_blob_press_control_change(&touch_ptr->press, blob_ptr);
+      mapping_send_midi_msg(&touch_ptr->press, blob_ptr);
       break;
     case AfterTouchPoly:
       // Send controlChange before NoteOn
-      send_blob_press_control_change(&touch_ptr->press, blob_ptr);
-      send_blob_press_note_on(&touch_ptr->note.msg, blob_ptr);
+      mapping_send_midi_msg(&touch_ptr->press, blob_ptr);
+      mapping_send_note_on(&touch_ptr->note, blob_ptr);
       break;
     default:
       // Not handled in mapping_touchpad
@@ -103,7 +103,7 @@ void mapping_polygon_continue(blob_t* blob_ptr) {
   touch_1d_t* touch_ptr = (touch_1d_t*)blob_ptr->action.touch_ptr;
 
   if (polygon_ptr->params.mode_z != NoteOn) {
-    send_blob_press_control_change(&touch_ptr->press, blob_ptr);
+    mapping_send_midi_msg(&touch_ptr->press, blob_ptr);
   }
 };
 
@@ -113,13 +113,13 @@ void mapping_polygon_stop(blob_t* blob_ptr) {
 
   switch (polygon_ptr->params.mode_z) {
     case NoteOn:
-      send_blob_press_note_off(&touch_ptr->note.msg, blob_ptr);
+      mapping_send_note_off(&touch_ptr->note, blob_ptr);
       break;
     case ControlChange:
       // N/A
       break;
     case AfterTouchPoly:
-      send_blob_press_note_off(&touch_ptr->note.msg, blob_ptr);
+      mapping_send_note_off(&touch_ptr->note, blob_ptr);
       break;
     default:
       // Not handled in mapp_switch

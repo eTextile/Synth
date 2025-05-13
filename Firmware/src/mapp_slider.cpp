@@ -74,15 +74,15 @@ void mapping_slider_start(blob_t* blob_ptr) {
 
   switch (slider_ptr->params.mode_z) {
     case NoteOn:
-      send_blob_press_note_on(&touch_ptr->note.msg, blob_ptr);
+      mapping_send_note_on(&touch_ptr->note, blob_ptr);
       break;
     case ControlChange:
-      send_blob_press_control_change(&touch_ptr->press, blob_ptr);
+      mapping_send_midi_msg(&touch_ptr->press, blob_ptr);
       break;
     case AfterTouchPoly:
       // Send controlChange before NoteOn
-      send_blob_press_control_change(&touch_ptr->press, blob_ptr);
-      send_blob_press_note_on(&touch_ptr->note.msg, blob_ptr);
+      mapping_send_midi_msg(&touch_ptr->press, blob_ptr);
+      mapping_send_note_on(&touch_ptr->note, blob_ptr);
       break;
     default:
       // Not handled in mapping_touchpad
@@ -95,7 +95,7 @@ void mapping_slider_continue(blob_t* blob_ptr) {
   touch_1d_t* touch_ptr = (touch_1d_t*)blob_ptr->action.touch_ptr;
 
   if (slider_ptr->params.mode_z != NoteOn) {
-    send_blob_press_control_change(&touch_ptr->press, blob_ptr);
+    mapping_send_midi_msg(&touch_ptr->press, blob_ptr);
   }
 };
 
@@ -105,13 +105,13 @@ void mapping_slider_stop(blob_t* blob_ptr) {
 
   switch (slider_ptr->params.mode_z) {
     case NoteOn:
-      send_blob_press_note_off(&touch_ptr->note.msg, blob_ptr);
+      mapping_send_note_off(&touch_ptr->note, blob_ptr);
       break;
     case ControlChange:
       // N/A
       break;
     case AfterTouchPoly:
-      send_blob_press_note_off(&touch_ptr->note.msg, blob_ptr);
+      mapping_send_note_off(&touch_ptr->note, blob_ptr);
       break;
     default:
       // Not handled in mapp_switch
@@ -154,10 +154,10 @@ void mapping_slider_create(const JsonObject &config) {
 
       case NoteOn:
         midi_msg_status_unpack(config["msg"][i]["note"]["midi"]["status"].as<uint8_t>(), &status);
-        slider_ptr->params.touch[i].note.msg.type = NoteOn;
-        slider_ptr->params.touch[i].note.msg.data1 = config["msg"][i]["note"]["midi"]["data1"].as<uint8_t>();
-        slider_ptr->params.touch[i].note.msg.data2 = 0;
-        slider_ptr->params.touch[i].note.msg.channel = status.channel;
+        slider_ptr->params.touch[i].note.type = NoteOn;
+        slider_ptr->params.touch[i].note.data1 = config["msg"][i]["note"]["midi"]["data1"].as<uint8_t>();
+        slider_ptr->params.touch[i].note.data2 = 0;
+        slider_ptr->params.touch[i].note.channel = status.channel;
         break;
 
       case ControlChange:
@@ -172,10 +172,10 @@ void mapping_slider_create(const JsonObject &config) {
 
       case AfterTouchPoly:
         midi_msg_status_unpack(config["msg"][i]["note"]["midi"]["status"].as<uint8_t>(), &status);
-        slider_ptr->params.touch[i].note.msg.type = status.type;
-        slider_ptr->params.touch[i].note.msg.data1 = config["msg"][i]["note"]["midi"]["data1"].as<uint8_t>();
-        slider_ptr->params.touch[i].note.msg.data2 = 0;
-        slider_ptr->params.touch[i].note.msg.channel = status.channel;
+        slider_ptr->params.touch[i].note.type = status.type;
+        slider_ptr->params.touch[i].note.data1 = config["msg"][i]["note"]["midi"]["data1"].as<uint8_t>();
+        slider_ptr->params.touch[i].note.data2 = 0;
+        slider_ptr->params.touch[i].note.channel = status.channel;
 
         midi_msg_status_unpack(config["msg"][i]["press"]["midi"]["status"].as<uint8_t>(), &status);
         slider_ptr->params.touch[i].press.msg.type = status.type;

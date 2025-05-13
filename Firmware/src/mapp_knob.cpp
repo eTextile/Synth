@@ -68,15 +68,15 @@ void mapping_knob_start(blob_t* blob_ptr) {
 
   switch (knob_ptr->params.mode_z) {
     case NoteOn:
-      send_blob_press_note_on(&touch_ptr->note.msg, blob_ptr);
+      mapping_send_note_on(&touch_ptr->note, blob_ptr);
       break;
     case ControlChange:
-      send_blob_press_control_change(&touch_ptr->press, blob_ptr);
+      mapping_send_midi_msg(&touch_ptr->press, blob_ptr);
       break;
     case AfterTouchPoly:
       // Send controlChange before NoteOn
-      send_blob_press_control_change(&touch_ptr->press, blob_ptr);
-      send_blob_press_note_on(&touch_ptr->note.msg, blob_ptr);
+      mapping_send_midi_msg(&touch_ptr->press, blob_ptr);
+      mapping_send_note_on(&touch_ptr->note, blob_ptr);
       break;
     default:
       // Not handled in mapping_touchpad
@@ -136,13 +136,13 @@ void mapping_knob_stop(blob_t* blob_ptr) {
 
   switch (knob_ptr->params.mode_z) {
     case NoteOn:
-      send_blob_press_note_off(&touch_ptr->note.msg, blob_ptr);
+      mapping_send_note_off(&touch_ptr->note, blob_ptr);
       break;
     case ControlChange:
       // N/A
       break;
     case AfterTouchPoly:
-      send_blob_press_note_off(&touch_ptr->note.msg, blob_ptr);
+      mapping_send_note_off(&touch_ptr->note, blob_ptr);
       break;
     default:
       // Not handled in mapp_toucpad
@@ -195,10 +195,10 @@ void mapping_knob_create(const JsonObject &config) {
 
       case NoteOn:
         midi_msg_status_unpack(config["msg"][i]["note"]["midi"]["status"].as<uint8_t>(), &status);
-        knob_ptr->params.touch[i].note.msg.type = NoteOn;
-        knob_ptr->params.touch[i].note.msg.data1 = config["msg"][i]["note"]["midi"]["data1"].as<uint8_t>();
-        knob_ptr->params.touch[i].note.msg.data2 = 0;
-        knob_ptr->params.touch[i].note.msg.channel = status.channel;
+        knob_ptr->params.touch[i].note.type = NoteOn;
+        knob_ptr->params.touch[i].note.data1 = config["msg"][i]["note"]["midi"]["data1"].as<uint8_t>();
+        knob_ptr->params.touch[i].note.data2 = 0;
+        knob_ptr->params.touch[i].note.channel = status.channel;
         break;
 
       case ControlChange:
@@ -213,10 +213,10 @@ void mapping_knob_create(const JsonObject &config) {
 
       case AfterTouchPoly:
         midi_msg_status_unpack(config["msg"][i]["note"]["midi"]["status"].as<uint8_t>(), &status);
-        knob_ptr->params.touch[i].note.msg.type = status.type;
-        knob_ptr->params.touch[i].note.msg.data1 = config["msg"][i]["note"]["midi"]["data1"].as<uint8_t>();
-        knob_ptr->params.touch[i].note.msg.data2 = 0;
-        knob_ptr->params.touch[i].note.msg.channel = status.channel;
+        knob_ptr->params.touch[i].note.type = status.type;
+        knob_ptr->params.touch[i].note.data1 = config["msg"][i]["note"]["midi"]["data1"].as<uint8_t>();
+        knob_ptr->params.touch[i].note.data2 = 0;
+        knob_ptr->params.touch[i].note.channel = status.channel;
 
         midi_msg_status_unpack(config["msg"][i]["press"]["midi"]["status"].as<uint8_t>(), &status);
         knob_ptr->params.touch[i].press.msg.type = status.type;

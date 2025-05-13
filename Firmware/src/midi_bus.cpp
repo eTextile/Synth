@@ -54,19 +54,19 @@ void midi_send_out(midi_msg_t* midi_ptr) {
   }
 };
 
-void send_blob_press_note_on(midi_msg_t* midi_msg_ptr, blob_t* blob_ptr) {
+void mapping_send_note_on(midi_msg_t* midi_msg_ptr, blob_t* blob_ptr) {
   midi_msg_ptr->type = NoteOn;
   midi_msg_ptr->data2 = blob_ptr->centroid.x; // TODO: improve "velocity" sensing
   midi_send_out(midi_msg_ptr);
 };
 
-void send_blob_press_note_off(midi_msg_t* midi_msg_ptr, blob_t* blob_ptr) {
+void mapping_send_note_off(midi_msg_t* midi_msg_ptr, blob_t* blob_ptr) {
   midi_msg_ptr->type = NoteOff;
   midi_msg_ptr->data2 = 0;
   midi_send_out(midi_msg_ptr);
 };
 
-void send_blob_press_control_change(void* touch_ptr, blob_t* blob_ptr) {
+void mapping_send_midi_msg(void* touch_ptr, blob_t* blob_ptr) {
   direction_t* _touch_ptr = (direction_t*)touch_ptr;
 
   _touch_ptr->last_val = _touch_ptr->msg.data2;

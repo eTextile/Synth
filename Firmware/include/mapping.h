@@ -36,20 +36,20 @@ struct direction_s {
 typedef struct touch_1d_s touch_1d_t;
 struct touch_1d_s {
   direction_t press; // comon
-  direction_t note;
+  midi_msg_t note;
 };
 
 typedef struct touch_2d_s touch_2d_t;
 struct touch_2d_s {
   direction_t press; // comon
-  direction_t note;
+  midi_msg_t note;
   direction_t pos;
 };
 
 typedef struct touch_3d_s touch_3d_t;
 struct touch_3d_s {
   direction_t press; // comon
-  direction_t note;
+  midi_msg_t note;
   direction_t pos_x;
   direction_t pos_y;
 };
