@@ -94,7 +94,7 @@ void mapping_slider_continue(blob_t* blob_ptr) {
   mapp_slider_t* slider_ptr = (mapp_slider_t*)blob_ptr->action.mapping_ptr;
   touch_1d_t* touch_ptr = (touch_1d_t*)blob_ptr->action.touch_ptr;
 
-  if (slider_ptr->params.mode_z == ControlChange || slider_ptr->params.mode_z == AfterTouchPoly || slider_ptr->params.mode_z == PitchBend) {
+  if (slider_ptr->params.mode_z != NoteOn) {
     send_blob_press_control_change(&touch_ptr->press, blob_ptr);
   }
 };
@@ -142,51 +142,50 @@ void mapping_slider_create(const JsonObject &config) {
   midi_status_t status;
   for (uint8_t i = 0; i<slider_ptr->params.touchs; i++) {
 
-    slider_ptr->params.touch[i].pos.msg.data2 = 0;
-
     midi_msg_status_unpack(config["msg"][i]["pos"]["midi"]["status"].as<uint8_t>(), &status);
     slider_ptr->params.touch[i].pos.msg.type = status.type;
     slider_ptr->params.touch[i].pos.msg.data1 = config["msg"][i]["pos"]["midi"]["data1"].as<uint8_t>();
-    slider_ptr->params.touch[i].pos.msg.data2 = config["msg"][i]["pos"]["midi"]["data2"].as<uint8_t>();
+    slider_ptr->params.touch[i].pos.msg.data2 = 0;
     slider_ptr->params.touch[i].pos.msg.channel = status.channel;
     slider_ptr->params.touch[i].pos.limit.min = config["msg"][i]["pos"]["limit"]["min"].as<uint8_t>();
     slider_ptr->params.touch[i].pos.limit.max = config["msg"][i]["pos"]["limit"]["max"].as<uint8_t>();
 
-    slider_ptr->params.touch[i].note.msg.data2 = 0;
-    slider_ptr->params.touch[i].press.msg.data2 = 0;
-
     switch (slider_ptr->params.mode_z) {
+
       case NoteOn:
         midi_msg_status_unpack(config["msg"][i]["note"]["midi"]["status"].as<uint8_t>(), &status);
         slider_ptr->params.touch[i].note.msg.type = NoteOn;
         slider_ptr->params.touch[i].note.msg.data1 = config["msg"][i]["note"]["midi"]["data1"].as<uint8_t>();
-        slider_ptr->params.touch[i].note.msg.data2 = config["msg"][i]["note"]["midi"]["data2"].as<uint8_t>();
+        slider_ptr->params.touch[i].note.msg.data2 = 0;
         slider_ptr->params.touch[i].note.msg.channel = status.channel;
         break;
+
       case ControlChange:
         midi_msg_status_unpack(config["msg"][i]["press"]["midi"]["status"].as<uint8_t>(), &status);
         slider_ptr->params.touch[i].press.msg.type = status.type;
         slider_ptr->params.touch[i].press.msg.data1 = config["msg"][i]["press"]["midi"]["data1"].as<uint8_t>();
-        slider_ptr->params.touch[i].press.msg.data2 = config["msg"][i]["press"]["midi"]["data2"].as<uint8_t>();
+        slider_ptr->params.touch[i].press.msg.data2 = 0;
         slider_ptr->params.touch[i].press.msg.channel = status.channel;
         slider_ptr->params.touch[i].press.limit.min = config["msg"][i]["press"]["limit"]["min"].as<uint8_t>();
         slider_ptr->params.touch[i].press.limit.max = config["msg"][i]["press"]["limit"]["max"].as<uint8_t>();
         break;
+
       case AfterTouchPoly:
         midi_msg_status_unpack(config["msg"][i]["note"]["midi"]["status"].as<uint8_t>(), &status);
         slider_ptr->params.touch[i].note.msg.type = status.type;
         slider_ptr->params.touch[i].note.msg.data1 = config["msg"][i]["note"]["midi"]["data1"].as<uint8_t>();
-        slider_ptr->params.touch[i].note.msg.data2 = config["msg"][i]["note"]["midi"]["data2"].as<uint8_t>();
+        slider_ptr->params.touch[i].note.msg.data2 = 0;
         slider_ptr->params.touch[i].note.msg.channel = status.channel;
 
         midi_msg_status_unpack(config["msg"][i]["press"]["midi"]["status"].as<uint8_t>(), &status);
         slider_ptr->params.touch[i].press.msg.type = status.type;
         slider_ptr->params.touch[i].press.msg.data1 = config["msg"][i]["press"]["midi"]["data1"].as<uint8_t>();
-        slider_ptr->params.touch[i].press.msg.data2 = config["msg"][i]["press"]["midi"]["data2"].as<uint8_t>();
+        slider_ptr->params.touch[i].press.msg.data2 = 0;
         slider_ptr->params.touch[i].press.msg.channel = status.channel;
         slider_ptr->params.touch[i].press.limit.min = config["msg"][i]["press"]["limit"]["min"].as<uint8_t>();
         slider_ptr->params.touch[i].press.limit.max = config["msg"][i]["press"]["limit"]["max"].as<uint8_t>();
         break;
+
       default:
         break;
      }

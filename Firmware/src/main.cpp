@@ -33,10 +33,10 @@ void setup() {
   usb_midi_setup();
   midi_bus_setup();
   matrix_calibrate();
-
+  
   if (load_flash_config()) {
     if (mappings_apply_config(flash_config_ptr, flash_config_size)) {
-      blink(20, 30);
+      //
     }
     else {
       set_mode(ERROR_MODE);
@@ -57,7 +57,6 @@ void loop() {
       usb_midi_recive();
       if ((millis() - bootTime) > PENDING_MODE_TIMEOUT) {
         set_mode(STANDALONE_MODE);
-        blink(10, 50);
       }
       break;
 
@@ -97,7 +96,7 @@ void loop() {
       matrix_find_blobs();
       mapping_lib_update();
       usb_midi_transmit_mappings_midi_msg();
-      hardware_midi_transmit_mappings_midi_msg(); // tmp
+      hardware_midi_transmit_mappings_midi_msg();
       break;
 
     case STANDALONE_MODE:
@@ -113,6 +112,7 @@ void loop() {
       usb_midi_recive();
       break;
   };
+
   llist_concat_nodes(&midi_nodes_pool, &midi_out); // Save/rescure all midi_out nodes
 
   #if defined(USB_MIDI_SERIAL) && defined(DEBUG_FPS)

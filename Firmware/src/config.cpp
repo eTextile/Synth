@@ -129,7 +129,7 @@ e256_mode_t e256_m[16] = {
   {{HIGH, LOW, false}, 1000, 1000, true}, // [11] WRITE_MODE
   {{HIGH, LOW, false}, 1000, 1000, true}, // [12] LOAD_MODE
   {{HIGH, LOW, false}, 1000, 1000, true}, // [13] FETCH_MODE
-  {{HIGH, LOW, false}, 2500, 2500, true}, // [14] STANDALONE_MODE
+  {{LOW, HIGH, false}, 2000, 2000, true}, // [14] STANDALONE_MODE
   {{HIGH, HIGH, false}, 10, 10, true}     // [15] ERROR_MODE
 };
 
