@@ -76,7 +76,6 @@ void mapping_polygon_dispose_blob(common_t* mapping_ptr, blob_t* blob_ptr) {
   };
 };
 
-
 void mapping_polygon_start(blob_t* blob_ptr) {
   mapp_polygon_t* polygon_ptr = (mapp_polygon_t*)blob_ptr->action.mapping_ptr;
   touch_3d_t* touch_ptr = (touch_3d_t*)blob_ptr->action.touch_ptr;
@@ -127,7 +126,6 @@ void mapping_polygon_stop(blob_t* blob_ptr) {
       break;
   }
 };
-
 
 void mapping_polygon_create(const JsonObject &config) {
   mapp_polygon_t* polygon_ptr = (mapp_polygon_t*)llist_pop_front(&llist_polygons_pool);
