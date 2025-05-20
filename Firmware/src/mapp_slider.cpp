@@ -28,6 +28,7 @@ bool mapping_sliders_alloc(uint8_t sliders_cnt) {
 
 bool mapping_slider_is_blob_inside(common_t* mapping_ptr, blob_t* blob_ptr) {
   mapp_slider_t* slider_ptr = (mapp_slider_t*)mapping_ptr;
+
   if (blob_ptr->centroid.x > slider_ptr->params.rect.from.x &&
       blob_ptr->centroid.x < slider_ptr->params.rect.to.x &&
       blob_ptr->centroid.y > slider_ptr->params.rect.from.y &&
@@ -39,15 +40,12 @@ bool mapping_slider_is_blob_inside(common_t* mapping_ptr, blob_t* blob_ptr) {
 
 bool mapping_slider_assign_blob(common_t* mapping_ptr, blob_t* blob_ptr) {
   mapp_slider_t* slider_ptr = (mapp_slider_t*)mapping_ptr;
+
   if (slider_ptr->touch_index < slider_ptr->params.touchs) {
-    //Serial.printf("\n_SLIDER_ASSIGN / BLOB_PTR: %p -> SLIDER_PTR: %p", blob_ptr, slider_ptr);
-    //Serial.printf("\n_SLIDER_ASSIGN / TOUCH_INDEX: %d", slider_ptr->touch_index);
     blob_ptr->action.mapping_ptr = slider_ptr;
-    blob_ptr->action.touch_ptr = &slider_ptr->params.touch[slider_ptr->touch_index];
-    
+    blob_ptr->action.touch_ptr = &slider_ptr->params.touch[slider_ptr->touch_index];    
     slider_ptr->touch_index++;
     slider_ptr->active_blob_count++;
-    //Serial.printf("\n_SLIDER_ASSIGN / ACTIVE_BLOB_COUNT: %d\tSLIDER_TOUCHS: %d",slider_ptr->active_blob_count, slider_ptr->params.touchs);
     return true;
   }
   return false;
@@ -55,17 +53,13 @@ bool mapping_slider_assign_blob(common_t* mapping_ptr, blob_t* blob_ptr) {
 
 void mapping_slider_dispose_blob(common_t* mapping_ptr, blob_t* blob_ptr) {
   mapp_slider_t* slider_ptr = (mapp_slider_t*)mapping_ptr;
-  //Serial.printf("\nSLIDER_DISPOSE / BLOB_DISPOSE_MAPPING / BLOB: %p x MAPPING: %p", blob_ptr, mapping_ptr);
+
   blob_ptr->action.mapping_ptr = NULL;
   blob_ptr->action.touch_ptr = NULL;
-
   slider_ptr->active_blob_count--;
   if (slider_ptr->active_blob_count == 0) {
     slider_ptr->touch_index = 0;
   }
-
-  //Serial.printf("\n_SLIDER_DISPOSE / TOUCH_INDEX: %d", slider_ptr->touch_index);
-  //Serial.printf("\n_SLIDER_DISPOSE / ACTIVE_BLOB_COUNT: %d", slider_ptr->active_blob_count);
 };
 
 void mapping_slider_start(blob_t* blob_ptr) {

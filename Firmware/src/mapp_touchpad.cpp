@@ -28,6 +28,7 @@ bool mapping_touchpads_alloc(uint8_t touchpads_cnt) {
 
 bool mapping_touchpad_is_blob_inside(common_t* mapping_ptr, blob_t* blob_ptr) {
   mapp_touchpad_t* touchpad_ptr = (mapp_touchpad_t*)mapping_ptr;
+  
   if (blob_ptr->centroid.x > touchpad_ptr->params.rect.from.x &&
         blob_ptr->centroid.x < touchpad_ptr->params.rect.to.x &&
         blob_ptr->centroid.y > touchpad_ptr->params.rect.from.y &&
@@ -39,15 +40,12 @@ bool mapping_touchpad_is_blob_inside(common_t* mapping_ptr, blob_t* blob_ptr) {
 
 bool mapping_touchpad_assign_blob(common_t* mapping_ptr, blob_t* blob_ptr) {
   mapp_touchpad_t* touchpad_ptr = (mapp_touchpad_t*)mapping_ptr;
+
   if (touchpad_ptr->touch_index < touchpad_ptr->params.touchs) {
-    //Serial.printf("\n_TOUCHPAD_ASSIGN / BLOB_PTR: %p -> TOUCHPAD_PTR: %p", blob_ptr, touchpad_ptr);
-    //Serial.printf("\n_TOUCHPAD_ASSIGN / TOUCH_INDEX: %d", touchpad_ptr->touch_index);
     blob_ptr->action.mapping_ptr = touchpad_ptr;
     blob_ptr->action.touch_ptr = &touchpad_ptr->params.touch[touchpad_ptr->touch_index];
-    
     touchpad_ptr->touch_index++;
     touchpad_ptr->active_blob_count++;
-    //Serial.printf("\n_TOUCHPAD_ASSIGN / ACTIVE_BLOB_COUNT: %d",touchpad_ptr->active_blob_count); // DEBUG
     return true;
   }
   return false;
@@ -55,16 +53,13 @@ bool mapping_touchpad_assign_blob(common_t* mapping_ptr, blob_t* blob_ptr) {
 
 void mapping_touchpad_dispose_blob(common_t* mapping_ptr, blob_t* blob_ptr) {
   mapp_touchpad_t* touchpad_ptr = (mapp_touchpad_t*)mapping_ptr;
-  //Serial.printf("\n_TOUCHPAD_DISPOSE / BLOB_PTR: %p -> TOUCHPAD_PTR: %p", blob_ptr, mapping_ptr);
+
   blob_ptr->action.mapping_ptr = NULL;
   blob_ptr->action.touch_ptr = NULL;
-
   touchpad_ptr->active_blob_count--;
   if (touchpad_ptr->active_blob_count == 0) {
     touchpad_ptr->touch_index = 0;
   }
-  //Serial.printf("\n_TOUCHPAD_DISPOSE / TOUCH_INDEX: %d", touchpad_ptr->touch_index);
-  //Serial.printf("\n_TOUCHPAD_DISPOSE / ACTIVE_BLOB_COUNT: %d", touchpad_ptr->active_blob_count);
 };
 
 void mapping_touchpad_start(blob_t* blob_ptr) {
@@ -95,6 +90,7 @@ void mapping_touchpad_continue(blob_t* blob_ptr) {
 
   mapping_send_midi_msg(&touch_ptr->pos_x, blob_ptr);
   mapping_send_midi_msg(&touch_ptr->pos_y, blob_ptr);
+  
   if (touchpad_ptr->params.mode_z != NoteOn) {
     mapping_send_midi_msg(&touch_ptr->press, blob_ptr);
   }

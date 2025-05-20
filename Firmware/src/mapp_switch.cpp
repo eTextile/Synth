@@ -30,6 +30,7 @@ bool mapping_switchs_alloc(uint8_t switchs_cnt) {
 // Test if the blob is within the key limit
 bool mapping_switch_is_blob_inside(common_t* mapping_ptr, blob_t* blob_ptr) {
   mapp_switch_t* switch_ptr = (mapp_switch_t*)mapping_ptr;
+  
   if (blob_ptr->centroid.x > switch_ptr->params.rect.from.x &&
       blob_ptr->centroid.x < switch_ptr->params.rect.to.x &&
       blob_ptr->centroid.y > switch_ptr->params.rect.from.y &&
@@ -41,12 +42,12 @@ bool mapping_switch_is_blob_inside(common_t* mapping_ptr, blob_t* blob_ptr) {
 
 bool mapping_switch_assign_blob(common_t* mapping_ptr, blob_t* blob_ptr) {
   mapp_switch_t* switch_ptr = (mapp_switch_t*)mapping_ptr;
+
   if (switch_ptr->touch_index < switch_ptr->params.touchs) {
     blob_ptr->action.mapping_ptr = switch_ptr;
     blob_ptr->action.touch_ptr = &switch_ptr->params.touch[switch_ptr->touch_index];
     switch_ptr->touch_index++;
     switch_ptr->active_blob_count++;
-    //Serial.printf("\nSWITCH_ASSIGN / BLOB_COUNT: %d", switch_ptr->active_blob_count);
     return true;
   }
   return false;
@@ -54,13 +55,13 @@ bool mapping_switch_assign_blob(common_t* mapping_ptr, blob_t* blob_ptr) {
 
 void mapping_switch_dispose_blob(common_t* mapping_ptr, blob_t* blob_ptr) {
   mapp_switch_t* switch_ptr = (mapp_switch_t*)mapping_ptr;
+
   blob_ptr->action.mapping_ptr = NULL;
   blob_ptr->action.touch_ptr = NULL;
   switch_ptr->active_blob_count--;
   if (switch_ptr->active_blob_count == 0) {
     switch_ptr->touch_index = 0;
   }
-  //Serial.printf("\nSWITCH_DISPOSE / BLOB_COUNT: %d", switch_ptr->active_blob_count);
 };
 
 void mapping_switch_start(blob_t* blob_ptr) {

@@ -12,7 +12,9 @@
         "concepts": "cpp",
         "numeric": "cpp",
         "istream": "cpp",
-        "ostream": "cpp"
+        "ostream": "cpp",
+        "random": "cpp",
+        "limits": "cpp"
     },
     "liveServer.settings.port": 5501
 }

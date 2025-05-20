@@ -29,6 +29,7 @@ bool mapping_knobs_alloc(uint8_t knobs_cnt) {
 
 bool mapping_knob_is_blob_inside(common_t* mapping_ptr, blob_t* blob_ptr) {
   mapp_knob_t* knob_ptr = (mapp_knob_t*)mapping_ptr;
+
   float x = blob_ptr->centroid.x - knob_ptr->params.center.x;
   float y = blob_ptr->centroid.y - knob_ptr->params.center.y;
   float radius = sqrt(x * x + y * y);
@@ -40,10 +41,10 @@ bool mapping_knob_is_blob_inside(common_t* mapping_ptr, blob_t* blob_ptr) {
 
 bool mapping_knob_assign_blob(common_t* mapping_ptr, blob_t* blob_ptr) {
   mapp_knob_t* knob_ptr = (mapp_knob_t*)mapping_ptr;
+
   if (knob_ptr->touch_index < knob_ptr->params.touchs) {
     blob_ptr->action.mapping_ptr = knob_ptr;
     blob_ptr->action.touch_ptr = &knob_ptr->params.touch[knob_ptr->touch_index];
-    
     knob_ptr->touch_index++;
     knob_ptr->active_blob_count++;
     return true;
@@ -53,9 +54,9 @@ bool mapping_knob_assign_blob(common_t* mapping_ptr, blob_t* blob_ptr) {
 
 void mapping_knob_dispose_blob(common_t* mapping_ptr, blob_t* blob_ptr) {
   mapp_knob_t* knob_ptr = (mapp_knob_t*)mapping_ptr;
+
   blob_ptr->action.mapping_ptr = NULL;
   blob_ptr->action.touch_ptr = NULL;
-
   knob_ptr->active_blob_count--;
   if (knob_ptr->active_blob_count == 0) {
     knob_ptr->touch_index = 0;
@@ -93,26 +94,37 @@ void mapping_knob_continue(blob_t* blob_ptr) {
   float x = blob_ptr->centroid.x - knob_ptr->params.center.x;
   float y = blob_ptr->centroid.y - knob_ptr->params.center.y;
 
+  float theta = 0;
   // Rotation of Axes through an angle without shifting Origin
   float pos_x = x * cos(knob_ptr->params.offset) + y * sin(knob_ptr->params.offset);
   float pos_y = -x * sin(knob_ptr->params.offset) + y * cos(knob_ptr->params.offset);
   
-  touch_ptr->theta.last_val = touch_ptr->theta.msg.data2;
   if (pos_x == 0 && 0 < pos_y) {
-    touch_ptr->theta.msg.data2 = PiII;
+    theta = PiII;
   } else if (pos_x == 0 && pos_y < 0) {
-    touch_ptr->theta.msg.data2 = IIIPiII;
+    theta = IIIPiII;
   } else if (pos_x < 0) {
-    touch_ptr->theta.msg.data2 = atanf(pos_y / pos_x) + PI;
+    theta = atanf(pos_y / pos_x) + PI;
   } else if (pos_y < 0) {
-    touch_ptr->theta.msg.data2 = atanf(pos_y / pos_x) + IIPi;
+    theta = atanf(pos_y / pos_x) + IIPi;
   } else {
-    touch_ptr->theta.msg.data2 = atanf(pos_y / pos_x);
+    theta = atanf(pos_y / pos_x);
   }
+
+  touch_ptr->theta.last_val = touch_ptr->theta.msg.data2;
+  touch_ptr->theta.msg.data2 = map(
+    round(theta),
+    0,
+    127,
+    touch_ptr->theta.limit.min,
+    touch_ptr->theta.limit.max
+  );
+
   if (touch_ptr->theta.msg.data2 != touch_ptr->theta.last_val) midi_send_out(&touch_ptr->theta.msg);
 
   touch_ptr->radius.last_val = touch_ptr->radius.msg.data2;
   touch_ptr->radius.msg.data2 = round(sqrt(x * x + y * y));
+  
   if (touch_ptr->radius.msg.data2 != touch_ptr->radius.last_val) midi_send_out(&touch_ptr->radius.msg);
 
   if (knob_ptr->params.mode_z != NoteOn) {
@@ -124,9 +136,11 @@ void mapping_knob_continue(blob_t* blob_ptr) {
       touch_ptr->press.limit.min,
       touch_ptr->press.limit.max
     );
+
     if (touch_ptr->press.msg.data2 != touch_ptr->press.last_val) {
       midi_send_out(&touch_ptr->press.msg);
     }
+
   }
 };
 

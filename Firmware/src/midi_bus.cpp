@@ -67,7 +67,7 @@ void mapping_send_note_off(midi_msg_t* midi_msg_ptr, blob_t* blob_ptr) {
 };
 
 void mapping_send_midi_msg(void* touch_ptr, blob_t* blob_ptr) {
-  direction_t* _touch_ptr = (direction_t*)touch_ptr;
+  direction_t* _touch_ptr = (direction_t*)touch_ptr; // cast
 
   _touch_ptr->last_val = _touch_ptr->msg.data2;
   _touch_ptr->msg.data2 = map(
