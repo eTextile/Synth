@@ -21,7 +21,7 @@ ADC::Sync_result result; // Store ADC_0 & ADC_1
 #define SCK1_PIN 27  // Hardware SPI1 (CLOCK - SHCP)
 #define MOSI1_PIN 26 // Hardware SPI1 (DATA - DS)
 
-//#define SET_ORIGIN_X // X-axis origine positioning
+#define SET_ORIGIN_X // X-axis origine positioning
 //#define SET_ORIGIN_Y // Y-axis origine positioning
 
 #define ADC0_PIN A3  // Pin 17 is connected to the output of multiplexerA (SIG pin)
