@@ -11,11 +11,10 @@
 #include "config.h"
 #include "scan.h"
 #include "interp.h"
-#include "midi_bus.h"
 #include "usb_midi_io.h"
 #include "allocate.h"
-
 #include "mapping.h"
+
 #include "mapp_switch.h"
 #include "mapp_slider.h"
 #include "mapp_touchpad.h"

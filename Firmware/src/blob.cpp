@@ -29,6 +29,7 @@ llist_t llist_context;                 // Context nodes linked list
 llist_t llist_blobs_pool;              // Blobs nodes pool
 llist_t blobs_to_keep;                 // Tmp 
 llist_t llist_blobs;                   // Blobs nodes linked list
+//llist_t llist_previous_blobs;
 
 void blob_setup(void) {
   llist_builder(&llist_context_pool, &lifo_array[0], LIFO_NODES, sizeof(lifo_array[0])); // Add X nodes to the llist_context_pool
@@ -250,10 +251,6 @@ void matrix_find_blobs(void) {
                 }
               }
             }
-
-            //blob_ptr->last_centroid.x = blob_ptr->centroid.x;
-            //blob_ptr->last_centroid.y = blob_ptr->centroid.y;
-            //blob_ptr->last_centroid.z = blob_ptr->centroid.z;
 
             blob_ptr->centroid.x = undefined_blob_ptr->centroid.x;
             blob_ptr->centroid.y = undefined_blob_ptr->centroid.y;

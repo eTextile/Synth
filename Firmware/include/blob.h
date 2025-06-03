@@ -16,6 +16,7 @@
 #include "llist.h"
 
 extern llist_t llist_blobs; // Blobs linked list
+//extern llist_t llist_previous_blobs; // Exposed local declaration see blob.cpp
 
 typedef enum blob_params_e {
   BI, // [0] Blob UID
@@ -27,8 +28,6 @@ typedef enum blob_params_e {
   BW, // [6] Blob width
   BH  // [7] Blob Height
 } blob_params_t;
-
-//extern llist_t llist_previous_blobs; // Exposed local declaration see blob.cpp
 
 typedef struct image_s image_t;
 struct image_s {

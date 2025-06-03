@@ -3,6 +3,11 @@
 
 #include "mapping.h"
 
+typedef enum dir_e {
+  VERTICAL,
+  HORIZONTAL
+} dir_t;
+
 typedef struct slider_s slider_t;
 struct slider_s {
   rect_t rect;

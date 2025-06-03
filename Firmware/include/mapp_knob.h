@@ -5,10 +5,9 @@
 
 typedef struct knob_touch_s knob_touch_t;
 struct knob_touch_s {
-  direction_t press;
-  midi_msg_t note;
-  direction_t radius;
-  direction_t theta;
+  positon_t press;
+  positon_t radius;
+  positon_t theta;
 };
 
 typedef struct knob_s knob_t;

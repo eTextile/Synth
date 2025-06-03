@@ -7,12 +7,13 @@
 #ifndef __MAPPING_LIB_H__
 #define __MAPPING_LIB_H__
 
+#include <ArduinoJson.h>
+
 #include "config.h"
 #include "blob.h"
 #include "llist.h"
-#include "midi_bus.h"
 
-#include <ArduinoJson.h>
+#include "midi_bus.h"
 
 typedef struct point_s point_t;
 struct point_s {
@@ -26,8 +27,11 @@ struct rect_s {
   point_t to;
 };
 
-typedef struct direction_s direction_t;
-struct direction_s {
+typedef struct midi_msg_s midi_msg_t; // Forward declaration
+typedef struct midi_limit_s midi_limit_t; // Forward declaration
+
+typedef struct position_s positon_t;
+struct position_s {
   midi_msg_t msg;
   midi_limit_t limit;
   uint8_t last_val;
@@ -35,29 +39,21 @@ struct direction_s {
 
 typedef struct touch_1d_s touch_1d_t;
 struct touch_1d_s {
-  direction_t press; // comon
-  midi_msg_t note;
+  positon_t press;
 };
 
 typedef struct touch_2d_s touch_2d_t;
 struct touch_2d_s {
-  direction_t press; // comon
-  midi_msg_t note;
-  direction_t pos;
+  positon_t press;
+  positon_t pos;
 };
 
 typedef struct touch_3d_s touch_3d_t;
 struct touch_3d_s {
-  direction_t press; // comon
-  midi_msg_t note;
-  direction_t pos_x;
-  direction_t pos_y;
+  positon_t press;
+  positon_t pos_x;
+  positon_t pos_y;
 };
-
-typedef enum dir_e {
-  VERTICAL,
-  HORIZONTAL
-} dir_t;
 
 extern llist_t llist_mappings;
 

@@ -10,7 +10,6 @@
 #include "llist.h"
 #include "blob.h"
 #include "median.h"
-#include "midi_bus.h"
 #include "mapping.h"
 #include "usb_midi_io.h"
 #include "hardware_midi_io.h"

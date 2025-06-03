@@ -10,7 +10,7 @@
 #include "config.h"
 #include "llist.h"
 #include "blob.h"
-#include "midi_bus.h"
+//#include "midi_bus.h"
 
 void tap_tempo(void);      // TODO
 void step_sequencer(void); // TODO

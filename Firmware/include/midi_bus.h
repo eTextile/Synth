@@ -7,19 +7,22 @@
 #ifndef __MIDI_BUS_H__
 #define __MIDI_BUS_H__
 
+#include <MIDI.h>  // https://github.com/FortySevenEffects/arduino_midi_library > https://github.com/PaulStoffregen/MIDI
+using namespace midi;
+
 #include "config.h"
 #include "llist.h"
 #include "blob.h"
 
-//#include "mapping.h" // TESTING
+#include "mapping.h"
 
-#include <MIDI.h>  // https://github.com/FortySevenEffects/arduino_midi_library > https://github.com/PaulStoffregen/MIDI
-using namespace midi;
+typedef struct rect_s rect_t; // Forward declaration
+typedef struct position_s positon_t; // Forward declaration
 
 extern llist_t midi_nodes_pool; // Main MIDI node stack
 extern llist_t midi_in;         // Main MIDI Input linked list
 extern llist_t midi_out;        // Main MIDI Output linked list
-//extern llist_t midi_chord;      // Main MIDI chord linked list
+//extern llist_t midi_chord;    // Main MIDI chord linked list
 
 typedef struct midi_msg_s midi_msg_t;
 struct midi_msg_s {
@@ -49,11 +52,15 @@ void midi_msg_status_unpack(uint8_t in_status, midi_status_t* out_status);
 
 void midi_send_out(midi_msg_t* midi_ptr);
 
-void mapping_send_note_on(midi_msg_t* midi_msg_ptr, blob_t* blob_ptr);
-void mapping_send_note_off(midi_msg_t* midi_msg_ptr, blob_t* blob_ptr);
-void mapping_send_midi_msg(void* touch_ptr, blob_t* blob_ptr);
+void mapping_send_midi_note_on(positon_t* positon_ptr, blob_t* blob_ptr);
+void mapping_send_midi_note_off(positon_t* positon_ptr, blob_t* blob_ptr);
+
+void mapping_send_midi_pos_x_msg(rect_t* bounding_box_ptr, positon_t* positon_ptr, blob_t* blob_ptr);
+void mapping_send_midi_pos_y_msg(rect_t* bounding_box_ptr, positon_t* positon_ptr, blob_t* blob_ptr);
+void mapping_send_midi_pos_z_msg(positon_t* positon_ptr, blob_t* blob_ptr);
 
 const char* get_type_name(MidiType code);
+
 void print_bytes(const uint8_t* data_ptr, size_t length);
 
 #endif /*__MIDI_BUS_H__*/

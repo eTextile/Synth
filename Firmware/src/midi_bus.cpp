@@ -4,7 +4,6 @@
   This work is licensed under Creative Commons Attribution-ShareAlike 4.0 International license, see the LICENSE file for details.
 */
 
-#include "midi_bus.h"
 #include "blob.h"
 #include "mapping.h"
 
@@ -54,30 +53,58 @@ void midi_send_out(midi_msg_t* midi_ptr) {
   }
 };
 
-void mapping_send_note_on(midi_msg_t* midi_msg_ptr, blob_t* blob_ptr) {
-  midi_msg_ptr->type = NoteOn;
-  midi_msg_ptr->data2 = blob_ptr->centroid.x; // TODO: improve "velocity" sensing
-  midi_send_out(midi_msg_ptr);
+void mapping_send_midi_note_on(positon_t* positon_ptr, blob_t* blob_ptr) {
+  positon_ptr->msg.type = NoteOn;
+  positon_ptr->msg.data2 = blob_ptr->centroid.x; // TODO: improve "velocity" sensing
+  midi_send_out(&positon_ptr->msg);
 };
 
-void mapping_send_note_off(midi_msg_t* midi_msg_ptr, blob_t* blob_ptr) {
-  midi_msg_ptr->type = NoteOff;
-  midi_msg_ptr->data2 = 0;
-  midi_send_out(midi_msg_ptr);
+void mapping_send_midi_note_off(positon_t* positon_ptr, blob_t* blob_ptr) {
+  positon_ptr->msg.type = NoteOff;
+  positon_ptr->msg.data2 = 0;
+  midi_send_out(&positon_ptr->msg);
 };
 
-void mapping_send_midi_msg(void* touch_ptr, blob_t* blob_ptr) {
-  direction_t* _touch_ptr = (direction_t*)touch_ptr; // cast
+void mapping_send_midi_pos_x_msg(rect_t* bounding_box_ptr, positon_t* positon_ptr, blob_t* blob_ptr) {
+  positon_ptr->last_val = positon_ptr->msg.data2;
+  positon_ptr->msg.data2 = map(
+    blob_ptr->centroid.x,
+    bounding_box_ptr->from.x,
+    bounding_box_ptr->to.x,
+    positon_ptr->limit.min,
+    positon_ptr->limit.max
+  );
+  if (positon_ptr->msg.data2 != positon_ptr->last_val) {
+    midi_send_out(&positon_ptr->msg);
+  }
+};
 
-  _touch_ptr->last_val = _touch_ptr->msg.data2;
-  _touch_ptr->msg.data2 = map(
+void mapping_send_midi_pos_y_msg(rect_t* bounding_box_ptr, positon_t* positon_ptr, blob_t* blob_ptr) {
+  positon_ptr->last_val = positon_ptr->msg.data2;
+  positon_ptr->msg.data2 = map(
+    blob_ptr->centroid.y,
+    bounding_box_ptr->from.y,
+    bounding_box_ptr->to.y,
+    positon_ptr->limit.min,
+    positon_ptr->limit.max
+  );
+  if (positon_ptr->msg.data2 != positon_ptr->last_val) {
+    midi_send_out(&positon_ptr->msg);
+  }
+};
+
+void mapping_send_midi_pos_z_msg(positon_t* positon_ptr, blob_t* blob_ptr) {
+  positon_ptr->last_val = positon_ptr->msg.data2;
+  positon_ptr->msg.data2 = map(
     blob_ptr->centroid.z,
     Z_MIN,
     Z_MAX,
-    _touch_ptr->limit.min,
-    _touch_ptr->limit.max
+    positon_ptr->limit.min,
+    positon_ptr->limit.max
   );
-  midi_send_out(&_touch_ptr->msg);
+  if (positon_ptr->msg.data2 != positon_ptr->last_val) {
+    midi_send_out(&positon_ptr->msg);
+  }
 };
 
 /*

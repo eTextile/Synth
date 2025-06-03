@@ -11,7 +11,6 @@
 #include "interp.h"
 #include "llist.h"
 #include "blob.h"
-#include "midi_bus.h"
 #include "allocate.h"
 
 #include "hardware_midi_io.h"

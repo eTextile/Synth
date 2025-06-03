@@ -69,15 +69,13 @@ void mapping_knob_start(blob_t* blob_ptr) {
 
   switch (knob_ptr->params.mode_z) {
     case NoteOn:
-      mapping_send_note_on(&touch_ptr->note, blob_ptr);
+      mapping_send_midi_note_on(&touch_ptr->press, blob_ptr);
       break;
     case ControlChange:
-      mapping_send_midi_msg(&touch_ptr->press, blob_ptr);
+      mapping_send_midi_pos_z_msg(&touch_ptr->press, blob_ptr);
       break;
     case AfterTouchPoly:
-      // Send controlChange before NoteOn
-      mapping_send_midi_msg(&touch_ptr->press, blob_ptr);
-      mapping_send_note_on(&touch_ptr->note, blob_ptr);
+      mapping_send_midi_pos_z_msg(&touch_ptr->press, blob_ptr);
       break;
     default:
       // Not handled in mapping_touchpad
@@ -112,6 +110,7 @@ void mapping_knob_continue(blob_t* blob_ptr) {
   }
 
   touch_ptr->theta.last_val = touch_ptr->theta.msg.data2;
+
   touch_ptr->theta.msg.data2 = map(
     round(theta),
     0,
@@ -123,25 +122,12 @@ void mapping_knob_continue(blob_t* blob_ptr) {
   if (touch_ptr->theta.msg.data2 != touch_ptr->theta.last_val) midi_send_out(&touch_ptr->theta.msg);
 
   touch_ptr->radius.last_val = touch_ptr->radius.msg.data2;
-  touch_ptr->radius.msg.data2 = round(sqrt(x * x + y * y));
+  touch_ptr->radius.msg.data2 = round(sqrt(x * x + y * y)); // Is it ok?
   
   if (touch_ptr->radius.msg.data2 != touch_ptr->radius.last_val) midi_send_out(&touch_ptr->radius.msg);
+  
+  mapping_send_midi_pos_z_msg(&touch_ptr->theta, blob_ptr);
 
-  if (knob_ptr->params.mode_z != NoteOn) {
-    touch_ptr->press.last_val = touch_ptr->press.msg.data2;
-    touch_ptr->press.msg.data2 = map(
-      blob_ptr->centroid.z,
-      Z_MIN,
-      Z_MAX,
-      touch_ptr->press.limit.min,
-      touch_ptr->press.limit.max
-    );
-
-    if (touch_ptr->press.msg.data2 != touch_ptr->press.last_val) {
-      midi_send_out(&touch_ptr->press.msg);
-    }
-
-  }
 };
 
 void mapping_knob_stop(blob_t* blob_ptr) {
@@ -150,13 +136,13 @@ void mapping_knob_stop(blob_t* blob_ptr) {
 
   switch (knob_ptr->params.mode_z) {
     case NoteOn:
-      mapping_send_note_off(&touch_ptr->note, blob_ptr);
+      mapping_send_midi_note_off(&touch_ptr->press, blob_ptr);
       break;
     case ControlChange:
       // N/A
       break;
     case AfterTouchPoly:
-      mapping_send_note_off(&touch_ptr->note, blob_ptr);
+      //
       break;
     default:
       // Not handled in mapp_toucpad
@@ -209,10 +195,10 @@ void mapping_knob_create(const JsonObject &config) {
 
       case NoteOn:
         midi_msg_status_unpack(config["msg"][i]["note"]["midi"]["status"].as<uint8_t>(), &status);
-        knob_ptr->params.touch[i].note.type = NoteOn;
-        knob_ptr->params.touch[i].note.data1 = config["msg"][i]["note"]["midi"]["data1"].as<uint8_t>();
-        knob_ptr->params.touch[i].note.data2 = 0;
-        knob_ptr->params.touch[i].note.channel = status.channel;
+        knob_ptr->params.touch[i].press.msg.type = NoteOn;
+        knob_ptr->params.touch[i].press.msg.data1 = config["msg"][i]["note"]["midi"]["data1"].as<uint8_t>();
+        knob_ptr->params.touch[i].press.msg.data2 = 0;
+        knob_ptr->params.touch[i].press.msg.channel = status.channel;
         break;
 
       case ControlChange:
@@ -226,12 +212,6 @@ void mapping_knob_create(const JsonObject &config) {
         break;
 
       case AfterTouchPoly:
-        midi_msg_status_unpack(config["msg"][i]["note"]["midi"]["status"].as<uint8_t>(), &status);
-        knob_ptr->params.touch[i].note.type = status.type;
-        knob_ptr->params.touch[i].note.data1 = config["msg"][i]["note"]["midi"]["data1"].as<uint8_t>();
-        knob_ptr->params.touch[i].note.data2 = 0;
-        knob_ptr->params.touch[i].note.channel = status.channel;
-
         midi_msg_status_unpack(config["msg"][i]["press"]["midi"]["status"].as<uint8_t>(), &status);
         knob_ptr->params.touch[i].press.msg.type = status.type;
         knob_ptr->params.touch[i].press.msg.data1 = config["msg"][i]["press"]["midi"]["data1"].as<uint8_t>();
