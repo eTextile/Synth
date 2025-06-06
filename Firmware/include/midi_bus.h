@@ -14,11 +14,6 @@ using namespace midi;
 #include "llist.h"
 #include "blob.h"
 
-#include "mapping.h"
-
-typedef struct rect_s rect_t; // Forward declaration
-typedef struct position_s positon_t; // Forward declaration
-
 extern llist_t midi_nodes_pool; // Main MIDI node stack
 extern llist_t midi_in;         // Main MIDI Input linked list
 extern llist_t midi_out;        // Main MIDI Output linked list
@@ -51,13 +46,6 @@ uint8_t midi_msg_status_pack(MidiType type, uint8_t channel);
 void midi_msg_status_unpack(uint8_t in_status, midi_status_t* out_status);
 
 void midi_send_out(midi_msg_t* midi_ptr);
-
-void mapping_send_midi_note_on(positon_t* positon_ptr, blob_t* blob_ptr);
-void mapping_send_midi_note_off(positon_t* positon_ptr, blob_t* blob_ptr);
-
-void mapping_send_midi_pos_x_msg(rect_t* bounding_box_ptr, positon_t* positon_ptr, blob_t* blob_ptr);
-void mapping_send_midi_pos_y_msg(rect_t* bounding_box_ptr, positon_t* positon_ptr, blob_t* blob_ptr);
-void mapping_send_midi_pos_z_msg(positon_t* positon_ptr, blob_t* blob_ptr);
 
 const char* get_type_name(MidiType code);
 

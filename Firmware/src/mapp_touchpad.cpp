@@ -180,14 +180,8 @@ void mapping_touchpad_create(const JsonObject &config) {
         touchpad_ptr->params.touch[i].press.msg.channel = status.channel;
         touchpad_ptr->params.touch[i].press.limit.min = config["msg"][i]["press"]["limit"]["min"].as<uint8_t>();
         touchpad_ptr->params.touch[i].press.limit.max = config["msg"][i]["press"]["limit"]["max"].as<uint8_t>();
-        /*
-        midi_msg_status_unpack(config["msg"][i]["note"]["midi"]["status"].as<uint8_t>(), &status);
-        touchpad_ptr->params.touch[i].note.type = status.type;
-        touchpad_ptr->params.touch[i].note.data1 = config["msg"][i]["note"]["midi"]["data1"].as<uint8_t>();
-        touchpad_ptr->params.touch[i].note.data2 = 0;
-        touchpad_ptr->params.touch[i].note.channel = status.channel;
         break;
-        */
+        
       default:
         break;
       }

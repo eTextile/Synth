@@ -163,6 +163,8 @@ void mapping_switch_create(const JsonObject &config) {
         switch_ptr->params.touch[i].press.msg.channel = status.channel;
         switch_ptr->params.touch[i].press.limit.min = config["msg"][i]["press"]["limit"]["min"].as<uint8_t>();
         switch_ptr->params.touch[i].press.limit.max = config["msg"][i]["press"]["limit"]["max"].as<uint8_t>();
+        break;
+        
       default:
         break;
       }

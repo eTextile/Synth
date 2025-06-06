@@ -46,3 +46,57 @@ void mapping_lib_update(void) {
     }
   }
 };
+
+void mapping_send_midi_note_on(positon_t* positon_ptr, blob_t* blob_ptr) {
+  positon_ptr->msg.type = NoteOn;
+  positon_ptr->msg.data2 = blob_ptr->centroid.x; // TODO: improve "velocity" sensing
+  midi_send_out(&positon_ptr->msg);
+};
+
+void mapping_send_midi_note_off(positon_t* positon_ptr, blob_t* blob_ptr) {
+  positon_ptr->msg.type = NoteOff;
+  positon_ptr->msg.data2 = 0;
+  midi_send_out(&positon_ptr->msg);
+};
+
+void mapping_send_midi_pos_x_msg(rect_t* bounding_box_ptr, positon_t* positon_ptr, blob_t* blob_ptr) {
+  positon_ptr->last_val = positon_ptr->msg.data2;
+  positon_ptr->msg.data2 = map(
+    blob_ptr->centroid.x,
+    bounding_box_ptr->from.x,
+    bounding_box_ptr->to.x,
+    positon_ptr->limit.min,
+    positon_ptr->limit.max
+  );
+  if (positon_ptr->msg.data2 != positon_ptr->last_val) {
+    midi_send_out(&positon_ptr->msg);
+  }
+};
+
+void mapping_send_midi_pos_y_msg(rect_t* bounding_box_ptr, positon_t* positon_ptr, blob_t* blob_ptr) {
+  positon_ptr->last_val = positon_ptr->msg.data2;
+  positon_ptr->msg.data2 = map(
+    blob_ptr->centroid.y,
+    bounding_box_ptr->from.y,
+    bounding_box_ptr->to.y,
+    positon_ptr->limit.min,
+    positon_ptr->limit.max
+  );
+  if (positon_ptr->msg.data2 != positon_ptr->last_val) {
+    midi_send_out(&positon_ptr->msg);
+  }
+};
+
+void mapping_send_midi_pos_z_msg(positon_t* positon_ptr, blob_t* blob_ptr) {
+  positon_ptr->last_val = positon_ptr->msg.data2;
+  positon_ptr->msg.data2 = map(
+    blob_ptr->centroid.z,
+    Z_MIN,
+    Z_MAX,
+    positon_ptr->limit.min,
+    positon_ptr->limit.max
+  );
+  if (positon_ptr->msg.data2 != positon_ptr->last_val) {
+    midi_send_out(&positon_ptr->msg);
+  }
+};

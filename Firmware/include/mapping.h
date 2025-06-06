@@ -27,9 +27,6 @@ struct rect_s {
   point_t to;
 };
 
-typedef struct midi_msg_s midi_msg_t; // Forward declaration
-typedef struct midi_limit_s midi_limit_t; // Forward declaration
-
 typedef struct position_s positon_t;
 struct position_s {
   midi_msg_t msg;
@@ -77,5 +74,12 @@ struct common_s {
 };
 
 void mapping_lib_update(void);
+
+void mapping_send_midi_note_on(positon_t* positon_ptr, blob_t* blob_ptr);
+void mapping_send_midi_note_off(positon_t* positon_ptr, blob_t* blob_ptr);
+
+void mapping_send_midi_pos_x_msg(rect_t* bounding_box_ptr, positon_t* positon_ptr, blob_t* blob_ptr);
+void mapping_send_midi_pos_y_msg(rect_t* bounding_box_ptr, positon_t* positon_ptr, blob_t* blob_ptr);
+void mapping_send_midi_pos_z_msg(positon_t* positon_ptr, blob_t* blob_ptr);
 
 #endif /*__MAPPING_LIB_H__*/
