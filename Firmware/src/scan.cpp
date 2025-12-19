@@ -146,13 +146,13 @@ void matrix_scan(void) {
     #else
       uint16_t set_rows = 0x8000; // Reset to [1000 0000 0000 0000]
     #endif
-    for (uint8_t row = 0; row < RAW_ROWS; row++) {     // DIGITAL_PINS [0-15]
-      digitalWrite(SS1_PIN, LOW);                      // Set the Slave Select Pin LOW
-      //SPI1.transfer16(set_rows);                      // Set up the two OUTPUT shift registers (FIXME!)      
-      SPI1.transfer((uint8_t)(set_rows & 0xFF));        // Shift out one byte to setup one OUTPUT shift register
-      SPI1.transfer((uint8_t)((set_rows >> 8) & 0xFF)); // Shift out one byte to setup one OUTPUT shift register
+    for (uint8_t row = 0; row < RAW_ROWS; row++) {       // DIGITAL_PINS [0-15]
+      digitalWrite(SS1_PIN, LOW);                        // Set the Slave Select Pin LOW
+      //SPI1.transfer16(set_rows);                       // Set up the two OUTPUT shift registers (FIXME!)      
+      SPI1.transfer((uint8_t)(set_rows & 0xFF));         // Shift out one byte to setup one OUTPUT shift register
+      SPI1.transfer((uint8_t)((set_rows >> 8) & 0xFF));  // Shift out one byte to setup one OUTPUT shift register
       SPI1.transfer(set_dual_cols[cols]);                // Shift out one byte that setup the two INPUT 8:1 analog multiplexers
-      digitalWrite(SS1_PIN, HIGH);                     // Set the Slave Select Pin HIGH
+      digitalWrite(SS1_PIN, HIGH);                       // Set the Slave Select Pin HIGH
 
       uint8_t index_a = row * RAW_COLS + cols;  // Compute 1D array index_a
       uint8_t index_b = index_a + DUAL_COLS;    // Compute 1D array index_b
@@ -160,7 +160,7 @@ void matrix_scan(void) {
       pinMode(ADC0_PIN, OUTPUT);
       pinMode(ADC1_PIN, OUTPUT);
       digitalWrite(ADC0_PIN, LOW); // Set the ADC0 Pin to GND to discharge
-      digitalWrite(ADC1_PIN, LOW); // Set the ADC0 Pin to GND to discharge
+      digitalWrite(ADC1_PIN, LOW); // Set the ADC1 Pin to GND to discharge
       delayMicroseconds(5);
       pinMode(ADC0_PIN, INPUT);
       pinMode(ADC1_PIN, INPUT);
