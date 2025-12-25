@@ -78,7 +78,7 @@ void mapping_knob_start(blob_t* blob_ptr) {
       mapping_send_midi_pos_z_msg(&touch_ptr->press, blob_ptr);
       break;
     default:
-      // Not handled in mapping_touchpad
+      // Not handled in mapping_knob
       break;
   }
 };
@@ -145,7 +145,7 @@ void mapping_knob_stop(blob_t* blob_ptr) {
       //
       break;
     default:
-      // Not handled in mapp_toucpad
+      // Not handled in mapping_knob
       break;
   }
 };
@@ -168,7 +168,7 @@ void mapping_knob_create(const JsonObject &config) {
   knob_ptr->params.rect.to.y = config["to"][1].as<float>();
   knob_ptr->params.offset = config["offset"].as<uint8_t>();
   knob_ptr->params.mode_z = config["mode_z"].as<MidiType>();
-
+  
   knob_ptr->params.radius = (knob_ptr->params.rect.to.x - knob_ptr->params.rect.from.x) / 2;
   knob_ptr->params.center.x = (knob_ptr->params.rect.from.x + knob_ptr->params.radius);
   knob_ptr->params.center.y = (knob_ptr->params.rect.from.y + knob_ptr->params.radius);
@@ -220,7 +220,7 @@ void mapping_knob_create(const JsonObject &config) {
         knob_ptr->params.touch[i].press.limit.min = config["msg"][i]["press"]["limit"]["min"].as<uint8_t>();
         knob_ptr->params.touch[i].press.limit.max = config["msg"][i]["press"]["limit"]["max"].as<uint8_t>();
         break;
-        
+
       default:
         break;
      }

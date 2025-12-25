@@ -77,7 +77,7 @@ void mapping_slider_start(blob_t* blob_ptr) {
       mapping_send_midi_pos_z_msg(&touch_ptr->press, blob_ptr);
       break;
     default:
-      // Not handled in mapping_touchpad
+      // Not handled in mapping_slider
       break;
   }
 };

@@ -72,14 +72,16 @@ void mapping_switch_start(blob_t* blob_ptr) {
     case NoteOn:
       mapping_send_midi_note_on(&touch_ptr->press, blob_ptr);
       break;
+
     case ControlChange:
       mapping_send_midi_pos_z_msg(&touch_ptr->press, blob_ptr);
       break;
+
     case AfterTouchPoly:
       mapping_send_midi_pos_z_msg(&touch_ptr->press, blob_ptr);
       break;
     default:
-      // Not handled in mapping_touchpad
+      // Not handled in mapping_switch
       break;
   }
 };
@@ -139,8 +141,8 @@ void mapping_switch_create(const JsonObject &config) {
 
       case NoteOn:
         midi_msg_status_unpack(config["msg"][i]["note"]["midi"]["status"].as<uint8_t>(), &status);
-        switch_ptr->params.touch[i].press.msg.type = NoteOn;
-        switch_ptr->params.touch[i].press.msg.data1 = config["msg"][i]["note"]["msg"]["data1"].as<uint8_t>();
+        switch_ptr->params.touch[i].press.msg.type = status.type;
+        switch_ptr->params.touch[i].press.msg.data1 = config["msg"][i]["press"]["midi"]["data1"].as<uint8_t>();
         switch_ptr->params.touch[i].press.msg.data2 = 0;
         switch_ptr->params.touch[i].press.msg.channel = status.channel;
         break;
