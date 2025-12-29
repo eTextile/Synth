@@ -109,6 +109,12 @@ void llist_push_front(llist_t* llist_ptr, void* data_ptr) {
     node_ptr->data_ptr = data_ptr;
     llist_push_node_front(llist_ptr, node_ptr);
   }
+  else {
+    #if defined(USB_MIDI_SERIAL) && defined(DEBUG_LLIST)
+      Serial.printf("\nNo more nodes left in the : midi_nodes_pool -> see midi_send_out()");
+    #endif
+    set_mode(ERROR_MODE);
+  }
 };
 
 void llist_push_back(llist_t* llist_ptr, void* data_ptr) {

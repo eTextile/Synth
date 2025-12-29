@@ -155,9 +155,9 @@ void mapping_touchpad_create(const JsonObject &config) {
       switch (touchpad_ptr->params.mode_z) {
 
       case NoteOn:
-        midi_msg_status_unpack(config["msg"][i]["note"]["midi"]["status"].as<uint8_t>(), &status);
+        midi_msg_status_unpack(config["msg"][i]["press"]["midi"]["status"].as<uint8_t>(), &status);
         touchpad_ptr->params.touch[i].press.msg.type = status.type;
-        touchpad_ptr->params.touch[i].press.msg.data1 = config["msg"][i]["note"]["midi"]["data1"].as<uint8_t>();
+        touchpad_ptr->params.touch[i].press.msg.data1 = config["msg"][i]["press"]["midi"]["data1"].as<uint8_t>();
         touchpad_ptr->params.touch[i].press.msg.data2 = 0;
         touchpad_ptr->params.touch[i].press.msg.channel = status.channel;
         break;

@@ -36,21 +36,9 @@ uint8_t midi_msg_status_pack(MidiType type, uint8_t channel) {
   return status;
 };
 
+// TESTING!
 void midi_send_out(midi_msg_t* midi_ptr) {
-  midi_msg_t* node_ptr = (midi_msg_t*)llist_pop_front(&midi_nodes_pool);  // Get a node from the MIDI nodes stack
-  if (node_ptr) {
-    node_ptr->type = midi_ptr->type;        // Set the MIDI type 
-    node_ptr->data1 = midi_ptr->data1;      // Set the MIDI note/cc/...
-    node_ptr->data2 = midi_ptr->data2;      // Set the MIDI velocity
-    node_ptr->channel = midi_ptr->channel;  // Set the MIDI channel
-    llist_push_front(&midi_out, node_ptr);  // Add the node to the midi_out linked list
-  }
-  else {
-    #if defined(USB_MIDI_SERIAL) && defined(DEBUG_LLIST)
-      Serial.printf("\nNo more nodes left in the : midi_nodes_pool -> see midi_send_out()");
-    #endif
-    set_mode(ERROR_MODE);
-  }
+  llist_push_front(&midi_out, midi_ptr); // Add the midi_msg to the midi_out linked list
 };
 
 /*

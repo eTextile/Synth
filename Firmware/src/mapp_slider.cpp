@@ -151,9 +151,9 @@ void mapping_slider_create(const JsonObject &config) {
     switch (slider_ptr->params.mode_z) {
 
       case NoteOn:
-        midi_msg_status_unpack(config["msg"][i]["note"]["midi"]["status"].as<uint8_t>(), &status);
+        midi_msg_status_unpack(config["msg"][i]["press"]["midi"]["status"].as<uint8_t>(), &status);
         slider_ptr->params.touch[i].press.msg.type = NoteOn;
-        slider_ptr->params.touch[i].press.msg.data1 = config["msg"][i]["note"]["midi"]["data1"].as<uint8_t>();
+        slider_ptr->params.touch[i].press.msg.data1 = config["msg"][i]["press"]["midi"]["data1"].as<uint8_t>();
         slider_ptr->params.touch[i].press.msg.data2 = 0;
         slider_ptr->params.touch[i].press.msg.channel = status.channel;
         break;

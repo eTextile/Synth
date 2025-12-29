@@ -49,7 +49,7 @@ void mapping_lib_update(void) {
 
 void mapping_send_midi_note_on(positon_t* positon_ptr, blob_t* blob_ptr) {
   positon_ptr->msg.type = NoteOn;
-  //positon_ptr->msg.data2 = blob_ptr->centroid.z; // TODO: improve "velocity" sensing  
+  //positon_ptr->msg.data2 = blob_ptr->centroid.z; // TODO: velocity sensing  
   positon_ptr->msg.data2 = 127;
   midi_send_out(&positon_ptr->msg);
 };
