@@ -31,7 +31,7 @@ void usb_midi_setup(void) {
   usbMIDI.setHandleSystemExclusive(usb_read_system_exclusive);
 };
 
-void usb_midi_recive(void) {
+void usb_midi_receive(void) {
   usbMIDI.read(); // Is there incoming MIDI messages on any channel
 };
 

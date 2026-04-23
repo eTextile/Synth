@@ -111,21 +111,21 @@ void mapping_touchpad_stop(blob_t* blob_ptr) {
       // N/A
       break;
     default:
-      // Not handled in mapp_toucpad
+      // Not handled in mapp_touchpad
       break;
   }
 };
 
-bool mapping_touchpad_midi_recive(void* mapping_ptr, midi_msg_t* midi_msg_ptr) {
+bool mapping_touchpad_midi_receive(void* mapping_ptr, midi_msg_t* midi_msg_ptr) {
   mapp_touchpad_t* touchpad_ptr = (mapp_touchpad_t*)mapping_ptr;
-  if (midi_msg_ptr->channel == touchpad_ptr->params.recive_chan) {
+  if (midi_msg_ptr->channel == touchpad_ptr->params.receive_chan) {
     return true;
   }
   return false;
 };
 
 // IN PROGRESS!
-// Populates the MIDI touchpad layout with the incomming MIDI notes/chord coming from a regular MIDI keyboard plugged in the e256 HARDWARE_MIDI_INPUT
+// Populates the MIDI touchpad layout with the incoming MIDI notes/chord coming from a regular MIDI keyboard plugged in the e256 HARDWARE_MIDI_INPUT
 void mapping_touchpad_midi_update(void* mapping_ptr, midi_msg_t* midi_msg_ptr) {
   mapp_touchpad_t* touchpad_ptr = (mapp_touchpad_t*)mapping_ptr;
   llist_push_front(&touchpad_ptr->llist_active_midi_msg, midi_msg_ptr);
@@ -136,7 +136,7 @@ void mapping_touchpad_midi_update(void* mapping_ptr, midi_msg_t* midi_msg_ptr) {
 void mapping_touchpad_midi_dispose(void* mapping_ptr, midi_msg_t* midi_msg_ptr) {
   mapp_touchpad_t* touchpad_ptr = (mapp_touchpad_t*)mapping_ptr;
   touchpad_ptr->active_midi_msg_count--;
-  if (touchpad_ptr->active_midi_msg_count == 0) {  // Save/rescure all llist nodes
+  if (touchpad_ptr->active_midi_msg_count == 0) {  // Save/rescue all llist nodes
     midi_msg_t* midi_msg_ptr = NULL;
     while ((midi_msg_ptr = (midi_msg_t*)llist_pop_front(&touchpad_ptr->llist_active_midi_msg)) != NULL) {
       llist_push_front(&llist_midi_nodes_pool, midi_msg_ptr);
@@ -148,7 +148,7 @@ void mapping_touchpad_create(const JsonObject &config) {
 
   mapp_touchpad_t* touchpad_ptr = (mapp_touchpad_t*)llist_pop_front(&llist_touchpads_pool);
 
-  touchpad_ptr->common.midi_recive_func_ptr = &mapping_touchpad_midi_recive;   // TESTING!
+  touchpad_ptr->common.midi_receive_func_ptr = &mapping_touchpad_midi_receive;   // TESTING!
   touchpad_ptr->common.midi_update_func_ptr = &mapping_touchpad_midi_update;   // TESTING!
   touchpad_ptr->common.midi_dispose_func_ptr = &mapping_touchpad_midi_dispose; // TESTING!
 
@@ -166,7 +166,7 @@ void mapping_touchpad_create(const JsonObject &config) {
   touchpad_ptr->params.rect.to.x = config["to"][0].as<float>();
   touchpad_ptr->params.rect.to.y = config["to"][1].as<float>();
   touchpad_ptr->params.press = config["press"].as<MidiType>();
-  touchpad_ptr->params.recive_chan = config["recive"].as<uint8_t>();
+  touchpad_ptr->params.receive_chan = config["receive"].as<uint8_t>();
 
   if (touchpad_ptr->params.touchs < MAX_TOUCHPAD_TOUCHS) {
     

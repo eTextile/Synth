@@ -53,30 +53,30 @@ void loop() {
   switch (e256_current_mode) {
 
     case PENDING_MODE:
-      usb_midi_recive();
+      usb_midi_receive();
       if ((millis() - bootTime) > PENDING_MODE_TIMEOUT) {
         set_mode(STANDALONE_MODE);
       }
       break;
 
     case SYNC_MODE:
-      usb_midi_recive();
+      usb_midi_receive();
       break;
 
     case MATRIX_RAW_MODE:
-      usb_midi_recive();
+      usb_midi_receive();
       matrix_scan();
       usb_midi_transmit_raw_matrix();
       break;
     /*
     case MATRIX_INTERP_MODE: // FIXME
-      usb_midi_recive();
+      usb_midi_receive();
       matrix_scan();
       usb_midi_transmit_interp_matrix();
       break;
     */
     case EDIT_MODE:
-      usb_midi_recive();
+      usb_midi_receive();
       matrix_scan();
       matrix_interp();
       matrix_find_blobs();
@@ -84,12 +84,12 @@ void loop() {
       break;
 
     case THROUGH_MODE:
-      usb_midi_recive();
+      usb_midi_receive();
       hardware_midi_transmit_mappings_midi_msg();
       break;
       
     case PLAY_MODE:
-      usb_midi_recive();
+      usb_midi_receive();
       matrix_scan();
       matrix_interp();
       matrix_find_blobs();
@@ -99,7 +99,7 @@ void loop() {
       break;
 
     case STANDALONE_MODE:
-      hardware_midi_recive(); // TESTING!
+      hardware_midi_receive(); // TESTING!
       matrix_scan();
       matrix_interp();
       matrix_find_blobs();
@@ -108,12 +108,12 @@ void loop() {
       break;
 
     default:
-      usb_midi_recive();
+      usb_midi_receive();
       break;
   };
   
   midi_msg_t* midi_msg_ptr = NULL;
-  while ((midi_msg_ptr = (midi_msg_t*)llist_pop_front(&llist_midi_out)) != NULL); // Save/rescure all midi_out llist nodes
+  while ((midi_msg_ptr = (midi_msg_t*)llist_pop_front(&llist_midi_out)) != NULL); // Save/rescue all midi_out llist nodes
   
   #if defined(USB_MIDI_SERIAL) && defined(DEBUG_FPS)
   if (millis() - fpsTimeStamp >= 1000) {

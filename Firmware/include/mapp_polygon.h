@@ -13,7 +13,7 @@ struct polygon_s {
   uint8_t touchs;
   touch_3d_t touch[MAX_POLYGON_TOUCHS];
   MidiType press;
-  uint8_t recive_chan;
+  uint8_t receive_chan;
 };
 
 bool mapping_polygons_alloc(uint8_t polygons_cnt);

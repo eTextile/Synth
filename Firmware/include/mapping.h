@@ -57,7 +57,7 @@ extern llist_t llist_mappings;
 
 typedef struct common_s common_t;
 
-typedef bool midi_recive_func_t(void*, midi_msg_t*);  // TESTING!
+typedef bool midi_receive_func_t(void*, midi_msg_t*);  // TESTING!
 typedef void midi_update_func_t(void*, midi_msg_t*);  // TESTING!
 typedef void midi_dispose_func_t(void*, midi_msg_t*); // TESTING!
 
@@ -71,7 +71,7 @@ typedef void stop_func_t(blob_t*);
 
 struct common_s {
   
-  midi_recive_func_t* midi_recive_func_ptr; // TESTING!
+  midi_receive_func_t* midi_receive_func_ptr; // TESTING!
   midi_update_func_t* midi_update_func_ptr; // TESTING!
   midi_dispose_func_t* midi_dispose_func_ptr; // TESTING!
 

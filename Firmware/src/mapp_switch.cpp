@@ -115,16 +115,16 @@ void mapping_switch_stop(blob_t* blob_ptr) {
   }
 };
 
-bool mapping_switch_midi_recive(void* mapping_ptr, midi_msg_t* midi_msg_ptr) {
+bool mapping_switch_midi_receive(void* mapping_ptr, midi_msg_t* midi_msg_ptr) {
   mapp_switch_t* switch_ptr = (mapp_switch_t*)mapping_ptr;
-  if (midi_msg_ptr->channel == switch_ptr->params.recive_chan) {
+  if (midi_msg_ptr->channel == switch_ptr->params.receive_chan) {
     return true;
   }
   return false;
 };
 
 // IN PROGRESS!
-// Populates the MIDI switch layout with the incomming MIDI notes/chord coming from a regular MIDI keyboard plugged in the e256 HARDWARE_MIDI_INPUT
+// Populates the MIDI switch layout with the incoming MIDI notes/chord coming from a regular MIDI keyboard plugged in the e256 HARDWARE_MIDI_INPUT
 void mapping_switch_midi_update(void* mapping_ptr, midi_msg_t* midi_msg_ptr) {
   mapp_switch_t* switch_ptr = (mapp_switch_t*)mapping_ptr;
   llist_push_front(&switch_ptr->llist_active_midi_msg, midi_msg_ptr);
@@ -135,7 +135,7 @@ void mapping_switch_midi_update(void* mapping_ptr, midi_msg_t* midi_msg_ptr) {
 void mapping_switch_midi_dispose(void* mapping_ptr, midi_msg_t* midi_msg_ptr) {
   mapp_switch_t* switch_ptr = (mapp_switch_t*)mapping_ptr;
   switch_ptr->active_midi_msg_count--;
-  if (switch_ptr->active_midi_msg_count == 0) {  // Save/rescure all llist nodes
+  if (switch_ptr->active_midi_msg_count == 0) {  // Save/rescue all llist nodes
     midi_msg_t* midi_msg_ptr = NULL;
     while ((midi_msg_ptr = (midi_msg_t*)llist_pop_front(&switch_ptr->llist_active_midi_msg)) != NULL) {
       llist_push_front(&llist_midi_nodes_pool, midi_msg_ptr);
@@ -147,7 +147,7 @@ void mapping_switch_create(const JsonObject &config) {
 
   mapp_switch_t* switch_ptr = (mapp_switch_t*)llist_pop_front(&llist_switch_pool);
 
-  switch_ptr->common.midi_recive_func_ptr = &mapping_switch_midi_recive;   // TESTING!
+  switch_ptr->common.midi_receive_func_ptr = &mapping_switch_midi_receive;   // TESTING!
   switch_ptr->common.midi_update_func_ptr = &mapping_switch_midi_update;   // TESTING!
   switch_ptr->common.midi_dispose_func_ptr = &mapping_switch_midi_dispose; // TESTING!
 
@@ -165,7 +165,7 @@ void mapping_switch_create(const JsonObject &config) {
   switch_ptr->params.rect.to.x = config["to"][0].as<float>();
   switch_ptr->params.rect.to.y = config["to"][1].as<float>();
   switch_ptr->params.press = config["press"].as<MidiType>();
-  switch_ptr->params.recive_chan = config["recive"].as<uint8_t>();
+  switch_ptr->params.receive_chan = config["receive"].as<uint8_t>();
 
   if (switch_ptr->params.touchs < MAX_SWITCH_TOUCHS) {
     

@@ -20,7 +20,7 @@ extern size_t sysEx_data_length;
 extern uint8_t* sysEx_data_ptr;
 
 void usb_midi_setup(void);
-void usb_midi_recive(void);
+void usb_midi_receive(void);
 
 void usb_midi_transmit_raw_matrix(void);
 void usb_midi_transmit_interp_matrix(void);

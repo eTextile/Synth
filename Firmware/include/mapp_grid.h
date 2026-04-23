@@ -13,7 +13,7 @@ struct grid_s {
   uint8_t cols;
   uint8_t rows;
   MidiType press;
-  uint8_t recive_chan;
+  uint8_t receive_chan;
   float scale_factor_x;
   float scale_factor_y;
 };

@@ -19,7 +19,7 @@ struct knob_s {
   uint8_t touchs;
   knob_touch_t touch[MAX_KNOB_TOUCHS];
   MidiType press;
-  uint8_t recive_chan;
+  uint8_t receive_chan;
 };
 
 bool mapping_knobs_alloc(uint8_t knobs_cnt);

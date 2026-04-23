@@ -15,7 +15,7 @@ struct slider_s {
   uint8_t touchs;
   touch_2d_t touch[MAX_SLIDER_TOUCHS];
   MidiType press;
-  uint8_t recive_chan;
+  uint8_t receive_chan;
 };
 
 bool mapping_sliders_alloc(uint8_t sliders_cnt);

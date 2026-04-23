@@ -9,7 +9,7 @@ struct touchpad_s {
   uint8_t touchs;
   touch_3d_t touch[MAX_TOUCHPAD_TOUCHS];
   MidiType press;
-  uint8_t recive_chan;
+  uint8_t receive_chan;
 };
 
 bool mapping_touchpads_alloc(uint8_t touchpads_cnt);

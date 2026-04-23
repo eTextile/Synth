@@ -130,16 +130,16 @@ void mapping_polygon_stop(blob_t* blob_ptr) {
 };
 
 // IN PROGRESS!
-bool mapping_polygon_midi_recive(void* mapping_ptr, midi_msg_t* midi_msg_ptr) {
+bool mapping_polygon_midi_receive(void* mapping_ptr, midi_msg_t* midi_msg_ptr) {
   mapp_polygon_t* polygon_ptr = (mapp_polygon_t*)mapping_ptr;
-  if (midi_msg_ptr->channel == polygon_ptr->params.recive_chan) { // FIXME
+  if (midi_msg_ptr->channel == polygon_ptr->params.receive_chan) { // FIXME
     return true;
   }
   return false;
 };
 
 // IN PROGRESS!
-// Populates the MIDI polygon layout with the incomming MIDI notes/chord coming from a regular MIDI keyboard plugged in the e256 HARDWARE_MIDI_INPUT
+// Populates the MIDI polygon layout with the incoming MIDI notes/chord coming from a regular MIDI keyboard plugged in the e256 HARDWARE_MIDI_INPUT
 void mapping_polygon_midi_update(void* mapping_ptr, midi_msg_t* midi_msg_ptr) {
   mapp_polygon_t* polygon_ptr = (mapp_polygon_t*)mapping_ptr;
   llist_push_front(&polygon_ptr->llist_active_midi_msg, midi_msg_ptr);
@@ -150,7 +150,7 @@ void mapping_polygon_midi_update(void* mapping_ptr, midi_msg_t* midi_msg_ptr) {
 void mapping_polygon_midi_dispose(void* mapping_ptr, midi_msg_t* midi_msg_ptr) {
   mapp_polygon_t* polygon_ptr = (mapp_polygon_t*)mapping_ptr;
   polygon_ptr->active_midi_msg_count--;
-  if (polygon_ptr->active_midi_msg_count == 0) {  // Save/rescure all llist nodes
+  if (polygon_ptr->active_midi_msg_count == 0) {  // Save/rescue all llist nodes
     midi_msg_t* midi_msg_ptr = NULL;
     while ((midi_msg_ptr = (midi_msg_t*)llist_pop_front(&polygon_ptr->llist_active_midi_msg)) != NULL) {
       llist_push_front(&llist_midi_nodes_pool, midi_msg_ptr);
@@ -161,7 +161,7 @@ void mapping_polygon_midi_dispose(void* mapping_ptr, midi_msg_t* midi_msg_ptr) {
 void mapping_polygon_create(const JsonObject &config) {
   mapp_polygon_t* polygon_ptr = (mapp_polygon_t*)llist_pop_front(&llist_polygons_pool);
   
-  polygon_ptr->common.midi_recive_func_ptr = &mapping_polygon_midi_recive;   // TESTING!
+  polygon_ptr->common.midi_receive_func_ptr = &mapping_polygon_midi_receive;   // TESTING!
   polygon_ptr->common.midi_update_func_ptr = &mapping_polygon_midi_update;   // TESTING!
   polygon_ptr->common.midi_dispose_func_ptr = &mapping_polygon_midi_dispose; // TESTING!
 

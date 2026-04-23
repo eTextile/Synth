@@ -17,7 +17,7 @@ void hardware_midi_setup(void) {
   MIDI.setHandleMessage(hardware_midi_handle_input);
 };
 
-void hardware_midi_recive(void) {
+void hardware_midi_receive(void) {
   MIDI.read(MIDI_INPUT_CHANNEL);         // Is there any incoming MIDI messages on channel 1
   while (MIDI.read(MIDI_INPUT_CHANNEL)); // Read and discard any incoming MIDI messages
 };
@@ -40,7 +40,7 @@ void hardware_midi_handle_input(const Message<128u> &midi_msg) {
     case midi::NoteOn:
       for (lnode_t* mapping_node_ptr = ITERATOR_START_FROM_HEAD(&llist_mappings); mapping_node_ptr != NULL; mapping_node_ptr = ITERATOR_NEXT(mapping_node_ptr)) {
         common_t* mapping_ptr = (common_t*)ITERATOR_DATA(mapping_node_ptr);
-        if (mapping_ptr->midi_recive_func_ptr(mapping_ptr, midi_msg_ptr)) {
+        if (mapping_ptr->midi_receive_func_ptr(mapping_ptr, midi_msg_ptr)) {
           mapping_ptr->midi_update_func_ptr(mapping_ptr, midi_msg_ptr);
           break;
         }
@@ -50,7 +50,7 @@ void hardware_midi_handle_input(const Message<128u> &midi_msg) {
     case midi::NoteOff:
       for (lnode_t* mapping_node_ptr = ITERATOR_START_FROM_HEAD(&llist_mappings); mapping_node_ptr != NULL; mapping_node_ptr = ITERATOR_NEXT(mapping_node_ptr)) {
         common_t* mapping_ptr = (common_t*)ITERATOR_DATA(mapping_node_ptr);
-        if (mapping_ptr->midi_recive_func_ptr(mapping_ptr, midi_msg_ptr)) {
+        if (mapping_ptr->midi_receive_func_ptr(mapping_ptr, midi_msg_ptr)) {
           mapping_ptr->midi_dispose_func_ptr(mapping_ptr, midi_msg_ptr);
           break;
         }
