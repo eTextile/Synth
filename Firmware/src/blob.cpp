@@ -58,7 +58,7 @@ inline uint8_t set_id(void) {
 
 void matrix_find_blobs(void) {
 
-  blob_t* tmp_blob_ptr = NULL; 
+  blob_t* tmp_blob_ptr = NULL;
 
   while ((tmp_blob_ptr = (blob_t*)llist_pop_front(&llist_blobs)) != NULL) {
     if (tmp_blob_ptr->status == FREE) {

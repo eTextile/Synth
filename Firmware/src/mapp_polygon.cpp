@@ -15,7 +15,9 @@ struct mapp_polygon_s {
   polygon_t params;
   uint8_t active_blob_count;
   uint8_t touch_index;
-  MidiType mode_z;
+  MidiType press;
+  llist_t llist_active_midi_msg;
+  uint8_t active_midi_msg_count;
 };
 
 static mapp_polygon_t mapp_polygons[MAX_POLYGONS];
@@ -31,7 +33,7 @@ bool mapping_polygons_alloc(uint8_t polygons_cnt) {
 };
 
 // Test if the blob is within the polygon
-bool mapping_polygon_is_blob_inside(common_t* mapping_ptr, blob_t* blob_ptr) {
+bool mapping_polygon_is_blob_inside(void* mapping_ptr, blob_t* blob_ptr) {
   mapp_polygon_t* polygon_ptr = (mapp_polygon_t*)mapping_ptr;
   int i, j = (polygon_ptr->params.point_cnt - 1);
   polygon_ptr->params.is_inside = false;
@@ -54,7 +56,7 @@ bool mapping_polygon_is_blob_inside(common_t* mapping_ptr, blob_t* blob_ptr) {
 
 // blob == valeurs physiqyes captées
 // touch == données du nieme blob
-bool mapping_polygon_assign_blob(common_t* mapping_ptr, blob_t* blob_ptr) {
+bool mapping_polygon_assign_blob(void* mapping_ptr, blob_t* blob_ptr) {
   mapp_polygon_t* polygon_ptr = (mapp_polygon_t*)mapping_ptr;
   
   if (polygon_ptr->touch_index < polygon_ptr->params.touchs) {
@@ -67,7 +69,7 @@ bool mapping_polygon_assign_blob(common_t* mapping_ptr, blob_t* blob_ptr) {
   return false;
 };
 
-void mapping_polygon_dispose_blob(common_t* mapping_ptr, blob_t* blob_ptr) {
+void mapping_polygon_dispose_blob(void* mapping_ptr, blob_t* blob_ptr) {
   mapp_polygon_t* polygon_ptr = (mapp_polygon_t*)mapping_ptr;
 
   blob_ptr->action.mapping_ptr = NULL;
@@ -82,15 +84,15 @@ void mapping_polygon_start(blob_t* blob_ptr) {
   mapp_polygon_t* polygon_ptr = (mapp_polygon_t*)blob_ptr->action.mapping_ptr;
   touch_3d_t* touch_ptr = (touch_3d_t*)blob_ptr->action.touch_ptr;
 
-  switch (polygon_ptr->params.mode_z) {
+  switch (polygon_ptr->params.press) {
     case NoteOn:
       mapping_send_midi_note_on(&touch_ptr->press, blob_ptr);
       break; 
     case ControlChange:
-      mapping_send_midi_pos_z_msg(&touch_ptr->press, blob_ptr);
+      mapping_send_midi_msg_press(&touch_ptr->press, blob_ptr);
       break;
     case AfterTouchPoly:
-      mapping_send_midi_pos_z_msg(&touch_ptr->press, blob_ptr);
+      mapping_send_midi_msg_press(&touch_ptr->press, blob_ptr);
       break;
     default:
       // Not handled in mapping_polygon
@@ -102,8 +104,8 @@ void mapping_polygon_continue(blob_t* blob_ptr) {
   mapp_polygon_t* polygon_ptr = (mapp_polygon_t*)blob_ptr->action.mapping_ptr;
   touch_1d_t* touch_ptr = (touch_1d_t*)blob_ptr->action.touch_ptr;
 
-  if (polygon_ptr->params.mode_z != NoteOn) {
-    mapping_send_midi_pos_z_msg(&touch_ptr->press, blob_ptr);
+  if (polygon_ptr->params.press != NoteOn) {
+    mapping_send_midi_msg_press(&touch_ptr->press, blob_ptr);
   }
 };
 
@@ -111,9 +113,9 @@ void mapping_polygon_stop(blob_t* blob_ptr) {
   mapp_polygon_t* polygon_ptr = (mapp_polygon_t*)blob_ptr->action.mapping_ptr;
   touch_1d_t* touch_ptr = (touch_1d_t*)blob_ptr->action.touch_ptr;
 
-  switch (polygon_ptr->params.mode_z) {
+  switch (polygon_ptr->params.press) {
     case NoteOn:
-      mapping_send_midi_note_off(&touch_ptr->press, blob_ptr);
+      mapping_send_midi_note_off(&touch_ptr->press);
       break;
     case ControlChange:
       // N/A
@@ -127,9 +129,42 @@ void mapping_polygon_stop(blob_t* blob_ptr) {
   }
 };
 
+// IN PROGRESS!
+bool mapping_polygon_midi_recive(void* mapping_ptr, midi_msg_t* midi_msg_ptr) {
+  mapp_polygon_t* polygon_ptr = (mapp_polygon_t*)mapping_ptr;
+  if (midi_msg_ptr->channel == polygon_ptr->params.recive_chan) { // FIXME
+    return true;
+  }
+  return false;
+};
+
+// IN PROGRESS!
+// Populates the MIDI polygon layout with the incomming MIDI notes/chord coming from a regular MIDI keyboard plugged in the e256 HARDWARE_MIDI_INPUT
+void mapping_polygon_midi_update(void* mapping_ptr, midi_msg_t* midi_msg_ptr) {
+  mapp_polygon_t* polygon_ptr = (mapp_polygon_t*)mapping_ptr;
+  llist_push_front(&polygon_ptr->llist_active_midi_msg, midi_msg_ptr);
+  polygon_ptr->active_midi_msg_count++;
+  //...
+};
+
+void mapping_polygon_midi_dispose(void* mapping_ptr, midi_msg_t* midi_msg_ptr) {
+  mapp_polygon_t* polygon_ptr = (mapp_polygon_t*)mapping_ptr;
+  polygon_ptr->active_midi_msg_count--;
+  if (polygon_ptr->active_midi_msg_count == 0) {  // Save/rescure all llist nodes
+    midi_msg_t* midi_msg_ptr = NULL;
+    while ((midi_msg_ptr = (midi_msg_t*)llist_pop_front(&polygon_ptr->llist_active_midi_msg)) != NULL) {
+      llist_push_front(&llist_midi_nodes_pool, midi_msg_ptr);
+    }
+  }
+};
+
 void mapping_polygon_create(const JsonObject &config) {
   mapp_polygon_t* polygon_ptr = (mapp_polygon_t*)llist_pop_front(&llist_polygons_pool);
   
+  polygon_ptr->common.midi_recive_func_ptr = &mapping_polygon_midi_recive;   // TESTING!
+  polygon_ptr->common.midi_update_func_ptr = &mapping_polygon_midi_update;   // TESTING!
+  polygon_ptr->common.midi_dispose_func_ptr = &mapping_polygon_midi_dispose; // TESTING!
+
   polygon_ptr->common.is_blob_inside_func_ptr = &mapping_polygon_is_blob_inside;
   polygon_ptr->common.blob_assign_func_ptr = &mapping_polygon_assign_blob;
   polygon_ptr->common.blob_dispose_func_ptr = &mapping_polygon_dispose_blob;
@@ -139,7 +174,7 @@ void mapping_polygon_create(const JsonObject &config) {
   polygon_ptr->common.stop_func_ptr = &mapping_polygon_stop;
 
   polygon_ptr->params.touchs = config["touchs"].as<uint8_t>();
-  polygon_ptr->params.mode_z = config["mode_z"].as<MidiType>();
+  polygon_ptr->params.press = config["press"].as<MidiType>();
 
   polygon_ptr->params.point_cnt = config["cnt"].as<uint8_t>();
 

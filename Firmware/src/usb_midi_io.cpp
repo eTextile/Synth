@@ -37,7 +37,7 @@ void usb_midi_recive(void) {
 
 void usb_midi_transmit_raw_matrix(void) {
   static uint32_t usbTransmitTimeStamp = 0;
-  if (millis() - usbTransmitTimeStamp > MIDI_TRANSMIT_INTERVAL) {
+  if (millis() - usbTransmitTimeStamp > MATRIX_MIDI_THROTTLE_MS) {
     usbTransmitTimeStamp = millis();
     usbMIDI.sendSysEx(RAW_FRAME, raw_frame.data_ptr, false);
     usbMIDI.send_now();
@@ -49,7 +49,7 @@ void usb_midi_transmit_interp_matrix(void) {
   static uint32_t usbTransmitTimeStamp = 0;
   // NOT_WORKING > see https://forum.pjrc.com/threads/28282-How-big-is-the-MIDI-receive-buffer
   // Interpolation could be made on the web_app side!
-  if (millis() - usbTransmitTimeStamp > MIDI_TRANSMIT_INTERVAL) {
+  if (millis() - usbTransmitTimeStamp > MATRIX_MIDI_THROTTLE_MS) {
     usbTransmitTimeStamp = millis();
     usbMIDI.sendSysEx(NEW_FRAME, interp_frame.data_ptr, false, 0);
     usbMIDI.send_now();
@@ -81,16 +81,15 @@ void usb_midi_transmit_blobs(void) {
 
     usbMIDI.sendSysEx(10, blob_values, false);
     usbMIDI.send_now();
-    //Serial.printf("\nBLOB_STATUS: %s BLOB_LAST_STATUS: %s", get_blob_status_name(blob_ptr->status), get_blob_status_name(blob_ptr->last_status));
   };
   while (usbMIDI.read()); // Read and discard any incoming MIDI messages
 };
 
 // Send mappings MIDI messages to the host application
 void usb_midi_transmit_mappings_midi_msg(void) {
-  for (lnode_t* midi_node_ptr = ITERATOR_START_FROM_HEAD(&midi_out); midi_node_ptr != NULL; midi_node_ptr = ITERATOR_NEXT(midi_node_ptr)) {
-    midi_msg_t* midi_ptr = (midi_msg_t*)ITERATOR_DATA(midi_node_ptr);
-    usbMIDI.send((uint8_t)midi_ptr->type, midi_ptr->data1, midi_ptr->data2, midi_ptr->channel, 0);
+  for (lnode_t* midi_node_ptr = ITERATOR_START_FROM_HEAD(&llist_midi_out); midi_node_ptr != NULL; midi_node_ptr = ITERATOR_NEXT(midi_node_ptr)) {
+    midi_msg_t* midi_msg_ptr = (midi_msg_t*)ITERATOR_DATA(midi_node_ptr);
+    usbMIDI.send((uint8_t)midi_msg_ptr->type, midi_msg_ptr->data1, midi_msg_ptr->data2, midi_msg_ptr->channel, 0);
   }
   while (usbMIDI.read()); // Read and discard any incoming MIDI messages
 };
@@ -103,97 +102,67 @@ void usb_midi_send_info(uint8_t program, uint8_t channel) {
 };
 
 void usb_read_note_on(uint8_t channel, uint8_t note, uint8_t velocity) {
-  midi_msg_t* midi_ptr = (midi_msg_t*)llist_pop_front(&midi_nodes_pool);
-  if (midi_ptr) {
-    midi_ptr->type = NoteOn;
-    midi_ptr->data1 = note;
-    midi_ptr->data2 = velocity;
-    midi_ptr->channel = channel;
+  midi_msg_t* midi_msg_ptr = (midi_msg_t*)llist_pop_front(&llist_midi_nodes_pool);
+  if (midi_msg_ptr != NULL) {
+    midi_msg_ptr->channel = channel;
+    midi_msg_ptr->type = NoteOn;
+    midi_msg_ptr->data1 = note;
+    midi_msg_ptr->data2 = velocity;
     if (e256_current_mode == THROUGH_MODE) {
-      llist_push_front(&midi_out, midi_ptr);
+      llist_push_front(&llist_midi_out, midi_msg_ptr);
     }
-  }
-  else {
-    #if defined(USB_MIDI_SERIAL) && defined(DEBUG_LLIST)
-      Serial.printf("\nNo more nodes left in the : midi_nodes_pool -> see usb_read_note_on()");
-    #endif
-    set_mode(ERROR_MODE);
   }
 };
 
 void usb_read_note_off(uint8_t channel, uint8_t note, uint8_t velocity) {
-  midi_msg_t* midi_ptr = (midi_msg_t*)llist_pop_front(&midi_nodes_pool);
-  if (midi_ptr) {
-    midi_ptr->type = NoteOff;
-    midi_ptr->data1 = note;
-    midi_ptr->data2 = velocity;
-    midi_ptr->channel = channel;
+  midi_msg_t* midi_msg_ptr = (midi_msg_t*)llist_pop_front(&llist_midi_nodes_pool);
+  if (midi_msg_ptr != NULL) {
+    midi_msg_ptr->channel = channel;
+    midi_msg_ptr->type = NoteOff;
+    midi_msg_ptr->data1 = note;
+    midi_msg_ptr->data2 = velocity;
     if (e256_current_mode == THROUGH_MODE) {
-      llist_push_front(&midi_out, midi_ptr);
+      llist_push_front(&llist_midi_out, midi_msg_ptr);
     }
-  }
-  else {
-    #if defined(USB_MIDI_SERIAL) && defined(DEBUG_LLIST)
-      Serial.printf("\nNo more nodes left in the : midi_nodes_pool -> see usb_read_note_off()");
-    #endif
-    set_mode(ERROR_MODE);
   }
 };
 
 void usb_read_control_change(uint8_t channel, uint8_t control, uint8_t value) {
-  midi_msg_t* midi_ptr = (midi_msg_t*)llist_pop_front(&midi_nodes_pool);
-  if (midi_ptr) {
-    midi_ptr->type = ControlChange;
-    midi_ptr->data1 = control;
-    midi_ptr->data2 = value;
-    midi_ptr->channel = channel;
+  midi_msg_t* midi_msg_ptr = (midi_msg_t*)llist_pop_front(&llist_midi_nodes_pool);
+  if (midi_msg_ptr != NULL) {
+    midi_msg_ptr->channel = channel;
+    midi_msg_ptr->type = ControlChange;
+    midi_msg_ptr->data1 = control;
+    midi_msg_ptr->data2 = value;
     if (e256_current_mode == THROUGH_MODE) {
-      llist_push_front(&midi_out, midi_ptr);
+      llist_push_front(&llist_midi_out, midi_msg_ptr);
     }
-  }
-  else {
-    #if defined(USB_MIDI_SERIAL) && defined(DEBUG_LLIST)
-      Serial.printf("\nNo more nodes left in the : midi_nodes_pool -> see usb_read_control_change()");
-    #endif
-    set_mode(ERROR_MODE);
   }
 };
 
 void usb_read_after_touch_poly(uint8_t channel, uint8_t note, uint8_t pressure) {
-  midi_msg_t* midi_ptr = (midi_msg_t*)llist_pop_front(&midi_nodes_pool);
-  if (midi_ptr) {
-    midi_ptr->type = AfterTouchPoly;
-    midi_ptr->data1 = note;
-    midi_ptr->data2 = pressure;
-    midi_ptr->channel = channel;
+  midi_msg_t* midi_msg_ptr = (midi_msg_t*)llist_pop_front(&llist_midi_nodes_pool);
+  if (midi_msg_ptr != NULL) {
+    midi_msg_ptr->channel = channel;
+    midi_msg_ptr->type = AfterTouchPoly;
+    midi_msg_ptr->data1 = note;
+    midi_msg_ptr->data2 = pressure;
     if (e256_current_mode == THROUGH_MODE) {
-      llist_push_front(&midi_out, midi_ptr); // Add the node to the midi_out linked list
+      llist_push_front(&llist_midi_out, midi_msg_ptr);
     }
-  }
-  else {
-    #if defined(USB_MIDI_SERIAL) && defined(DEBUG_LLIST)
-      Serial.printf("\nNo more nodes left in the : midi_nodes_pool -> see usb_read_after_touch_poly()");
-    #endif
-    set_mode(ERROR_MODE);
   }
 };
 
 void usb_read_pitch_bend(uint8_t channel, int pitch) {
-  midi_msg_t* midi_ptr = (midi_msg_t*)llist_pop_front(&midi_nodes_pool);
-  if (midi_ptr) {
-    midi_ptr->type = PitchBend;
-    midi_ptr->data1 = pitch & 0x7F; // Lsb
-    midi_ptr->data2 = pitch >> 7;   // Msb
-    midi_ptr->channel = channel;
+  midi_msg_t* midi_msg_ptr = (midi_msg_t*)llist_pop_front(&llist_midi_nodes_pool);
+  if (midi_msg_ptr != NULL) {
+    midi_msg_ptr->channel = channel;
+    midi_msg_ptr->type = PitchBend;
+    midi_msg_ptr->data1 = pitch & 0x7F; // Lsb
+    midi_msg_ptr->data2 = pitch >> 7;   // Msb
     if (e256_current_mode == THROUGH_MODE) {
-      llist_push_front(&midi_out, midi_ptr); // Add the node to the midi_out linked list
+      llist_push_front(&llist_midi_out, midi_msg_ptr);
     }
-  }
-  else {
-    #if defined(USB_MIDI_SERIAL) && defined(DEBUG_LLIST)
-      Serial.printf("\nNo more nodes left in the : midi_nodes_pool -> see usb_read_pitch_bend()");
-    #endif
-    set_mode(ERROR_MODE);
   }
 };
 

@@ -15,7 +15,7 @@
 #define IRAW_COLS       (RAW_COLS - 1)
 #define INTERP_STRIDE   (SCALE_X * SCALE_Y * RAW_COLS)
 
-uint8_t interp_threshold = 5;               //
+uint8_t interp_threshold = 5;                //
 uint8_t interp_frame_array[NEW_FRAME] = {0}; // 1D Array to store E256 bilinear interpolated values
 
 float coef_A[SCALE_X * SCALE_Y] = {0};

@@ -69,7 +69,9 @@
 #define LEVEL_TIMEOUT 3000
 #define PENDING_MODE_TIMEOUT 4000
 
-#define MIDI_TRANSMIT_INTERVAL 50 // 20Hz
+#define MATRIX_MIDI_THROTTLE_MS 50 // 20Hz
+
+#define MIDI_THROTTLE_MS 40
 
 // E256 MIDI I/O CHANNELS CONSTANTS [1:15]
 #define MIDI_INPUT_CHANNEL 1
@@ -99,10 +101,11 @@
 #define MAX_POLYGON_POINTS 64
 #define MAX_POLYGON_TOUCHS 3
 
-#define MAX_GRIDS 2
+#define MAX_GRIDS 1
 #define MAX_GRID_KEYS 256
+#define MAX_GRID_TOUCHS 3
 
-#define MAX_CSLIDERS 2
+//#define MAX_CSLIDERS 2
 
 typedef enum level_code_e {
   THRESHOLD, // E256-LEDs: | 1 | 1 |

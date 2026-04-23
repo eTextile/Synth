@@ -32,11 +32,9 @@ static lnode_t* llist_alloc_node(void) {
     node_ptr->data_ptr = NULL;
     return node_ptr;
   }
-  #if defined(USB_MIDI_SERIAL) && defined(DEBUG_LLIST)
-    Serial.println("no more nodes left in the : llist_nodes_pool -> see llist_alloc_node()");
-  #endif
-  set_mode(ERROR_MODE);
-  return NULL;
+  else {
+    return NULL;
+  }
 };
 
 static void llist_free_node(lnode_t* node_ptr) {
@@ -93,7 +91,7 @@ static void llist_push_node_back(llist_t* llist_ptr, lnode_t* node_ptr) {
 
 void* llist_pop_front(llist_t* llist_ptr) {
   lnode_t* node_ptr = llist_pop_node_front(llist_ptr);
-  if (node_ptr) {
+  if (node_ptr != NULL) {
     void* data_ptr = node_ptr->data_ptr;
     llist_free_node(node_ptr);
     return data_ptr;
@@ -105,23 +103,29 @@ void* llist_pop_front(llist_t* llist_ptr) {
 
 void llist_push_front(llist_t* llist_ptr, void* data_ptr) {
   lnode_t* node_ptr = llist_alloc_node();
-  if (node_ptr) {
+  if (node_ptr != NULL) {
     node_ptr->data_ptr = data_ptr;
     llist_push_node_front(llist_ptr, node_ptr);
   }
   else {
     #if defined(USB_MIDI_SERIAL) && defined(DEBUG_LLIST)
-      Serial.printf("\nNo more nodes left in the : midi_nodes_pool -> see midi_send_out()");
+      Serial.println("no more nodes left in the: llist_nodes_pool -> see llist_push_front()"); 
     #endif
-    set_mode(ERROR_MODE);
+    //set_mode(ERROR_MODE);
   }
 };
 
 void llist_push_back(llist_t* llist_ptr, void* data_ptr) {
   lnode_t* node_ptr = llist_alloc_node();
-  if (node_ptr) {
+  if (node_ptr != NULL) {
     node_ptr->data_ptr = data_ptr;
     llist_push_node_back(llist_ptr, node_ptr);
+  }
+  else {
+    #if defined(USB_MIDI_SERIAL) && defined(DEBUG_LLIST)
+      Serial.println("no more nodes left in the: llist_nodes_pool -> see llist_push_back()"); 
+    #endif
+    //set_mode(ERROR_MODE);
   }
 };
 
@@ -136,6 +140,7 @@ void llist_swap_llist(llist_t* llistA_ptr, llist_t* llistB_ptr) {
   }
 };
 
+/*
 void llist_concat_nodes(llist_t* dst_ptr, llist_t* src_ptr) {
   if (src_ptr->head_ptr) {
     if (dst_ptr->head_ptr) {
@@ -150,6 +155,7 @@ void llist_concat_nodes(llist_t* dst_ptr, llist_t* src_ptr) {
     }
   }
 };
+*/
 
 void* llist_find_node(llist_t* llist_ptr, void* data_ptr, llist_compare_func_t* func_ptr) {
   for (lnode_t* node_ptr = ITERATOR_START_FROM_HEAD(llist_ptr); node_ptr != NULL; node_ptr = ITERATOR_NEXT(node_ptr)) {

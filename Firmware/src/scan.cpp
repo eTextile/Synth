@@ -27,6 +27,8 @@ ADC::Sync_result result; // Store ADC_0 & ADC_1
 #define ADC0_PIN A3  // Pin 17 is connected to the output of multiplexerA (SIG pin)
 #define ADC1_PIN A2  // Pin 16 is connected to the output of multiplexerB (SIG pin)
 
+#define DISCHARGE_DEL 1
+
 #define DUAL_COLS (RAW_COLS / 2)
 
 #define CALIBRATION_CYCLES 10
@@ -114,7 +116,7 @@ void matrix_calibrate(void) {
         pinMode(ADC1_PIN, OUTPUT);
         digitalWrite(ADC0_PIN, LOW); // Set the ADC0 Pin to GND to discharge
         digitalWrite(ADC1_PIN, LOW); // Set the ADC0 Pin to GND to discharge
-        delayMicroseconds(5);
+        delayMicroseconds(DISCHARGE_DEL);
         pinMode(ADC0_PIN, INPUT);
         pinMode(ADC1_PIN, INPUT);
 
@@ -161,7 +163,7 @@ void matrix_scan(void) {
       pinMode(ADC1_PIN, OUTPUT);
       digitalWrite(ADC0_PIN, LOW); // Set the ADC0 Pin to GND to discharge
       digitalWrite(ADC1_PIN, LOW); // Set the ADC1 Pin to GND to discharge
-      delayMicroseconds(5);
+      delayMicroseconds(DISCHARGE_DEL);
       pinMode(ADC0_PIN, INPUT);
       pinMode(ADC1_PIN, INPUT);
 

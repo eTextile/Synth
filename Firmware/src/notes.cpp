@@ -35,7 +35,7 @@
 #define  E1    28        // 41.20 Hz
 #define  F1    29        // 43.65 Hz
 #define  Fd1   30        // 46.25 Hz
-#define  G1    31        // 40.00 Hz
+#define  G1    31        // 49.00 Hz
 #define  Gd1   32        // 51.91 Hz
 #define  A1_   33        // 55.00 Hz
 #define  Ad1   34        // 58.27 Hz

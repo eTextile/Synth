@@ -14,17 +14,18 @@ using namespace midi;
 #include "llist.h"
 #include "blob.h"
 
-extern llist_t midi_nodes_pool; // Main MIDI node stack
-extern llist_t midi_in;         // Main MIDI Input linked list
-extern llist_t midi_out;        // Main MIDI Output linked list
-//extern llist_t midi_chord;    // Main MIDI chord linked list
+extern llist_t llist_midi_nodes_pool; // Main MIDI node stack
+extern llist_t llist_midi_in;         // Main MIDI Input linked list
+extern llist_t llist_midi_out;        // Main MIDI Output linked list
+
+extern llist_t llist_active_midi_msg; // Main MIDI notes/chords linked list
 
 typedef struct midi_msg_s midi_msg_t;
 struct midi_msg_s {
+  uint8_t channel;  // [1-15] MIDI channel (Extracted from status byte)
   MidiType type;    // (Extracted from status byte)
   uint8_t data1;    // [0-127] MIDI controller number or note number
   uint8_t data2;    // [0-127] MIDI controller value or velocity
-  uint8_t channel;  // [1-15] MIDI channel (Extracted from status byte)
 };
 
 typedef struct midi_limit_s midi_limit_t;
@@ -44,8 +45,6 @@ void midi_bus_setup(void);
 
 uint8_t midi_msg_status_pack(MidiType type, uint8_t channel);
 void midi_msg_status_unpack(uint8_t in_status, midi_status_t* out_status);
-
-void midi_send_out(midi_msg_t* midi_ptr);
 
 const char* get_type_name(MidiType code);
 

@@ -15,7 +15,7 @@
 /*
 typedef struct cSlider_s cSlider_t;
 struct cSlider_s {
-  midi_msg_t midiMsg;
+  midi_msg_t midi_msg;
   uint8_t id;
   float thetaMin;
   float thetaMax;
@@ -118,8 +118,7 @@ void mapping_cSliders_update(void) {
                 #if defined(USB_MIDI_SERIAL) && defined(DEBUG_MAPPINGS)
                   Serial.printf("\nDEBUG_MAPPINGS_CSLIDER\tSLIDER_ID:%d\tRADIUS:%f\tTHETA:%f\tVAL:%d", id, radius, theta, sliderVal);
                 #else
-                  //midi_send_out(&mapp_csliderParams[i].msg.midi);
-                  llist_push_back(&midi_out, &mapp_csliderParams[i].msg.midi);
+                  llist_push_front(&llist_midi_out, &mapp_csliderParams[i].msg.midi);
                 #endif
               };
             };

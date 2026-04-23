@@ -5,9 +5,9 @@
 
 typedef struct knob_touch_s knob_touch_t;
 struct knob_touch_s {
-  positon_t press;
-  positon_t radius;
-  positon_t theta;
+  axis_t press;
+  axis_t radius;
+  axis_t theta;
 };
 
 typedef struct knob_s knob_t;
@@ -18,7 +18,8 @@ struct knob_s {
   float offset;
   uint8_t touchs;
   knob_touch_t touch[MAX_KNOB_TOUCHS];
-  MidiType mode_z;
+  MidiType press;
+  uint8_t recive_chan;
 };
 
 bool mapping_knobs_alloc(uint8_t knobs_cnt);

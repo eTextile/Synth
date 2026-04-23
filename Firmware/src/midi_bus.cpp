@@ -7,20 +7,19 @@
 #include "blob.h"
 #include "mapping.h"
 
-#define MIDI_NODES 128
+#define MIDI_NODES 127
 
 midi_msg_t midi_nodes_array[MIDI_NODES] = {}; // Memory allocation for all MIDI I/O messages
 
-llist_t midi_nodes_pool; // Main MIDI node stack
-llist_t midi_in;         // Main MIDI input linked list
-llist_t midi_out;        // Main MIDI output linked list
-//llist_t midi_chord;      // Main MIDI chord linked list
+llist_t llist_midi_nodes_pool;   // Main MIDI node stack
+llist_t llist_midi_in;           // Main MIDI input linked list
+llist_t llist_midi_out;          // Main MIDI output linked list
+
 
 void midi_bus_setup(void) {
-  llist_builder(&midi_nodes_pool, &midi_nodes_array[0], MIDI_NODES, sizeof(midi_nodes_array[0])); // Add X nodes to the midi_nodes_pool
-  llist_raz(&midi_in);
-  llist_raz(&midi_out);
-  //llist_raz(&midi_chord);
+  llist_builder(&llist_midi_nodes_pool, &midi_nodes_array[0], MIDI_NODES, sizeof(midi_nodes_array[0])); // Add X nodes to the llist_midi_nodes_pool
+  llist_raz(&llist_midi_in);
+  llist_raz(&llist_midi_out);
 };
 
 // Extract MIDI type and channel from MIDI status msg
@@ -36,24 +35,19 @@ uint8_t midi_msg_status_pack(MidiType type, uint8_t channel) {
   return status;
 };
 
-// TESTING!
-void midi_send_out(midi_msg_t* midi_ptr) {
-  llist_push_front(&midi_out, midi_ptr); // Add the midi_msg to the midi_out linked list
-};
-
 /*
-void midi_handle_input(const Message<128u> &midiMsg) {
-  midi_msg_t* node_ptr = (midi_msg_t*)llist_pop_front(&midi_nodes_pool);
+void midi_handle_input(const Message<128u> &midi_msg) {
+  midi_msg_t* node_ptr = (midi_msg_t*)llist_pop_front(&llist_midi_nodes_pool);
   if (node_ptr) {
-    node_ptr-type = midiMsg.type;         // Set the MIDI type
-    node_ptr->data1 = midiMsg.data1;      // Set the MIDI note/cc/...
-    node_ptr->data2 = midiMsg.data2;      // Set the MIDI velocity
-    node_ptr->channel = midiMsg.channel;  // Set the MIDI channel
-    llist_push_front(&midi_in, node_ptr); // Add the node to the midi_in linked list
+    node_ptr-type = midi_msg.type;         // Set the MIDI type
+    node_ptr->data1 = midi_msg.data1;      // Set the MIDI note/cc/...
+    node_ptr->data2 = midi_msg.data2;      // Set the MIDI velocity
+    node_ptr->channel = midi_msg.channel;  // Set the MIDI channel
+    llist_push_front(&llist_midi_in, node_ptr); // Add the node to the midi_in linked list
     }
     else {
       #if defined(USB_MIDI_SERIAL) && defined(DEBUG_LLIST)
-        Serial.printf("\nNo more nodes left in the : midi_nodes_pool -> see midi_handle_input()");
+        Serial.printf("\nNo more nodes left in the : llist_midi_nodes_pool -> see midi_handle_input()");
       #endif
       set_mode(ERROR_MODE);
     }

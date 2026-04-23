@@ -99,7 +99,7 @@ void loop() {
       break;
 
     case STANDALONE_MODE:
-      //hardware_midi_recive();
+      hardware_midi_recive(); // TESTING!
       matrix_scan();
       matrix_interp();
       matrix_find_blobs();
@@ -111,9 +111,10 @@ void loop() {
       usb_midi_recive();
       break;
   };
-
-  llist_concat_nodes(&midi_nodes_pool, &midi_out); // Save/rescure all midi_out nodes
-
+  
+  midi_msg_t* midi_msg_ptr = NULL;
+  while ((midi_msg_ptr = (midi_msg_t*)llist_pop_front(&llist_midi_out)) != NULL); // Save/rescure all midi_out llist nodes
+  
   #if defined(USB_MIDI_SERIAL) && defined(DEBUG_FPS)
   if (millis() - fpsTimeStamp >= 1000) {
     fpsTimeStamp = millis();

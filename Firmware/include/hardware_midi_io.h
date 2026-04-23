@@ -9,9 +9,11 @@
 
 #include "midi_bus.h"
 
+extern uint8_t hardware_midi_active_notes_count;
+
 void hardware_midi_setup(void);
-//void hardware_midi_recive(void);
-//void hardware_midi_handle_input(const Message<128u> &midiMsg);
+void hardware_midi_recive(void);
+void hardware_midi_handle_input(const Message<128u> &midi_msg);
 void hardware_midi_transmit_mappings_midi_msg(void);
 
 #endif /*__HARDWARE_MIDI_IO_H__*/

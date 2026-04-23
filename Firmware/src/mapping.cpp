@@ -33,71 +33,84 @@ void mapping_lib_update(void) {
           else if (blob_ptr->status == RELEASED && blob_ptr->last_status == MISSING) {
             mapping_ptr->stop_func_ptr(blob_ptr);
           }
+          /*
           else if (blob_ptr->status == FREE) {
             // N/A
           }
+          */
         }
       }
       else { // RELEASESING THE BLOB OUT OF THE MAPPING
-        if (blob_ptr->status == RELEASED && blob_ptr->last_status == MISSING) {
-          mapping_ptr->stop_func_ptr(blob_ptr);
+        if (blob_ptr->action.mapping_ptr != NULL) {
+          if (blob_ptr->status == RELEASED && blob_ptr->last_status == MISSING) {
+            mapping_ptr->stop_func_ptr(blob_ptr);
+          }
         }
       }
     }
   }
 };
 
-void mapping_send_midi_note_on(positon_t* positon_ptr, blob_t* blob_ptr) {
-  positon_ptr->msg.type = NoteOn;
-  //positon_ptr->msg.data2 = blob_ptr->centroid.z; // TODO: velocity sensing  
-  positon_ptr->msg.data2 = 127;
-  midi_send_out(&positon_ptr->msg);
+void mapping_send_midi_note_on(axis_t* axis_ptr, blob_t* blob_ptr) {
+  axis_ptr->msg.type = NoteOn;
+  //axis_ptr->msg.data2 = blob_ptr->centroid.z; // TODO: velocity sensing  
+  axis_ptr->msg.data2 = 127;
+  llist_push_front(&llist_midi_out, &axis_ptr->msg);
 };
 
-void mapping_send_midi_note_off(positon_t* positon_ptr, blob_t* blob_ptr) {
-  positon_ptr->msg.type = NoteOff;
-  positon_ptr->msg.data2 = 0;
-  midi_send_out(&positon_ptr->msg);
+void mapping_send_midi_note_off(axis_t* axis_ptr) {
+  axis_ptr->msg.type = NoteOff;
+  axis_ptr->msg.data2 = 0;
+  llist_push_front(&llist_midi_out, &axis_ptr->msg);
 };
 
-void mapping_send_midi_pos_x_msg(rect_t* bounding_box_ptr, positon_t* positon_ptr, blob_t* blob_ptr) {
-  positon_ptr->last_val = positon_ptr->msg.data2;
-  positon_ptr->msg.data2 = map(
+void mapping_send_midi_msg_pos_x(rect_t* bounding_box_ptr, axis_t* axis_ptr, blob_t* blob_ptr) {
+  axis_ptr->msg.data2 = map(
     blob_ptr->centroid.x,
-    bounding_box_ptr->from.x,
     bounding_box_ptr->to.x,
-    positon_ptr->limit.min,
-    positon_ptr->limit.max
+    bounding_box_ptr->from.x,
+    axis_ptr->limit.max,
+    axis_ptr->limit.min
   );
-  if (positon_ptr->msg.data2 != positon_ptr->last_val) {
-    midi_send_out(&positon_ptr->msg);
+  if (axis_ptr->msg.data2 != axis_ptr->last_val) {
+    if ((millis() - axis_ptr->midi_time_stamp) > MIDI_THROTTLE_MS) {
+      llist_push_front(&llist_midi_out, &axis_ptr->msg);
+      axis_ptr->last_val = axis_ptr->msg.data2;
+      axis_ptr->midi_time_stamp = millis();
+    }
   }
 };
 
-void mapping_send_midi_pos_y_msg(rect_t* bounding_box_ptr, positon_t* positon_ptr, blob_t* blob_ptr) {
-  positon_ptr->last_val = positon_ptr->msg.data2;
-  positon_ptr->msg.data2 = map(
+void mapping_send_midi_msg_pos_y(rect_t* bounding_box_ptr, axis_t* axis_ptr, blob_t* blob_ptr) {
+  axis_ptr->msg.data2 = map(
     blob_ptr->centroid.y,
     bounding_box_ptr->from.y,
     bounding_box_ptr->to.y,
-    positon_ptr->limit.min,
-    positon_ptr->limit.max
+    axis_ptr->limit.min,
+    axis_ptr->limit.max
   );
-  if (positon_ptr->msg.data2 != positon_ptr->last_val) {
-    midi_send_out(&positon_ptr->msg);
+  if (axis_ptr->msg.data2 != axis_ptr->last_val) {
+    if ((millis() - axis_ptr->midi_time_stamp) > MIDI_THROTTLE_MS) {
+      llist_push_front(&llist_midi_out, &axis_ptr->msg);
+      axis_ptr->last_val = axis_ptr->msg.data2;
+      axis_ptr->midi_time_stamp = millis();
+    }
   }
 };
 
-void mapping_send_midi_pos_z_msg(positon_t* positon_ptr, blob_t* blob_ptr) {
-  positon_ptr->last_val = positon_ptr->msg.data2;
-  positon_ptr->msg.data2 = map(
+void mapping_send_midi_msg_press(axis_t* axis_ptr, blob_t* blob_ptr) {
+  axis_ptr->msg.data2 = map(
     blob_ptr->centroid.z,
     Z_MIN,
     Z_MAX,
-    positon_ptr->limit.min,
-    positon_ptr->limit.max
+    axis_ptr->limit.min,
+    axis_ptr->limit.max
   );
-  if (positon_ptr->msg.data2 != positon_ptr->last_val) {
-    midi_send_out(&positon_ptr->msg);
+  if (axis_ptr->msg.data2 != axis_ptr->last_val) {
+    if ((millis() - axis_ptr->midi_time_stamp) > MIDI_THROTTLE_MS) {
+      llist_push_front(&llist_midi_out, &axis_ptr->msg);
+      axis_ptr->last_val = axis_ptr->msg.data2;
+      axis_ptr->midi_time_stamp = millis();
+    }
   }
 };
