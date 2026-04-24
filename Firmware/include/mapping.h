@@ -15,6 +15,21 @@
 
 #include "midi_bus.h"
 
+typedef enum move_e {
+  MOVE_LIN = 0,
+  MOVE_LOG = 1,
+  MOVE_ROL = 2
+} move_t;
+
+typedef enum populate_e {
+  POPULATE_OFF      = 0,
+  POPULATE_UP       = 1,
+  POPULATE_DOWN     = 2,
+  POPULATE_AS_PLAYED = 3,
+  POPULATE_OCTAVE   = 4,
+  POPULATE_PING_PONG = 5
+} populate_t;
+
 typedef struct point_s point_t;
 struct point_s {
   float x;

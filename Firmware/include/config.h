@@ -90,6 +90,7 @@
 
 #define MAX_SLIDERS 6
 #define MAX_SLIDER_TOUCHS 2
+#define MAX_SLIDER_STEPS 24
 
 #define MAX_KNOBS 4
 #define MAX_KNOB_TOUCHS 4
