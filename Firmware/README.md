@@ -83,6 +83,23 @@ All TUIs are fully parametric and configured via the web app config file.
 
 > **grid()** is inspired by the [Omnichord](https://en.wikipedia.org/wiki/Omnichord). It maps a rectangular zone of the textile surface to a grid of MIDI notes. The layout can be updated live from a MIDI keyboard connected to the hardware MIDI input.
 
+> **slider()** — when `steps > 0`, the slider is divided into `steps` equal zones along its axis. Entering a zone sends a NoteOn (this mode requires `press = NoteOn`). The note for each zone is set at configuration time or updated live from a MIDI keyboard via `populate` (see below).
+
+### Populate modes (`slider`, `grid`, `knob`, `polygon`, `switch`)
+
+TUIs that support `steps` can have their note layout reprogrammed live by a MIDI keyboard connected to the **hardware MIDI input** (TRS-A). The `populate` parameter controls how incoming notes are distributed across the step zones:
+
+| Mode | Behaviour |
+|------|-----------|
+| `OFF` | Keyboard input ignored (default) |
+| `AS_PLAYED` | Notes fill zones in order of arrival, wrapping around |
+| `UP` | Held notes sorted lowest→highest and assigned to zones 0..N |
+| `DOWN` | Held notes sorted highest→lowest and assigned to zones 0..N |
+| `OCTAVE` | First note sets zone 0; each subsequent zone adds one semitone (`base + i`) |
+| `PING_PONG` | Each new note is assigned to the next zone in a back-and-forth sequence |
+
+The `receive_chan` parameter selects which MIDI channel on the hardware input is used for populate. Up to `MAX_SLIDER_STEPS` (24) zones are supported per slider.
+
 ---
 
 ## Development Setup
