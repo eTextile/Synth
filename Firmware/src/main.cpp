@@ -68,13 +68,14 @@ void loop() {
       matrix_scan();
       usb_midi_transmit_raw_matrix();
       break;
-    /*
-    case MATRIX_INTERP_MODE: // FIXME
+      
+    case MATRIX_INTERP_MODE:
       usb_midi_receive();
       matrix_scan();
+      matrix_interp();
       usb_midi_transmit_interp_matrix();
       break;
-    */
+
     case EDIT_MODE:
       usb_midi_receive();
       matrix_scan();

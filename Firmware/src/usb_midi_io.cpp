@@ -45,15 +45,22 @@ void usb_midi_transmit_raw_matrix(void) {
   while (usbMIDI.read()); // Read and discard any incoming MIDI messages
 };
 
+// USB_MIDI_SYSEX_MAX = 290 on Teensy4 — NEW_FRAME (4096) must be split into chunks
+static const uint16_t INTERP_CHUNK_SIZE = 256;
+static const uint8_t  INTERP_NUM_CHUNKS = NEW_FRAME / INTERP_CHUNK_SIZE;
+
 void usb_midi_transmit_interp_matrix(void) {
   static uint32_t usbTransmitTimeStamp = 0;
-  // NOT_WORKING > see https://forum.pjrc.com/threads/28282-How-big-is-the-MIDI-receive-buffer
-  // Interpolation could be made on the web_app side!
   if (millis() - usbTransmitTimeStamp > MATRIX_MIDI_THROTTLE_MS) {
     usbTransmitTimeStamp = millis();
-    usbMIDI.sendSysEx(NEW_FRAME, interp_frame.data_ptr, false, 0);
+    uint8_t chunk[INTERP_CHUNK_SIZE + 1];
+    for (uint8_t i = 0; i < INTERP_NUM_CHUNKS; i++) {
+      chunk[0] = i;
+      memcpy(&chunk[1], interp_frame.data_ptr + (uint16_t)i * INTERP_CHUNK_SIZE, INTERP_CHUNK_SIZE);
+      usbMIDI.sendSysEx(INTERP_CHUNK_SIZE + 1, chunk, false);
+    }
     usbMIDI.send_now();
-  };
+  }
   while (usbMIDI.read()); // Read and discard any incoming MIDI messages
 };
 
@@ -183,6 +190,11 @@ void usb_read_program_change(uint8_t channel, uint8_t program) {
       case MATRIX_RAW_MODE:
         set_mode(MATRIX_RAW_MODE);
         usb_midi_send_info((uint8_t)MATRIX_RAW_MODE_DONE, MIDI_VERBOSITY_CHANNEL);
+        break;
+
+      case MATRIX_INTERP_MODE:
+        set_mode(MATRIX_INTERP_MODE);
+        usb_midi_send_info((uint8_t)MATRIX_INTERP_MODE_DONE, MIDI_VERBOSITY_CHANNEL);
         break;
 
       case MAPPING_MODE:
