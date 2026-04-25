@@ -135,6 +135,10 @@ void usb_read_note_off(uint8_t channel, uint8_t note, uint8_t velocity) {
 };
 
 void usb_read_control_change(uint8_t channel, uint8_t control, uint8_t value) {
+  if (channel == MIDI_LEVELS_CHANNEL) {
+    set_level((level_code_t)control, value);
+    return;
+  }
   midi_msg_t* midi_msg_ptr = (midi_msg_t*)llist_pop_front(&llist_midi_nodes_pool);
   if (midi_msg_ptr != NULL) {
     midi_msg_ptr->channel = channel;
