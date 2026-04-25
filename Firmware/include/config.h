@@ -123,6 +123,7 @@ typedef enum mode_code_e {
   SYNC_MODE,       // Hand chake mode
   CALIBRATE_MODE,  // Proceed to the all matrix calibration
   MATRIX_RAW_MODE, // Send matrix analog sensor raw values (16x16) over USB using MIDI format
+  MATRIX_INTERP_MODE, // TESTING
   MAPPING_MODE,    // 
   EDIT_MODE,       // Send all blobs values over USB_MIDI OUTPUT
   THROUGH_MODE,    // Forward mappings values to the MIDI_HARDWARE OUTPUT
@@ -145,6 +146,7 @@ typedef enum verbosity_code_e{
   SYNC_MODE_DONE,
   CALIBRATE_MODE_DONE,
   MATRIX_RAW_MODE_DONE,
+  MATRIX_INTERP_MODE_DONE, // TESTING
   MAPPING_MODE_DONE,
   EDIT_MODE_DONE,
   THROUGH_MODE_DONE,

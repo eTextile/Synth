@@ -42,6 +42,7 @@ const char* get_mode_name(mode_code_t code) {
     case SYNC_MODE: char_code = "SYNC_MODE"; break;
     case CALIBRATE_MODE: char_code = "CALIBRATE_MODE"; break;
     case MATRIX_RAW_MODE: char_code = "MATRIX_RAW_MODE"; break;
+    //case MATRIX_INTERP_MODE: TODO
     case MAPPING_MODE: char_code = "MAPPING_MODE"; break;
     case EDIT_MODE: char_code = "EDIT_MODE"; break;
     case THROUGH_MODE: char_code = "THROUGH_MODE"; break;
@@ -65,6 +66,7 @@ const char* get_verbosity_name(verbosity_code_t code) {
     case SYNC_MODE_DONE: char_code = "SYNC_MODE_DONE"; break;
     case CALIBRATE_MODE_DONE: char_code = "CALIBRATE_MODE_DONE"; break;
     case MATRIX_RAW_MODE_DONE: char_code = "MATRIX_RAW_MODE_DONE"; break;
+    //case MATRIX_INTERP_MODE: TODO
     case MAPPING_MODE_DONE: char_code = "MAPPING_MODE_DONE"; break;
     case EDIT_MODE_DONE: char_code = "EDIT_MODE_DONE"; break;
     case THROUGH_MODE_DONE: char_code = "THROUGH_MODE_DONE"; break;
@@ -118,6 +120,7 @@ e256_mode_t e256_m[16] = {
   {{HIGH, LOW, false}, 500, 500, true},   // [1] SYNC_MODE
   {{HIGH, LOW, false}, 15, 15, true},     // [2] CALIBRATE_MODE
   {{HIGH, HIGH, false}, 200, 200, true},  // [3] MATRIX_RAW_MODE
+  // MATRIX_INTERP_MODE: TODO
   {{HIGH, HIGH, false}, 400, 400, true},  // [4] MAPPING_MODE
   {{HIGH, LOW, false}, 1000, 50, true},   // [5] EDIT_MODE
   {{HIGH, LOW, false}, 1500, 500, true},  // [6] THROUGH_MODE
