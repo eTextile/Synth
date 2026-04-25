@@ -14,6 +14,7 @@ struct mapp_slider_s {
   uint8_t touch_index;
   llist_t llist_active_midi_msg;
   uint8_t active_midi_msg_count;
+  midi_msg_t note_off_msgs[MAX_SLIDER_TOUCHS];
 };
 
 static mapp_slider_t mapp_sliders[MAX_SLIDERS];
@@ -117,7 +118,11 @@ void mapping_slider_continue(blob_t* blob_ptr) {
     step_idx = constrain(step_idx, 0, slider_ptr->params.steps - 1);
     uint8_t new_note = slider_ptr->params.step_note[step_idx];
     if (new_note != touch_ptr->press.msg.data1) {
-      mapping_send_midi_note_off(&touch_ptr->press);
+      uint8_t touch_idx = (uint8_t)(touch_ptr - slider_ptr->params.touch);
+      slider_ptr->note_off_msgs[touch_idx] = touch_ptr->press.msg;
+      slider_ptr->note_off_msgs[touch_idx].type = NoteOff;
+      slider_ptr->note_off_msgs[touch_idx].data2 = 0;
+      llist_push_front(&llist_midi_out, &slider_ptr->note_off_msgs[touch_idx]);
       touch_ptr->press.msg.data1 = new_note;
       mapping_send_midi_note_on(&touch_ptr->press, blob_ptr);
     }
