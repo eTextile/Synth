@@ -1,41 +1,45 @@
-# eTextile-Synthesizer 
+# eTextile-Synthesizer
 ### Exploring music through textile
 
 ![eTextile Synthesizer](https://live.staticflickr.com/65535/48916850368_dd34d00418_c_d.jpg)
 
-## About The project
-After setting up the **E256 eTextile matrix sensor** it is now time to use it for live electronic music performances. **eTextile-Synthesizers** are handcrafted multi-touch digital interfaces based on smart textile materials and custom electronic solutions. These eTextile-synthesizers open up new possibilities for electronic music playing. The project features a fully embedded **multitouch eTextile-Synthesizers** that combines the powerful **Teensy 4.0** MCU and its audio library with the E256 eTextile matrix sensor technology. One of the main purpose of this project is to promote an intuitive music playing as well as taking benefit of textile textures diversity to form tactile cues that guide the touch. Like the popular **Eurorack modules** all eTextile-Synthesizers can connect each other via mini-jack and share them tempo as well as notes and audio streams. Thus each eTextile-Synthesizer devices have dedicated audio functionalities to generate or filter audio signals.
+## About the project
+**eTextile-Synthesizers** are handcrafted multi-touch digital interfaces based on smart textile materials and custom electronic solutions. The project features a fully embedded multitouch controller that combines the powerful **Teensy 4.0** MCU with the **E256 eTextile matrix sensor** — a 16×16 FSR array with hardware interpolation up to 64×64 points.
 
-### Development tools & DOCs
-* **Web page:** [https://synth.eTextile.org/](https://synth.eTextile.org "Project web page")
-* **Repository:** [https://github.com/eTextile/synth/tree/master/](https://github.com/eTextile/synth/tree/master/ "Project repository")
-* **License:** [CC-BY-SA](https://github.com/eTextile/synth/tree/master/LICENSE.txt "Project License")
+The interface is configured via a **browser-based mapping application** that communicates with the device over USB-MIDI. Mappings (touchpad, slider, switch, knob, grid…) are defined visually, saved as JSON, and uploaded to the device.
+
+### Links
+* **Web page:** [synth.eTextile.org](https://synth.eTextile.org "Project web page")
+* **Mapping app:** [github.com/eTextile/Mapping](https://github.com/eTextile/Mapping "Browser-based MIDI mapping application")
+* **Repository:** [github.com/eTextile/Synth](https://github.com/eTextile/Synth "Project repository")
+* **License:** [CC-BY-SA](https://github.com/eTextile/Synth/blob/master/LICENSE.txt "Project License")
 * **Mail:** [contact@etextile.org](mailto:contact@etextile.org "eMail us")
 * **Pictures:** [flickr.com](https://www.flickr.com/photos/maurin/albums/72157673740361510/ "Share your pictures with us")
 
 ## Project content
-* **Hardware_textile:** eTextile-Synthesizer tutorial
-* **Hardware_electronic:** Open Hardware electronic parts (Made with KiCad) 
-* **Firmware:** eTextile-Synthesizer firmware (Compile with Arduino)
-* **Softwear:** demos applications (PureData, MaxMSP, Max4Live, etc.)
+* **Hardware_textile:** eTextile-Synthesizer construction tutorial
+* **Hardware_electronic:** Open Hardware electronics (KiCad)
+* **Firmware:** eTextile-Synthesizer firmware (PlatformIO)
+* **Software:** Demo applications (PureData, MaxMSP, Max4Live, etc.)
 
 ## Specifications
-| **Feature**             | **Description**                           |
-| :---------------------- | :---------------------------------------- |
-| Power-IN                | DC-5V                                     |
-| Hardware resolution     | 16x16 FSRs with hardware interpolation    |
-| Multi-Touch (Max points)| User defined                              |
-| Points characteristics  | [ID, STATE, CX, CY, WIDTH, HEIGHT, DEPTH] |
-| XY resolution           | [0:127] integer                           |
-| Z resolution            | [0:127] integer                           |
-| FPS                     | 500 - 550                                 |
-| Audio IN                | ADC 16bits (mini-jack)                    |
-| Audio OUT_1             | DAC 16bits (mini-jack)                    |
-| Audio OUT_2             | Headphone (mini-jack)                     |
-| Connectivity            | USB_MIDI                                  |
-| Connectivity            | USB_SLIP-OSC                              |
-| Connectivity            | USB_MPE (TODO)                            |
-| Connectivity            | MIDI I/O (mini-jack)                      |
+| **Feature**              | **Description**                            |
+| :----------------------- | :----------------------------------------- |
+| Power                    | DC 5V (USB)                                |
+| Sensor resolution        | 16×16 FSRs                                 |
+| Interpolated resolution  | 64×64                                      |
+| Multi-touch              | User defined                               |
+| Blob characteristics     | [ID, STATE, CX, CY, WIDTH, HEIGHT, DEPTH]  |
+| XY resolution            | [0:127] integer                            |
+| Z resolution             | [0:127] integer                            |
+| FPS                      | 500–550                                    |
+| Audio IN                 | ADC 16-bit (mini-jack)                     |
+| Audio OUT 1              | DAC 16-bit (mini-jack)                     |
+| Audio OUT 2              | Headphone (mini-jack)                      |
+| Connectivity             | USB-MIDI                                   |
+| Connectivity             | MIDI I/O (mini-jack)                       |
+| Connectivity             | USB-MPE (TODO)                             |
+
 ## Publications
 - [NIME17](http://www.nime2017.org/) - Designing a Multi-Touch eTextile for Music Performances / [Paper](https://github.com/eTextile/Matrix/blob/teensy_matrix/docs/publications/NIME17-eTextile.pdf) - [Video](https://vimeo.com/217690743)
 - [MOCO17](http://moco17.movementcomputing.org/) - Music Skin: Fabric Interface for Expressive Music Control / [Paper](https://github.com/eTextile/Matrix/blob/teensy_matrix/docs/publications/MOCO17-MusicSkin.pdf)
