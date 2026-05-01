@@ -172,23 +172,12 @@ void mapping_switch_create(const JsonObject &config) {
     for (uint8_t i = 0; i<switch_ptr->params.touchs; i++) {
       midi_status_t status;
 
-      if (switch_ptr->params.press == NoteOn) {
-        midi_msg_status_unpack(config["msg"][i]["press"]["midi"]["status"].as<uint8_t>(), &status);
-        switch_ptr->params.touch[i].press.msg.type = status.type;
-        switch_ptr->params.touch[i].press.msg.data1 = config["msg"][i]["press"]["midi"]["data1"].as<uint8_t>();
-        //switch_ptr->params.touch[i].press.msg.data2 = 0;
-        switch_ptr->params.touch[i].press.msg.channel = status.channel;
-      }
-      else {
-        midi_msg_status_unpack(config["msg"][i]["press"]["midi"]["status"].as<uint8_t>(), &status);
-        switch_ptr->params.touch[i].press.msg.type = status.type;
-        switch_ptr->params.touch[i].press.msg.data1 = config["msg"][i]["press"]["midi"]["data1"].as<uint8_t>();
-        //switch_ptr->params.touch[i].press.msg.data2 = 0;
-        switch_ptr->params.touch[i].press.msg.channel = status.channel;
-        switch_ptr->params.touch[i].press.limit.min = config["msg"][i]["press"]["limit"]["min"].as<uint8_t>();
-        switch_ptr->params.touch[i].press.limit.max = config["msg"][i]["press"]["limit"]["max"].as<uint8_t>();
-        break;
-      }
+      midi_msg_status_unpack(config["msg"][i]["press"]["midi"]["status"].as<uint8_t>(), &status);
+      switch_ptr->params.touch[i].press.msg.type = status.type;
+      switch_ptr->params.touch[i].press.msg.data1 = config["msg"][i]["press"]["midi"]["data1"].as<uint8_t>();
+      switch_ptr->params.touch[i].press.msg.channel = status.channel;
+      switch_ptr->params.touch[i].press.limit.min = config["msg"][i]["press"]["limit"]["min"].as<uint8_t>();
+      switch_ptr->params.touch[i].press.limit.max = config["msg"][i]["press"]["limit"]["max"].as<uint8_t>();
     }
   llist_push_back(&llist_mappings, switch_ptr);
   }

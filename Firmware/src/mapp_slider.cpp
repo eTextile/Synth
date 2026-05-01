@@ -295,6 +295,8 @@ void mapping_slider_create(const JsonObject &config) {
           slider_ptr->params.touch[i].press.msg.data1 = config["msg"][i]["press"]["midi"]["data1"].as<uint8_t>();
           slider_ptr->params.touch[i].press.msg.data2 = 0;
           slider_ptr->params.touch[i].press.msg.channel = status.channel;
+          slider_ptr->params.touch[i].press.limit.min = config["msg"][i]["press"]["limit"]["min"].as<uint8_t>();
+          slider_ptr->params.touch[i].press.limit.max = config["msg"][i]["press"]["limit"]["max"].as<uint8_t>();
           break;
 
         case ControlChange:

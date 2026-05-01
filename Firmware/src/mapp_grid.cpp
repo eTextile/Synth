@@ -178,10 +178,11 @@ void mapping_grid_create(const JsonObject &config) {
 
     // Pre-compute grid size
     int grid_size_x = grid_ptr->params.rect.to.x - grid_ptr->params.rect.from.x;
-    int grid_size_y = grid_ptr->params.rect.to.y - mapp_grids->params.rect.from.y;
+    int grid_size_y = grid_ptr->params.rect.to.y - grid_ptr->params.rect.from.y;
+    if (grid_size_x == 0 || grid_size_y == 0) return;
     // Pre-compute scale factors
-    mapp_grids->params.scale_factor_x = ((float)1 / grid_size_x) * grid_ptr->params.cols;
-    mapp_grids->params.scale_factor_y = ((float)1 / grid_size_y) * grid_ptr->params.rows;
+    grid_ptr->params.scale_factor_x = ((float)1 / grid_size_x) * grid_ptr->params.cols;
+    grid_ptr->params.scale_factor_y = ((float)1 / grid_size_y) * grid_ptr->params.rows;
   
     for (uint8_t i = 0; i<grid_ptr->params.keys; i++) {
       midi_status_t status;

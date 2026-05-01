@@ -73,6 +73,13 @@
 
 #define MIDI_THROTTLE_MS 10
 
+#define VELOCITY_MIN_INTERVAL_MS 10    // Min time between velocity updates (ms)
+#define VELOCITY_EMA_ALPHA       0.3f  // EMA smoothing factor: 0=frozen, 1=raw (no smoothing)
+#define VELOCITY_ATTACK_MIN_MS   5     // Minimum guard before peak detection kicks in (ms)
+#define VELOCITY_ATTACK_MAX_MS   80    // Hard deadline: force attack_done even without peak drop (ms)
+#define VELOCITY_ATTACK_DROP     0.5f  // Peak-drop ratio: attack_done when |vz| < peak * ratio
+#define VELOCITY_ATTACK_Z_MAX    4000  // Max expected |velocity.z| in units/s (tune to calibrate MIDI range)
+
 // E256 MIDI I/O CHANNELS CONSTANTS [1:15]
 #define MIDI_INPUT_CHANNEL 1
 //#define MIDI_OUTPUT_CHANNEL 2

@@ -19,14 +19,21 @@ extern llist_t llist_blobs; // Blobs linked list
 //extern llist_t llist_previous_blobs; // Exposed local declaration see blob.cpp
 
 typedef enum blob_params_e {
-  BI, // [0] Blob UID
-  BS, // [1] Blob State
-  BL, // [2] Blob Last State
-  BX, // [3] Blob X centroid position
-  BY, // [4] Blob Y centroid position
-  BZ, // [5] Blob Depth
-  BW, // [6] Blob width
-  BH  // [7] Blob Height
+  B_STATUS,        // [0]  STATUS_INDEX
+  B_LAST_STATUS,   // [1]  LAST_STATUS_INDEX
+  B_UID,           // [2]  UID_INDEX
+  B_X_WHOLE,       // [3]  CENTROID_X_WHOLE_PART_INDEX
+  B_X_FRAC,        // [4]  CENTROID_X_FRACTIONAL_PART_INDEX
+  B_Y_WHOLE,       // [5]  CENTROID_Y_WHOLE_PART_INDEX
+  B_Y_FRAC,        // [6]  CENTROID_Y_FRACTIONAL_PART_INDEX
+  B_WIDTH,         // [7]  WIDTH_INDEX
+  B_HEIGHT,        // [8]  HEIGHT_INDEX
+  B_DEPTH,         // [9]  DEPTH_INDEX
+  B_VELOCITY_XY,   // [10] VELOCITY_XY_INDEX
+  B_VELOCITY_Z,    // [11] VELOCITY_Z_INDEX
+  B_ATTACK_Z,      // [12] ATTACK_Z_INDEX
+  B_ATTACK_DONE,   // [13] ATTACK_DONE_INDEX
+  B_COUNT          // = 14
 } blob_params_t;
 
 typedef struct image_s image_t;
@@ -93,9 +100,12 @@ struct box_s {
 
 typedef struct velocity_s velocity_t;
 struct velocity_s {
-  unsigned long time_stamp;
-  float xy;
-  float z;
+  unsigned long time_stamp; // timestamp of last velocity update
+  unsigned long born_at;    // timestamp when blob was first detected (status == NEW)
+  float xy;                 // smoothed XY velocity (units/s)
+  float z;                  // smoothed Z velocity (units/s, signed: >0 pressing, <0 releasing)
+  float attack_z;           // peak |velocity.z| captured during the attack window
+  bool  attack_done;        // true once peak drop detected or VELOCITY_ATTACK_MAX_MS elapsed
 };
 
 typedef enum status_code_e {
@@ -110,6 +120,7 @@ typedef struct blob_action_s blob_action_t;
 struct blob_action_s {
   void* mapping_ptr;
   void* touch_ptr;
+  bool  note_on_pending; // true = NoteOn deferred until attack window elapses
 };
 
 typedef struct blob_s blob_t;

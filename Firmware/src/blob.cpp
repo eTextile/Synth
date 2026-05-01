@@ -219,7 +219,7 @@ void matrix_find_blobs(void) {
 
         if (blob_pixels > BLOB_MIN_PIX && blob_pixels < BLOB_MAX_PIX && blob_count < MAX_BLOBS) {
           blob_t* undefined_blob_ptr = (blob_t*)llist_pop_front(&llist_blobs_pool);
-          //if (undefined_blob_ptr) {
+          if (undefined_blob_ptr) {
 
           undefined_blob_ptr->centroid.x = (blob_cx / blob_pixels);
           undefined_blob_ptr->centroid.y = (blob_cy / blob_pixels);
@@ -283,6 +283,7 @@ void matrix_find_blobs(void) {
 
             llist_push_back(&llist_blobs, undefined_blob_ptr);
           }
+          } // if (undefined_blob_ptr)
         }
         posX = oldX;
         posY = oldY;
@@ -316,22 +317,78 @@ void matrix_find_blobs(void) {
   runing_median();
   #endif
 
+  // ---- Velocity & attack tracking (compiled only when VELOCITY is defined) ----
+  //
+  // Two quantities are computed per blob each frame:
+  //   velocity.xy  — smoothed lateral speed (Euclidean, units/s)
+  //   velocity.z   — smoothed vertical speed (signed: >0 pressing, <0 releasing, units/s)
+  //
+  // Both are filtered with an EMA (α = VELOCITY_EMA_ALPHA) to suppress sensor noise.
+  //
+  // Attack detection avoids a fixed-time NoteOn delay:
+  //   1. On first contact (NEW), attack_z is zeroed and note_on_pending is raised.
+  //   2. While pressing, attack_z tracks the running peak of |velocity.z|.
+  //   3. attack_done is set as soon as |velocity.z| drops below
+  //      VELOCITY_ATTACK_DROP × peak  AND  at least VELOCITY_ATTACK_MIN_MS have elapsed.
+  //      A hard deadline (VELOCITY_ATTACK_MAX_MS) fires attack_done if the drop never occurs.
+  //   4. The MIDI layer reads attack_done + attack_z to send the deferred NoteOn
+  //      with a velocity proportional to the captured impact peak.
+  //
+  // Why peak-drop rather than a fixed window?
+  //   A fixed window adds a constant latency on every note. With peak-drop, a sharp
+  //   percussive tap closes the window in ~5-15 ms; a slow press may take longer but
+  //   the perceptible latency is lower because the sound starts with the finger movement.
   #if defined(VELOCITY)
-  for (lnode_t* node_ptr = ITERATOR_START_FROM_HEAD(&llist_previous_blobs); node_ptr != NULL; node_ptr = ITERATOR_NEXT(node_ptr)) {
+  for (lnode_t* node_ptr = ITERATOR_START_FROM_HEAD(&llist_blobs); node_ptr != NULL; node_ptr = ITERATOR_NEXT(node_ptr)) {
     blob_t* blob_ptr = (blob_t*)ITERATOR_DATA(node_ptr);
+    uint32_t now = millis();
+
     if (blob_ptr->status == NEW) {
-      blob_ptr->velocity.time_stamp = millis();
+      // First detection: arm the attack window and freeze last_centroid as reference.
+      blob_ptr->velocity.time_stamp = now;
+      blob_ptr->velocity.born_at = now;
       blob_ptr->last_centroid = blob_ptr->centroid;
+      blob_ptr->velocity.xy = 0.0f;
+      blob_ptr->velocity.z = 0.0f;
+      blob_ptr->velocity.attack_z = 0.0f;
+      blob_ptr->velocity.attack_done = false;
+      blob_ptr->action.note_on_pending = false; // mapping _start sets it to true only for NoteOn mode
     }
     else if (blob_ptr->status == PRESENT) {
-      if (millis() - blob_ptr->velocity.time_stamp > 5) {
-        blob_ptr->velocity.timeStamp = millis();
-        float vx = fabs(blob_ptr->centroid.x - blob_ptr->last_centroid.x);
-        float vy = fabs(blob_ptr->centroid.y - blob_ptr->last_centroid.y);
-        blob_ptr->velocity.xy = sqrtf(vx * vx + vy * vy);
-        blob_ptr->velocity.z = blob_ptr->centroid.z - blob_ptr->last_centroid.z;
+      uint32_t dt = now - blob_ptr->velocity.time_stamp;
+      if (dt >= VELOCITY_MIN_INTERVAL_MS) {
+        float dt_s = dt * 0.001f;
+
+        // Raw instantaneous velocities (units/s).
+        float vx = blob_ptr->centroid.x - blob_ptr->last_centroid.x;
+        float vy = blob_ptr->centroid.y - blob_ptr->last_centroid.y;
+        float raw_vel_xy = sqrtf(vx * vx + vy * vy) / dt_s;
+        float raw_vel_z  = (float)((int16_t)blob_ptr->centroid.z - (int16_t)blob_ptr->last_centroid.z) / dt_s;
+
+        // EMA smoothing — reduces frame-to-frame sensor noise without a ring buffer.
+        blob_ptr->velocity.xy = VELOCITY_EMA_ALPHA * raw_vel_xy + (1.0f - VELOCITY_EMA_ALPHA) * blob_ptr->velocity.xy;
+        blob_ptr->velocity.z  = VELOCITY_EMA_ALPHA * raw_vel_z  + (1.0f - VELOCITY_EMA_ALPHA) * blob_ptr->velocity.z;
+
         blob_ptr->last_centroid = blob_ptr->centroid;
+        blob_ptr->velocity.time_stamp = now;
+
+        if (!blob_ptr->velocity.attack_done) {
+          float abs_vz = fabsf(blob_ptr->velocity.z);
+          uint32_t age = now - blob_ptr->velocity.born_at;
+
+          if (abs_vz > blob_ptr->velocity.attack_z) {
+            blob_ptr->velocity.attack_z = abs_vz; // still rising: update peak
+          } else if (age >= VELOCITY_ATTACK_MIN_MS && abs_vz < blob_ptr->velocity.attack_z * VELOCITY_ATTACK_DROP) {
+            blob_ptr->velocity.attack_done = true; // past the peak: impact is over
+          }
+          if (age >= VELOCITY_ATTACK_MAX_MS) blob_ptr->velocity.attack_done = true; // hard deadline
+        }
       }
+    }
+    else if (blob_ptr->status == RELEASED) {
+      // Keep attack_z intact — the MIDI layer may still need it for NoteOff velocity.
+      blob_ptr->velocity.xy = 0.0f;
+      blob_ptr->velocity.z  = 0.0f;
     }
   };
   #endif

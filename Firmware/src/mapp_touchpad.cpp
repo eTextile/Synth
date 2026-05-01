@@ -100,19 +100,8 @@ void mapping_touchpad_stop(blob_t* blob_ptr) {
   mapp_touchpad_t* touchpad_ptr = (mapp_touchpad_t*)blob_ptr->action.mapping_ptr;
   touch_3d_t* touch_ptr = (touch_3d_t*)blob_ptr->action.touch_ptr;
 
-  switch (touchpad_ptr->params.press) {
-    case NoteOn:
-      mapping_send_midi_note_off(&touch_ptr->press);
-      break;
-    case ControlChange:
-      // N/A
-      break;
-    case AfterTouchPoly:
-      // N/A
-      break;
-    default:
-      // Not handled in mapp_touchpad
-      break;
+  if (touchpad_ptr->params.press == NoteOn) {
+    mapping_send_midi_note_off(&touch_ptr->press);
   }
 };
 
@@ -191,24 +180,13 @@ void mapping_touchpad_create(const JsonObject &config) {
       touchpad_ptr->params.touch[i].pos_y.limit.min = config["msg"][i]["pos_y"]["limit"]["min"].as<uint8_t>();
       touchpad_ptr->params.touch[i].pos_y.limit.max = config["msg"][i]["pos_y"]["limit"]["max"].as<uint8_t>();
       
-      if (touchpad_ptr->params.press == NoteOn) {
-        midi_msg_status_unpack(config["msg"][i]["press"]["midi"]["status"].as<uint8_t>(), &status);
-        touchpad_ptr->params.touch[i].press.msg.type = status.type;
-        touchpad_ptr->params.touch[i].press.msg.data1 = config["msg"][i]["press"]["midi"]["data1"].as<uint8_t>();
-        touchpad_ptr->params.touch[i].press.msg.data2 = 0;
-        touchpad_ptr->params.touch[i].press.msg.channel = status.channel;
-        break;
-      }
-      else {
-        midi_msg_status_unpack(config["msg"][i]["press"]["midi"]["status"].as<uint8_t>(), &status);
-        touchpad_ptr->params.touch[i].press.msg.type = status.type;
-        touchpad_ptr->params.touch[i].press.msg.data1 = config["msg"][i]["press"]["midi"]["data1"].as<uint8_t>();
-        touchpad_ptr->params.touch[i].press.msg.data2 = 0;
-        touchpad_ptr->params.touch[i].press.msg.channel = status.channel;
-        touchpad_ptr->params.touch[i].press.limit.min = config["msg"][i]["press"]["limit"]["min"].as<uint8_t>();
-        touchpad_ptr->params.touch[i].press.limit.max = config["msg"][i]["press"]["limit"]["max"].as<uint8_t>();
-        break;
-      }
+      midi_msg_status_unpack(config["msg"][i]["press"]["midi"]["status"].as<uint8_t>(), &status);
+      touchpad_ptr->params.touch[i].press.msg.type = status.type;
+      touchpad_ptr->params.touch[i].press.msg.data1 = config["msg"][i]["press"]["midi"]["data1"].as<uint8_t>();
+      touchpad_ptr->params.touch[i].press.msg.data2 = 0;
+      touchpad_ptr->params.touch[i].press.msg.channel = status.channel;
+      touchpad_ptr->params.touch[i].press.limit.min = config["msg"][i]["press"]["limit"]["min"].as<uint8_t>();
+      touchpad_ptr->params.touch[i].press.limit.max = config["msg"][i]["press"]["limit"]["max"].as<uint8_t>();
     }
     llist_push_back(&llist_mappings, touchpad_ptr);
   }

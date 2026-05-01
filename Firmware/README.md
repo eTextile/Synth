@@ -160,7 +160,7 @@ Uncomment the desired flags in [platformio.ini](platformio.ini):
 ### Signal Processing Pipeline
 
 ```
-ADC scan (16×16) → Bilinear interpolation (64×64) → Blob detection → Mapping → MIDI out
+ADC scan (16×16) → Bilinear interpolation (64×64) → Blob detection → Velocity → Mapping → MIDI out
 ```
 
 1. **Force image acquisition** — 16×16 matrix scanned via synchronous dual analog reads.
@@ -169,7 +169,51 @@ ADC scan (16×16) → Bilinear interpolation (64×64) → Blob detection → Map
 4. **Blob segmentation** — scanline flood fill (SFF) + connected-component labeling (CCL).
 5. **Blob tracking** — proximity-based ID persistence across frames (up to 16 simultaneous blobs).
 6. **Blob characterisation** — centroid (X, Y, Z), bounding box (W, H).
-7. **Mapping** — TUI dispatch to USB MIDI or hardware MIDI output.
+7. **Velocity & attack detection** — per-blob velocity computed every frame; attack peak captured to derive NoteOn velocity (see below).
+8. **Mapping** — TUI dispatch to USB MIDI or hardware MIDI output.
+
+### Velocity & Attack Detection
+
+Compiled in when `VELOCITY` is defined. Runs after blob tracking, once per frame.
+
+#### Continuous velocity (XY + Z)
+
+Two quantities are updated for every `PRESENT` blob at most every `VELOCITY_MIN_INTERVAL_MS`:
+
+| Field | Description |
+|-------|-------------|
+| `velocity.xy` | Smoothed lateral speed — Euclidean distance of centroid displacement / Δt (units/s) |
+| `velocity.z` | Smoothed vertical speed — signed Δz / Δt (>0 pressing, <0 releasing, units/s) |
+
+Both are filtered with an **exponential moving average** (EMA, α = `VELOCITY_EMA_ALPHA`) to suppress frame-to-frame sensor noise without a ring buffer.
+
+#### Attack detection (NoteOn velocity)
+
+A fixed-delay approach would add a constant latency on every note — perceptible to musicians. Instead, the firmware uses **peak-drop detection**:
+
+```
+NEW → arm window (attack_z = 0, note_on_pending = true)
+  ↓  each PRESENT frame:
+  ├─ |velocity.z| rising  → update attack_z (running peak)
+  ├─ |velocity.z| < peak × VELOCITY_ATTACK_DROP
+  │   AND age ≥ VELOCITY_ATTACK_MIN_MS → attack_done = true  ← impact over
+  └─ age ≥ VELOCITY_ATTACK_MAX_MS      → attack_done = true  ← hard deadline
+```
+
+When `attack_done` is set, the MIDI layer reads `attack_z` to send the deferred NoteOn with a velocity proportional to the impact peak. `attack_z` is preserved through `RELEASED` so the MIDI layer can still use it for NoteOff.
+
+#### Constants (`include/config.h`)
+
+| Constant | Default | Description |
+|----------|---------|-------------|
+| `VELOCITY_MIN_INTERVAL_MS` | 10 ms | Minimum time between velocity updates |
+| `VELOCITY_EMA_ALPHA` | 0.3 | EMA factor: 0 = frozen, 1 = raw (no smoothing) |
+| `VELOCITY_ATTACK_MIN_MS` | 5 ms | Guard time before peak-drop detection activates |
+| `VELOCITY_ATTACK_MAX_MS` | 80 ms | Hard deadline — forces `attack_done` if peak never drops |
+| `VELOCITY_ATTACK_DROP` | 0.5 | Ratio: `attack_done` when `\|vz\| < peak × ratio` |
+| `VELOCITY_ATTACK_Z_MAX` | 4000 | Max expected `\|velocity.z\|` in units/s — use to scale MIDI range |
+
+---
 
 ### Blob Lifecycle
 

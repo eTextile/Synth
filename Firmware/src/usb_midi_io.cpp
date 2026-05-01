@@ -19,7 +19,7 @@ uint32_t bootTime = 0;
 size_t sysEx_data_length = 0;
 uint8_t* sysEx_data_ptr = NULL;
 
-// Setup the USB_MIDI communication port
+// Register all USB MIDI message handlers and start the USB MIDI stack.
 void usb_midi_setup(void) {
   usbMIDI.begin();
   usbMIDI.setHandleProgramChange(usb_read_program_change);
@@ -31,10 +31,14 @@ void usb_midi_setup(void) {
   usbMIDI.setHandleSystemExclusive(usb_read_system_exclusive);
 };
 
+// Poll the USB MIDI input — must be called every main-loop iteration so
+// registered handlers fire promptly.
 void usb_midi_receive(void) {
-  usbMIDI.read(); // Is there incoming MIDI messages on any channel
+  usbMIDI.read();
 };
 
+// Send the raw (pre-interpolation) sensor frame as a single SysEx message.
+// Throttled to MATRIX_MIDI_THROTTLE_MS to avoid flooding the USB bus.
 void usb_midi_transmit_raw_matrix(void) {
   static uint32_t usbTransmitTimeStamp = 0;
   if (millis() - usbTransmitTimeStamp > MATRIX_MIDI_THROTTLE_MS) {
@@ -42,10 +46,13 @@ void usb_midi_transmit_raw_matrix(void) {
     usbMIDI.sendSysEx(RAW_FRAME, raw_frame.data_ptr, false);
     usbMIDI.send_now();
   }
-  while (usbMIDI.read()); // Read and discard any incoming MIDI messages
+  while (usbMIDI.read()); // discard any incoming messages while transmitting
 };
 
-// USB_MIDI_SYSEX_MAX = 290 on Teensy4 — NEW_FRAME (4096) must be split into chunks
+// The interpolated frame (NEW_FRAME = 4096 bytes) exceeds the Teensy USB SysEx
+// buffer (USB_MIDI_SYSEX_MAX = 290), so it is split into fixed-size chunks.
+// Each chunk is prefixed with its 0-based index so the host can reassemble them.
+// Throttled to MATRIX_MIDI_THROTTLE_MS to avoid flooding the USB bus.
 static const uint16_t INTERP_CHUNK_SIZE = 256;
 static const uint8_t  INTERP_NUM_CHUNKS = NEW_FRAME / INTERP_CHUNK_SIZE;
 
@@ -61,53 +68,87 @@ void usb_midi_transmit_interp_matrix(void) {
     }
     usbMIDI.send_now();
   }
-  while (usbMIDI.read()); // Read and discard any incoming MIDI messages
+  while (usbMIDI.read()); // discard any incoming messages while transmitting
 };
 
+// Send one B_COUNT-byte SysEx message per active blob (see blob_params_e in blob.h).
+//
+// Throttle strategy:
+//   - PRESENT / MISSING blobs are sent at most once per MATRIX_MIDI_THROTTLE_MS
+//     to limit USB traffic during steady-state tracking.
+//   - NEW / FREE blobs bypass the throttle so the host always receives the
+//     first-contact and last-contact events promptly. FREE blobs survive only
+//     one extra matrix_find_blobs() cycle before being recycled, so any delay
+//     would cause the host to miss the removal notification.
+//
+// send_now() is called once after the full loop to flush all blobs in a single
+// USB transaction instead of one per blob.
 void usb_midi_transmit_blobs(void) {
-  uint8_t blob_values[10] = {0};
+  static uint32_t usbTransmitTimeStamp = 0;
+
+  bool force_send = false;
+  for (lnode_t* node_ptr = ITERATOR_START_FROM_HEAD(&llist_blobs); node_ptr != NULL; node_ptr = ITERATOR_NEXT(node_ptr)) {
+    blob_t* blob_ptr = (blob_t*)ITERATOR_DATA(node_ptr);
+    if (blob_ptr->status == NEW || blob_ptr->status == FREE) {
+      force_send = true;
+      break;
+    }
+  }
+  if (!force_send && millis() - usbTransmitTimeStamp < MATRIX_MIDI_THROTTLE_MS) return;
+  usbTransmitTimeStamp = millis();
+
+  uint8_t blob_msg[B_COUNT] = {0};
   for (lnode_t* node_ptr = ITERATOR_START_FROM_HEAD(&llist_blobs); node_ptr != NULL; node_ptr = ITERATOR_NEXT(node_ptr)) {
     blob_t* blob_ptr = (blob_t*)ITERATOR_DATA(node_ptr);
 
-    blob_values[0] = blob_ptr->UID;
+    blob_msg[B_STATUS]      = (uint8_t)blob_ptr->status;
+    blob_msg[B_LAST_STATUS] = (uint8_t)blob_ptr->last_status;
+
+    blob_msg[B_UID] = blob_ptr->UID;
 
     uint8_t whole_part = (uint8_t)blob_ptr->centroid.x;
-    blob_values[1] = whole_part;
-    blob_values[2] = (uint8_t)((blob_ptr->centroid.x - whole_part) * 100); // Fractional part
+    blob_msg[B_X_WHOLE] = whole_part;
+    blob_msg[B_X_FRAC]  = (uint8_t)((blob_ptr->centroid.x - whole_part) * 100);
 
     whole_part = (uint8_t)blob_ptr->centroid.y;
-    blob_values[3] = whole_part;
-    blob_values[4] = (uint8_t)((blob_ptr->centroid.y - whole_part) * 100); // Fractional part
+    blob_msg[B_Y_WHOLE] = whole_part;
+    blob_msg[B_Y_FRAC]  = (uint8_t)((blob_ptr->centroid.y - whole_part) * 100);
 
-    blob_values[5] = blob_ptr->box.w;
-    blob_values[6] = blob_ptr->box.h;
-    blob_values[7] = blob_ptr->centroid.z;
+    blob_msg[B_WIDTH]  = blob_ptr->box.w;
+    blob_msg[B_HEIGHT] = blob_ptr->box.h;
+    blob_msg[B_DEPTH]  = blob_ptr->centroid.z;
 
-    blob_values[8] = (uint8_t)blob_ptr->status;
-    blob_values[9] = (uint8_t)blob_ptr->last_status;
+    blob_msg[B_VELOCITY_XY] = (uint8_t)constrain((int)(blob_ptr->velocity.xy * 127.0f / VELOCITY_ATTACK_Z_MAX), 0, 127);
+    blob_msg[B_VELOCITY_Z]  = (uint8_t)constrain(64 + (int)(blob_ptr->velocity.z * 64.0f / VELOCITY_ATTACK_Z_MAX), 0, 127);
+    blob_msg[B_ATTACK_Z]    = (uint8_t)constrain((int)(blob_ptr->velocity.attack_z * 127.0f / VELOCITY_ATTACK_Z_MAX), 0, 127);
+    blob_msg[B_ATTACK_DONE] = blob_ptr->velocity.attack_done ? 1 : 0;
 
-    usbMIDI.sendSysEx(10, blob_values, false);
-    usbMIDI.send_now();
+    usbMIDI.sendSysEx(B_COUNT, blob_msg, false);
   };
-  while (usbMIDI.read()); // Read and discard any incoming MIDI messages
+  usbMIDI.send_now(); // flush all blob messages in one USB transaction
+  while (usbMIDI.read());
 };
 
-// Send mappings MIDI messages to the host application
+// Forward all pending outbound MIDI messages from llist_midi_out to the USB host.
+// Called in MAPPING / PLAY / THROUGH modes to deliver note-on/off, CC, etc.
 void usb_midi_transmit_mappings_midi_msg(void) {
   for (lnode_t* midi_node_ptr = ITERATOR_START_FROM_HEAD(&llist_midi_out); midi_node_ptr != NULL; midi_node_ptr = ITERATOR_NEXT(midi_node_ptr)) {
     midi_msg_t* midi_msg_ptr = (midi_msg_t*)ITERATOR_DATA(midi_node_ptr);
     usbMIDI.send((uint8_t)midi_msg_ptr->type, midi_msg_ptr->data1, midi_msg_ptr->data2, midi_msg_ptr->channel, 0);
   }
-  while (usbMIDI.read()); // Read and discard any incoming MIDI messages
+  while (usbMIDI.read());
 };
 
-// Send verbosity codes to the host application
+// Send a Program Change on `channel` to report a mode acknowledgement or error
+// code back to the host. Used by usb_read_program_change() after every mode switch.
 void usb_midi_send_info(uint8_t program, uint8_t channel) {
   usbMIDI.sendProgramChange(program, channel);
   usbMIDI.send_now();
   while (usbMIDI.read());
 };
 
+// Store an incoming Note On from the USB host.
+// In THROUGH_MODE the message is forwarded directly to the hardware MIDI output.
 void usb_read_note_on(uint8_t channel, uint8_t note, uint8_t velocity) {
   midi_msg_t* midi_msg_ptr = (midi_msg_t*)llist_pop_front(&llist_midi_nodes_pool);
   if (midi_msg_ptr != NULL) {
@@ -121,6 +162,8 @@ void usb_read_note_on(uint8_t channel, uint8_t note, uint8_t velocity) {
   }
 };
 
+// Store an incoming Note Off from the USB host.
+// In THROUGH_MODE the message is forwarded directly to the hardware MIDI output.
 void usb_read_note_off(uint8_t channel, uint8_t note, uint8_t velocity) {
   midi_msg_t* midi_msg_ptr = (midi_msg_t*)llist_pop_front(&llist_midi_nodes_pool);
   if (midi_msg_ptr != NULL) {
@@ -134,6 +177,9 @@ void usb_read_note_off(uint8_t channel, uint8_t note, uint8_t velocity) {
   }
 };
 
+// Handle an incoming Control Change from the USB host.
+// MIDI_LEVELS_CHANNEL is reserved for live level adjustments (threshold, gain…);
+// all other channels are forwarded in THROUGH_MODE.
 void usb_read_control_change(uint8_t channel, uint8_t control, uint8_t value) {
   if (channel == MIDI_LEVELS_CHANNEL) {
     set_level((level_code_t)control, value);
@@ -151,6 +197,8 @@ void usb_read_control_change(uint8_t channel, uint8_t control, uint8_t value) {
   }
 };
 
+// Store an incoming Polyphonic Aftertouch from the USB host.
+// In THROUGH_MODE the message is forwarded to the hardware MIDI output.
 void usb_read_after_touch_poly(uint8_t channel, uint8_t note, uint8_t pressure) {
   midi_msg_t* midi_msg_ptr = (midi_msg_t*)llist_pop_front(&llist_midi_nodes_pool);
   if (midi_msg_ptr != NULL) {
@@ -164,6 +212,9 @@ void usb_read_after_touch_poly(uint8_t channel, uint8_t note, uint8_t pressure) 
   }
 };
 
+// Store an incoming Pitch Bend from the USB host.
+// The 14-bit value is split into LSB (data1) and MSB (data2).
+// In THROUGH_MODE the message is forwarded to the hardware MIDI output.
 void usb_read_pitch_bend(uint8_t channel, int pitch) {
   midi_msg_t* midi_msg_ptr = (midi_msg_t*)llist_pop_front(&llist_midi_nodes_pool);
   if (midi_msg_ptr != NULL) {
@@ -177,6 +228,9 @@ void usb_read_pitch_bend(uint8_t channel, int pitch) {
   }
 };
 
+// Dispatch mode-change commands received as Program Change messages on
+// MIDI_MODES_CHANNEL. Each case switches the firmware operating mode and
+// sends an acknowledgement back to the host via MIDI_VERBOSITY_CHANNEL.
 void usb_read_program_change(uint8_t channel, uint8_t program) {
   if (channel == MIDI_MODES_CHANNEL) {
     switch (program) {
@@ -270,16 +324,18 @@ void usb_read_program_change(uint8_t channel, uint8_t program) {
   }
 };
 
-// Load mappings config via MIDI system exclusive message
-// As MIDI buffer is limited to (USB_MIDI_SYSEX_MAX) we must register the data in chunks!
-// Recive: [ SYSEX_BEGIN, SYSEX_DEVICE_ID, SYSEX_SIZE_MSB, SYSEX_SIZE_LSB, SYSEX_END ] 
-// Send: USBMIDI_CONFIG_ALLOC_DONE
-// Recive: [ SYSEX_BEGIN, SYSEX_DEVICE_ID, SYSEX_DATA, SYSEX_END ]
-// Send: USBMIDI_CONFIG_LOAD_DONE
-
-// TODO: add set_levels to the system-exclusive communication line
-// set_levels((level_code_t)control, value);
-
+// Receive a JSON config uploaded by the host as a chunked SysEx stream.
+//
+// The upload protocol is two-phase:
+//   1. ALLOCATE: host sends [ 0xF0, DEVICE_ID, SIZE_MSB, SIZE_LSB, 0xF7 ]
+//                firmware allocates a buffer and replies ALLOCATE_DONE.
+//   2. UPLOAD:   host sends data in one or more chunks of up to USB_MIDI_SYSEX_MAX bytes.
+//                - Single chunk:  strip 2-byte header + 1-byte footer, reply UPLOAD_DONE.
+//                - First chunk:   strip 2-byte header, advance pointer.
+//                - Middle chunks: copy verbatim, advance pointer.
+//                - Last chunk:    strip 1-byte footer, reply UPLOAD_DONE.
+//
+// TODO: add set_levels to the system-exclusive communication line.
 void usb_read_system_exclusive(const uint8_t *data_ptr, uint16_t sysEx_chunk_size, bool complete) {
   static uint8_t *sysEx_chunk_ptr = NULL;
   static uint16_t sysEx_last_chunk_size = 0;
@@ -299,7 +355,7 @@ void usb_read_system_exclusive(const uint8_t *data_ptr, uint16_t sysEx_chunk_siz
     sysEx_chunk_ptr = sysEx_data_ptr = (uint8_t *)allocate(sysEx_data_ptr, sysEx_data_length + 1);
     sysEx_chunks = (uint8_t)((sysEx_data_length + 3) / USB_MIDI_SYSEX_MAX); // +3 adding heder & footer size
     sysEx_last_chunk_size = (sysEx_data_length + 3) % USB_MIDI_SYSEX_MAX; // +3 adding heder & footer size
-    
+
     if (sysEx_last_chunk_size != 0) sysEx_chunks++;
 
     usb_midi_send_info((uint8_t)ALLOCATE_DONE, MIDI_VERBOSITY_CHANNEL);

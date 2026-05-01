@@ -8,6 +8,24 @@
 
 llist_t llist_mappings;
 
+// Sends the deferred NoteOn once attack_done is true.
+// touch_1d_t / touch_2d_t / touch_3d_t all have press as their first member,
+// so a touch_1d_t* cast is safe for accessing the press axis regardless of TUI type.
+#if defined(VELOCITY)
+static void mapping_flush_pending_note_on(blob_t* blob_ptr) {
+  if (!blob_ptr->action.note_on_pending || !blob_ptr->velocity.attack_done) return;
+  if (blob_ptr->action.touch_ptr == NULL) return;
+  axis_t* axis_ptr = &((touch_1d_t*)blob_ptr->action.touch_ptr)->press;
+  float scaled = blob_ptr->velocity.attack_z / (float)VELOCITY_ATTACK_Z_MAX;
+  axis_ptr->msg.data2 = (uint8_t)constrain(
+    (int)(scaled * (axis_ptr->limit.max - axis_ptr->limit.min) + axis_ptr->limit.min),
+    axis_ptr->limit.min, axis_ptr->limit.max
+  );
+  llist_push_front(&llist_midi_out, &axis_ptr->msg);
+  blob_ptr->action.note_on_pending = false;
+}
+#endif
+
 void mapping_lib_update(void) {
 
   for (lnode_t* mapping_node_ptr = ITERATOR_START_FROM_HEAD(&llist_mappings); mapping_node_ptr != NULL; mapping_node_ptr = ITERATOR_NEXT(mapping_node_ptr)) {
@@ -28,6 +46,9 @@ void mapping_lib_update(void) {
             mapping_ptr->start_func_ptr(blob_ptr);
           }
           else if (blob_ptr->status == PRESENT) {
+#if defined(VELOCITY)
+            mapping_flush_pending_note_on(blob_ptr); // send deferred NoteOn once attack peak is captured
+#endif
             mapping_ptr->continue_func_ptr(blob_ptr);
           }
           else if (blob_ptr->status == RELEASED && blob_ptr->last_status == MISSING) {
@@ -51,11 +72,18 @@ void mapping_lib_update(void) {
   }
 };
 
+// Called from every TUI _start when press mode == NoteOn.
+// When VELOCITY is defined: arms the deferred NoteOn (actual send happens in
+// mapping_flush_pending_note_on, called from the PRESENT branch of the dispatcher).
+// When VELOCITY is not defined: sends immediately using centroid.z as velocity.
 void mapping_send_midi_note_on(axis_t* axis_ptr, blob_t* blob_ptr) {
   axis_ptr->msg.type = NoteOn;
-  //axis_ptr->msg.data2 = blob_ptr->centroid.z; // TODO: velocity sensing  
-  axis_ptr->msg.data2 = 127;
+#if defined(VELOCITY)
+  blob_ptr->action.note_on_pending = true; // flushed by mapping_flush_pending_note_on()
+#else
+  axis_ptr->msg.data2 = (uint8_t)map(blob_ptr->centroid.z, Z_MIN, Z_MAX, axis_ptr->limit.min, axis_ptr->limit.max);
   llist_push_front(&llist_midi_out, &axis_ptr->msg);
+#endif
 };
 
 void mapping_send_midi_note_off(axis_t* axis_ptr) {
