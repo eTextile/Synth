@@ -110,9 +110,9 @@ void mapping_grid_stop(blob_t* blob_ptr) {
   }
 };
 
-bool mapping_grid_midi_receive(void* mapping_ptr, midi_msg_t* midi_msg_ptr) {
+bool mapping_grid_hardware_midi_receive(void* mapping_ptr, midi_msg_t* midi_msg_ptr) {
   mapp_grid_t* grid_ptr = (mapp_grid_t*)mapping_ptr;
-  if (midi_msg_ptr->channel == grid_ptr->params.receive_chan) {
+  if (midi_msg_ptr->channel == grid_ptr->params.input_chan) {
     return true;
   }
   return false;
@@ -120,7 +120,7 @@ bool mapping_grid_midi_receive(void* mapping_ptr, midi_msg_t* midi_msg_ptr) {
 
 // IN PROGRESS!
 // Populates the MIDI grid layout with the incoming MIDI notes/chord coming from a regular MIDI keyboard plugged in the e256 HARDWARE_MIDI_INPUT
-void mapping_grid_midi_update(void* mapping_ptr, midi_msg_t* midi_msg_ptr) {
+void mapping_grid_hardware_midi_update(void* mapping_ptr, midi_msg_t* midi_msg_ptr) {
   mapp_grid_t* grid_ptr = (mapp_grid_t*)mapping_ptr;
   llist_push_front(&grid_ptr->llist_active_midi_msg, midi_msg_ptr);
   grid_ptr->active_midi_msg_count++;
@@ -135,7 +135,7 @@ void mapping_grid_midi_update(void* mapping_ptr, midi_msg_t* midi_msg_ptr) {
   }
 };
 
-void mapping_grid_midi_dispose(void* mapping_ptr, midi_msg_t* midi_msg_ptr) {
+void mapping_grid_hardware_midi_dispose(void* mapping_ptr, midi_msg_t* midi_msg_ptr) {
   mapp_grid_t* grid_ptr = (mapp_grid_t*)mapping_ptr;
   grid_ptr->active_midi_msg_count--;
   if (grid_ptr->active_midi_msg_count == 0) {  // Save/rescue all llist nodes
@@ -150,9 +150,9 @@ void mapping_grid_create(const JsonObject &config) {
 
   mapp_grid_t* grid_ptr = (mapp_grid_t*)llist_pop_front(&llist_grids_pool);
 
-  grid_ptr->common.midi_receive_func_ptr = &mapping_grid_midi_receive; // TESTING!
-  grid_ptr->common.midi_update_func_ptr = &mapping_grid_midi_update; // TESTING!
-  grid_ptr->common.midi_dispose_func_ptr = &mapping_grid_midi_dispose; // TESTING!
+  grid_ptr->common.midi_hardware_receive_func_ptr = &mapping_grid_hardware_midi_receive; // TESTING!
+  grid_ptr->common.midi_hardware_update_func_ptr = &mapping_grid_hardware_midi_update; // TESTING!
+  grid_ptr->common.midi_hardware_dispose_func_ptr = &mapping_grid_hardware_midi_dispose; // TESTING!
 
   grid_ptr->common.is_blob_inside_func_ptr = &mapping_grid_is_blob_inside;
   grid_ptr->common.blob_assign_func_ptr = &mapping_grid_assign_blob;
@@ -170,7 +170,7 @@ void mapping_grid_create(const JsonObject &config) {
   grid_ptr->params.cols = config["cols"].as<uint8_t>();
   grid_ptr->params.rows = config["rows"].as<uint8_t>();
   grid_ptr->params.press = config["press"].as<MidiType>();
-  grid_ptr->params.receive_chan = config["receive"].as<uint8_t>();
+  grid_ptr->params.input_chan = config["input_chan"].as<uint8_t>();
   
   grid_ptr->params.keys = grid_ptr->params.cols * grid_ptr->params.rows;
 

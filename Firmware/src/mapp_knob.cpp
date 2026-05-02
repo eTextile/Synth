@@ -151,9 +151,9 @@ void mapping_knob_stop(blob_t* blob_ptr) {
   }
 };
 
-bool mapping_knob_midi_receive(void* mapping_ptr, midi_msg_t* midi_msg_ptr) {
+bool mapping_knob_hardware_midi_receive(void* mapping_ptr, midi_msg_t* midi_msg_ptr) {
   mapp_knob_t* knob_ptr = (mapp_knob_t*)mapping_ptr;
-  if (midi_msg_ptr->channel == knob_ptr->params.receive_chan) {
+  if (midi_msg_ptr->channel == knob_ptr->params.input_chan) {
     return true;
   }
   return false;
@@ -161,14 +161,14 @@ bool mapping_knob_midi_receive(void* mapping_ptr, midi_msg_t* midi_msg_ptr) {
 
 // IN PROGRESS!
 // Populates the MIDI grid layout with the incoming MIDI notes/chord coming from a regular MIDI keyboard plugged in the e256 HARDWARE_MIDI_INPUT
-void mapping_knob_midi_update(void* mapping_ptr, midi_msg_t* midi_msg_ptr) {
+void mapping_knob_hardware_midi_update(void* mapping_ptr, midi_msg_t* midi_msg_ptr) {
   mapp_knob_t* knob_ptr = (mapp_knob_t*)mapping_ptr;
   llist_push_front(&knob_ptr->llist_active_midi_msg, midi_msg_ptr);
   knob_ptr->active_midi_msg_count++;
   //...
 };
 
-void mapping_knob_midi_dispose(void* mapping_ptr, midi_msg_t* midi_msg_ptr) {
+void mapping_knob_hardware_midi_dispose(void* mapping_ptr, midi_msg_t* midi_msg_ptr) {
   mapp_knob_t* knob_ptr = (mapp_knob_t*)mapping_ptr;
   knob_ptr->active_midi_msg_count--;
   if (knob_ptr->active_midi_msg_count == 0) {  // Save/rescue all llist nodes
@@ -183,9 +183,9 @@ void mapping_knob_create(const JsonObject &config) {
 
   mapp_knob_t* knob_ptr = (mapp_knob_t*)llist_pop_front(&llist_knobs_pool);
 
-  knob_ptr->common.midi_receive_func_ptr = &mapping_knob_midi_receive;   // TESTING!
-  knob_ptr->common.midi_update_func_ptr = &mapping_knob_midi_update;   // TESTING!
-  knob_ptr->common.midi_dispose_func_ptr = &mapping_knob_midi_dispose; // TESTING!
+  knob_ptr->common.midi_hardware_receive_func_ptr = &mapping_knob_hardware_midi_receive;   // TESTING!
+  knob_ptr->common.midi_hardware_update_func_ptr = &mapping_knob_hardware_midi_update;   // TESTING!
+  knob_ptr->common.midi_hardware_dispose_func_ptr = &mapping_knob_hardware_midi_dispose; // TESTING!
 
   knob_ptr->common.is_blob_inside_func_ptr = &mapping_knob_is_blob_inside;
   knob_ptr->common.blob_assign_func_ptr = &mapping_knob_assign_blob;
@@ -202,7 +202,7 @@ void mapping_knob_create(const JsonObject &config) {
   knob_ptr->params.rect.to.y = config["to"][1].as<float>();
   knob_ptr->params.offset = config["offset"].as<uint8_t>();
   knob_ptr->params.press = config["press"].as<MidiType>();
-  knob_ptr->params.receive_chan = config["receive"].as<uint8_t>();
+  knob_ptr->params.input_chan = config["input_chan"].as<uint8_t>();
 
   if (knob_ptr->params.touchs < MAX_KNOB_TOUCHS) {
 

@@ -84,19 +84,15 @@ void mapping_slider_start(blob_t* blob_ptr) {
     touch_ptr->press.msg.data1 = slider_ptr->params.step_note[step_idx];
   }
 
-  switch (slider_ptr->params.press) {
-    case NoteOn:
+  if (slider_ptr->params.press == NoteOn) {
+    if (slider_ptr->params.move == MOVE_ROL) {
+      touch_ptr->press.msg.type = NoteOn;
+      blob_ptr->action.note_on_xy_pending = true; // flushed by mapping_flush_pending_note_on_xy()
+    } else {
       mapping_send_midi_note_on(&touch_ptr->press, blob_ptr);
-      break;
-    case ControlChange:
-      mapping_send_midi_msg_press(&touch_ptr->press, blob_ptr);
-      break;
-    case AfterTouchPoly:
-      mapping_send_midi_msg_press(&touch_ptr->press, blob_ptr);
-      break;
-    default:
-      // Not handled in mapping_slider
-      break;
+    }
+  } else {
+    mapping_send_midi_msg_press(&touch_ptr->press, blob_ptr);
   }
 };
 
@@ -124,7 +120,7 @@ void mapping_slider_continue(blob_t* blob_ptr) {
       slider_ptr->note_off_msgs[touch_idx].data2 = 0;
       llist_push_front(&llist_midi_out, &slider_ptr->note_off_msgs[touch_idx]);
       touch_ptr->press.msg.data1 = new_note;
-      mapping_send_midi_note_on(&touch_ptr->press, blob_ptr);
+      mapping_send_midi_note_on_xy(&touch_ptr->press, blob_ptr);
     }
   }
   else {
@@ -148,16 +144,16 @@ void mapping_slider_stop(blob_t* blob_ptr) {
   }
 };
 
-bool mapping_slider_midi_receive(void* mapping_ptr, midi_msg_t* midi_msg_ptr) {
+bool mapping_slider_hardware_midi_receive(void* mapping_ptr, midi_msg_t* midi_msg_ptr) {
   mapp_slider_t* slider_ptr = (mapp_slider_t*)mapping_ptr;
-  if (midi_msg_ptr->channel == slider_ptr->params.receive_chan) {
+  if (midi_msg_ptr->channel == slider_ptr->params.input_chan) {
     return true;
   }
   return false;
 };
 
 // Populates the MIDI slider layout with the incoming MIDI notes/chord coming from a regular MIDI keyboard plugged in the e256 HARDWARE_MIDI_INPUT
-void mapping_slider_midi_update(void* mapping_ptr, midi_msg_t* midi_msg_ptr) {
+void mapping_slider_hardware_midi_update(void* mapping_ptr, midi_msg_t* midi_msg_ptr) {
   mapp_slider_t* slider_ptr = (mapp_slider_t*)mapping_ptr;
   llist_push_front(&slider_ptr->llist_active_midi_msg, midi_msg_ptr);
   slider_ptr->active_midi_msg_count++;
@@ -170,13 +166,12 @@ void mapping_slider_midi_update(void* mapping_ptr, midi_msg_t* midi_msg_ptr) {
     case POPULATE_OFF:
       break;
 
-    case POPULATE_AS_PLAYED: {
+    case POPULATE_AS_PLAYED:
       uint8_t zone = (slider_ptr->active_midi_msg_count - 1) % steps;
       slider_ptr->params.step_note[zone] = midi_msg_ptr->data1;
       break;
-    }
 
-    case POPULATE_UP: {
+    case POPULATE_UP:
       uint8_t notes[MAX_SLIDER_STEPS] = {0};
       uint8_t count = 0;
       for (lnode_t* node = ITERATOR_START_FROM_HEAD(&slider_ptr->llist_active_midi_msg);
@@ -193,9 +188,8 @@ void mapping_slider_midi_update(void* mapping_ptr, midi_msg_t* midi_msg_ptr) {
         slider_ptr->params.step_note[i] = notes[i];
       }
       break;
-    }
 
-    case POPULATE_DOWN: {
+    case POPULATE_DOWN:
       uint8_t notes[MAX_SLIDER_STEPS] = {0};
       uint8_t count = 0;
       for (lnode_t* node = ITERATOR_START_FROM_HEAD(&slider_ptr->llist_active_midi_msg);
@@ -212,17 +206,15 @@ void mapping_slider_midi_update(void* mapping_ptr, midi_msg_t* midi_msg_ptr) {
         slider_ptr->params.step_note[i] = notes[i];
       }
       break;
-    }
 
-    case POPULATE_OCTAVE: {
+    case POPULATE_OCTAVE:
       uint8_t base = midi_msg_ptr->data1;
       for (uint8_t i = 0; i < steps; i++) {
         slider_ptr->params.step_note[i] = base + i;
       }
       break;
-    }
 
-    case POPULATE_PING_PONG: {
+    case POPULATE_PING_PONG:
       if (steps > 1) {
         uint8_t period = 2 * (steps - 1);
         uint8_t pos = (slider_ptr->active_midi_msg_count - 1) % period;
@@ -230,11 +222,10 @@ void mapping_slider_midi_update(void* mapping_ptr, midi_msg_t* midi_msg_ptr) {
         slider_ptr->params.step_note[zone] = midi_msg_ptr->data1;
       }
       break;
-    }
   }
 };
 
-void mapping_slider_midi_dispose(void* mapping_ptr, midi_msg_t* midi_msg_ptr) {
+void mapping_slider_hardware_midi_dispose(void* mapping_ptr, midi_msg_t* midi_msg_ptr) {
   mapp_slider_t* slider_ptr = (mapp_slider_t*)mapping_ptr;
   slider_ptr->active_midi_msg_count--;
   if (slider_ptr->active_midi_msg_count == 0) {  // Save/rescue all llist nodes
@@ -249,9 +240,9 @@ void mapping_slider_create(const JsonObject &config) {
   
   mapp_slider_t* slider_ptr = (mapp_slider_t*)llist_pop_front(&llist_sliders_pool);
 
-  slider_ptr->common.midi_receive_func_ptr = &mapping_slider_midi_receive;   // TESTING!
-  slider_ptr->common.midi_update_func_ptr = &mapping_slider_midi_update;   // TESTING!
-  slider_ptr->common.midi_dispose_func_ptr = &mapping_slider_midi_dispose; // TESTING!
+  slider_ptr->common.midi_hardware_receive_func_ptr = &mapping_slider_hardware_midi_receive;
+  slider_ptr->common.midi_hardware_update_func_ptr = &mapping_slider_hardware_midi_update;
+  slider_ptr->common.midi_hardware_dispose_func_ptr = &mapping_slider_hardware_midi_dispose;
 
   slider_ptr->common.is_blob_inside_func_ptr = &mapping_slider_is_blob_inside;
   slider_ptr->common.blob_assign_func_ptr = &mapping_slider_assign_blob;
@@ -270,13 +261,14 @@ void mapping_slider_create(const JsonObject &config) {
   slider_ptr->params.move = config["move"].as<move_t>();
   slider_ptr->params.populate = config["populate"].as<populate_t>();
   slider_ptr->params.steps = config["steps"].as<uint8_t>();
-  slider_ptr->params.receive_chan = config["receive"].as<uint8_t>();
+  slider_ptr->params.input_chan = config["input_chan"].as<uint8_t>();
+  
   for (uint8_t i = 0; i < MAX_SLIDER_STEPS; i++) {
     slider_ptr->params.step_note[i] = 60 + i;
   }
   if (slider_ptr->params.touchs < MAX_SLIDER_TOUCHS) {
-
     midi_status_t status;
+
     for (uint8_t i = 0; i<slider_ptr->params.touchs; i++) {
 
       midi_msg_status_unpack(config["msg"][i]["pos"]["midi"]["status"].as<uint8_t>(), &status);

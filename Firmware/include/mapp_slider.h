@@ -19,7 +19,7 @@ struct slider_s {
   populate_t populate;
   uint8_t steps;
   uint8_t step_note[MAX_SLIDER_STEPS];
-  uint8_t receive_chan;
+  uint8_t input_chan;
 };
 
 bool mapping_sliders_alloc(uint8_t sliders_cnt);
