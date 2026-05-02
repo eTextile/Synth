@@ -194,12 +194,12 @@ void mapping_slider_hardware_midi_update(void* mapping_ptr, midi_msg_t* midi_msg
     case POPULATE_OFF:
       break;
 
-    case POPULATE_AS_PLAYED:
+    case POPULATE_AS_PLAYED: {
       uint8_t zone = (slider_ptr->active_midi_msg_count - 1) % steps;
       slider_ptr->params.step_note[zone] = midi_msg_ptr->data1;
       break;
-
-    case POPULATE_UP:
+    }
+    case POPULATE_UP: {
       uint8_t notes[MAX_SLIDER_STEPS] = {0};
       uint8_t count = 0;
       for (lnode_t* node = ITERATOR_START_FROM_HEAD(&slider_ptr->llist_active_midi_msg);
@@ -216,8 +216,8 @@ void mapping_slider_hardware_midi_update(void* mapping_ptr, midi_msg_t* midi_msg
         slider_ptr->params.step_note[i] = notes[i];
       }
       break;
-
-    case POPULATE_DOWN:
+    }
+    case POPULATE_DOWN: {
       uint8_t notes[MAX_SLIDER_STEPS] = {0};
       uint8_t count = 0;
       for (lnode_t* node = ITERATOR_START_FROM_HEAD(&slider_ptr->llist_active_midi_msg);
@@ -234,13 +234,14 @@ void mapping_slider_hardware_midi_update(void* mapping_ptr, midi_msg_t* midi_msg
         slider_ptr->params.step_note[i] = notes[i];
       }
       break;
-
-    case POPULATE_OCTAVE:
+    }
+    case POPULATE_OCTAVE: {
       uint8_t base = midi_msg_ptr->data1;
       for (uint8_t i = 0; i < steps; i++) {
         slider_ptr->params.step_note[i] = base + i;
       }
       break;
+    }
 
     case POPULATE_PING_PONG:
       if (steps > 1) {
