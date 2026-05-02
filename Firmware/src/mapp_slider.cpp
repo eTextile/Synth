@@ -21,6 +21,9 @@ static mapp_slider_t mapp_sliders[MAX_SLIDERS];
 
 llist_t llist_sliders_pool;
 
+// Initialises the slider pool with sliders_cnt nodes carved from the static array.
+// Must be called once at boot before any mapping_slider_create() calls.
+// Returns false if sliders_cnt exceeds MAX_SLIDERS.
 bool mapping_sliders_alloc(uint8_t sliders_cnt) {
   if (sliders_cnt < MAX_SLIDERS) {
     llist_builder(&llist_sliders_pool, &mapp_sliders[0], sliders_cnt, sizeof(mapp_sliders[0]));
@@ -29,6 +32,7 @@ bool mapping_sliders_alloc(uint8_t sliders_cnt) {
   return false;
 };
 
+// Returns true if the blob centroid falls strictly inside the slider bounding rectangle.
 bool mapping_slider_is_blob_inside(void* mapping_ptr, blob_t* blob_ptr) {
   mapp_slider_t* slider_ptr = (mapp_slider_t*)mapping_ptr;
 
@@ -41,12 +45,15 @@ bool mapping_slider_is_blob_inside(void* mapping_ptr, blob_t* blob_ptr) {
   return false;
 };
 
+// Claims the next free touch slot for this blob.
+// touch_index advances sequentially; resets to 0 when all touches are released.
+// Returns false when all configured touch slots are already occupied.
 bool mapping_slider_assign_blob(void* mapping_ptr, blob_t* blob_ptr) {
   mapp_slider_t* slider_ptr = (mapp_slider_t*)mapping_ptr;
 
   if (slider_ptr->touch_index < slider_ptr->params.touchs) {
     blob_ptr->action.mapping_ptr = slider_ptr;
-    blob_ptr->action.touch_ptr = &slider_ptr->params.touch[slider_ptr->touch_index];    
+    blob_ptr->action.touch_ptr = &slider_ptr->params.touch[slider_ptr->touch_index];
     slider_ptr->touch_index++;
     slider_ptr->active_blob_count++;
     return true;
@@ -54,6 +61,9 @@ bool mapping_slider_assign_blob(void* mapping_ptr, blob_t* blob_ptr) {
   return false;
 };
 
+// Releases a blob from its touch slot and decrements the active count.
+// Resets touch_index to 0 once the last active touch lifts so the next
+// incoming blob starts from slot 0 again.
 void mapping_slider_dispose_blob(void* mapping_ptr, blob_t* blob_ptr) {
   mapp_slider_t* slider_ptr = (mapp_slider_t*)mapping_ptr;
 
@@ -65,6 +75,10 @@ void mapping_slider_dispose_blob(void* mapping_ptr, blob_t* blob_ptr) {
   }
 };
 
+// Called on the first frame a blob is detected inside the slider (status == NEW).
+// For MOVE_ROL: maps the initial touch position to a step index, sets the note,
+// and defers the NoteOn until the xy velocity sample is ready (note_on_xy_pending).
+// For other press types: fires the MIDI press message immediately.
 void mapping_slider_start(blob_t* blob_ptr) {
   mapp_slider_t* slider_ptr = (mapp_slider_t*)blob_ptr->action.mapping_ptr;
   touch_2d_t* touch_ptr = (touch_2d_t*)blob_ptr->action.touch_ptr;
@@ -96,6 +110,10 @@ void mapping_slider_start(blob_t* blob_ptr) {
   }
 };
 
+// Called every frame while the blob remains inside the slider (status == PRESENT).
+// For MOVE_ROL: sends NoteOff/NoteOn pairs when the finger crosses a step boundary.
+// For other move modes: streams continuous position (CC/aftertouch) along the
+// slider axis (X for HORIZONTAL, Y for VERTICAL) plus optional pressure.
 void mapping_slider_continue(blob_t* blob_ptr) {
   mapp_slider_t* slider_ptr = (mapp_slider_t*)blob_ptr->action.mapping_ptr;
   touch_2d_t* touch_ptr = (touch_2d_t*)blob_ptr->action.touch_ptr;
@@ -136,6 +154,8 @@ void mapping_slider_continue(blob_t* blob_ptr) {
   }
 };
 
+// Called when the blob leaves the slider or is lost (status == RELEASED).
+// Sends NoteOff for NoteOn press mode; other press types tail off naturally.
 void mapping_slider_stop(blob_t* blob_ptr) {
   mapp_slider_t* slider_ptr = (mapp_slider_t*)blob_ptr->action.mapping_ptr;
   touch_2d_t* touch_ptr = (touch_2d_t*)blob_ptr->action.touch_ptr;
@@ -144,6 +164,8 @@ void mapping_slider_stop(blob_t* blob_ptr) {
   }
 };
 
+// Returns true if the incoming hardware MIDI message is on the slider's input channel,
+// qualifying it for step-note population via mapping_slider_hardware_midi_update().
 bool mapping_slider_hardware_midi_receive(void* mapping_ptr, midi_msg_t* midi_msg_ptr) {
   mapp_slider_t* slider_ptr = (mapp_slider_t*)mapping_ptr;
   if (midi_msg_ptr->channel == slider_ptr->params.input_chan) {
@@ -152,7 +174,13 @@ bool mapping_slider_hardware_midi_receive(void* mapping_ptr, midi_msg_t* midi_ms
   return false;
 };
 
-// Populates the MIDI slider layout with the incoming MIDI notes/chord coming from a regular MIDI keyboard plugged in the e256 HARDWARE_MIDI_INPUT
+// Populates the slider's step_note table from a hardware MIDI NoteOn received on input_chan.
+// Each populate mode distributes the incoming notes differently across the step array:
+//   POPULATE_AS_PLAYED  — fills steps in arrival order (wraps around).
+//   POPULATE_UP         — re-sorts all held notes ascending after each new arrival.
+//   POPULATE_DOWN       — re-sorts all held notes descending after each new arrival.
+//   POPULATE_OCTAVE     — fills steps with a chromatic run starting from the received note.
+//   POPULATE_PING_PONG  — bounces the fill position back and forth across the step range.
 void mapping_slider_hardware_midi_update(void* mapping_ptr, midi_msg_t* midi_msg_ptr) {
   mapp_slider_t* slider_ptr = (mapp_slider_t*)mapping_ptr;
   llist_push_front(&slider_ptr->llist_active_midi_msg, midi_msg_ptr);
@@ -225,6 +253,9 @@ void mapping_slider_hardware_midi_update(void* mapping_ptr, midi_msg_t* midi_msg
   }
 };
 
+// Called when a hardware MIDI NoteOff is received for a previously tracked note.
+// Decrements the active count; when all notes are released the active message list
+// is drained and its nodes returned to the shared MIDI pool for reuse.
 void mapping_slider_hardware_midi_dispose(void* mapping_ptr, midi_msg_t* midi_msg_ptr) {
   mapp_slider_t* slider_ptr = (mapp_slider_t*)mapping_ptr;
   slider_ptr->active_midi_msg_count--;
@@ -236,8 +267,12 @@ void mapping_slider_hardware_midi_dispose(void* mapping_ptr, midi_msg_t* midi_ms
   }
 };
 
+// Deserialises one slider entry from the JSON config, wires all function pointers,
+// and appends the fully configured slider to llist_mappings.
+// dir (VERTICAL / HORIZONTAL) is inferred from the bounding-box aspect ratio.
+// step_note[] is pre-filled with a chromatic run starting at MIDI note 60.
 void mapping_slider_create(const JsonObject &config) {
-  
+
   mapp_slider_t* slider_ptr = (mapp_slider_t*)llist_pop_front(&llist_sliders_pool);
 
   slider_ptr->common.midi_hardware_receive_func_ptr = &mapping_slider_hardware_midi_receive;
@@ -262,7 +297,7 @@ void mapping_slider_create(const JsonObject &config) {
   slider_ptr->params.populate = config["populate"].as<populate_t>();
   slider_ptr->params.steps = config["steps"].as<uint8_t>();
   slider_ptr->params.input_chan = config["input_chan"].as<uint8_t>();
-  
+
   for (uint8_t i = 0; i < MAX_SLIDER_STEPS; i++) {
     slider_ptr->params.step_note[i] = 60 + i;
   }

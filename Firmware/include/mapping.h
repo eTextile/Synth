@@ -72,9 +72,9 @@ extern llist_t llist_mappings;
 
 typedef struct common_s common_t;
 
-typedef bool midi_hardware_receive_func_ptr(void*, midi_msg_t*);  // TESTING!
-typedef void midi_hardware_update_func_t(void*, midi_msg_t*);  // TESTING!
-typedef void midi_hardware_dispose_func_t(void*, midi_msg_t*); // TESTING!
+typedef bool midi_hardware_receive_func_t(void*, midi_msg_t*);
+typedef void midi_hardware_update_func_t(void*, midi_msg_t*);
+typedef void midi_hardware_dispose_func_t(void*, midi_msg_t*);
 
 typedef bool is_blob_inside_func_t(void*, blob_t*);
 typedef bool blob_assign_func_t(void*, blob_t*);
@@ -86,7 +86,7 @@ typedef void stop_func_t(blob_t*);
 
 struct common_s {
   
-  midi_hardware_receive_func_ptr* midi_hardware_receive_func_ptr;
+  midi_hardware_receive_func_t* midi_hardware_receive_func_ptr;
   midi_hardware_update_func_t* midi_hardware_update_func_ptr;
   midi_hardware_dispose_func_t* midi_hardware_dispose_func_ptr;
 

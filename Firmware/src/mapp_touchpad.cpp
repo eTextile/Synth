@@ -137,9 +137,9 @@ void mapping_touchpad_create(const JsonObject &config) {
 
   mapp_touchpad_t* touchpad_ptr = (mapp_touchpad_t*)llist_pop_front(&llist_touchpads_pool);
 
-  touchpad_ptr->common.midi_hardware_receive_func_ptr = &mapping_touchpad_hardware_midi_receive;   // TESTING!
-  touchpad_ptr->common.midi_hardware_update_func_ptr = &mapping_touchpad_hardware_midi_update;   // TESTING!
-  touchpad_ptr->common.midi_hardware_dispose_func_ptr = &mapping_touchpad_hardware_midi_dispose; // TESTING!
+  touchpad_ptr->common.midi_hardware_receive_func_ptr = &mapping_touchpad_hardware_midi_receive;  
+  touchpad_ptr->common.midi_hardware_update_func_ptr = &mapping_touchpad_hardware_midi_update;  
+  touchpad_ptr->common.midi_hardware_dispose_func_ptr = &mapping_touchpad_hardware_midi_dispose;
 
   touchpad_ptr->common.is_blob_inside_func_ptr = &mapping_touchpad_is_blob_inside;
   touchpad_ptr->common.blob_assign_func_ptr = &mapping_touchpad_assign_blob;

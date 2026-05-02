@@ -183,9 +183,9 @@ void mapping_knob_create(const JsonObject &config) {
 
   mapp_knob_t* knob_ptr = (mapp_knob_t*)llist_pop_front(&llist_knobs_pool);
 
-  knob_ptr->common.midi_hardware_receive_func_ptr = &mapping_knob_hardware_midi_receive;   // TESTING!
-  knob_ptr->common.midi_hardware_update_func_ptr = &mapping_knob_hardware_midi_update;   // TESTING!
-  knob_ptr->common.midi_hardware_dispose_func_ptr = &mapping_knob_hardware_midi_dispose; // TESTING!
+  knob_ptr->common.midi_hardware_receive_func_ptr = &mapping_knob_hardware_midi_receive;  
+  knob_ptr->common.midi_hardware_update_func_ptr = &mapping_knob_hardware_midi_update;  
+  knob_ptr->common.midi_hardware_dispose_func_ptr = &mapping_knob_hardware_midi_dispose;
 
   knob_ptr->common.is_blob_inside_func_ptr = &mapping_knob_is_blob_inside;
   knob_ptr->common.blob_assign_func_ptr = &mapping_knob_assign_blob;

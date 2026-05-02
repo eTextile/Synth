@@ -71,11 +71,6 @@ void mapping_lib_update(void) {
           else if (blob_ptr->status == RELEASED && blob_ptr->last_status == MISSING) {
             mapping_ptr->stop_func_ptr(blob_ptr);
           }
-          /*
-          else if (blob_ptr->status == FREE) {
-            // N/A
-          }
-          */
         }
       }
       else { // RELEASESING THE BLOB OUT OF THE MAPPING

@@ -161,9 +161,9 @@ void mapping_polygon_hardware_midi_dispose(void* mapping_ptr, midi_msg_t* midi_m
 void mapping_polygon_create(const JsonObject &config) {
   mapp_polygon_t* polygon_ptr = (mapp_polygon_t*)llist_pop_front(&llist_polygons_pool);
   
-  polygon_ptr->common.midi_hardware_receive_func_ptr = &mapping_polygon_hardware_midi_receive;   // TESTING!
-  polygon_ptr->common.midi_hardware_update_func_ptr = &mapping_polygon_hardware_midi_update;   // TESTING!
-  polygon_ptr->common.midi_hardware_dispose_func_ptr = &mapping_polygon_hardware_midi_dispose; // TESTING!
+  polygon_ptr->common.midi_hardware_receive_func_ptr = &mapping_polygon_hardware_midi_receive;  
+  polygon_ptr->common.midi_hardware_update_func_ptr = &mapping_polygon_hardware_midi_update;  
+  polygon_ptr->common.midi_hardware_dispose_func_ptr = &mapping_polygon_hardware_midi_dispose;
 
   polygon_ptr->common.is_blob_inside_func_ptr = &mapping_polygon_is_blob_inside;
   polygon_ptr->common.blob_assign_func_ptr = &mapping_polygon_assign_blob;

@@ -100,7 +100,7 @@ void loop() {
       break;
 
     case STANDALONE_MODE:
-      hardware_midi_receive(); // TESTING!
+      hardware_midi_receive();
       matrix_scan();
       matrix_interp();
       matrix_find_blobs();
