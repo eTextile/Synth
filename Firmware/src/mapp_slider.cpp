@@ -76,8 +76,9 @@ void mapping_slider_dispose_blob(void* mapping_ptr, blob_t* blob_ptr) {
 };
 
 // Called on the first frame a blob is detected inside the slider (status == NEW).
-// For MOVE_ROL: maps the initial touch position to a step index and sets data1.
-// For NoteOn press: defers via z-attack velocity (mapping_send_midi_note_on handles pending).
+// For MOVE_ROL + NoteOn: defers via xy velocity — fires once lateral movement is detected
+//   so the velocity reflects actual slide speed (not a stationary press artifact).
+// For non-ROL NoteOn: defers via z-attack velocity (mapping_send_midi_note_on handles pending).
 // For other press types: fires the MIDI press message immediately.
 void mapping_slider_start(blob_t* blob_ptr) {
   mapp_slider_t* slider_ptr = (mapp_slider_t*)blob_ptr->action.mapping_ptr;
@@ -99,7 +100,12 @@ void mapping_slider_start(blob_t* blob_ptr) {
   }
 
   if (slider_ptr->params.press == NoteOn) {
-    mapping_send_midi_note_on(&touch_ptr->press, blob_ptr);
+    if (slider_ptr->params.move == MOVE_ROL) {
+      touch_ptr->press.msg.type = NoteOn;
+      blob_ptr->action.note_on_xy_pending = true;
+    } else {
+      mapping_send_midi_note_on(&touch_ptr->press, blob_ptr);
+    }
   } else {
     mapping_send_midi_msg_press(&touch_ptr->press, blob_ptr);
   }
@@ -128,7 +134,7 @@ void mapping_slider_continue(blob_t* blob_ptr) {
     step_idx = constrain(step_idx, 0, slider_ptr->params.steps - 1);
     uint8_t new_note = slider_ptr->params.step_note[step_idx];
     if (new_note != touch_ptr->press.msg.data1) {
-      if (blob_ptr->action.note_on_z_pending) {
+      if (blob_ptr->action.note_on_z_pending || blob_ptr->action.note_on_xy_pending) {
         touch_ptr->press.msg.data1 = new_note; // retarget deferred NoteOn, no NoteOff to send yet
       } else {
         uint8_t touch_idx = (uint8_t)(touch_ptr - slider_ptr->params.touch);
@@ -162,8 +168,9 @@ void mapping_slider_stop(blob_t* blob_ptr) {
   mapp_slider_t* slider_ptr = (mapp_slider_t*)blob_ptr->action.mapping_ptr;
   touch_2d_t* touch_ptr = (touch_2d_t*)blob_ptr->action.touch_ptr;
   if (slider_ptr->params.press == NoteOn) {
-    if (blob_ptr->action.note_on_z_pending) {
+    if (blob_ptr->action.note_on_z_pending || blob_ptr->action.note_on_xy_pending) {
       blob_ptr->action.note_on_z_pending = false;
+      blob_ptr->action.note_on_xy_pending = false;
     } else {
       mapping_send_midi_note_off(&touch_ptr->press);
     }

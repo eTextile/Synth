@@ -25,18 +25,19 @@ static void mapping_flush_pending_note_on(blob_t* blob_ptr) {
   blob_ptr->action.note_on_z_pending = false;
 }
 
-// Sends the deferred NoteOn for ROL sliders once the first xy velocity sample is ready
-// (xy_time_stamp advances past born_at on the first PRESENT frame, i.e. ~1ms after NEW).
+// Sends the deferred NoteOn for ROL sliders using lateral slide velocity.
+// Waits until velocity.xy > 0 (finger is actually sliding) so the velocity=0 case
+// from a stationary press doesn't produce a NoteOff-disguised NoteOn.
+// Falls back after VELOCITY_ATTACK_MAX_MS so a stationary press still triggers a note.
 static void mapping_flush_pending_note_on_xy(blob_t* blob_ptr) {
   if (!blob_ptr->action.note_on_xy_pending) return;
   if (blob_ptr->action.touch_ptr == NULL) return;
-  if (blob_ptr->velocity.xy_time_stamp == blob_ptr->velocity.born_at) return; // no sample yet
+  uint32_t age = millis() - blob_ptr->velocity.born_at;
+  if (blob_ptr->velocity.xy < 1.0f && age < VELOCITY_ATTACK_MAX_MS) return;
   axis_t* axis_ptr = &((touch_1d_t*)blob_ptr->action.touch_ptr)->press;
   float scaled = blob_ptr->velocity.xy / (float)VELOCITY_XY_MAX;
-  axis_ptr->msg.data2 = (uint8_t)constrain(
-    (int)(scaled * (axis_ptr->limit.max - axis_ptr->limit.min) + axis_ptr->limit.min),
-    axis_ptr->limit.min, axis_ptr->limit.max
-  );
+  int val = (int)(scaled * (axis_ptr->limit.max - axis_ptr->limit.min) + axis_ptr->limit.min);
+  axis_ptr->msg.data2 = (uint8_t)constrain(max(val, 1), axis_ptr->limit.min, axis_ptr->limit.max);
   llist_push_front(&llist_midi_out, &axis_ptr->msg);
   blob_ptr->action.note_on_xy_pending = false;
 }
