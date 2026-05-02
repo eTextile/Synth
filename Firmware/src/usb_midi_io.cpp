@@ -119,7 +119,7 @@ void usb_midi_transmit_blobs(void) {
     blob_msg[B_DEPTH]  = blob_ptr->centroid.z;
 
     blob_msg[B_VELOCITY_XY] = (uint8_t)constrain((int)(blob_ptr->velocity.xy * 127.0f / VELOCITY_XY_MAX), 0, 127);
-    blob_msg[B_VELOCITY_Z]  = (uint8_t)constrain(64 + (int)(blob_ptr->velocity.z * 64.0f / VELOCITY_ATTACK_Z_MAX), 0, 127);
+    blob_msg[B_VELOCITY_Z]  = (uint8_t)constrain(64 + (int)(blob_ptr->velocity.z * 64.0f / VELOCITY_Z_DISPLAY_MAX), 0, 127);
     blob_msg[B_ATTACK_Z]    = (uint8_t)constrain((int)(blob_ptr->velocity.attack_z * 127.0f / VELOCITY_ATTACK_Z_MAX), 0, 127);
     blob_msg[B_ATTACK_DONE] = blob_ptr->velocity.attack_done ? 1 : 0;
 
