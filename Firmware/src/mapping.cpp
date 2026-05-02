@@ -11,9 +11,9 @@ llist_t llist_mappings;
 // Sends the deferred NoteOn once attack_done is true.
 // touch_1d_t / touch_2d_t / touch_3d_t all have press as their first member,
 // so a touch_1d_t* cast is safe for accessing the press axis regardless of TUI type.
-#if defined(VELOCITY)
+#if defined(BLOB_VELOCITY)
 static void mapping_flush_pending_note_on(blob_t* blob_ptr) {
-  if (!blob_ptr->action.note_on_pending || !blob_ptr->velocity.attack_done) return;
+  if (!blob_ptr->action.note_on_z_pending || !blob_ptr->velocity.attack_done) return;
   if (blob_ptr->action.touch_ptr == NULL) return;
   axis_t* axis_ptr = &((touch_1d_t*)blob_ptr->action.touch_ptr)->press;
   float scaled = blob_ptr->velocity.attack_z / (float)VELOCITY_ATTACK_Z_MAX;
@@ -22,7 +22,23 @@ static void mapping_flush_pending_note_on(blob_t* blob_ptr) {
     axis_ptr->limit.min, axis_ptr->limit.max
   );
   llist_push_front(&llist_midi_out, &axis_ptr->msg);
-  blob_ptr->action.note_on_pending = false;
+  blob_ptr->action.note_on_z_pending = false;
+}
+
+// Sends the deferred NoteOn for ROL sliders once the first xy velocity sample is ready
+// (xy_time_stamp advances past born_at on the first PRESENT frame, i.e. ~1ms after NEW).
+static void mapping_flush_pending_note_on_xy(blob_t* blob_ptr) {
+  if (!blob_ptr->action.note_on_xy_pending) return;
+  if (blob_ptr->action.touch_ptr == NULL) return;
+  if (blob_ptr->velocity.xy_time_stamp == blob_ptr->velocity.born_at) return; // no sample yet
+  axis_t* axis_ptr = &((touch_1d_t*)blob_ptr->action.touch_ptr)->press;
+  float scaled = blob_ptr->velocity.xy / (float)VELOCITY_XY_MAX;
+  axis_ptr->msg.data2 = (uint8_t)constrain(
+    (int)(scaled * (axis_ptr->limit.max - axis_ptr->limit.min) + axis_ptr->limit.min),
+    axis_ptr->limit.min, axis_ptr->limit.max
+  );
+  llist_push_front(&llist_midi_out, &axis_ptr->msg);
+  blob_ptr->action.note_on_xy_pending = false;
 }
 #endif
 
@@ -46,9 +62,10 @@ void mapping_lib_update(void) {
             mapping_ptr->start_func_ptr(blob_ptr);
           }
           else if (blob_ptr->status == PRESENT) {
-#if defined(VELOCITY)
-            mapping_flush_pending_note_on(blob_ptr); // send deferred NoteOn once attack peak is captured
-#endif
+            #if defined(BLOB_VELOCITY)
+            mapping_flush_pending_note_on(blob_ptr);
+            mapping_flush_pending_note_on_xy(blob_ptr);
+            #endif
             mapping_ptr->continue_func_ptr(blob_ptr);
           }
           else if (blob_ptr->status == RELEASED && blob_ptr->last_status == MISSING) {
@@ -73,17 +90,30 @@ void mapping_lib_update(void) {
 };
 
 // Called from every TUI _start when press mode == NoteOn.
-// When VELOCITY is defined: arms the deferred NoteOn (actual send happens in
+// When BLOB_VELOCITY is defined: arms the deferred NoteOn (actual send happens in
 // mapping_flush_pending_note_on, called from the PRESENT branch of the dispatcher).
-// When VELOCITY is not defined: sends immediately using centroid.z as velocity.
+// When BLOB_VELOCITY is not defined: sends immediately using centroid.z as velocity.
 void mapping_send_midi_note_on(axis_t* axis_ptr, blob_t* blob_ptr) {
   axis_ptr->msg.type = NoteOn;
-#if defined(VELOCITY)
-  blob_ptr->action.note_on_pending = true; // flushed by mapping_flush_pending_note_on()
+#if defined(BLOB_VELOCITY)
+  blob_ptr->action.note_on_z_pending = true; // flushed by mapping_flush_pending_note_on()
 #else
   axis_ptr->msg.data2 = (uint8_t)map(blob_ptr->centroid.z, Z_MIN, Z_MAX, axis_ptr->limit.min, axis_ptr->limit.max);
   llist_push_front(&llist_midi_out, &axis_ptr->msg);
 #endif
+};
+
+// For MOVE_ROL sliders: velocity comes from lateral sliding speed, not Z attack.
+// Sends immediately — no deferred attack window needed for a rolling gesture.
+void mapping_send_midi_note_on_xy(axis_t* axis_ptr, blob_t* blob_ptr) {
+  axis_ptr->msg.type = NoteOn;
+  float scaled = blob_ptr->velocity.xy / (float)VELOCITY_XY_MAX;
+  axis_ptr->msg.data2 = (uint8_t)constrain(
+    (int)(scaled * (axis_ptr->limit.max - axis_ptr->limit.min) + axis_ptr->limit.min),
+    axis_ptr->limit.min, axis_ptr->limit.max
+  );
+  llist_push_front(&llist_midi_out, &axis_ptr->msg);
+  blob_ptr->action.note_on_xy_pending = false; // cancel deferred NoteOn if step changed first
 };
 
 void mapping_send_midi_note_off(axis_t* axis_ptr) {

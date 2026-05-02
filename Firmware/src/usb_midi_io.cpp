@@ -15,7 +15,7 @@
 
 #include "hardware_midi_io.h"
 
-uint32_t bootTime = 0;
+uint32_t boot_time = 0;
 size_t sysEx_data_length = 0;
 uint8_t* sysEx_data_ptr = NULL;
 
@@ -118,7 +118,7 @@ void usb_midi_transmit_blobs(void) {
     blob_msg[B_HEIGHT] = blob_ptr->box.h;
     blob_msg[B_DEPTH]  = blob_ptr->centroid.z;
 
-    blob_msg[B_VELOCITY_XY] = (uint8_t)constrain((int)(blob_ptr->velocity.xy * 127.0f / VELOCITY_ATTACK_Z_MAX), 0, 127);
+    blob_msg[B_VELOCITY_XY] = (uint8_t)constrain((int)(blob_ptr->velocity.xy * 127.0f / VELOCITY_XY_MAX), 0, 127);
     blob_msg[B_VELOCITY_Z]  = (uint8_t)constrain(64 + (int)(blob_ptr->velocity.z * 64.0f / VELOCITY_ATTACK_Z_MAX), 0, 127);
     blob_msg[B_ATTACK_Z]    = (uint8_t)constrain((int)(blob_ptr->velocity.attack_z * 127.0f / VELOCITY_ATTACK_Z_MAX), 0, 127);
     blob_msg[B_ATTACK_DONE] = blob_ptr->velocity.attack_done ? 1 : 0;
@@ -178,10 +178,10 @@ void usb_read_note_off(uint8_t channel, uint8_t note, uint8_t velocity) {
 };
 
 // Handle an incoming Control Change from the USB host.
-// MIDI_LEVELS_CHANNEL is reserved for live level adjustments (threshold, gain…);
+// MIDI_CCS_CHANNEL is reserved for live level adjustments (threshold, gain…);
 // all other channels are forwarded in THROUGH_MODE.
 void usb_read_control_change(uint8_t channel, uint8_t control, uint8_t value) {
-  if (channel == MIDI_LEVELS_CHANNEL) {
+  if (channel == MIDI_CCS_CHANNEL) {
     set_level((level_code_t)control, value);
     return;
   }
@@ -335,7 +335,6 @@ void usb_read_program_change(uint8_t channel, uint8_t program) {
 //                - Middle chunks: copy verbatim, advance pointer.
 //                - Last chunk:    strip 1-byte footer, reply UPLOAD_DONE.
 //
-// TODO: add set_levels to the system-exclusive communication line.
 void usb_read_system_exclusive(const uint8_t *data_ptr, uint16_t sysEx_chunk_size, bool complete) {
   static uint8_t *sysEx_chunk_ptr = NULL;
   static uint16_t sysEx_last_chunk_size = 0;

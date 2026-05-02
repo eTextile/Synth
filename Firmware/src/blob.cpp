@@ -27,13 +27,12 @@ blob_t blob_array[MAX_BLOBS] = {0};    // Store blobs
 llist_t llist_context_pool;            // Context nodes pool
 llist_t llist_context;                 // Context nodes linked list
 llist_t llist_blobs_pool;              // Blobs nodes pool
-llist_t blobs_to_keep;                 // Tmp 
+llist_t blobs_to_keep;                 // Swap buffer used during frame recycling
 llist_t llist_blobs;                   // Blobs nodes linked list
-//llist_t llist_previous_blobs;
 
 void blob_setup(void) {
-  llist_builder(&llist_context_pool, &lifo_array[0], LIFO_NODES, sizeof(lifo_array[0])); // Add X nodes to the llist_context_pool
-  llist_builder(&llist_blobs_pool, &blob_array[0], MAX_BLOBS, sizeof(blob_array[0])); // Add X nodes to the llist_blobs_pool
+  llist_builder(&llist_context_pool, &lifo_array[0], LIFO_NODES, sizeof(lifo_array[0]));
+  llist_builder(&llist_blobs_pool, &blob_array[0], MAX_BLOBS, sizeof(blob_array[0]));
   llist_raz(&llist_context);
   llist_raz(&blobs_to_keep);
   llist_raz(&llist_blobs);
@@ -48,6 +47,7 @@ void blob_setup(void) {
   };
 };
 
+// Monotonically increasing UID — wraps at 256 but blobs are short-lived.
 inline uint8_t set_id(void) {
   static uint8_t UID = 0;
   return UID++;
@@ -60,6 +60,10 @@ void matrix_find_blobs(void) {
 
   blob_t* tmp_blob_ptr = NULL;
 
+  // ---- Frame recycling ----
+  // FREE blobs are released to the pool (their mapping slot is freed first).
+  // All others carry their last status forward and start this frame as MISSING;
+  // any blob the scanner finds again will be promoted back to PRESENT (or NEW).
   while ((tmp_blob_ptr = (blob_t*)llist_pop_front(&llist_blobs)) != NULL) {
     if (tmp_blob_ptr->status == FREE) {
       common_t* blob_mapping_ptr = (common_t*)tmp_blob_ptr->action.mapping_ptr;
@@ -77,7 +81,10 @@ void matrix_find_blobs(void) {
   memset(&bitmap_array[0], 0, SIZEOF_FRAME);
 
   uint8_t blob_count = 0;
-  
+
+  // ---- SFF seed scan ----
+  // Strided outer loop (X_STRIDE, Y_STRIDE) for speed: each unvisited above-threshold
+  // pixel seeds a full flood-fill that marks all connected pixels in the bitmap.
   for (uint8_t posY = 0; posY < NEW_ROWS; posY += Y_STRIDE) {
 
     uint8_t* row_ptr_a = COMPUTE_IMAGE_ROW_PTR(&interp_frame, posY);
@@ -100,6 +107,9 @@ void matrix_find_blobs(void) {
         float blob_cx = 0;
         float blob_cy = 0;
 
+        // while_A: iterates over horizontal scanlines of the blob.
+        // Each iteration processes one row: expands left/right, accumulates centroid,
+        // then pushes neighbours above/below onto the context stack for while_B.
         while (1) { // while_A
           uint8_t left = posX;
           uint8_t right = posX;
@@ -107,6 +117,7 @@ void matrix_find_blobs(void) {
           uint8_t* row_ptr_b = COMPUTE_IMAGE_ROW_PTR(&interp_frame, posY);
           uint8_t* bmp_row_ptr_b = &bitmap_array[0] + posY * NEW_COLS;
 
+          // Expand the current run as far left and right as connected threshold pixels allow.
           while ((left > 0) &&
                  !IMAGE_GET_PIXEL_FAST(bmp_row_ptr_b, left - 1) &&
                  PIXEL_THRESHOLD(IMAGE_GET_PIXEL_FAST(row_ptr_b, left - 1), e256_ctr.levels[THRESHOLD].val)) {
@@ -121,11 +132,14 @@ void matrix_find_blobs(void) {
           blob_x1 = MIN(blob_x1, left);
           blob_x2 = MAX(blob_x2, right);
 
+          // Mark visited and track peak depth (maximum sensor value = deepest press).
           for (int i = left; i <= right; i++) {
             IMAGE_SET_PIXEL_FAST(bmp_row_ptr_b, i, 1);
             blob_depth = MAX(blob_depth, IMAGE_GET_PIXEL_FAST(row_ptr_b, i));
           };
 
+          // Weighted centroid accumulation: sum of column indices over the run.
+          // sum = left + (left+1) + ... + right = (right*(right+1) - left*(left-1)) / 2
           float sum = ((right * (right + 1)) - (left * (left - 1))) / 2;
 
           uint8_t pixels = right - left + 1;
@@ -138,6 +152,9 @@ void matrix_find_blobs(void) {
 
           bool break_out = false;
 
+          // while_B: iterative context stack replaces recursion.
+          // Searches for unvisited connected pixels in the row above (top) and below (bot),
+          // saves current state to the stack, then jumps to the neighbour row.
           while (1) { // while_B
 
             if (posY > 0) {
@@ -150,6 +167,7 @@ void matrix_find_blobs(void) {
                 if ((!IMAGE_GET_PIXEL_FAST(bmp_row_ptr_b, i))
                     && (PIXEL_THRESHOLD(IMAGE_GET_PIXEL_FAST(row_ptr_b, i), e256_ctr.levels[THRESHOLD].val))) {
 
+                  // Save state and jump up one row to process the new seed.
                   xylr_t* context = (xylr_t*)llist_pop_front(&llist_context_pool);
                   context->x = posX;
                   context->y = posY;
@@ -177,7 +195,8 @@ void matrix_find_blobs(void) {
 
               if (!IMAGE_GET_PIXEL_FAST(bmp_row_ptr_b, i) &&
                   PIXEL_THRESHOLD(IMAGE_GET_PIXEL_FAST(row_ptr_b, i), e256_ctr.levels[THRESHOLD].val)) {
-                
+
+                // Save state and jump down one row to process the new seed.
                 xylr_t* context = (xylr_t*)llist_pop_front(&llist_context_pool);
                 context->x = posX;
                 context->y = posY;
@@ -196,11 +215,13 @@ void matrix_find_blobs(void) {
             if (!recurse) {
               break;
             };
+            // Stack empty: blob is fully explored.
             if (llist_context.head_ptr == NULL) {
               break_out = true;
               break;
             };
 
+            // Pop and restore saved state to continue where we left off.
             xylr_t* context = (xylr_t*)llist_pop_front(&llist_context);
             posX = context->x;
             posY = context->y;
@@ -217,37 +238,52 @@ void matrix_find_blobs(void) {
           };
         }; // END while_A
 
+        // ---- Blob classification ----
+        // Discard blobs outside the pixel-count range (noise or entire-palm touches).
         if (blob_pixels > BLOB_MIN_PIX && blob_pixels < BLOB_MAX_PIX && blob_count < MAX_BLOBS) {
           blob_t* undefined_blob_ptr = (blob_t*)llist_pop_front(&llist_blobs_pool);
           if (undefined_blob_ptr) {
 
+          // Weighted centroid: divide accumulated sums by total pixel count.
           undefined_blob_ptr->centroid.x = (blob_cx / blob_pixels);
           undefined_blob_ptr->centroid.y = (blob_cy / blob_pixels);
 
-          // Is blob in the list ?
+          // Check if this blob matches one already tracked (proximity test).
           blob_t* blob_ptr = (blob_t*)llist_find_node(&llist_blobs, undefined_blob_ptr, (llist_compare_func_t*)&is_blob_existing);
-          
-          // We need to update the blob status
+
+          // ---- Status state machine ----
           if (blob_ptr) {
+            // Known blob found again — promote it out of MISSING.
             if (blob_ptr->last_status == MISSING) {
+              // Blob reappeared within the grace window: treat as continuous contact.
               if ((millis() - blob_ptr->life_time_stamp) < BLOB_MISSING_TIME) {
                 blob_ptr->status = PRESENT;
-                //Serial.printf("\nD_STATUS: %s\tLAST_STATUS: %s", get_blob_status_name(blob_ptr->status), get_blob_status_name(blob_ptr->last_status));
+                #if defined(USB_MIDI_SERIAL) && defined(DEBUG_BLOBS_STATUS)
+                Serial.printf("\nD_STATUS: %s\tLAST_STATUS: %s", get_blob_status_name(blob_ptr->status), get_blob_status_name(blob_ptr->last_status));
+                #endif
               }
             }
             else {
               if (blob_ptr->last_status == PRESENT) {
-                blob_ptr->status = PRESENT; // MISSING?
-                //Serial.printf("\nF_STATUS: %s\tLAST_STATUS: %s", get_blob_status_name(blob_ptr->status), get_blob_status_name(blob_ptr->last_status));
+                blob_ptr->status = PRESENT;
+                #if defined(USB_MIDI_SERIAL) && defined(DEBUG_BLOBS_STATUS)
+                Serial.printf("\nF_STATUS: %s\tLAST_STATUS: %s", get_blob_status_name(blob_ptr->status), get_blob_status_name(blob_ptr->last_status));
+                #endif
               }
               else {
                 if (blob_ptr->last_status == RELEASED) {
-                  blob_ptr->status = NEW; // it still have it's mapping associate
-                  //Serial.printf("\nG_STATUS: %s\tLAST_STATUS: %s", get_blob_status_name(blob_ptr->status), get_blob_status_name(blob_ptr->last_status));
+                  // Finger lifted then touched again quickly: reuse the same blob node
+                  // so the mapping association (touch slot, note) is preserved.
+                  blob_ptr->status = NEW;
+                  #if defined(USB_MIDI_SERIAL) && defined(DEBUG_BLOBS_STATUS)
+                  Serial.printf("\nG_STATUS: %s\tLAST_STATUS: %s", get_blob_status_name(blob_ptr->status), get_blob_status_name(blob_ptr->last_status));
+                  #endif
                 }
                 else {
                   blob_ptr->status = PRESENT;
-                  //Serial.printf("\nH_STATUS: %s\tLAST_STATUS: %s", get_blob_status_name(blob_ptr->status), get_blob_status_name(blob_ptr->last_status));
+                  #if defined(USB_MIDI_SERIAL) && defined(DEBUG_BLOBS_STATUS)
+                  Serial.printf("\nH_STATUS: %s\tLAST_STATUS: %s", get_blob_status_name(blob_ptr->status), get_blob_status_name(blob_ptr->last_status));
+                  #endif
                 }
               }
             }
@@ -258,22 +294,16 @@ void matrix_find_blobs(void) {
             blob_ptr->box.w = (blob_x2 - blob_x1);
             blob_ptr->box.h = blob_height;
 
-            //Serial.printf("\nBLOB_FOUND_POS: X:%f Y:%f Z:%d", blob_ptr->centroid.x, blob_ptr->centroid.y, blob_ptr->centroid.z);
-
-            blob_ptr->life_time_stamp = millis(); // RAZ
+            blob_ptr->life_time_stamp = millis();
 
             llist_push_back(&llist_blobs_pool, undefined_blob_ptr);
           }
           else {
+            // New blob: assign a fresh UID and push to the active list.
             blob_count++;
             undefined_blob_ptr->UID = set_id();
             undefined_blob_ptr->last_status = FREE;
             undefined_blob_ptr->status = NEW;
-
-            //Serial.printf("\nI_STATUS: %s\tLAST_STATUS: %s", get_blob_status_name(undefined_blob_ptr->status), get_blob_status_name(undefined_blob_ptr->last_status));
-
-            //undefined_blob_ptr->action.touch_ptr = NULL;
-            //undefined_blob_ptr->action.mapping_ptr = NULL;
 
             undefined_blob_ptr->centroid.z = min(blob_depth, 127);
             undefined_blob_ptr->box.w = (blob_x2 - blob_x1);
@@ -291,14 +321,17 @@ void matrix_find_blobs(void) {
     }
   }
 
-  // At last we test the blobs that have disappeared but which are still in the list
+  // ---- Lost blob timeout ----
+  // Blobs still MISSING after the scan have not been seen this frame.
+  // Two-stage expiry: MISSING → RELEASED (grace window) → FREE (fully expired).
+  // RELEASED gives the MIDI layer one last chance to send NoteOff before the slot is recycled.
   blob_t* lost_blob_ptr = NULL;
 
   while ((lost_blob_ptr = (blob_t*)llist_pop_front(&llist_blobs)) != NULL) {
     if (lost_blob_ptr->status == MISSING) {
       uint32_t blob_life_time = (millis() - lost_blob_ptr->life_time_stamp);
       if (blob_life_time < BLOB_MISSING_TIME) {
-        //lost_blob_ptr->status = MISSING; // NOT NEAD!
+        // Still within grace window — keep as MISSING.
       }
       else {
         if (blob_life_time < BLOB_RELEASE_TIME) {
@@ -317,7 +350,7 @@ void matrix_find_blobs(void) {
   runing_median();
   #endif
 
-  // ---- Velocity & attack tracking (compiled only when VELOCITY is defined) ----
+  // ---- Velocity & attack tracking (compiled only when BLOB_VELOCITY is defined) ----
   //
   // Two quantities are computed per blob each frame:
   //   velocity.xy  — smoothed lateral speed (Euclidean, units/s)
@@ -326,7 +359,7 @@ void matrix_find_blobs(void) {
   // Both are filtered with an EMA (α = VELOCITY_EMA_ALPHA) to suppress sensor noise.
   //
   // Attack detection avoids a fixed-time NoteOn delay:
-  //   1. On first contact (NEW), attack_z is zeroed and note_on_pending is raised.
+  //   1. On first contact (NEW), attack_z is zeroed and note_on_z_pending is raised.
   //   2. While pressing, attack_z tracks the running peak of |velocity.z|.
   //   3. attack_done is set as soon as |velocity.z| drops below
   //      VELOCITY_ATTACK_DROP × peak  AND  at least VELOCITY_ATTACK_MIN_MS have elapsed.
@@ -338,50 +371,59 @@ void matrix_find_blobs(void) {
   //   A fixed window adds a constant latency on every note. With peak-drop, a sharp
   //   percussive tap closes the window in ~5-15 ms; a slow press may take longer but
   //   the perceptible latency is lower because the sound starts with the finger movement.
-  #if defined(VELOCITY)
+  #if defined(BLOB_VELOCITY)
   for (lnode_t* node_ptr = ITERATOR_START_FROM_HEAD(&llist_blobs); node_ptr != NULL; node_ptr = ITERATOR_NEXT(node_ptr)) {
     blob_t* blob_ptr = (blob_t*)ITERATOR_DATA(node_ptr);
     uint32_t now = millis();
 
     if (blob_ptr->status == NEW) {
-      // First detection: arm the attack window and freeze last_centroid as reference.
-      blob_ptr->velocity.time_stamp = now;
-      blob_ptr->velocity.born_at = now;
-      blob_ptr->last_centroid = blob_ptr->centroid;
-      blob_ptr->velocity.xy = 0.0f;
-      blob_ptr->velocity.z = 0.0f;
-      blob_ptr->velocity.attack_z = 0.0f;
-      blob_ptr->velocity.attack_done = false;
-      blob_ptr->action.note_on_pending = false; // mapping _start sets it to true only for NoteOn mode
+      // First detection: arm the attack window and freeze references.
+      blob_ptr->velocity.time_stamp    = now;
+      blob_ptr->velocity.xy_time_stamp = now;
+      blob_ptr->velocity.born_at       = now;
+      blob_ptr->velocity.xy_last_x     = blob_ptr->centroid.x;
+      blob_ptr->velocity.xy_last_y     = blob_ptr->centroid.y;
+      blob_ptr->last_centroid          = blob_ptr->centroid;
+      blob_ptr->velocity.xy            = 0.0f;
+      blob_ptr->velocity.z             = 0.0f;
+      blob_ptr->velocity.attack_z      = 0.0f;
+      blob_ptr->velocity.attack_done   = false;
+      blob_ptr->action.note_on_z_pending  = false;
+      blob_ptr->action.note_on_xy_pending = false;
     }
     else if (blob_ptr->status == PRESENT) {
+
+      // XY velocity: updated every frame (min 1ms) for responsive ROL slider velocity.
+      uint32_t dt_xy = now - blob_ptr->velocity.xy_time_stamp;
+      if (dt_xy >= 1) {
+        float dt_s = dt_xy * 0.001f;
+        float vx = blob_ptr->centroid.x - blob_ptr->velocity.xy_last_x;
+        float vy = blob_ptr->centroid.y - blob_ptr->velocity.xy_last_y;
+        float raw_vel_xy = sqrtf(vx * vx + vy * vy) / dt_s;
+        blob_ptr->velocity.xy = VELOCITY_EMA_ALPHA * raw_vel_xy + (1.0f - VELOCITY_EMA_ALPHA) * blob_ptr->velocity.xy;
+        blob_ptr->velocity.xy_last_x = blob_ptr->centroid.x;
+        blob_ptr->velocity.xy_last_y = blob_ptr->centroid.y;
+        blob_ptr->velocity.xy_time_stamp = now;
+      }
+
+      // Z velocity and attack: throttled to VELOCITY_MIN_INTERVAL_MS for stability.
       uint32_t dt = now - blob_ptr->velocity.time_stamp;
       if (dt >= VELOCITY_MIN_INTERVAL_MS) {
         float dt_s = dt * 0.001f;
-
-        // Raw instantaneous velocities (units/s).
-        float vx = blob_ptr->centroid.x - blob_ptr->last_centroid.x;
-        float vy = blob_ptr->centroid.y - blob_ptr->last_centroid.y;
-        float raw_vel_xy = sqrtf(vx * vx + vy * vy) / dt_s;
-        float raw_vel_z  = (float)((int16_t)blob_ptr->centroid.z - (int16_t)blob_ptr->last_centroid.z) / dt_s;
-
-        // EMA smoothing — reduces frame-to-frame sensor noise without a ring buffer.
-        blob_ptr->velocity.xy = VELOCITY_EMA_ALPHA * raw_vel_xy + (1.0f - VELOCITY_EMA_ALPHA) * blob_ptr->velocity.xy;
-        blob_ptr->velocity.z  = VELOCITY_EMA_ALPHA * raw_vel_z  + (1.0f - VELOCITY_EMA_ALPHA) * blob_ptr->velocity.z;
-
+        float raw_vel_z = (float)((int16_t)blob_ptr->centroid.z - (int16_t)blob_ptr->last_centroid.z) / dt_s;
+        blob_ptr->velocity.z = VELOCITY_EMA_ALPHA * raw_vel_z + (1.0f - VELOCITY_EMA_ALPHA) * blob_ptr->velocity.z;
         blob_ptr->last_centroid = blob_ptr->centroid;
         blob_ptr->velocity.time_stamp = now;
 
         if (!blob_ptr->velocity.attack_done) {
           float abs_vz = fabsf(blob_ptr->velocity.z);
           uint32_t age = now - blob_ptr->velocity.born_at;
-
           if (abs_vz > blob_ptr->velocity.attack_z) {
-            blob_ptr->velocity.attack_z = abs_vz; // still rising: update peak
+            blob_ptr->velocity.attack_z = abs_vz;
           } else if (age >= VELOCITY_ATTACK_MIN_MS && abs_vz < blob_ptr->velocity.attack_z * VELOCITY_ATTACK_DROP) {
-            blob_ptr->velocity.attack_done = true; // past the peak: impact is over
+            blob_ptr->velocity.attack_done = true;
           }
-          if (age >= VELOCITY_ATTACK_MAX_MS) blob_ptr->velocity.attack_done = true; // hard deadline
+          if (age >= VELOCITY_ATTACK_MAX_MS) blob_ptr->velocity.attack_done = true;
         }
       }
     }
@@ -407,17 +449,16 @@ void matrix_find_blobs(void) {
   #if defined(USB_MIDI_SERIAL) && defined(DEBUG_BLOBS)
   for (lnode_t* node_ptr = ITERATOR_START_FROM_HEAD(&llist_blobs); node_ptr != NULL; node_ptr = ITERATOR_NEXT(node_ptr)) {
     blob_t* blob_ptr = (blob_t*)ITERATOR_DATA(node_ptr);
-    //Serial.printf("\nDEBUG_BLOBS:%d\tS:%d\tX:%f\tY:%f\tZ:%d\tW:%d\tH:%d\tVXY:%f\tVZ:%f",
-    Serial.printf("\nDEBUG_BLOBS:%d\tS:%d\tX:%f\tY:%f\tZ:%d\tW:%d\tH:%d",
+    Serial.printf("\nDEBUG_BLOBS:%d\tS:%d\tX:%f\tY:%f\tZ:%d\tW:%d\tH:%d\tVXY:%f\tVZ:%f",
       blob_ptr->UID,
       blob_ptr->status,
       blob_ptr->centroid.x,
       blob_ptr->centroid.y,
       blob_ptr->centroid.z,
       blob_ptr->box.w,
-      blob_ptr->box.h
-      //blob_ptr->velocity.xy,
-      //blob_ptr->velocity.z
+      blob_ptr->box.h,
+      blob_ptr->velocity.xy,
+      blob_ptr->velocity.z
     );
   };
   #endif
@@ -429,6 +470,8 @@ void matrix_find_blobs(void) {
   #endif
 };
 
+// Two blobs match if their centroids are within BLOB_LAST_DIST pixels — used to
+// correlate detections across frames without requiring exact positional overlap.
 bool is_blob_existing(blob_t* blob_ptr, blob_t* undefined_blob_ptr) {
   float dist = sqrtf(pow(blob_ptr->centroid.x - undefined_blob_ptr->centroid.x, 2) + pow(blob_ptr->centroid.y - undefined_blob_ptr->centroid.y, 2));
   if (dist < BLOB_LAST_DIST) {

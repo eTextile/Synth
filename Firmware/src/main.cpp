@@ -42,7 +42,7 @@ void setup() {
     }
   }
   set_mode(PENDING_MODE);
-  bootTime = millis();
+  boot_time = millis();
 };
 
 void loop() {
@@ -54,7 +54,7 @@ void loop() {
 
     case PENDING_MODE:
       usb_midi_receive();
-      if ((millis() - bootTime) > PENDING_MODE_TIMEOUT) {
+      if ((millis() - boot_time) > PENDING_MODE_TIMEOUT) {
         set_mode(STANDALONE_MODE);
       }
       break;

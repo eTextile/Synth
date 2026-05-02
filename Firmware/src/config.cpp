@@ -42,7 +42,7 @@ const char* get_mode_name(mode_code_t code) {
     case SYNC_MODE: char_code = "SYNC_MODE"; break;
     case CALIBRATE_MODE: char_code = "CALIBRATE_MODE"; break;
     case MATRIX_RAW_MODE: char_code = "MATRIX_RAW_MODE"; break;
-    //case MATRIX_INTERP_MODE: TODO
+    case MATRIX_INTERP_MODE: char_code = "MATRIX_INTERP_MODE"; break;
     case MAPPING_MODE: char_code = "MAPPING_MODE"; break;
     case EDIT_MODE: char_code = "EDIT_MODE"; break;
     case THROUGH_MODE: char_code = "THROUGH_MODE"; break;
@@ -66,7 +66,7 @@ const char* get_verbosity_name(verbosity_code_t code) {
     case SYNC_MODE_DONE: char_code = "SYNC_MODE_DONE"; break;
     case CALIBRATE_MODE_DONE: char_code = "CALIBRATE_MODE_DONE"; break;
     case MATRIX_RAW_MODE_DONE: char_code = "MATRIX_RAW_MODE_DONE"; break;
-    //case MATRIX_INTERP_MODE: TODO
+    case MATRIX_INTERP_MODE_DONE: char_code = "MATRIX_INTERP_MODE_DONE"; break;
     case MAPPING_MODE_DONE: char_code = "MAPPING_MODE_DONE"; break;
     case EDIT_MODE_DONE: char_code = "EDIT_MODE_DONE"; break;
     case THROUGH_MODE_DONE: char_code = "THROUGH_MODE_DONE"; break;
@@ -310,6 +310,7 @@ inline bool read_encoder(level_code_t level) {
     else {
       e256_ctr.levels[(uint8_t)level].val = val;
       e256_ctr.levels[(uint8_t)level].leds.update = true;
+      usbMIDI.sendControlChange((uint8_t)level, val, MIDI_CCS_CHANNEL);
     }
     return true;
   }
@@ -330,6 +331,7 @@ inline void update_encoder() {
   }
   else if (millis() - level_time_stamp > LEVEL_TIMEOUT && level_toggle) {
     level_toggle = false;
+    e256_current_level = THRESHOLD;
     set_mode(e256_current_mode);
   }
 };

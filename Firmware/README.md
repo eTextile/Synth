@@ -174,7 +174,7 @@ ADC scan (16×16) → Bilinear interpolation (64×64) → Blob detection → Vel
 
 ### Velocity & Attack Detection
 
-Compiled in when `VELOCITY` is defined. Runs after blob tracking, once per frame.
+Compiled in when `BLOB_VELOCITY` is defined. Runs after blob tracking, once per frame.
 
 #### Continuous velocity (XY + Z)
 
@@ -192,7 +192,7 @@ Both are filtered with an **exponential moving average** (EMA, α = `VELOCITY_EM
 A fixed-delay approach would add a constant latency on every note — perceptible to musicians. Instead, the firmware uses **peak-drop detection**:
 
 ```
-NEW → arm window (attack_z = 0, note_on_pending = true)
+NEW → arm window (attack_z = 0, note_on_z_pending = true)
   ↓  each PRESENT frame:
   ├─ |velocity.z| rising  → update attack_z (running peak)
   ├─ |velocity.z| < peak × VELOCITY_ATTACK_DROP

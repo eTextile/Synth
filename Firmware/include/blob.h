@@ -100,12 +100,15 @@ struct box_s {
 
 typedef struct velocity_s velocity_t;
 struct velocity_s {
-  unsigned long time_stamp; // timestamp of last velocity update
-  unsigned long born_at;    // timestamp when blob was first detected (status == NEW)
-  float xy;                 // smoothed XY velocity (units/s)
-  float z;                  // smoothed Z velocity (units/s, signed: >0 pressing, <0 releasing)
-  float attack_z;           // peak |velocity.z| captured during the attack window
-  bool  attack_done;        // true once peak drop detected or VELOCITY_ATTACK_MAX_MS elapsed
+  unsigned long time_stamp;    // timestamp of last z velocity update (10ms interval)
+  unsigned long xy_time_stamp; // timestamp of last xy velocity update (1ms interval)
+  unsigned long born_at;       // timestamp when blob was first detected (status == NEW)
+  float xy_last_x;             // centroid.x at last xy velocity update
+  float xy_last_y;             // centroid.y at last xy velocity update
+  float xy;                    // smoothed XY velocity (units/s)
+  float z;                     // smoothed Z velocity (units/s, signed: >0 pressing, <0 releasing)
+  float attack_z;              // peak |velocity.z| captured during the attack window
+  bool  attack_done;           // true once peak drop detected or VELOCITY_ATTACK_MAX_MS elapsed
 };
 
 typedef enum status_code_e {
@@ -120,7 +123,8 @@ typedef struct blob_action_s blob_action_t;
 struct blob_action_s {
   void* mapping_ptr;
   void* touch_ptr;
-  bool  note_on_pending; // true = NoteOn deferred until attack window elapses
+  bool  note_on_z_pending;  // true = NoteOn deferred until z-attack peak captured
+  bool  note_on_xy_pending; // true = NoteOn deferred until first xy velocity sample (ROL sliders)
 };
 
 typedef struct blob_s blob_t;

@@ -40,8 +40,8 @@ void hardware_midi_handle_input(const Message<128u> &midi_msg) {
     case midi::NoteOn:
       for (lnode_t* mapping_node_ptr = ITERATOR_START_FROM_HEAD(&llist_mappings); mapping_node_ptr != NULL; mapping_node_ptr = ITERATOR_NEXT(mapping_node_ptr)) {
         common_t* mapping_ptr = (common_t*)ITERATOR_DATA(mapping_node_ptr);
-        if (mapping_ptr->midi_receive_func_ptr(mapping_ptr, midi_msg_ptr)) {
-          mapping_ptr->midi_update_func_ptr(mapping_ptr, midi_msg_ptr);
+        if (mapping_ptr->midi_hardware_receive_func_ptr(mapping_ptr, midi_msg_ptr)) {
+          mapping_ptr->midi_hardware_update_func_ptr(mapping_ptr, midi_msg_ptr);
           break;
         }
       }
@@ -50,8 +50,8 @@ void hardware_midi_handle_input(const Message<128u> &midi_msg) {
     case midi::NoteOff:
       for (lnode_t* mapping_node_ptr = ITERATOR_START_FROM_HEAD(&llist_mappings); mapping_node_ptr != NULL; mapping_node_ptr = ITERATOR_NEXT(mapping_node_ptr)) {
         common_t* mapping_ptr = (common_t*)ITERATOR_DATA(mapping_node_ptr);
-        if (mapping_ptr->midi_receive_func_ptr(mapping_ptr, midi_msg_ptr)) {
-          mapping_ptr->midi_dispose_func_ptr(mapping_ptr, midi_msg_ptr);
+        if (mapping_ptr->midi_hardware_receive_func_ptr(mapping_ptr, midi_msg_ptr)) {
+          mapping_ptr->midi_hardware_dispose_func_ptr(mapping_ptr, midi_msg_ptr);
           break;
         }
       }

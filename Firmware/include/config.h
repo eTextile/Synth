@@ -14,8 +14,8 @@
 
 #define PROJECT "ETEXTILE-SYNTHESIZER"
 #define NAME "256"
-#define VERSION "1.0.25"
-#define SENSOR_UID 1 // Unique sensor ID
+#define VERSION "1.0.27"
+#define SENSOR_UID 1 // Unique sensor ID 
 #define FLASH_BUFFER_SIZE 4096
 
 // E256 HARDWARE CONSTANTS
@@ -45,7 +45,7 @@
 
 #define BLOB_LAST_DIST 7       // This is the minimum distance used to identify two corresponding blobs contains int two sequential frames
 #define BLOB_MISSING_TIME 50   // After this amount of time the blob is set to RELEASED
-#define BLOB_RELEASE_TIME 500 // After this amount of time the blob is set to FREE
+#define BLOB_RELEASE_TIME 500  // After this amount of time the blob is set to FREE
 
 #define X_PADDING_LEFT   0
 #define X_PADDING_REIGHT 0
@@ -79,12 +79,13 @@
 #define VELOCITY_ATTACK_MAX_MS   80    // Hard deadline: force attack_done even without peak drop (ms)
 #define VELOCITY_ATTACK_DROP     0.5f  // Peak-drop ratio: attack_done when |vz| < peak * ratio
 #define VELOCITY_ATTACK_Z_MAX    4000  // Max expected |velocity.z| in units/s (tune to calibrate MIDI range)
+#define VELOCITY_XY_MAX          200   // Max expected velocity.xy in units/s for ROL sliders (tune to calibrate MIDI range)
 
 // E256 MIDI I/O CHANNELS CONSTANTS [1:15]
 #define MIDI_INPUT_CHANNEL 1
 //#define MIDI_OUTPUT_CHANNEL 2
 
-#define MIDI_LEVELS_CHANNEL 3
+#define MIDI_CCS_CHANNEL 3
 #define MIDI_MODES_CHANNEL 4
 #define MIDI_VERBOSITY_CHANNEL 5
 #define MIDI_ERROR_CHANNEL 6
@@ -130,7 +131,7 @@ typedef enum mode_code_e {
   SYNC_MODE,       // Hand chake mode
   CALIBRATE_MODE,  // Proceed to the all matrix calibration
   MATRIX_RAW_MODE, // Send matrix analog sensor raw values (16x16) over USB using MIDI format
-  MATRIX_INTERP_MODE, // TESTING
+  MATRIX_INTERP_MODE, //
   MAPPING_MODE,    // 
   EDIT_MODE,       // Send all blobs values over USB_MIDI OUTPUT
   THROUGH_MODE,    // Forward mappings values to the MIDI_HARDWARE OUTPUT
@@ -153,7 +154,7 @@ typedef enum verbosity_code_e{
   SYNC_MODE_DONE,
   CALIBRATE_MODE_DONE,
   MATRIX_RAW_MODE_DONE,
-  MATRIX_INTERP_MODE_DONE, // TESTING
+  MATRIX_INTERP_MODE_DONE,
   MAPPING_MODE_DONE,
   EDIT_MODE_DONE,
   THROUGH_MODE_DONE,
