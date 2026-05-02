@@ -76,8 +76,8 @@ void mapping_slider_dispose_blob(void* mapping_ptr, blob_t* blob_ptr) {
 };
 
 // Called on the first frame a blob is detected inside the slider (status == NEW).
-// For MOVE_ROL: maps the initial touch position to a step index, sets the note,
-// and defers the NoteOn until the xy velocity sample is ready (note_on_xy_pending).
+// For MOVE_ROL: maps the initial touch position to a step index and sets data1.
+// For NoteOn press: defers via z-attack velocity (mapping_send_midi_note_on handles pending).
 // For other press types: fires the MIDI press message immediately.
 void mapping_slider_start(blob_t* blob_ptr) {
   mapp_slider_t* slider_ptr = (mapp_slider_t*)blob_ptr->action.mapping_ptr;
@@ -99,21 +99,15 @@ void mapping_slider_start(blob_t* blob_ptr) {
   }
 
   if (slider_ptr->params.press == NoteOn) {
-    if (slider_ptr->params.move == MOVE_ROL) {
-      touch_ptr->press.msg.type = NoteOn;
-      // Use z-attack for the initial placement NoteOn: the finger presses down (not sliding yet)
-      // so xy velocity is 0 on the first PRESENT frame. Step-crossing NoteOns use xy velocity.
-      blob_ptr->action.note_on_z_pending = true;
-    } else {
-      mapping_send_midi_note_on(&touch_ptr->press, blob_ptr);
-    }
+    mapping_send_midi_note_on(&touch_ptr->press, blob_ptr);
   } else {
     mapping_send_midi_msg_press(&touch_ptr->press, blob_ptr);
   }
 };
 
 // Called every frame while the blob remains inside the slider (status == PRESENT).
-// For MOVE_ROL: sends NoteOff/NoteOn pairs when the finger crosses a step boundary.
+// For MOVE_ROL: sends NoteOff/NoteOn pairs on step boundary crossings; if the initial
+// NoteOn is still pending, retargets the deferred note without sending a NoteOff.
 // For other move modes: streams continuous position (CC/aftertouch) along the
 // slider axis (X for HORIZONTAL, Y for VERTICAL) plus optional pressure.
 void mapping_slider_continue(blob_t* blob_ptr) {
@@ -134,13 +128,17 @@ void mapping_slider_continue(blob_t* blob_ptr) {
     step_idx = constrain(step_idx, 0, slider_ptr->params.steps - 1);
     uint8_t new_note = slider_ptr->params.step_note[step_idx];
     if (new_note != touch_ptr->press.msg.data1) {
-      uint8_t touch_idx = (uint8_t)(touch_ptr - slider_ptr->params.touch);
-      slider_ptr->note_off_msgs[touch_idx] = touch_ptr->press.msg;
-      slider_ptr->note_off_msgs[touch_idx].type = NoteOff;
-      slider_ptr->note_off_msgs[touch_idx].data2 = 0;
-      llist_push_front(&llist_midi_out, &slider_ptr->note_off_msgs[touch_idx]);
-      touch_ptr->press.msg.data1 = new_note;
-      mapping_send_midi_note_on_xy(&touch_ptr->press, blob_ptr);
+      if (blob_ptr->action.note_on_z_pending) {
+        touch_ptr->press.msg.data1 = new_note; // retarget deferred NoteOn, no NoteOff to send yet
+      } else {
+        uint8_t touch_idx = (uint8_t)(touch_ptr - slider_ptr->params.touch);
+        slider_ptr->note_off_msgs[touch_idx] = touch_ptr->press.msg;
+        slider_ptr->note_off_msgs[touch_idx].type = NoteOff;
+        slider_ptr->note_off_msgs[touch_idx].data2 = 0;
+        llist_push_front(&llist_midi_out, &slider_ptr->note_off_msgs[touch_idx]);
+        touch_ptr->press.msg.data1 = new_note;
+        mapping_send_midi_note_on_xy(&touch_ptr->press, blob_ptr);
+      }
     }
   }
   else {
@@ -157,12 +155,18 @@ void mapping_slider_continue(blob_t* blob_ptr) {
 };
 
 // Called when the blob leaves the slider or is lost (status == RELEASED).
-// Sends NoteOff for NoteOn press mode; other press types tail off naturally.
+// For NoteOn press mode: if the initial NoteOn was never sent (still pending), cancels
+// the deferred flag; otherwise sends NoteOff for the currently playing note.
+// Other press types tail off naturally.
 void mapping_slider_stop(blob_t* blob_ptr) {
   mapp_slider_t* slider_ptr = (mapp_slider_t*)blob_ptr->action.mapping_ptr;
   touch_2d_t* touch_ptr = (touch_2d_t*)blob_ptr->action.touch_ptr;
   if (slider_ptr->params.press == NoteOn) {
-    mapping_send_midi_note_off(&touch_ptr->press);
+    if (blob_ptr->action.note_on_z_pending) {
+      blob_ptr->action.note_on_z_pending = false;
+    } else {
+      mapping_send_midi_note_off(&touch_ptr->press);
+    }
   }
 };
 

@@ -104,24 +104,24 @@ const char* get_error_name(error_code_t code) {
   return char_code;
 };
 
-e256_mode_t e256_m[16] = {
+e256_mode_t e256_m[17] = {
   {{HIGH, LOW, false}, 50, 50, true},     // [0] PENDING_MODE
   {{HIGH, LOW, false}, 500, 500, true},   // [1] SYNC_MODE
   {{HIGH, LOW, false}, 15, 15, true},     // [2] CALIBRATE_MODE
   {{HIGH, HIGH, false}, 200, 200, true},  // [3] MATRIX_RAW_MODE
-  // MATRIX_INTERP_MODE: TODO
-  {{HIGH, HIGH, false}, 400, 400, true},  // [4] MAPPING_MODE
-  {{HIGH, LOW, false}, 1000, 50, true},   // [5] EDIT_MODE
-  {{HIGH, LOW, false}, 1500, 500, true},  // [6] THROUGH_MODE
-  {{HIGH, LOW, false}, 50, 1000, true},   // [7] PLAY_MODE
-  {{HIGH, LOW, false}, 1000, 1000, true}, // [8] ALLOCATE_MODE
-  {{HIGH, LOW, false}, 1000, 1000, true}, // [9] UPLOAD_MODE
-  {{HIGH, LOW, false}, 1000, 1000, true}, // [10] APPLY_MODE
-  {{HIGH, LOW, false}, 1000, 1000, true}, // [11] WRITE_MODE
-  {{HIGH, LOW, false}, 1000, 1000, true}, // [12] LOAD_MODE
-  {{HIGH, LOW, false}, 1000, 1000, true}, // [13] FETCH_MODE
-  {{LOW, HIGH, false}, 2000, 2000, true}, // [14] STANDALONE_MODE
-  {{HIGH, HIGH, false}, 10, 10, true}     // [15] ERROR_MODE
+  {{HIGH, HIGH, false}, 100, 100, true},  // [4] MATRIX_INTERP_MODE
+  {{HIGH, HIGH, false}, 400, 400, true},  // [5] MAPPING_MODE
+  {{HIGH, LOW, false}, 1000, 50, true},   // [6] EDIT_MODE
+  {{HIGH, LOW, false}, 1500, 500, true},  // [7] THROUGH_MODE
+  {{HIGH, LOW, false}, 50, 1000, true},   // [8] PLAY_MODE
+  {{HIGH, LOW, false}, 1000, 1000, true}, // [9] ALLOCATE_MODE
+  {{HIGH, LOW, false}, 1000, 1000, true}, // [10] UPLOAD_MODE
+  {{HIGH, LOW, false}, 1000, 1000, true}, // [11] APPLY_MODE
+  {{HIGH, LOW, false}, 1000, 1000, true}, // [12] WRITE_MODE
+  {{HIGH, LOW, false}, 1000, 1000, true}, // [13] LOAD_MODE
+  {{HIGH, LOW, false}, 1000, 1000, true}, // [14] FETCH_MODE
+  {{LOW, HIGH, false}, 2000, 2000, true}, // [15] STANDALONE_MODE
+  {{HIGH, HIGH, false}, 10, 10, true}     // [16] ERROR_MODE
 };
 
 // The E256 built-in encoder is used to adjust levels
