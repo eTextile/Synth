@@ -103,10 +103,8 @@ void mapping_send_midi_note_on(axis_t* axis_ptr, blob_t* blob_ptr) {
 void mapping_send_midi_note_on_xy(axis_t* axis_ptr, blob_t* blob_ptr) {
   axis_ptr->msg.type = NoteOn;
   float scaled = blob_ptr->velocity.xy / (float)VELOCITY_XY_MAX;
-  axis_ptr->msg.data2 = (uint8_t)constrain(
-    (int)(scaled * (axis_ptr->limit.max - axis_ptr->limit.min) + axis_ptr->limit.min),
-    axis_ptr->limit.min, axis_ptr->limit.max
-  );
+  int val = (int)(scaled * (axis_ptr->limit.max - axis_ptr->limit.min) + axis_ptr->limit.min);
+  axis_ptr->msg.data2 = (uint8_t)constrain(max(val, 1), axis_ptr->limit.min, axis_ptr->limit.max);
   llist_push_front(&llist_midi_out, &axis_ptr->msg);
   blob_ptr->action.note_on_xy_pending = false; // cancel deferred NoteOn if step changed first
 };

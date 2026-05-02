@@ -101,7 +101,9 @@ void mapping_slider_start(blob_t* blob_ptr) {
   if (slider_ptr->params.press == NoteOn) {
     if (slider_ptr->params.move == MOVE_ROL) {
       touch_ptr->press.msg.type = NoteOn;
-      blob_ptr->action.note_on_xy_pending = true; // flushed by mapping_flush_pending_note_on_xy()
+      // Use z-attack for the initial placement NoteOn: the finger presses down (not sliding yet)
+      // so xy velocity is 0 on the first PRESENT frame. Step-crossing NoteOns use xy velocity.
+      blob_ptr->action.note_on_z_pending = true;
     } else {
       mapping_send_midi_note_on(&touch_ptr->press, blob_ptr);
     }
