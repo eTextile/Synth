@@ -36,9 +36,10 @@ pip3 install twisted inkcut
 ```
 
 ## E256 — Cutting the conductive textile
-Use the file above to cut both the TOP and BOTTOM antenna layers of the E256 matrix in a single pass.
+Use the file above to cut the X and Y antenna layers of the E256 matrix in two separate passes.
 
 ## E256 — Fusing the conductive textile
+Before fusing the conductive textile, we use a glue spray to fix it temporarily onto the textile and remove all the non-needed parts. After all, the functional part is placed in the press and fused to the fabric.
 ![Lost_parts](https://live.staticflickr.com/65535/48791432428_cccc5ecaf6_c_d.jpg)
 ![Heat_press](https://live.staticflickr.com/65535/48791938502_d166d7a995_c_d.jpg)
 
