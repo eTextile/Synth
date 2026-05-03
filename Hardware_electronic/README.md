@@ -20,7 +20,7 @@ Here is the last PCB schematics document : [eTextile_synth_schematics.pdf](./doc
 
 #### BUILT_IN SWITCHES
 - **Button D1 (DOT)** Short press : CALIBRATE THE SENSOR MATRIX
-- **Button D1 (DOT)** Long press : (TODO)
+- **Button D1 (DOT)** Long press : SAVE CONFIG TO FLASH MEMORY (standalone mode)
 - **Button D2 (STAR)** Short press : SELECT MODE (see below)
 - **Button D2 (STAR)** Long press : MIDI LEARN MODE
 
@@ -33,8 +33,13 @@ Here is the last PCB schematics document : [eTextile_synth_schematics.pdf](./doc
     | **THRESHOLD** | D1-ON  / D2-ON  | threshold value adjustment using rotary encoder |
 
 #### MIDI LEARN
-This MODE is setting the whole sensor in auto-mapp state.
-As experienced with most audio software it is not possible to use auto-mapping functionalities if the controller is sending more than one value at a time. In the MIDI LEARN mode we use the encoder button to select the blob value (STATE, CX, CY, WIDTH, HEIGHT, DEPTH) that you want to send to your computer. After the desired values have been mapped a short press on the STAR or DOT button will exit the MIDI LEARN MODE and you will be able to play your custom presets.
+> **TODO** — not yet implemented (long press STAR is reserved for this feature).
+
+In MIDI LEARN mode the device will send each blob parameter (X, Y, Z, width, height) one at a time so that external software can map them without ambiguity.
+Use the rotary encoder to cycle through the available parameters; the currently selected parameter is the only one transmitted.
+A short press on the **DOT** or **STAR** button exits MIDI LEARN mode and returns to the previous operating mode.
+
+> **Note:** static MIDI mappings are configured via the [Mapping web app](https://etextile.github.io/Mapping/) and uploaded to the device over USB.
 
 #### MIDI PLUG
 **MIDI TRS-A (MIDI 2.0 Standard)**

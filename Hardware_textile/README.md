@@ -1,51 +1,46 @@
 # eTextile-Synthesizer
-## HARDWARE_TEXTILE / HOWTO
 ### Exploring music through textile
+## HARDWARE_TEXTILE / HOWTO
 
 ![eTextile Synthesizer](https://farm1.staticflickr.com/798/40904680852_d5c9b1b35d_z_d.jpg)
 
-The eTextile hardware has been designed to be easy to make with accessible and cheap tools.
-Here are the tricks to make the conductive textile pattern on a woven cotton fabric.
-First of all we will need to add the fusing material (hot melt adhesive) to the conductive fabric.
-Then we can use the CNC-Cutter to cut the two identicals (X and Y) matrix patterns.
-CNC-Cutters or Plotters are tools that you can buy for cheap on second hand websites.
-We suggest to look for an "obsolete" one that works with **parallel port** (NO USB!) This will be cheapest!
-Then you can buy a **parallel to USB adapter** and use the inkscape plugin to cut the conductive textile matrix pattern.
-After having cut the conductive fabric doubled with the bounding material you will need to fuse it to your woven fabric using a 
-heat press.
+The eTextile hardware has been designed to be easy to build with accessible and low-cost tools.
+Here are the steps to make the conductive textile pattern on a woven cotton fabric.
+First, apply a fusing material (hot-melt adhesive) to the conductive fabric.
+Then use a CNC cutter to cut the two identical (X and Y) matrix patterns.
+CNC cutters and vinyl plotters can be found at low cost on second-hand websites.
+We recommend looking for an older model that uses a **parallel port** (not USB) — these are the most affordable.
+A **parallel-to-USB adapter** lets you drive it from a modern computer using the Inkscape plugin below.
+Once the conductive fabric layers are cut and bonded to the backing material, fuse them onto your woven fabric using a heat press.
 
-### BOM
-- **Conductive fabric** : silver-coated Polyester or nickel-coated Polyester
-- **CNC cutter** : 
-- **heat press** :
-- **Fusing material** :
-- **E256 path** : interdigitation zig-zag pattern with built-in eTextile-bus (pitch 4.2mm)
+### BOM (Bill of Materials)
+- **Conductive fabric** : silver-coated polyester or nickel-coated polyester
+- **CNC cutter** :
+- **Heat press** :
+- **Fusing material (hot-melt adhesive)** :
+
+### CUTTING PATTERN
+The E256 matrix uses an interdigitated zig-zag pattern with a built-in eTextile bus (pitch 4.2 mm).
+Cutting file (TOP and BOTTOM antenna layers): [E256_path.svg](./E256_path.svg)
 
 ### SOFTWARE REQUIREMENTS
-- https://inkscape.org/
-- https://github.com/codelv/inkcut
+- [Inkscape](https://inkscape.org/)
+- [Inkcut](https://github.com/codelv/inkcut)
 
 #### Linux install
+> **Note:** the commands below target Python 3 on a modern Debian/Ubuntu system.
 ```
-sudo apt-get install python-dev
-sudo apt-get -y install python-qt4
-sudo apt-get install python-qtpy
+sudo apt-get install python3-dev python3-pip python3-pyqt5
 
-curl https://bootstrap.pypa.io/get-pip.py -o get-pip.py
-python get-pip.py
-sudo pip install twisted
-
-git clone https://github.com/frmdstryr/enamlx.git
-cd enamlx
-sudo python setup.py install
+pip3 install twisted inkcut
 ```
 
-## E256 cutting the conductive textile
-Here is the unique file to cut both TOP and BOTTOM antena layers of the E256 matrix : [E256_path](./E256_path.svg)
+## E256 — Cutting the conductive textile
+Use the file above to cut both the TOP and BOTTOM antenna layers of the E256 matrix in a single pass.
 
-## E256 fusing the conductive textile 
+## E256 — Fusing the conductive textile
 ![Lost_parts](https://live.staticflickr.com/65535/48791432428_cccc5ecaf6_c_d.jpg)
 ![Heat_press](https://live.staticflickr.com/65535/48791938502_d166d7a995_c_d.jpg)
 
 ### TODO
-- Add non-slip Silicon
+- Add non-slip silicone backing
