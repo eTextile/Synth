@@ -22,6 +22,7 @@ void usb_midi_transmit_interp_matrix(void);
 void usb_midi_transmit_blobs(void);
 void usb_midi_transmit_mappings_midi_msg(void);
 
+void usb_midi_send_clock(void);
 void usb_midi_send_info(uint8_t msg, uint8_t channel);
 
 void usb_read_note_on(uint8_t channel, uint8_t note, uint8_t velocity);

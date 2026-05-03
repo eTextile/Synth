@@ -12,6 +12,7 @@
 #include "scan.h"
 #include "interp.h"
 #include "usb_midi_io.h"
+#include "hardware_midi_io.h"
 #include "allocate.h"
 #include "mapping.h"
 
@@ -270,6 +271,7 @@ inline void update_buttons() {
   if (BUTTON_R.rose() && BUTTON_R.previousDuration() > LONG_HOLD) {
     //set_mode(PENDING_MODE);
   }
+
   // ACTION: BUTTON_R short pressure
   // FONCTION: SELECT_LEVEL
   // levels[0] = THRESHOLD
@@ -288,24 +290,25 @@ static void setup_encoder() {
 
 // Levels values adjustment using rotary encoder
 inline bool read_encoder(level_code_t level) {
-  uint8_t val = e256_ctr.encoder->read() >> 2;
-  if (val != e256_ctr.levels[(uint8_t)level].val) {
-    if (val > e256_ctr.levels[(uint8_t)level].max_val) {
-      e256_ctr.encoder->write(e256_ctr.levels[(uint8_t)level].max_val << 2);
-    }
-    else if (val < e256_ctr.levels[(uint8_t)level].min_val) {
-      e256_ctr.encoder->write(e256_ctr.levels[(uint8_t)level].min_val << 2);
-    }
-    else {
-      e256_ctr.levels[(uint8_t)level].val = val;
-      e256_ctr.levels[(uint8_t)level].leds.update = true;
-      usbMIDI.sendControlChange((uint8_t)level, val, MIDI_CCS_CHANNEL);
-    }
-    return true;
+  level_t* lev = &e256_ctr.levels[(uint8_t)level];
+  int32_t raw = e256_ctr.encoder->read() >> 2; // signed: goes negative when turning CCW below 0
+  uint8_t val;
+  if (raw < (int32_t)lev->min_val) {
+    e256_ctr.encoder->write((int32_t)lev->min_val << 2);
+    val = lev->min_val;
+  }
+  else if (raw > (int32_t)lev->max_val) {
+    e256_ctr.encoder->write((int32_t)lev->max_val << 2);
+    val = lev->max_val;
   }
   else {
-    return false;
+    val = (uint8_t)raw;
   }
+  if (val == lev->val) return false;
+  lev->val = val;
+  lev->leds.update = true;
+  usbMIDI.sendControlChange((uint8_t)level, val, MIDI_CCS_CHANNEL);
+  return true;
 };
 
 // Update levels[level] of each mode using the rotary encoder
@@ -367,9 +370,9 @@ inline void update_leds() {
 
 /*
   uint8_t type;     // For MIDI status bytes see: https://github.com/PaulStoffregen/MIDI/blob/master/src/midi_Defs.h
-  uint8_t data1;    // First value  (0-127), controller number or note number
-  uint8_t data2;    // Second value (0-127), controller value or velocity
-  uint8_t channel;  // MIDI channel (0-15)
+  uint8_t data1;    // First value  [0:127], controller number or note number
+  uint8_t data2;    // Second value [0:127], controller value or velocity
+  uint8_t channel;  // MIDI channel [1:15]
 */
 
 static bool config_load_mappings_switchs(const JsonArray &config) {
@@ -476,6 +479,9 @@ bool mappings_apply_config(uint8_t* conf_ptr, size_t conf_size) {
       Serial.printf("\nDESERIALIZATION_ERROR:\t%s", error.c_str());
     #endif
     return false;
+  }
+  if (!e256_config["global"]["hardware_midi_input_channel"].isNull()) {
+    hardware_midi_set_input_channel(e256_config["global"]["hardware_midi_input_channel"].as<uint8_t>());
   }
   if (mappings_load_config(e256_config["mappings"])) {
     #if defined(USB_MIDI_SERIAL) && defined(DEBUG_CONFIG)

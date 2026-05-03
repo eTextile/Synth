@@ -11,19 +11,15 @@
 #include "llist.h"
 #include "blob.h"
 
-#define MEDIAN_WINDOW    5     // Allowed filter window size [3-5-7]
-#define M_WINDOW         (MEDIAN_WINDOW - 1)
+// EMA smoothing factor for blob centroid position.
+// 0 = frozen (infinite lag), 1 = raw (no smoothing).
+// At 600 fps a value of 0.3 gives ~2-frame lag with good noise rejection.
+#define EMA_ALPHA_POSITION 0.3f
 
 typedef struct median median_t;
 struct median {
-  float X_rawVal[M_WINDOW];    // Blob X centroid input values
-  uint8_t X_sort[M_WINDOW];    // Sorted index Array
-  float Y_rawVal[M_WINDOW];    // Blob Y centroid input values
-  uint8_t Y_sort[M_WINDOW];    // Sorted index Array
-  uint8_t Z_rawVal[M_WINDOW];  // Blob Y centroid input values
-  uint8_t Z_sort[M_WINDOW];    // Sorted index Array
-  uint8_t count;
-  uint8_t index;               // Circular buffer index
+  float x; // EMA state for centroid.x
+  float y; // EMA state for centroid.y
 };
 
 void running_median_setup(void);

@@ -5,6 +5,7 @@
 */
 
 #include "mapp_switch.h"
+#include "midi_seq.h"
 
 struct mapp_switch_s;
 typedef struct mapp_switch_s mapp_switch_t;
@@ -69,6 +70,11 @@ void mapping_switch_dispose_blob(void* mapping_ptr, blob_t* blob_ptr) {
 void mapping_switch_start(blob_t* blob_ptr) {
   mapp_switch_t* switch_ptr = (mapp_switch_t*)blob_ptr->action.mapping_ptr;
   touch_1d_t* touch_ptr = (touch_1d_t*)blob_ptr->action.touch_ptr;
+
+  if (switch_ptr->params.tap_tempo) {
+    tap_tempo_hit();
+    return;
+  }
 
   switch (switch_ptr->params.press) {
     case NoteOn:
@@ -166,6 +172,7 @@ void mapping_switch_create(const JsonObject &config) {
   switch_ptr->params.rect.to.y = config["to"][1].as<float>();
   switch_ptr->params.press = config["press"].as<MidiType>();
   switch_ptr->params.input_chan = config["input_chan"].as<uint8_t>();
+  switch_ptr->params.tap_tempo = config["tap_tempo"] | false;
 
   if (switch_ptr->params.touchs < MAX_SWITCH_TOUCHS) {
     

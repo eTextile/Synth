@@ -5,6 +5,7 @@
 */
 
 #include "mapping.h"
+#include "midi_seq.h"
 
 llist_t llist_mappings;
 
@@ -16,11 +17,15 @@ static void mapping_flush_pending_note_on(blob_t* blob_ptr) {
   if (!blob_ptr->action.note_on_z_pending || !blob_ptr->velocity.attack_done) return;
   if (blob_ptr->action.touch_ptr == NULL) return;
   axis_t* axis_ptr = &((touch_1d_t*)blob_ptr->action.touch_ptr)->press;
+  /*
   float scaled = blob_ptr->velocity.attack_z / (float)VELOCITY_ATTACK_Z_MAX;
   axis_ptr->msg.data2 = (uint8_t)constrain(
     (int)(scaled * (axis_ptr->limit.max - axis_ptr->limit.min) + axis_ptr->limit.min),
     axis_ptr->limit.min, axis_ptr->limit.max
   );
+  */
+  axis_ptr->msg.data2 = (uint8_t)constrain((int)(blob_ptr->velocity.attack_z), 0, 127);
+
   llist_push_front(&llist_midi_out, &axis_ptr->msg);
   blob_ptr->action.note_on_z_pending = false;
 }
@@ -35,15 +40,21 @@ static void mapping_flush_pending_note_on_xy(blob_t* blob_ptr) {
   uint32_t age = millis() - blob_ptr->velocity.born_at;
   if (blob_ptr->velocity.xy < 1.0f && age < VELOCITY_ATTACK_MAX_MS) return;
   axis_t* axis_ptr = &((touch_1d_t*)blob_ptr->action.touch_ptr)->press;
+  /*
   float scaled = blob_ptr->velocity.xy / (float)VELOCITY_XY_MAX;
   int val = (int)(scaled * (axis_ptr->limit.max - axis_ptr->limit.min) + axis_ptr->limit.min);
   axis_ptr->msg.data2 = (uint8_t)constrain(max(val, 1), axis_ptr->limit.min, axis_ptr->limit.max);
+  */
+  
+  axis_ptr->msg.data2 = (uint8_t)constrain(blob_ptr->velocity.xy, 0, 127);
+
   llist_push_front(&llist_midi_out, &axis_ptr->msg);
   blob_ptr->action.note_on_xy_pending = false;
 }
 #endif
 
 void mapping_lib_update(void) {
+  tap_tempo_clock_tick();
 
   for (lnode_t* mapping_node_ptr = ITERATOR_START_FROM_HEAD(&llist_mappings); mapping_node_ptr != NULL; mapping_node_ptr = ITERATOR_NEXT(mapping_node_ptr)) {
     common_t* mapping_ptr = (common_t*)ITERATOR_DATA(mapping_node_ptr);

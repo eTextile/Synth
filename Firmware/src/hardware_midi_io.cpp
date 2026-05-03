@@ -12,14 +12,21 @@
 
 MIDI_CREATE_INSTANCE(HardwareSerial, Serial3, MIDI);
 
+uint8_t hardware_midi_input_channel = MIDI_INPUT_CHANNEL;
+
 void hardware_midi_setup(void) {
-  MIDI.begin(MIDI_INPUT_CHANNEL); // Launch MIDI hardware and listen to channel 1
+  MIDI.begin(hardware_midi_input_channel);
   MIDI.setHandleMessage(hardware_midi_handle_input);
 };
 
+void hardware_midi_set_input_channel(uint8_t channel) {
+  hardware_midi_input_channel = channel;
+  MIDI.begin(channel);
+};
+
 void hardware_midi_receive(void) {
-  MIDI.read(MIDI_INPUT_CHANNEL);         // Is there any incoming MIDI messages on channel 1
-  while (MIDI.read(MIDI_INPUT_CHANNEL)); // Read and discard any incoming MIDI messages
+  MIDI.read(hardware_midi_input_channel);
+  while (MIDI.read(hardware_midi_input_channel));
 };
 
 // Handle hardware input midi msg
@@ -62,6 +69,11 @@ void hardware_midi_handle_input(const Message<128u> &midi_msg) {
     }
 
   }
+};
+
+// Send a MIDI Real Time TimingClock (0xF8) on the hardware MIDI DIN port — called by tap_tempo_clock_tick().
+void hardware_midi_send_clock(void) {
+  MIDI.sendRealTime(midi::TimingClock);
 };
 
 void hardware_midi_transmit_mappings_midi_msg(void) {

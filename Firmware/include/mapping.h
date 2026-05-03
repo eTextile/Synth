@@ -22,11 +22,11 @@ typedef enum move_e {
 } move_t;
 
 typedef enum populate_e {
-  POPULATE_OFF      = 0,
-  POPULATE_UP       = 1,
-  POPULATE_DOWN     = 2,
+  POPULATE_OFF       = 0,
+  POPULATE_UP        = 1,
+  POPULATE_DOWN      = 2,
   POPULATE_AS_PLAYED = 3,
-  POPULATE_OCTAVE   = 4,
+  POPULATE_OCTAVE    = 4,
   POPULATE_PING_PONG = 5
 } populate_t;
 

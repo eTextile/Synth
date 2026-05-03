@@ -18,8 +18,6 @@ extern llist_t llist_midi_nodes_pool; // Main MIDI node stack
 extern llist_t llist_midi_in;         // Main MIDI Input linked list
 extern llist_t llist_midi_out;        // Main MIDI Output linked list
 
-extern llist_t llist_active_midi_msg; // Main MIDI notes/chords linked list
-
 typedef struct midi_msg_s midi_msg_t;
 struct midi_msg_s {
   uint8_t channel;  // [1-15] MIDI channel (Extracted from status byte)

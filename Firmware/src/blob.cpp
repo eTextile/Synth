@@ -378,23 +378,23 @@ void matrix_find_blobs(void) {
 
     if (blob_ptr->status == NEW) {
       // First detection: arm the attack window and freeze references.
-      blob_ptr->velocity.time_stamp    = now;
-      blob_ptr->velocity.xy_time_stamp = now;
-      blob_ptr->velocity.born_at       = now;
-      blob_ptr->velocity.xy_last_x     = blob_ptr->centroid.x;
-      blob_ptr->velocity.xy_last_y     = blob_ptr->centroid.y;
-      blob_ptr->last_centroid          = blob_ptr->centroid;
-      blob_ptr->velocity.xy            = 0.0f;
-      blob_ptr->velocity.z             = 0.0f;
-      blob_ptr->velocity.attack_z      = 0.0f;
-      blob_ptr->velocity.attack_done   = false;
+      blob_ptr->velocity.time_stamp_z     = now;
+      blob_ptr->velocity.time_stamp_xy    = now;
+      blob_ptr->velocity.born_at          = now;
+      blob_ptr->velocity.xy_last_x        = blob_ptr->centroid.x;
+      blob_ptr->velocity.xy_last_y        = blob_ptr->centroid.y;
+      blob_ptr->last_centroid             = blob_ptr->centroid;
+      blob_ptr->velocity.xy               = 0.0f;
+      blob_ptr->velocity.z                = 0.0f;
+      blob_ptr->velocity.attack_z         = 0.0f;
+      blob_ptr->velocity.attack_done      = false;
       blob_ptr->action.note_on_z_pending  = false;
       blob_ptr->action.note_on_xy_pending = false;
     }
     else if (blob_ptr->status == PRESENT) {
 
       // XY velocity: updated every frame (min 1ms) for responsive ROL slider velocity.
-      uint32_t dt_xy = now - blob_ptr->velocity.xy_time_stamp;
+      uint32_t dt_xy = now - blob_ptr->velocity.time_stamp_xy;
       if (dt_xy >= 1) {
         float dt_s = dt_xy * 0.001f;
         float vx = blob_ptr->centroid.x - blob_ptr->velocity.xy_last_x;
@@ -403,17 +403,17 @@ void matrix_find_blobs(void) {
         blob_ptr->velocity.xy = VELOCITY_EMA_ALPHA * raw_vel_xy + (1.0f - VELOCITY_EMA_ALPHA) * blob_ptr->velocity.xy;
         blob_ptr->velocity.xy_last_x = blob_ptr->centroid.x;
         blob_ptr->velocity.xy_last_y = blob_ptr->centroid.y;
-        blob_ptr->velocity.xy_time_stamp = now;
+        blob_ptr->velocity.time_stamp_xy = now;
       }
 
       // Z velocity and attack: throttled to VELOCITY_MIN_INTERVAL_MS for stability.
-      uint32_t dt = now - blob_ptr->velocity.time_stamp;
+      uint32_t dt = now - blob_ptr->velocity.time_stamp_z;
       if (dt >= VELOCITY_MIN_INTERVAL_MS) {
         float dt_s = dt * 0.001f;
         float raw_vel_z = (float)((int16_t)blob_ptr->centroid.z - (int16_t)blob_ptr->last_centroid.z) / dt_s;
         blob_ptr->velocity.z = VELOCITY_EMA_ALPHA * raw_vel_z + (1.0f - VELOCITY_EMA_ALPHA) * blob_ptr->velocity.z;
         blob_ptr->last_centroid = blob_ptr->centroid;
-        blob_ptr->velocity.time_stamp = now;
+        blob_ptr->velocity.time_stamp_z = now;
 
         if (!blob_ptr->velocity.attack_done) {
           float abs_vz = fabsf(blob_ptr->velocity.z);
@@ -429,8 +429,8 @@ void matrix_find_blobs(void) {
     }
     else if (blob_ptr->status == RELEASED) {
       // Keep attack_z intact — the MIDI layer may still need it for NoteOff velocity.
-      blob_ptr->velocity.xy = 0.0f;
-      blob_ptr->velocity.z  = 0.0f;
+      blob_ptr->velocity.xy = 0.0f; // redondant !?
+      blob_ptr->velocity.z  = 0.0f; // redondant !?
     }
   };
   #endif

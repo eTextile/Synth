@@ -139,6 +139,11 @@ void usb_midi_transmit_mappings_midi_msg(void) {
   while (usbMIDI.read());
 };
 
+// Send a MIDI Real Time TimingClock (0xF8) to the USB host — called by tap_tempo_clock_tick().
+void usb_midi_send_clock(void) {
+  usbMIDI.sendRealTime(midi::TimingClock);
+};
+
 // Send a Program Change on `channel` to report a mode acknowledgement or error
 // code back to the host. Used by usb_read_program_change() after every mode switch.
 void usb_midi_send_info(uint8_t program, uint8_t channel) {

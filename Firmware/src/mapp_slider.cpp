@@ -137,7 +137,7 @@ void mapping_slider_continue(blob_t* blob_ptr) {
       if (blob_ptr->action.note_on_z_pending || blob_ptr->action.note_on_xy_pending) {
         touch_ptr->press.msg.data1 = new_note; // retarget deferred NoteOn, no NoteOff to send yet
       } else {
-        uint8_t touch_idx = (uint8_t)(touch_ptr - slider_ptr->params.touch);
+        uint8_t touch_idx = (uint8_t)(touch_ptr - slider_ptr->params.touch); // pointer diff → index of touch_ptr in params.touch[]
         slider_ptr->note_off_msgs[touch_idx] = touch_ptr->press.msg;
         slider_ptr->note_off_msgs[touch_idx].type = NoteOff;
         slider_ptr->note_off_msgs[touch_idx].data2 = 0;

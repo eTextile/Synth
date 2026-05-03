@@ -18,22 +18,23 @@
 extern llist_t llist_blobs; // Blobs linked list
 //extern llist_t llist_previous_blobs; // Exposed local declaration see blob.cpp
 
+// SysEx blob message layout sent to the web app (one byte per field, 14 bytes total).
 typedef enum blob_params_e {
-  B_STATUS,        // [0]  STATUS_INDEX
-  B_LAST_STATUS,   // [1]  LAST_STATUS_INDEX
-  B_UID,           // [2]  UID_INDEX
-  B_X_WHOLE,       // [3]  CENTROID_X_WHOLE_PART_INDEX
-  B_X_FRAC,        // [4]  CENTROID_X_FRACTIONAL_PART_INDEX
-  B_Y_WHOLE,       // [5]  CENTROID_Y_WHOLE_PART_INDEX
-  B_Y_FRAC,        // [6]  CENTROID_Y_FRACTIONAL_PART_INDEX
-  B_WIDTH,         // [7]  WIDTH_INDEX
-  B_HEIGHT,        // [8]  HEIGHT_INDEX
-  B_DEPTH,         // [9]  DEPTH_INDEX
-  B_VELOCITY_XY,   // [10] VELOCITY_XY_INDEX
-  B_VELOCITY_Z,    // [11] VELOCITY_Z_INDEX
-  B_ATTACK_Z,      // [12] ATTACK_Z_INDEX
-  B_ATTACK_DONE,   // [13] ATTACK_DONE_INDEX
-  B_COUNT          // = 14
+  B_STATUS,        // [0]  blob lifecycle state (FREE/NEW/PRESENT/MISSING/RELEASED)
+  B_LAST_STATUS,   // [1]  previous state (used by web app to detect transitions)
+  B_UID,           // [2]  unique blob ID (stable across frames)
+  B_X_WHOLE,       // [3]  centroid X — integer part
+  B_X_FRAC,        // [4]  centroid X — fractional part (/100)
+  B_Y_WHOLE,       // [5]  centroid Y — integer part
+  B_Y_FRAC,        // [6]  centroid Y — fractional part (/100)
+  B_WIDTH,         // [7]  bounding box width (matrix columns)
+  B_HEIGHT,        // [8]  bounding box height (matrix rows)
+  B_DEPTH,         // [9]  pressure depth (centroid.z, raw 0-255)
+  B_VELOCITY_XY,   // [10] lateral velocity scaled to 0-127 (VELOCITY_XY_MAX → 127)
+  B_VELOCITY_Z,    // [11] vertical velocity scaled to 0-127, centred at 64 (press>64, release<64)
+  B_ATTACK_Z,      // [12] peak |velocity.z| during attack, scaled to 0-127 (VELOCITY_ATTACK_Z_MAX → 127)
+  B_ATTACK_DONE,   // [13] 1 once the attack peak has been captured (NoteOn velocity ready)
+  B_COUNT          // = 14 (total bytes in the SysEx blob message)
 } blob_params_t;
 
 typedef struct image_s image_t;
@@ -42,21 +43,28 @@ struct image_s {
   uint8_t num_cols;
   uint8_t num_rows;
 };
-
+/*
 #define COMPUTE_IMAGE_ROW_PTR(image_ptr, y) \
   ({ \
     __typeof__ (image_ptr) _image_ptr = (image_ptr); \
     __typeof__ (y) _y = (y); \
     ((uint8_t*)_image_ptr->data_ptr) + (_image_ptr->num_cols* _y); \
   })
+*/
+#define COMPUTE_IMAGE_ROW_PTR(image_ptr, y) \
+    ((uint8_t*)((image_ptr)->data_ptr) + ((image_ptr)->num_cols * (y)))
 
+/*
 #define IMAGE_GET_PIXEL_FAST(row_ptr, x) \
   ({ \
     __typeof__ (row_ptr) _row_ptr = (row_ptr); \
     __typeof__ (x) _x = (x); \
     _row_ptr[_x]; \
   })
+*/
+#define IMAGE_GET_PIXEL_FAST(row_ptr, x) ((row_ptr)[(x)])
 
+/*
 #define IMAGE_SET_PIXEL_FAST(row_ptr, x, v) \
   ({ \
     __typeof__ (row_ptr) _row_ptr = (row_ptr); \
@@ -64,13 +72,18 @@ struct image_s {
     __typeof__ (v) _v = (v); \
     _row_ptr[_x] = _v; \
   })
+*/
+#define IMAGE_SET_PIXEL_FAST(row_ptr, x, v) ((row_ptr)[(x)] = (v))
 
+/*
 #define PIXEL_THRESHOLD(pixel, threshold) \
   ({ \
     __typeof__ (pixel) _pixel = (pixel); \
     __typeof__ (threshold) _threshold = (threshold); \
     _pixel > _threshold; \
   })
+*/
+#define PIXEL_THRESHOLD(pixel, threshold) ((pixel) > (threshold))
 
 #define MIN(a, b)({ __typeof__ (a) _a = (a); __typeof__ (b) _b = (b); _a < _b ? _a : _b; })
 #define MAX(a, b)({ __typeof__ (a) _a = (a); __typeof__ (b) _b = (b); _a > _b ? _a : _b; })
@@ -100,9 +113,9 @@ struct box_s {
 
 typedef struct velocity_s velocity_t;
 struct velocity_s {
-  unsigned long time_stamp;    // timestamp of last z velocity update (10ms interval)
-  unsigned long xy_time_stamp; // timestamp of last xy velocity update (1ms interval)
   unsigned long born_at;       // timestamp when blob was first detected (status == NEW)
+  unsigned long time_stamp_z;  // timestamp of last z velocity update (10ms interval)
+  unsigned long time_stamp_xy; // timestamp of last xy velocity update (1ms interval)
   float xy_last_x;             // centroid.x at last xy velocity update
   float xy_last_y;             // centroid.y at last xy velocity update
   float xy;                    // smoothed XY velocity (units/s)
