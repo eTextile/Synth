@@ -21,7 +21,7 @@ static mapp_knob_t mapp_knobs[MAX_KNOBS];
 llist_t llist_knobs_pool;
 
 bool mapping_knobs_alloc(uint8_t knobs_cnt) {
-  if (knobs_cnt < MAX_KNOBS) {
+  if (knobs_cnt <= MAX_KNOBS) {
     llist_builder(&llist_knobs_pool, &mapp_knobs[0], knobs_cnt, sizeof(mapp_knobs[0]));
     return true;
   }
@@ -204,7 +204,7 @@ void mapping_knob_create(const JsonObject &config) {
   knob_ptr->params.press = config["press"].as<MidiType>();
   knob_ptr->params.input_chan = config["input_chan"].as<uint8_t>();
 
-  if (knob_ptr->params.touchs < MAX_KNOB_TOUCHS) {
+  if (knob_ptr->params.touchs <= MAX_KNOB_TOUCHS) {
 
     knob_ptr->params.radius = (knob_ptr->params.rect.to.x - knob_ptr->params.rect.from.x) / 2;
     knob_ptr->params.center.x = (knob_ptr->params.rect.from.x + knob_ptr->params.radius);

@@ -24,7 +24,7 @@ static mapp_grid_t mapp_grids[MAX_GRIDS];
 llist_t llist_grids_pool;
 
 bool mapping_grids_alloc(uint8_t grids_cnt) {
-  if (grids_cnt < MAX_GRIDS) {
+  if (grids_cnt <= MAX_GRIDS) {
     llist_builder(&llist_grids_pool, &mapp_grids[0], grids_cnt, sizeof(mapp_grids[0]));
     return true;
   }
@@ -174,7 +174,7 @@ void mapping_grid_create(const JsonObject &config) {
   
   grid_ptr->params.keys = grid_ptr->params.cols * grid_ptr->params.rows;
 
-  if (grid_ptr->params.keys < MAX_GRID_KEYS) {
+  if (grid_ptr->params.keys <= MAX_GRID_KEYS) {
 
     // Pre-compute grid size
     int grid_size_x = grid_ptr->params.rect.to.x - grid_ptr->params.rect.from.x;

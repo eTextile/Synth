@@ -25,7 +25,7 @@ static mapp_polygon_t mapp_polygons[MAX_POLYGONS];
 llist_t llist_polygons_pool;
 
 bool mapping_polygons_alloc(uint8_t polygons_cnt) {
-  if (polygons_cnt < MAX_POLYGONS) {
+  if (polygons_cnt <= MAX_POLYGONS) {
     llist_builder(&llist_polygons_pool, &mapp_polygons[0], polygons_cnt, sizeof(mapp_polygons[0]));
     return true;
   }

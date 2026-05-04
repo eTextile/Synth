@@ -21,7 +21,7 @@ static mapp_touchpad_t mapp_touchpads[MAX_TOUCHPADS];
 llist_t llist_touchpads_pool;
 
 bool mapping_touchpads_alloc(uint8_t touchpads_cnt) {
-  if (touchpads_cnt < MAX_TOUCHPADS) {
+  if (touchpads_cnt <= MAX_TOUCHPADS) {
     llist_builder(&llist_touchpads_pool, &mapp_touchpads[0], touchpads_cnt, sizeof(mapp_touchpads[0]));
     return true;
   }
@@ -157,7 +157,7 @@ void mapping_touchpad_create(const JsonObject &config) {
   touchpad_ptr->params.press = config["press"].as<MidiType>();
   touchpad_ptr->params.input_chan = config["input_chan"].as<uint8_t>();
 
-  if (touchpad_ptr->params.touchs < MAX_TOUCHPAD_TOUCHS) {
+  if (touchpad_ptr->params.touchs <= MAX_TOUCHPAD_TOUCHS) {
     
     midi_status_t status;
     for (uint8_t i = 0; i<touchpad_ptr->params.touchs; i++) {

@@ -23,7 +23,7 @@ static mapp_switch_t mapp_switches[MAX_SWITCHS];
 llist_t llist_switch_pool;
 
 bool mapping_switchs_alloc(uint8_t switchs_cnt) {
-  if (switchs_cnt < MAX_SWITCHS) {
+  if (switchs_cnt <= MAX_SWITCHS) {
     llist_builder(&llist_switch_pool, &mapp_switches[0], switchs_cnt, sizeof(mapp_switches[0]));
     return true;
   }
@@ -174,7 +174,7 @@ void mapping_switch_create(const JsonObject &config) {
   switch_ptr->params.input_chan = config["input_chan"].as<uint8_t>();
   switch_ptr->params.tap_tempo = config["tap_tempo"] | false;
 
-  if (switch_ptr->params.touchs < MAX_SWITCH_TOUCHS) {
+  if (switch_ptr->params.touchs <= MAX_SWITCH_TOUCHS) {
     
     for (uint8_t i = 0; i<switch_ptr->params.touchs; i++) {
       midi_status_t status;
