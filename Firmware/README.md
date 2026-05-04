@@ -38,7 +38,7 @@
 ### With power plug only (no USB cable)
 
 1. The firmware boots in `PENDING_MODE`.
-2. After `PENDING_MODE_TIMEOUT` (4 s), it switches to `STANDALONE_MODE`.
+2. After `PENDING_MODE_TIMEOUT` (4 s), it switches to `PLAY_MODE`.
 3. The device loads `flash_config()`:
     - **`FLASH_CONFIG_LOAD_DONE`**: the **BUILTIN_LEDs** blink `STANDALONE_MODE`.
     - **`FLASH_CONFIG_LOAD_FAILED`**: the **BUILTIN_LEDs** blink an **ERROR_CODE**.
@@ -72,14 +72,14 @@
 
 All TUIs are fully parametric and configured via the web app config file.
 
-| TUI | Max instances | Max simultaneous touches |
-|-----|:---:|:---:|
-| `switch()` | 16 | 2 |
-| `slider()` | 6 | 2 |
-| `knob()` | 4 | 4 |
-| `touchpad()` | 2 | 5 |
-| `polygon()` | 8 | 3 |
-| `grid()` | 1 | 3 |
+| TUI | Max instances | Max simultaneous touches | Notes |
+|-----|:---:|:---:|---|
+| `switch()` | 16 | 2 | `tap_tempo: true` turns any switch into a MIDI Clock tap-tempo source |
+| `slider()` | 6 | 2 | `steps > 0` divides the axis into note zones (ROL mode) |
+| `knob()` | 4 | 4 | |
+| `touchpad()` | 2 | 5 | |
+| `polygon()` | 8 | 3 | |
+| `grid()` | 1 | 3 | Note layout reprogrammable live via hardware MIDI input |
 
 > **grid()** is inspired by the [Omnichord](https://en.wikipedia.org/wiki/Omnichord). It maps a rectangular zone of the textile surface to a grid of MIDI notes. The layout can be updated live from a MIDI keyboard connected to the hardware MIDI input.
 
@@ -207,11 +207,12 @@ When `attack_done` is set, the MIDI layer reads `attack_z` to send the deferred 
 | Constant | Default | Description |
 |----------|---------|-------------|
 | `VELOCITY_MIN_INTERVAL_MS` | 10 ms | Minimum time between velocity updates |
-| `VELOCITY_EMA_ALPHA` | 0.3 | EMA factor: 0 = frozen, 1 = raw (no smoothing) |
+| `VELOCITY_EMA_ALPHA` | 0.4 | EMA factor: 0 = frozen, 1 = raw (no smoothing) |
 | `VELOCITY_ATTACK_MIN_MS` | 5 ms | Guard time before peak-drop detection activates |
 | `VELOCITY_ATTACK_MAX_MS` | 80 ms | Hard deadline — forces `attack_done` if peak never drops |
 | `VELOCITY_ATTACK_DROP` | 0.5 | Ratio: `attack_done` when `\|vz\| < peak × ratio` |
-| `VELOCITY_ATTACK_Z_MAX` | 4000 | Max expected `\|velocity.z\|` in units/s — use to scale MIDI range |
+| `VELOCITY_ATTACK_Z_MAX` | 1500 | Max expected `\|velocity.z\|` in units/s — tune to calibrate MIDI range |
+| `VELOCITY_XY_MAX` | 200 | Max expected lateral velocity in units/s — used for ROL slider NoteOn velocity |
 
 ---
 
@@ -243,15 +244,17 @@ FREE → NEW → PRESENT → MISSING → RELEASED → FREE
 
 | File | Role |
 |------|------|
-| [src/main.cpp](src/main.cpp) | Setup and main loop |
+| [src/main.cpp](src/main.cpp) | Setup and main loop — per-mode dispatch table at top of `loop()` |
 | [src/scan.cpp](src/scan.cpp) | ADC matrix acquisition |
 | [src/interp.cpp](src/interp.cpp) | Bilinear interpolation |
 | [src/blob.cpp](src/blob.cpp) | Blob detection and tracking |
-| [src/mapping.cpp](src/mapping.cpp) | TUI dispatch engine |
+| [src/mapping.cpp](src/mapping.cpp) | TUI dispatch engine — blob lifecycle → MIDI out |
 | [src/usb_midi_io.cpp](src/usb_midi_io.cpp) | USB MIDI I/O |
 | [src/hardware_midi_io.cpp](src/hardware_midi_io.cpp) | Hardware MIDI I/O |
+| [src/midi_tap_tempo.cpp](src/midi_tap_tempo.cpp) | Tap-tempo MIDI Clock generator (24 PPQN) |
 | [src/config.cpp](src/config.cpp) | Hardware init, flash config |
 | [include/config.h](include/config.h) | All project constants |
+| [include/mapping.h](include/mapping.h) | Touch types (`touch_press_t`, `touch_linear_t`, `touch_planar_t`) and `common_t` vtable |
 
 ### Benchmark
 
