@@ -50,6 +50,8 @@ void loop() {
   update_controls();
   update_levels();
 
+  midi_msg_t* midi_msg_ptr = NULL;
+
   switch (e256_current_mode) {
 
     case PENDING_MODE:
@@ -87,6 +89,9 @@ void loop() {
     case THROUGH_MODE:
       usb_midi_receive();
       mapping_hardware_midi_transmit();
+      // All nodes in llist_midi_out are pool-owned in THROUGH_MODE — return them.
+      while ((midi_msg_ptr = (midi_msg_t*)llist_pop_front(&llist_midi_out)) != NULL)
+        llist_push_front(&llist_midi_nodes_pool, midi_msg_ptr);
       break;
       
     case PLAY_MODE:
@@ -116,8 +121,9 @@ void loop() {
       break;
   };
   
-  midi_msg_t* midi_msg_ptr = NULL;
-  while ((midi_msg_ptr = (midi_msg_t*)llist_pop_front(&llist_midi_out)) != NULL); // Save/rescue all midi_out llist nodes
+  // Drain any leftover static-pointer entries from llist_midi_out (PLAY/STANDALONE modes).
+  // These are NOT pool nodes — do not return to pool.
+  while (llist_pop_front(&llist_midi_out) != NULL);
   
   #if defined(USB_MIDI_SERIAL) && defined(DEBUG_FPS)
   if (millis() - fpsTimeStamp >= 1000) {

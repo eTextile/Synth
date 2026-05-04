@@ -149,30 +149,28 @@ void usb_midi_send_info(uint8_t program, uint8_t channel) {
 // Store an incoming Note On from the USB host.
 // In THROUGH_MODE the message is forwarded directly to the hardware MIDI output.
 void usb_read_note_on(uint8_t channel, uint8_t note, uint8_t velocity) {
+  if (e256_current_mode != THROUGH_MODE) return;
   midi_msg_t* midi_msg_ptr = (midi_msg_t*)llist_pop_front(&llist_midi_nodes_pool);
   if (midi_msg_ptr != NULL) {
     midi_msg_ptr->channel = channel;
     midi_msg_ptr->type = NoteOn;
     midi_msg_ptr->data1 = note;
     midi_msg_ptr->data2 = velocity;
-    if (e256_current_mode == THROUGH_MODE) {
-      llist_push_front(&llist_midi_out, midi_msg_ptr);
-    }
+    llist_push_front(&llist_midi_out, midi_msg_ptr);
   }
 };
 
 // Store an incoming Note Off from the USB host.
 // In THROUGH_MODE the message is forwarded directly to the hardware MIDI output.
 void usb_read_note_off(uint8_t channel, uint8_t note, uint8_t velocity) {
+  if (e256_current_mode != THROUGH_MODE) return;
   midi_msg_t* midi_msg_ptr = (midi_msg_t*)llist_pop_front(&llist_midi_nodes_pool);
   if (midi_msg_ptr != NULL) {
     midi_msg_ptr->channel = channel;
     midi_msg_ptr->type = NoteOff;
     midi_msg_ptr->data1 = note;
     midi_msg_ptr->data2 = velocity;
-    if (e256_current_mode == THROUGH_MODE) {
-      llist_push_front(&llist_midi_out, midi_msg_ptr);
-    }
+    llist_push_front(&llist_midi_out, midi_msg_ptr);
   }
 };
 
@@ -184,30 +182,28 @@ void usb_read_control_change(uint8_t channel, uint8_t control, uint8_t value) {
     set_level((level_code_t)control, value);
     return;
   }
+  if (e256_current_mode != THROUGH_MODE) return;
   midi_msg_t* midi_msg_ptr = (midi_msg_t*)llist_pop_front(&llist_midi_nodes_pool);
   if (midi_msg_ptr != NULL) {
     midi_msg_ptr->channel = channel;
     midi_msg_ptr->type = ControlChange;
     midi_msg_ptr->data1 = control;
     midi_msg_ptr->data2 = value;
-    if (e256_current_mode == THROUGH_MODE) {
-      llist_push_front(&llist_midi_out, midi_msg_ptr);
-    }
+    llist_push_front(&llist_midi_out, midi_msg_ptr);
   }
 };
 
 // Store an incoming Polyphonic Aftertouch from the USB host.
 // In THROUGH_MODE the message is forwarded to the hardware MIDI output.
 void usb_read_after_touch_poly(uint8_t channel, uint8_t note, uint8_t pressure) {
+  if (e256_current_mode != THROUGH_MODE) return;
   midi_msg_t* midi_msg_ptr = (midi_msg_t*)llist_pop_front(&llist_midi_nodes_pool);
   if (midi_msg_ptr != NULL) {
     midi_msg_ptr->channel = channel;
     midi_msg_ptr->type = AfterTouchPoly;
     midi_msg_ptr->data1 = note;
     midi_msg_ptr->data2 = pressure;
-    if (e256_current_mode == THROUGH_MODE) {
-      llist_push_front(&llist_midi_out, midi_msg_ptr);
-    }
+    llist_push_front(&llist_midi_out, midi_msg_ptr);
   }
 };
 
@@ -215,15 +211,14 @@ void usb_read_after_touch_poly(uint8_t channel, uint8_t note, uint8_t pressure) 
 // The 14-bit value is split into LSB (data1) and MSB (data2).
 // In THROUGH_MODE the message is forwarded to the hardware MIDI output.
 void usb_read_pitch_bend(uint8_t channel, int pitch) {
+  if (e256_current_mode != THROUGH_MODE) return;
   midi_msg_t* midi_msg_ptr = (midi_msg_t*)llist_pop_front(&llist_midi_nodes_pool);
   if (midi_msg_ptr != NULL) {
     midi_msg_ptr->channel = channel;
     midi_msg_ptr->type = PitchBend;
     midi_msg_ptr->data1 = pitch & 0x7F; // Lsb
     midi_msg_ptr->data2 = pitch >> 7;   // Msb
-    if (e256_current_mode == THROUGH_MODE) {
-      llist_push_front(&llist_midi_out, midi_msg_ptr);
-    }
+    llist_push_front(&llist_midi_out, midi_msg_ptr);
   }
 };
 
