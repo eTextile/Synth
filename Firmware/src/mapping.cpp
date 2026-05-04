@@ -5,53 +5,12 @@
 */
 
 #include "mapping.h"
-#include "midi_seq.h"
+#include "midi_tap_tempo.h"
 
 llist_t llist_mappings;
 
-// Sends the deferred NoteOn once attack_done is true.
-// touch_1d_t / touch_2d_t / touch_3d_t all have press as their first member,
-// so a touch_1d_t* cast is safe for accessing the press axis regardless of TUI type.
-#if defined(BLOB_VELOCITY)
-static void mapping_flush_pending_note_on(blob_t* blob_ptr) {
-  if (!blob_ptr->action.note_on_z_pending || !blob_ptr->velocity.attack_done) return;
-  if (blob_ptr->action.touch_ptr == NULL) return;
-  axis_t* axis_ptr = &((touch_1d_t*)blob_ptr->action.touch_ptr)->press;
-  /*
-  float scaled = blob_ptr->velocity.attack_z / (float)VELOCITY_ATTACK_Z_MAX;
-  axis_ptr->msg.data2 = (uint8_t)constrain(
-    (int)(scaled * (axis_ptr->limit.max - axis_ptr->limit.min) + axis_ptr->limit.min),
-    axis_ptr->limit.min, axis_ptr->limit.max
-  );
-  */
-  axis_ptr->msg.data2 = (uint8_t)constrain((int)(blob_ptr->velocity.attack_z), 0, 127);
-
-  llist_push_front(&llist_midi_out, &axis_ptr->msg);
-  blob_ptr->action.note_on_z_pending = false;
-}
-
-// Sends the deferred NoteOn for ROL sliders using lateral slide velocity.
-// Waits until velocity.xy > 0 (finger is actually sliding) so the velocity=0 case
-// from a stationary press doesn't produce a NoteOff-disguised NoteOn.
-// Falls back after VELOCITY_ATTACK_MAX_MS so a stationary press still triggers a note.
-static void mapping_flush_pending_note_on_xy(blob_t* blob_ptr) {
-  if (!blob_ptr->action.note_on_xy_pending) return;
-  if (blob_ptr->action.touch_ptr == NULL) return;
-  uint32_t age = millis() - blob_ptr->velocity.born_at;
-  if (blob_ptr->velocity.xy < 1.0f && age < VELOCITY_ATTACK_MAX_MS) return;
-  axis_t* axis_ptr = &((touch_1d_t*)blob_ptr->action.touch_ptr)->press;
-  /*
-  float scaled = blob_ptr->velocity.xy / (float)VELOCITY_XY_MAX;
-  int val = (int)(scaled * (axis_ptr->limit.max - axis_ptr->limit.min) + axis_ptr->limit.min);
-  axis_ptr->msg.data2 = (uint8_t)constrain(max(val, 1), axis_ptr->limit.min, axis_ptr->limit.max);
-  */
-  
-  axis_ptr->msg.data2 = (uint8_t)constrain(blob_ptr->velocity.xy, 0, 127);
-
-  llist_push_front(&llist_midi_out, &axis_ptr->msg);
-  blob_ptr->action.note_on_xy_pending = false;
-}
-#endif
+static void mapping_flush_pending_note_on_xy(blob_t*);
+static void mapping_flush_pending_note_on(blob_t*);
 
 void mapping_lib_update(void) {
   tap_tempo_clock_tick();
@@ -96,6 +55,37 @@ void mapping_lib_update(void) {
   }
 };
 
+// Sends the deferred NoteOn once attack_done is true.
+// touch_1d_t / touch_2d_t / touch_3d_t all have press as their first member,
+// so a touch_1d_t* cast is safe for accessing the press axis regardless of TUI type.
+#if defined(BLOB_VELOCITY)
+static void mapping_flush_pending_note_on(blob_t* blob_ptr) {
+  if (!blob_ptr->action.note_on_z_pending || !blob_ptr->velocity.attack_done) return;
+  if (blob_ptr->action.touch_ptr == NULL) return;
+  axis_t* axis_ptr = &((touch_1d_t*)blob_ptr->action.touch_ptr)->press;
+  axis_ptr->msg.data2 = (uint8_t)constrain((int)(blob_ptr->velocity.attack_z * 127.0f / VELOCITY_ATTACK_Z_MAX), 0, 127);
+
+  llist_push_front(&llist_midi_out, &axis_ptr->msg);
+  blob_ptr->action.note_on_z_pending = false;
+}
+
+// Sends the deferred NoteOn for ROL sliders using lateral slide velocity.
+// Waits until velocity.xy > 0 (finger is actually sliding) so the velocity=0 case
+// from a stationary press doesn't produce a NoteOff-disguised NoteOn.
+// Falls back after VELOCITY_ATTACK_MAX_MS so a stationary press still triggers a note.
+static void mapping_flush_pending_note_on_xy(blob_t* blob_ptr) {
+  if (!blob_ptr->action.note_on_xy_pending) return;
+  if (blob_ptr->action.touch_ptr == NULL) return;
+  uint32_t age = millis() - blob_ptr->velocity.born_at;
+  if (blob_ptr->velocity.xy < 1.0f && age < VELOCITY_ATTACK_MAX_MS) return;
+  axis_t* axis_ptr = &((touch_1d_t*)blob_ptr->action.touch_ptr)->press;
+  axis_ptr->msg.data2 = (uint8_t)constrain(max((int)(blob_ptr->velocity.xy * 127.0f / VELOCITY_XY_MAX), 1), 0, 127);
+
+  llist_push_front(&llist_midi_out, &axis_ptr->msg);
+  blob_ptr->action.note_on_xy_pending = false;
+}
+#endif
+
 // Called from every TUI _start when press mode == NoteOn.
 // When BLOB_VELOCITY is defined: arms the deferred NoteOn (actual send happens in
 // mapping_flush_pending_note_on, called from the PRESENT branch of the dispatcher).
@@ -114,9 +104,7 @@ void mapping_send_midi_note_on(axis_t* axis_ptr, blob_t* blob_ptr) {
 // Sends immediately — no deferred attack window needed for a rolling gesture.
 void mapping_send_midi_note_on_xy(axis_t* axis_ptr, blob_t* blob_ptr) {
   axis_ptr->msg.type = NoteOn;
-  float scaled = blob_ptr->velocity.xy / (float)VELOCITY_XY_MAX;
-  int val = (int)(scaled * (axis_ptr->limit.max - axis_ptr->limit.min) + axis_ptr->limit.min);
-  axis_ptr->msg.data2 = (uint8_t)constrain(max(val, 1), axis_ptr->limit.min, axis_ptr->limit.max);
+  axis_ptr->msg.data2 = (uint8_t)constrain(max((int)(blob_ptr->velocity.xy * 127.0f / VELOCITY_XY_MAX), 1), 0, 127);
   llist_push_front(&llist_midi_out, &axis_ptr->msg);
   blob_ptr->action.note_on_xy_pending = false; // cancel deferred NoteOn if step changed first
 };

@@ -15,7 +15,7 @@ void hardware_midi_setup(void);
 void hardware_midi_receive(void);
 void hardware_midi_set_input_channel(uint8_t channel);
 void hardware_midi_handle_input(const Message<128u> &midi_msg);
-void hardware_midi_transmit_mappings_midi_msg(void);
+void mapping_hardware_midi_transmit(void);
 void hardware_midi_send_clock(void);
 
 #endif /*__HARDWARE_MIDI_IO_H__*/

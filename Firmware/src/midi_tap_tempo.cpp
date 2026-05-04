@@ -14,7 +14,7 @@
 // tap_tempo_clock_tick() is called every frame from mapping_lib_update().
 // It fires usbMIDI + hardware MIDI TimingClock (0xF8) at 24 PPQN.
 
-#include "midi_seq.h"
+#include "midi_tap_tempo.h"
 #include "usb_midi_io.h"
 #include "hardware_midi_io.h"
 
@@ -56,10 +56,7 @@ void tap_tempo_clock_tick(void) {
   uint32_t now_us = micros();
   if (now_us - last_clock_us >= clock_interval_us) {
     last_clock_us = now_us;
-    usb_midi_send_clock();
+    usb_midi_send_clock(); //TODO: Not used when STANDALONE_MODE!
     hardware_midi_send_clock();
   }
 }
-
-void step_sequencer(void) {} // TODO
-void arpeggiator(void)     {} // TODO

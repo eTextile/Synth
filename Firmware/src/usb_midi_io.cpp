@@ -46,7 +46,7 @@ void usb_midi_transmit_raw_matrix(void) {
     usbMIDI.sendSysEx(RAW_FRAME, raw_frame.data_ptr, false);
     usbMIDI.send_now();
   }
-  while (usbMIDI.read()); // discard any incoming messages while transmitting
+  usb_midi_receive(); // process any incoming messages (e.g. PC to change mode)
 };
 
 // The interpolated frame (NEW_FRAME = 4096 bytes) exceeds the Teensy USB SysEx
@@ -68,7 +68,7 @@ void usb_midi_transmit_interp_matrix(void) {
     }
     usbMIDI.send_now();
   }
-  while (usbMIDI.read()); // discard any incoming messages while transmitting
+  usb_midi_receive(); // process any incoming messages (e.g. PC to change mode)
 };
 
 // Send one B_COUNT-byte SysEx message per active blob (see blob_params_e in blob.h).
@@ -86,47 +86,41 @@ void usb_midi_transmit_interp_matrix(void) {
 void usb_midi_transmit_blobs(void) {
   static uint32_t usbTransmitTimeStamp = 0;
 
-  bool force_send = false;
-  for (lnode_t* node_ptr = ITERATOR_START_FROM_HEAD(&llist_blobs); node_ptr != NULL; node_ptr = ITERATOR_NEXT(node_ptr)) {
-    blob_t* blob_ptr = (blob_t*)ITERATOR_DATA(node_ptr);
-    if (blob_ptr->status == NEW || blob_ptr->status == FREE) {
-      force_send = true;
-      break;
-    }
-  }
-  if (!force_send && millis() - usbTransmitTimeStamp < MATRIX_MIDI_THROTTLE_MS) return;
-  usbTransmitTimeStamp = millis();
+  uint32_t now = millis();
+  bool send_steady = (now - usbTransmitTimeStamp) >= MATRIX_MIDI_THROTTLE_MS;
 
-  uint8_t blob_msg[B_COUNT] = {0};
+  uint8_t blob_msg[B_COUNT];
+  bool any_sent = false;
   for (lnode_t* node_ptr = ITERATOR_START_FROM_HEAD(&llist_blobs); node_ptr != NULL; node_ptr = ITERATOR_NEXT(node_ptr)) {
     blob_t* blob_ptr = (blob_t*)ITERATOR_DATA(node_ptr);
+
+    bool is_event = (blob_ptr->status == NEW || blob_ptr->status == FREE);
+    if (!is_event && !send_steady) continue;
 
     blob_msg[B_STATUS]      = (uint8_t)blob_ptr->status;
     blob_msg[B_LAST_STATUS] = (uint8_t)blob_ptr->last_status;
-
-    blob_msg[B_UID] = blob_ptr->UID;
-
-    uint8_t whole_part = (uint8_t)blob_ptr->centroid.x;
-    blob_msg[B_X_WHOLE] = whole_part;
-    blob_msg[B_X_FRAC]  = (uint8_t)((blob_ptr->centroid.x - whole_part) * 100);
-
-    whole_part = (uint8_t)blob_ptr->centroid.y;
-    blob_msg[B_Y_WHOLE] = whole_part;
-    blob_msg[B_Y_FRAC]  = (uint8_t)((blob_ptr->centroid.y - whole_part) * 100);
-
-    blob_msg[B_WIDTH]  = blob_ptr->box.w;
-    blob_msg[B_HEIGHT] = blob_ptr->box.h;
-    blob_msg[B_DEPTH]  = blob_ptr->centroid.z;
-
+    blob_msg[B_UID]         = blob_ptr->UID;
+    uint8_t whole_part      = (uint8_t)blob_ptr->centroid.x;
+    blob_msg[B_X_WHOLE]     = whole_part;
+    blob_msg[B_X_FRAC]      = (uint8_t)((blob_ptr->centroid.x - whole_part) * 100);
+    whole_part              = (uint8_t)blob_ptr->centroid.y;
+    blob_msg[B_Y_WHOLE]     = whole_part;
+    blob_msg[B_Y_FRAC]      = (uint8_t)((blob_ptr->centroid.y - whole_part) * 100);
+    blob_msg[B_WIDTH]       = blob_ptr->box.w;
+    blob_msg[B_HEIGHT]      = blob_ptr->box.h;
+    blob_msg[B_DEPTH]       = blob_ptr->centroid.z;
     blob_msg[B_VELOCITY_XY] = (uint8_t)constrain((int)(blob_ptr->velocity.xy * 127.0f / VELOCITY_XY_MAX), 0, 127);
     blob_msg[B_VELOCITY_Z]  = (uint8_t)constrain(64 + (int)(blob_ptr->velocity.z * 64.0f / VELOCITY_Z_DISPLAY_MAX), 0, 127);
     blob_msg[B_ATTACK_Z]    = (uint8_t)constrain((int)(blob_ptr->velocity.attack_z * 127.0f / VELOCITY_ATTACK_Z_MAX), 0, 127);
     blob_msg[B_ATTACK_DONE] = blob_ptr->velocity.attack_done ? 1 : 0;
-
     usbMIDI.sendSysEx(B_COUNT, blob_msg, false);
-  };
-  usbMIDI.send_now(); // flush all blob messages in one USB transaction
-  while (usbMIDI.read());
+    any_sent = true;
+  }
+
+  if (!any_sent) return;
+  if (send_steady) usbTransmitTimeStamp = now;
+  usbMIDI.send_now();
+  usb_midi_receive();
 };
 
 // Forward all pending outbound MIDI messages from llist_midi_out to the USB host.
@@ -141,7 +135,7 @@ void usb_midi_transmit_mappings_midi_msg(void) {
 
 // Send a MIDI Real Time TimingClock (0xF8) to the USB host — called by tap_tempo_clock_tick().
 void usb_midi_send_clock(void) {
-  usbMIDI.sendRealTime(midi::TimingClock);
+  usbMIDI.sendClock();
 };
 
 // Send a Program Change on `channel` to report a mode acknowledgement or error

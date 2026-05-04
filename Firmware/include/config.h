@@ -77,7 +77,7 @@
 #define VELOCITY_ATTACK_MIN_MS   5     // Minimum guard before peak detection kicks in (ms)
 #define VELOCITY_ATTACK_MAX_MS   80    // Hard deadline: force attack_done even without peak drop (ms)
 #define VELOCITY_ATTACK_DROP     0.5f  // Peak-drop ratio: attack_done when |vz| < peak * ratio
-#define VELOCITY_ATTACK_Z_MAX    4000  // Max expected |velocity.z| in units/s (tune to calibrate MIDI range)
+#define VELOCITY_ATTACK_Z_MAX    1500  // Max expected |velocity.z| in units/s (tune to calibrate MIDI range)
 #define VELOCITY_Z_DISPLAY_MAX   500   // Scale for SysEx Vz display (separate from attack — lower = more sensitive)
 #define VELOCITY_XY_MAX          200   // Max expected velocity.xy in units/s for ROL sliders (tune to calibrate MIDI range)
 

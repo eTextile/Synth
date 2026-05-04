@@ -25,7 +25,7 @@ llist_t llist_sliders_pool;
 // Must be called once at boot before any mapping_slider_create() calls.
 // Returns false if sliders_cnt exceeds MAX_SLIDERS.
 bool mapping_sliders_alloc(uint8_t sliders_cnt) {
-  if (sliders_cnt < MAX_SLIDERS) {
+  if (sliders_cnt <= MAX_SLIDERS) {
     llist_builder(&llist_sliders_pool, &mapp_sliders[0], sliders_cnt, sizeof(mapp_sliders[0]));
     return true;
   }
@@ -315,7 +315,7 @@ void mapping_slider_create(const JsonObject &config) {
   for (uint8_t i = 0; i < MAX_SLIDER_STEPS; i++) {
     slider_ptr->params.step_note[i] = 60 + i;
   }
-  if (slider_ptr->params.touchs < MAX_SLIDER_TOUCHS) {
+  if (slider_ptr->params.touchs <= MAX_SLIDER_TOUCHS) {
     midi_status_t status;
 
     for (uint8_t i = 0; i<slider_ptr->params.touchs; i++) {

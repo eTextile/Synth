@@ -5,7 +5,7 @@
 */
 
 #include "mapp_switch.h"
-#include "midi_seq.h"
+#include "midi_tap_tempo.h"
 
 struct mapp_switch_s;
 typedef struct mapp_switch_s mapp_switch_t;

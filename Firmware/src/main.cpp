@@ -55,7 +55,7 @@ void loop() {
     case PENDING_MODE:
       usb_midi_receive();
       if ((millis() - boot_time) > PENDING_MODE_TIMEOUT) {
-        set_mode(STANDALONE_MODE);
+        set_mode(PLAY_MODE);
       }
       break;
 
@@ -86,7 +86,7 @@ void loop() {
 
     case THROUGH_MODE:
       usb_midi_receive();
-      hardware_midi_transmit_mappings_midi_msg();
+      mapping_hardware_midi_transmit();
       break;
       
     case PLAY_MODE:
@@ -96,7 +96,10 @@ void loop() {
       matrix_find_blobs();
       mapping_lib_update();
       usb_midi_transmit_mappings_midi_msg();
-      hardware_midi_transmit_mappings_midi_msg();
+      mapping_hardware_midi_transmit();
+      #if defined(BLOB_VELOCITY) // DEBUG MODE!!
+      usb_midi_transmit_blobs();
+      #endif
       break;
 
     case STANDALONE_MODE:
@@ -105,7 +108,7 @@ void loop() {
       matrix_interp();
       matrix_find_blobs();
       mapping_lib_update();
-      hardware_midi_transmit_mappings_midi_msg();
+      mapping_hardware_midi_transmit();
       break;
 
     default:
