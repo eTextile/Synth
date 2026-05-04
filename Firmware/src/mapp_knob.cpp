@@ -66,7 +66,7 @@ void mapping_knob_dispose_blob(void* mapping_ptr, blob_t* blob_ptr) {
 
 void mapping_knob_start(blob_t* blob_ptr) {
   mapp_knob_t* knob_ptr = (mapp_knob_t*)blob_ptr->action.mapping_ptr;
-  touch_3d_t* touch_ptr = (touch_3d_t*)blob_ptr->action.touch_ptr;
+  knob_touch_t* touch_ptr = (knob_touch_t*)blob_ptr->action.touch_ptr;
 
   switch (knob_ptr->params.press) {
     case NoteOn:
@@ -99,13 +99,13 @@ void mapping_knob_continue(blob_t* blob_ptr) {
   float pos_y = -x * sin(knob_ptr->params.offset) + y * cos(knob_ptr->params.offset);
   
   if (pos_x == 0 && 0 < pos_y) {
-    theta = PiII;
+    theta = PI_OVER_2;
   } else if (pos_x == 0 && pos_y < 0) {
-    theta = IIIPiII;
+    theta = THREE_PI_OVER_2;
   } else if (pos_x < 0) {
     theta = atanf(pos_y / pos_x) + PI;
   } else if (pos_y < 0) {
-    theta = atanf(pos_y / pos_x) + IIPi;
+    theta = atanf(pos_y / pos_x) + TWO_PI;
   } else {
     theta = atanf(pos_y / pos_x);
   }
@@ -133,7 +133,7 @@ void mapping_knob_continue(blob_t* blob_ptr) {
 
 void mapping_knob_stop(blob_t* blob_ptr) {
   mapp_knob_t* knob_ptr = (mapp_knob_t*)blob_ptr->action.mapping_ptr;
-  touch_3d_t* touch_ptr = (touch_3d_t*)blob_ptr->action.touch_ptr;
+  knob_touch_t* touch_ptr = (knob_touch_t*)blob_ptr->action.touch_ptr;
 
   switch (knob_ptr->params.press) {
     case NoteOn:

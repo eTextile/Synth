@@ -50,19 +50,25 @@ struct axis_s {
   unsigned long int midi_time_stamp;
 };
 
-typedef struct touch_1d_s touch_1d_t;
-struct touch_1d_s {
+// touch_press_t  — pressure only              (switch, grid)
+// touch_linear_t — 1-axis position + pressure  (slider)
+// touch_planar_t — 2-axis position + pressure  (touchpad, polygon)
+// All three share `press` as their first member, so a touch_press_t* cast
+// is always safe for accessing pressure regardless of the concrete type.
+
+typedef struct touch_press_s touch_press_t;
+struct touch_press_s {
   axis_t press;
 };
 
-typedef struct touch_2d_s touch_2d_t;
-struct touch_2d_s {
+typedef struct touch_linear_s touch_linear_t;
+struct touch_linear_s {
   axis_t press;
   axis_t pos;
 };
 
-typedef struct touch_3d_s touch_3d_t;
-struct touch_3d_s {
+typedef struct touch_planar_s touch_planar_t;
+struct touch_planar_s {
   axis_t press;
   axis_t pos_x;
   axis_t pos_y;
@@ -84,8 +90,23 @@ typedef void start_func_t(blob_t*);
 typedef void continue_func_t(blob_t*);
 typedef void stop_func_t(blob_t*);
 
+// common_s is the vtable shared by every mapping type (slider, touchpad, switch…).
+// Each mapping struct embeds common_s as its FIRST member so a (common_t*) cast is safe.
+//
+// Hardware MIDI input path (called by hardware_midi_io.cpp):
+//   receive (mapping_ptr, msg) → bool   : return true if msg->channel matches this mapping's input_chan
+//   update  (mapping_ptr, msg)           : store msg (pool node) in the mapping's active-note list
+//   dispose (mapping_ptr, msg)           : decrement active count; drain pool when count reaches 0
+//
+// Blob lifecycle path (called by mapping_lib_update in mapping.cpp):
+//   is_blob_inside (mapping_ptr, blob) → bool : true if blob centroid lies inside the mapping rect
+//   blob_assign    (mapping_ptr, blob) → bool : claim next free touch slot; return false when full
+//   blob_dispose   (mapping_ptr, blob)         : release touch slot; reset index when last blob lifts
+//
+//   start    (blob) : called once on the first frame the blob is detected (status == NEW)
+//   continue (blob) : called every frame while the blob is held     (status == PRESENT)
+//   stop     (blob) : called once when the blob is released          (status == RELEASED)
 struct common_s {
-  
   midi_hardware_receive_func_t* midi_hardware_receive_func_ptr;
   midi_hardware_update_func_t* midi_hardware_update_func_ptr;
   midi_hardware_dispose_func_t* midi_hardware_dispose_func_ptr;
@@ -93,7 +114,7 @@ struct common_s {
   is_blob_inside_func_t* is_blob_inside_func_ptr;
   blob_assign_func_t* blob_assign_func_ptr;
   blob_dispose_func_t* blob_dispose_func_ptr;
-  
+
   start_func_t* start_func_ptr;
   continue_func_t* continue_func_ptr;
   stop_func_t* stop_func_ptr;

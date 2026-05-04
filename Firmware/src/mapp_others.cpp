@@ -53,13 +53,13 @@ cTrack_t cTrack[CS_TRACKS] = {
 };
 
 cSlider_t mapp_cSliders[CS_SLIDERS] = {
-  {1, 0,    IIPi, 0},  // PARAMS[id, thetaMin, thetaMax, lastVal]
-  {2, 0,    IIPi, 0},  // PARAMS[id, thetaMin, thetaMax, lastVal]
+  {1, 0,    TWO_PI, 0},  // PARAMS[id, thetaMin, thetaMax, lastVal]
+  {2, 0,    TWO_PI, 0},  // PARAMS[id, thetaMin, thetaMax, lastVal]
   {3, 0,    3.60, 0},  // PARAMS[id, thetaMin, thetaMax, lastVal]
-  {4, 3.80, IIPi, 0},  // PARAMS[id, thetaMin, thetaMax, lastVal]
+  {4, 3.80, TWO_PI, 0},  // PARAMS[id, thetaMin, thetaMax, lastVal]
   {5, 0,    3.20, 0},  // PARAMS[id, thetaMin, thetaMax, lastVal]
   {6, 3.40, 5.20, 0},  // PARAMS[id, thetaMin, thetaMax, lastVal]
-  {7, 5.30, 8, IIPi}   // PARAMS[id, thetaMin, thetaMax, lastVal]
+  {7, 5.30, 8, TWO_PI}   // PARAMS[id, thetaMin, thetaMax, lastVal]
 };
 
 uint8_t mapp_csliders = 0;
@@ -87,13 +87,13 @@ void mapping_cSliders_update(void) {
       float posX = x * cos(cTrack[track].offset) + y * sin(cTrack[track].offset);
       float posY = -x * sin(cTrack[track].offset) + y * cos(cTrack[track].offset);
       if (posX == 0 && 0 < posY) {
-        theta = PiII;
+        theta = PI_OVER_2;
       } else if (posX == 0 && posY < 0) {
-        theta = IIIPiII;
+        theta = THREE_PI_OVER_2;
       } else if (posX < 0) {
         theta = atanf(posY / posX) + PI;
       } else if (posY < 0) {
-        theta = atanf(posY / posX) + IIPi;
+        theta = atanf(posY / posX) + TWO_PI;
       } else {
         theta = atanf(posY / posX);
       }

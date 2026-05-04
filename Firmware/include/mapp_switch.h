@@ -7,7 +7,7 @@ typedef struct switch_s switch_t;
 struct switch_s {
   rect_t rect;
   uint8_t touchs;
-  touch_1d_t touch[MAX_SWITCH_TOUCHS];
+  touch_press_t touch[MAX_SWITCH_TOUCHS];
   MidiType press;
   uint8_t input_chan;
   bool tap_tempo; // true = tap tempo mode: each touch sends MIDI TimingClock at tapped BPM

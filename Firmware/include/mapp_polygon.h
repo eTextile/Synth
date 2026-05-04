@@ -11,7 +11,7 @@ struct polygon_s {
   float c[MAX_POLYGON_POINTS];
   bool is_inside;
   uint8_t touchs;
-  touch_3d_t touch[MAX_POLYGON_TOUCHS];
+  touch_planar_t touch[MAX_POLYGON_TOUCHS];
   MidiType press;
   uint8_t input_chan;
 };

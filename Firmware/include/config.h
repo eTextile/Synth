@@ -62,9 +62,9 @@
 #define Z_MIN 0   // Blob centroid Z min value
 #define Z_MAX 127 // Blob centroid Z max value
 
-#define IIPi (float)(2 * PI)
-#define IIIPiII (float)(3 * PI) / 2
-#define PiII (float)(PI / 2)
+#define TWO_PI         (float)(2 * PI)
+#define THREE_PI_OVER_2 (float)(3 * PI / 2)
+#define PI_OVER_2       (float)(PI / 2)
 #define LONG_HOLD 1500
 #define LEVEL_TIMEOUT 3000
 #define PENDING_MODE_TIMEOUT 4000

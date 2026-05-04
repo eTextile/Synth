@@ -66,7 +66,7 @@ void mapping_touchpad_dispose_blob(void* mapping_ptr, blob_t* blob_ptr) {
 
 void mapping_touchpad_start(blob_t* blob_ptr) {
   mapp_touchpad_t* touchpad_ptr = (mapp_touchpad_t*)blob_ptr->action.mapping_ptr;
-  touch_3d_t* touch_ptr = (touch_3d_t*)blob_ptr->action.touch_ptr;
+  touch_planar_t* touch_ptr = (touch_planar_t*)blob_ptr->action.touch_ptr;
 
   switch (touchpad_ptr->params.press) {
     case NoteOn:
@@ -86,7 +86,7 @@ void mapping_touchpad_start(blob_t* blob_ptr) {
 
 void mapping_touchpad_continue(blob_t* blob_ptr) {
   mapp_touchpad_t* touchpad_ptr = (mapp_touchpad_t*)blob_ptr->action.mapping_ptr;
-  touch_3d_t* touch_ptr = (touch_3d_t*)blob_ptr->action.touch_ptr;
+  touch_planar_t* touch_ptr = (touch_planar_t*)blob_ptr->action.touch_ptr;
 
   mapping_send_midi_msg_pos_x(&touchpad_ptr->params.rect, &touch_ptr->pos_x, blob_ptr);
   mapping_send_midi_msg_pos_y(&touchpad_ptr->params.rect, &touch_ptr->pos_y, blob_ptr);
@@ -98,7 +98,7 @@ void mapping_touchpad_continue(blob_t* blob_ptr) {
 
 void mapping_touchpad_stop(blob_t* blob_ptr) {
   mapp_touchpad_t* touchpad_ptr = (mapp_touchpad_t*)blob_ptr->action.mapping_ptr;
-  touch_3d_t* touch_ptr = (touch_3d_t*)blob_ptr->action.touch_ptr;
+  touch_planar_t* touch_ptr = (touch_planar_t*)blob_ptr->action.touch_ptr;
 
   if (touchpad_ptr->params.press == NoteOn) {
     mapping_send_midi_note_off(&touch_ptr->press);

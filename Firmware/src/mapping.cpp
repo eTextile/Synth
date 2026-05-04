@@ -56,13 +56,13 @@ void mapping_lib_update(void) {
 };
 
 // Sends the deferred NoteOn once attack_done is true.
-// touch_1d_t / touch_2d_t / touch_3d_t all have press as their first member,
-// so a touch_1d_t* cast is safe for accessing the press axis regardless of TUI type.
+// touch_press_t / touch_linear_t / touch_planar_t all share press as their first member,
+// so a touch_press_t* cast is safe for accessing the press axis regardless of the concrete type.
 #if defined(BLOB_VELOCITY)
 static void mapping_flush_pending_note_on(blob_t* blob_ptr) {
   if (!blob_ptr->action.note_on_z_pending || !blob_ptr->velocity.attack_done) return;
   if (blob_ptr->action.touch_ptr == NULL) return;
-  axis_t* axis_ptr = &((touch_1d_t*)blob_ptr->action.touch_ptr)->press;
+  axis_t* axis_ptr = &((touch_press_t*)blob_ptr->action.touch_ptr)->press;
   axis_ptr->msg.data2 = (uint8_t)constrain((int)(blob_ptr->velocity.attack_z * 127.0f / VELOCITY_ATTACK_Z_MAX), 0, 127);
 
   llist_push_front(&llist_midi_out, &axis_ptr->msg);
@@ -78,7 +78,7 @@ static void mapping_flush_pending_note_on_xy(blob_t* blob_ptr) {
   if (blob_ptr->action.touch_ptr == NULL) return;
   uint32_t age = millis() - blob_ptr->velocity.born_at;
   if (blob_ptr->velocity.xy < 1.0f && age < VELOCITY_ATTACK_MAX_MS) return;
-  axis_t* axis_ptr = &((touch_1d_t*)blob_ptr->action.touch_ptr)->press;
+  axis_t* axis_ptr = &((touch_press_t*)blob_ptr->action.touch_ptr)->press;
   axis_ptr->msg.data2 = (uint8_t)constrain(max((int)(blob_ptr->velocity.xy * 127.0f / VELOCITY_XY_MAX), 1), 0, 127);
 
   llist_push_front(&llist_midi_out, &axis_ptr->msg);

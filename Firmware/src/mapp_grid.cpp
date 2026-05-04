@@ -69,7 +69,7 @@ void mapping_grid_dispose_blob(void* mapping_ptr, blob_t* blob_ptr) {
 
 void mapping_grid_start(blob_t* blob_ptr) {
   mapp_grid_t* grid_ptr = (mapp_grid_t*)blob_ptr->action.mapping_ptr;
-  touch_1d_t* touch_ptr = (touch_1d_t*)blob_ptr->action.touch_ptr;
+  touch_press_t* touch_ptr = (touch_press_t*)blob_ptr->action.touch_ptr;
 
   uint8_t key_id = 0;
   
@@ -86,7 +86,7 @@ void mapping_grid_start(blob_t* blob_ptr) {
 
 void mapping_grid_continue(blob_t* blob_ptr) {
   mapp_grid_t* grid_ptr = (mapp_grid_t*)blob_ptr->action.mapping_ptr;
-  touch_1d_t* touch_ptr = (touch_1d_t*)blob_ptr->action.touch_ptr;
+  touch_press_t* touch_ptr = (touch_press_t*)blob_ptr->action.touch_ptr;
   
   uint8_t key_id = 0;
 
@@ -104,7 +104,7 @@ void mapping_grid_continue(blob_t* blob_ptr) {
 
 void mapping_grid_stop(blob_t* blob_ptr) {
   mapp_grid_t* grid_ptr = (mapp_grid_t*)blob_ptr->action.mapping_ptr;
-  touch_1d_t* touch_ptr = (touch_1d_t*)blob_ptr->action.touch_ptr;
+  touch_press_t* touch_ptr = (touch_press_t*)blob_ptr->action.touch_ptr;
   if (grid_ptr->params.press == NoteOn) {
     mapping_send_midi_note_off(&touch_ptr->press);
   }

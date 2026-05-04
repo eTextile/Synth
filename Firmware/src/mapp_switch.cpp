@@ -69,7 +69,7 @@ void mapping_switch_dispose_blob(void* mapping_ptr, blob_t* blob_ptr) {
 
 void mapping_switch_start(blob_t* blob_ptr) {
   mapp_switch_t* switch_ptr = (mapp_switch_t*)blob_ptr->action.mapping_ptr;
-  touch_1d_t* touch_ptr = (touch_1d_t*)blob_ptr->action.touch_ptr;
+  touch_press_t* touch_ptr = (touch_press_t*)blob_ptr->action.touch_ptr;
 
   if (switch_ptr->params.tap_tempo) {
     tap_tempo_hit();
@@ -94,7 +94,7 @@ void mapping_switch_start(blob_t* blob_ptr) {
 
 void mapping_switch_continue(blob_t* blob_ptr) {
   mapp_switch_t* switch_ptr = (mapp_switch_t*)blob_ptr->action.mapping_ptr;
-  touch_1d_t* touch_ptr = (touch_1d_t*)blob_ptr->action.touch_ptr;
+  touch_press_t* touch_ptr = (touch_press_t*)blob_ptr->action.touch_ptr;
 
   if (switch_ptr->params.press != NoteOn) {
     mapping_send_midi_msg_press(&touch_ptr->press, blob_ptr);
@@ -103,7 +103,7 @@ void mapping_switch_continue(blob_t* blob_ptr) {
 
 void mapping_switch_stop(blob_t* blob_ptr) {
   mapp_switch_t* switch_ptr = (mapp_switch_t*)blob_ptr->action.mapping_ptr;
-  touch_1d_t* touch_ptr = (touch_1d_t*)blob_ptr->action.touch_ptr;
+  touch_press_t* touch_ptr = (touch_press_t*)blob_ptr->action.touch_ptr;
 
   switch (switch_ptr->params.press) {
     case NoteOn:

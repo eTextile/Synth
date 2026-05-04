@@ -7,7 +7,7 @@ typedef struct touchpad_s touchpad_t;
 struct touchpad_s {
   rect_t rect;
   uint8_t touchs;
-  touch_3d_t touch[MAX_TOUCHPAD_TOUCHS];
+  touch_planar_t touch[MAX_TOUCHPAD_TOUCHS];
   MidiType press;
   uint8_t input_chan;
 };

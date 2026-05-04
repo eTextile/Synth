@@ -82,7 +82,7 @@ void mapping_polygon_dispose_blob(void* mapping_ptr, blob_t* blob_ptr) {
 
 void mapping_polygon_start(blob_t* blob_ptr) {
   mapp_polygon_t* polygon_ptr = (mapp_polygon_t*)blob_ptr->action.mapping_ptr;
-  touch_3d_t* touch_ptr = (touch_3d_t*)blob_ptr->action.touch_ptr;
+  touch_planar_t* touch_ptr = (touch_planar_t*)blob_ptr->action.touch_ptr;
 
   switch (polygon_ptr->params.press) {
     case NoteOn:
@@ -102,7 +102,7 @@ void mapping_polygon_start(blob_t* blob_ptr) {
 
 void mapping_polygon_continue(blob_t* blob_ptr) {
   mapp_polygon_t* polygon_ptr = (mapp_polygon_t*)blob_ptr->action.mapping_ptr;
-  touch_1d_t* touch_ptr = (touch_1d_t*)blob_ptr->action.touch_ptr;
+  touch_press_t* touch_ptr = (touch_press_t*)blob_ptr->action.touch_ptr;
 
   if (polygon_ptr->params.press != NoteOn) {
     mapping_send_midi_msg_press(&touch_ptr->press, blob_ptr);
@@ -111,7 +111,7 @@ void mapping_polygon_continue(blob_t* blob_ptr) {
 
 void mapping_polygon_stop(blob_t* blob_ptr) {
   mapp_polygon_t* polygon_ptr = (mapp_polygon_t*)blob_ptr->action.mapping_ptr;
-  touch_1d_t* touch_ptr = (touch_1d_t*)blob_ptr->action.touch_ptr;
+  touch_press_t* touch_ptr = (touch_press_t*)blob_ptr->action.touch_ptr;
 
   switch (polygon_ptr->params.press) {
     case NoteOn:

@@ -82,7 +82,7 @@ void mapping_slider_dispose_blob(void* mapping_ptr, blob_t* blob_ptr) {
 // For other press types: fires the MIDI press message immediately.
 void mapping_slider_start(blob_t* blob_ptr) {
   mapp_slider_t* slider_ptr = (mapp_slider_t*)blob_ptr->action.mapping_ptr;
-  touch_2d_t* touch_ptr = (touch_2d_t*)blob_ptr->action.touch_ptr;
+  touch_linear_t* touch_ptr = (touch_linear_t*)blob_ptr->action.touch_ptr;
 
   if (slider_ptr->params.move == MOVE_ROL && slider_ptr->params.steps > 0) {
     uint8_t step_idx;
@@ -118,7 +118,7 @@ void mapping_slider_start(blob_t* blob_ptr) {
 // slider axis (X for HORIZONTAL, Y for VERTICAL) plus optional pressure.
 void mapping_slider_continue(blob_t* blob_ptr) {
   mapp_slider_t* slider_ptr = (mapp_slider_t*)blob_ptr->action.mapping_ptr;
-  touch_2d_t* touch_ptr = (touch_2d_t*)blob_ptr->action.touch_ptr;
+  touch_linear_t* touch_ptr = (touch_linear_t*)blob_ptr->action.touch_ptr;
 
   if (slider_ptr->params.move == MOVE_ROL && slider_ptr->params.steps > 0) {
     uint8_t step_idx;
@@ -166,7 +166,7 @@ void mapping_slider_continue(blob_t* blob_ptr) {
 // Other press types tail off naturally.
 void mapping_slider_stop(blob_t* blob_ptr) {
   mapp_slider_t* slider_ptr = (mapp_slider_t*)blob_ptr->action.mapping_ptr;
-  touch_2d_t* touch_ptr = (touch_2d_t*)blob_ptr->action.touch_ptr;
+  touch_linear_t* touch_ptr = (touch_linear_t*)blob_ptr->action.touch_ptr;
   if (slider_ptr->params.press == NoteOn) {
     if (blob_ptr->action.note_on_z_pending || blob_ptr->action.note_on_xy_pending) {
       blob_ptr->action.note_on_z_pending = false;

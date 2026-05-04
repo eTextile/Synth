@@ -45,6 +45,19 @@ void setup() {
   boot_time = millis();
 };
 
+// Per-mode function dispatch table
+// ┌─────────────────┬──────────────┬─────────────┬──────────────┬────────────────┬──────────────────────────┬──────────────────────────┬───────────────────────┐
+// │ Mode            │ usb_receive  │ hw_receive  │ matrix_scan  │ mapping_update │ usb_transmit             │ hw_transmit              │ note                  │
+// ├─────────────────┼──────────────┼─────────────┼──────────────┼────────────────┼──────────────────────────┼──────────────────────────┼───────────────────────┤
+// │ PENDING         │ ✓            │             │              │                │                          │                          │ waits PENDING_TIMEOUT │
+// │ SYNC            │ ✓            │             │              │                │                          │                          │                       │
+// │ MATRIX_RAW      │ ✓            │             │ ✓            │                │ transmit_raw_matrix      │                          │                       │
+// │ MATRIX_INTERP   │ ✓            │             │ ✓ + interp   │                │ transmit_interp_matrix   │                          │                       │
+// │ EDIT            │ ✓            │             │ ✓ + interp   │                │ transmit_blobs           │                          │                       │
+// │ THROUGH         │ ✓            │             │              │                │                          │ transmit_mappings (pool) │ pool nodes returned   │
+// │ PLAY            │ ✓            │             │ ✓ + interp   │ ✓              │ transmit_mappings + blobs│ transmit_mappings        │                       │
+// │ STANDALONE      │              │ ✓           │ ✓ + interp   │ ✓              │                          │ transmit_mappings        │ no USB host needed    │
+// └─────────────────┴──────────────┴─────────────┴──────────────┴────────────────┴──────────────────────────┴──────────────────────────┴───────────────────────┘
 void loop() {
 
   update_controls();

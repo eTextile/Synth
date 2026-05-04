@@ -7,9 +7,9 @@ typedef struct grid_s grid_t;
 struct grid_s {
   rect_t rect;
   uint8_t touchs;
-  touch_1d_t touch[MAX_GRID_TOUCHS];
+  touch_press_t touch[MAX_GRID_TOUCHS];
   uint8_t keys;
-  touch_1d_t key[MAX_GRID_KEYS];
+  touch_press_t key[MAX_GRID_KEYS];
   uint8_t cols;
   uint8_t rows;
   MidiType press;
