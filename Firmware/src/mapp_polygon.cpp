@@ -8,14 +8,12 @@
 
 #include "mapp_polygon.h"
 
-struct mapp_polygon_s;
 typedef struct mapp_polygon_s mapp_polygon_t;
 struct mapp_polygon_s {
   common_t common;
   polygon_t params;
   uint8_t active_blob_count;
   uint8_t touch_index;
-  MidiType press;
   llist_t llist_active_midi_msg;
   uint8_t active_midi_msg_count;
 };
@@ -77,7 +75,7 @@ void mapping_polygon_dispose_blob(void* mapping_ptr, blob_t* blob_ptr) {
   polygon_ptr->active_blob_count--;
   if (polygon_ptr->active_blob_count == 0) {
     polygon_ptr->touch_index = 0;
-  };
+  }
 };
 
 void mapping_polygon_start(blob_t* blob_ptr) {
@@ -122,14 +120,13 @@ void mapping_polygon_stop(blob_t* blob_ptr) {
       break;
     case AfterTouchPoly:
       // N/A
-    break;
-      default:
+      break;
+    default:
       // Not handled in mapping_polygon
       break;
   }
 };
 
-// IN PROGRESS!
 bool mapping_polygon_hardware_midi_receive(void* mapping_ptr, midi_msg_t* midi_msg_ptr) {
   mapp_polygon_t* polygon_ptr = (mapp_polygon_t*)mapping_ptr;
   if (midi_msg_ptr->channel == polygon_ptr->params.input_chan) { // FIXME
@@ -138,8 +135,6 @@ bool mapping_polygon_hardware_midi_receive(void* mapping_ptr, midi_msg_t* midi_m
   return false;
 };
 
-// IN PROGRESS!
-// Populates the MIDI polygon layout with the incoming MIDI notes/chord coming from a regular MIDI keyboard plugged in the e256 HARDWARE_MIDI_INPUT
 void mapping_polygon_hardware_midi_update(void* mapping_ptr, midi_msg_t* midi_msg_ptr) {
   mapp_polygon_t* polygon_ptr = (mapp_polygon_t*)mapping_ptr;
   llist_push_front(&polygon_ptr->llist_active_midi_msg, midi_msg_ptr);

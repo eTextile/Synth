@@ -7,7 +7,6 @@
 #include "mapp_switch.h"
 #include "midi_tap_tempo.h"
 
-struct mapp_switch_s;
 typedef struct mapp_switch_s mapp_switch_t;
 struct mapp_switch_s {
   common_t common;
@@ -20,11 +19,11 @@ struct mapp_switch_s {
 
 static mapp_switch_t mapp_switches[MAX_SWITCHS];
 
-llist_t llist_switch_pool;
+llist_t llist_switchs_pool;
 
 bool mapping_switchs_alloc(uint8_t switchs_cnt) {
   if (switchs_cnt <= MAX_SWITCHS) {
-    llist_builder(&llist_switch_pool, &mapp_switches[0], switchs_cnt, sizeof(mapp_switches[0]));
+    llist_builder(&llist_switchs_pool, &mapp_switches[0], switchs_cnt, sizeof(mapp_switches[0]));
     return true;
   }
   return false;
@@ -129,8 +128,6 @@ bool mapping_switch_hardware_midi_receive(void* mapping_ptr, midi_msg_t* midi_ms
   return false;
 };
 
-// IN PROGRESS!
-// Populates the MIDI switch layout with the incoming MIDI notes/chord coming from a regular MIDI keyboard plugged in the e256 HARDWARE_MIDI_INPUT
 void mapping_switch_hardware_midi_update(void* mapping_ptr, midi_msg_t* midi_msg_ptr) {
   mapp_switch_t* switch_ptr = (mapp_switch_t*)mapping_ptr;
   llist_push_front(&switch_ptr->llist_active_midi_msg, midi_msg_ptr);
@@ -151,7 +148,7 @@ void mapping_switch_hardware_midi_dispose(void* mapping_ptr, midi_msg_t* midi_ms
 
 void mapping_switch_create(const JsonObject &config) {
 
-  mapp_switch_t* switch_ptr = (mapp_switch_t*)llist_pop_front(&llist_switch_pool);
+  mapp_switch_t* switch_ptr = (mapp_switch_t*)llist_pop_front(&llist_switchs_pool);
 
   switch_ptr->common.midi_hardware_receive_func_ptr = &mapping_switch_hardware_midi_receive;
   switch_ptr->common.midi_hardware_update_func_ptr = &mapping_switch_hardware_midi_update;

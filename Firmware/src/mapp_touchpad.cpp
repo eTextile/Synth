@@ -30,11 +30,10 @@ bool mapping_touchpads_alloc(uint8_t touchpads_cnt) {
 
 bool mapping_touchpad_is_blob_inside(void* mapping_ptr, blob_t* blob_ptr) {
   mapp_touchpad_t* touchpad_ptr = (mapp_touchpad_t*)mapping_ptr;
-  
   if (blob_ptr->centroid.x > touchpad_ptr->params.rect.from.x &&
-        blob_ptr->centroid.x < touchpad_ptr->params.rect.to.x &&
-        blob_ptr->centroid.y > touchpad_ptr->params.rect.from.y &&
-        blob_ptr->centroid.y < touchpad_ptr->params.rect.to.y) {
+      blob_ptr->centroid.x < touchpad_ptr->params.rect.to.x &&
+      blob_ptr->centroid.y > touchpad_ptr->params.rect.from.y &&
+      blob_ptr->centroid.y < touchpad_ptr->params.rect.to.y) {
     return true;
   }
   return false;
@@ -113,8 +112,6 @@ bool mapping_touchpad_hardware_midi_receive(void* mapping_ptr, midi_msg_t* midi_
   return false;
 };
 
-// IN PROGRESS!
-// Populates the MIDI touchpad layout with the incoming MIDI notes/chord coming from a regular MIDI keyboard plugged in the e256 HARDWARE_MIDI_INPUT
 void mapping_touchpad_hardware_midi_update(void* mapping_ptr, midi_msg_t* midi_msg_ptr) {
   mapp_touchpad_t* touchpad_ptr = (mapp_touchpad_t*)mapping_ptr;
   llist_push_front(&touchpad_ptr->llist_active_midi_msg, midi_msg_ptr);

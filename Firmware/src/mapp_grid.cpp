@@ -33,11 +33,10 @@ bool mapping_grids_alloc(uint8_t grids_cnt) {
 
 bool mapping_grid_is_blob_inside(void* mapping_ptr, blob_t* blob_ptr) {
   mapp_grid_t* grid_ptr = (mapp_grid_t*)mapping_ptr;
-  
   if (blob_ptr->centroid.x > grid_ptr->params.rect.from.x &&
-        blob_ptr->centroid.x < grid_ptr->params.rect.to.x &&
-        blob_ptr->centroid.y > grid_ptr->params.rect.from.y &&
-        blob_ptr->centroid.y < grid_ptr->params.rect.to.y) {
+      blob_ptr->centroid.x < grid_ptr->params.rect.to.x &&
+      blob_ptr->centroid.y > grid_ptr->params.rect.from.y &&
+      blob_ptr->centroid.y < grid_ptr->params.rect.to.y) {
     return true;
   }
   return false;
@@ -118,8 +117,6 @@ bool mapping_grid_hardware_midi_receive(void* mapping_ptr, midi_msg_t* midi_msg_
   return false;
 };
 
-// IN PROGRESS!
-// Populates the MIDI grid layout with the incoming MIDI notes/chord coming from a regular MIDI keyboard plugged in the e256 HARDWARE_MIDI_INPUT
 void mapping_grid_hardware_midi_update(void* mapping_ptr, midi_msg_t* midi_msg_ptr) {
   mapp_grid_t* grid_ptr = (mapp_grid_t*)mapping_ptr;
   llist_push_front(&grid_ptr->llist_active_midi_msg, midi_msg_ptr);

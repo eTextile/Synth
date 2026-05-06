@@ -159,8 +159,6 @@ bool mapping_knob_hardware_midi_receive(void* mapping_ptr, midi_msg_t* midi_msg_
   return false;
 };
 
-// IN PROGRESS!
-// Populates the MIDI grid layout with the incoming MIDI notes/chord coming from a regular MIDI keyboard plugged in the e256 HARDWARE_MIDI_INPUT
 void mapping_knob_hardware_midi_update(void* mapping_ptr, midi_msg_t* midi_msg_ptr) {
   mapp_knob_t* knob_ptr = (mapp_knob_t*)mapping_ptr;
   llist_push_front(&knob_ptr->llist_active_midi_msg, midi_msg_ptr);
