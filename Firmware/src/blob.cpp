@@ -16,7 +16,7 @@
 #include "median.h"
 #include "mapping.h"
 
-#define LIFO_NODES          1024       // Set the maximum nodes number
+#define LIFO_NODES          2048       // Set the maximum nodes number
 #define X_STRIDE            4          // Speed up X scanning
 #define Y_STRIDE            2          // Speed up Y scanning
 
@@ -169,13 +169,14 @@ void matrix_find_blobs(void) {
 
                   // Save state and jump up one row to process the new seed.
                   xylr_t* context = (xylr_t*)llist_pop_front(&llist_context_pool);
+                  if (!context) { recurse = false; break; } // pool exhausted
                   context->x = posX;
                   context->y = posY;
                   context->l = left;
                   context->r = right;
                   context->t_l = i++; // Don't test the same pixel again
                   context->b_l = bot_left;
-                  if (context) llist_push_front(&llist_context, context);
+                  llist_push_front(&llist_context, context);
                   posX = i;
                   posY--;
                   recurse = false;
@@ -198,13 +199,14 @@ void matrix_find_blobs(void) {
 
                 // Save state and jump down one row to process the new seed.
                 xylr_t* context = (xylr_t*)llist_pop_front(&llist_context_pool);
+                if (!context) { recurse = false; break; } // pool exhausted
                 context->x = posX;
                 context->y = posY;
                 context->l = left;
                 context->r = right;
                 context->t_l = top_left;
                 context->b_l = i++; // Don't test the same pixel again
-                if (context) llist_push_front(&llist_context, context);
+                llist_push_front(&llist_context, context);
                 posX = i;
                 posY++;
                 recurse = false;
@@ -223,13 +225,14 @@ void matrix_find_blobs(void) {
 
             // Pop and restore saved state to continue where we left off.
             xylr_t* context = (xylr_t*)llist_pop_front(&llist_context);
+            if (!context) { break_out = true; break; }
             posX = context->x;
             posY = context->y;
             left = context->l;
             right = context->r;
             top_left = context->t_l;
             bot_left = context->b_l;
-            if (context) llist_push_front(&llist_context_pool, context);
+            llist_push_front(&llist_context_pool, context);
             blob_height++;
           }; // END while_B
 
