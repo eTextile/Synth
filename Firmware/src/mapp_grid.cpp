@@ -66,17 +66,22 @@ void mapping_grid_dispose_blob(void* mapping_ptr, blob_t* blob_ptr) {
   }
 };
 
+static uint8_t grid_key_id(mapp_grid_t* grid_ptr, blob_t* blob_ptr) {
+  uint8_t key_x = constrain(
+    (int)lround((blob_ptr->centroid.x - grid_ptr->params.rect.from.x) * grid_ptr->params.scale_factor_x),
+    0, grid_ptr->params.cols - 1);
+  uint8_t key_y = constrain(
+    (int)lround((blob_ptr->centroid.y - grid_ptr->params.rect.from.y) * grid_ptr->params.scale_factor_y),
+    0, grid_ptr->params.rows - 1);
+  return key_y * grid_ptr->params.cols + key_x;
+}
+
 void mapping_grid_start(blob_t* blob_ptr) {
   mapp_grid_t* grid_ptr = (mapp_grid_t*)blob_ptr->action.mapping_ptr;
   touch_press_t* touch_ptr = (touch_press_t*)blob_ptr->action.touch_ptr;
 
-  uint8_t key_id = 0;
-  
-  uint8_t key_x = (uint8_t)lround((blob_ptr->centroid.x - grid_ptr->params.rect.from.x) * grid_ptr->params.scale_factor_x); // Compute X grid position
-  uint8_t key_y = (uint8_t)lround((blob_ptr->centroid.y - grid_ptr->params.rect.from.y) * grid_ptr->params.scale_factor_y); // Compute Y grid position
-
+  uint8_t key_id = grid_key_id(grid_ptr, blob_ptr);
   touch_ptr->press.last_val = key_id;
-  key_id = key_y * grid_ptr->params.cols + key_x; // Compute 1D key index position
 
   if (grid_ptr->params.press == NoteOn) {
     mapping_send_midi_note_on(&grid_ptr->params.key[key_id].press, blob_ptr);
@@ -86,18 +91,15 @@ void mapping_grid_start(blob_t* blob_ptr) {
 void mapping_grid_continue(blob_t* blob_ptr) {
   mapp_grid_t* grid_ptr = (mapp_grid_t*)blob_ptr->action.mapping_ptr;
   touch_press_t* touch_ptr = (touch_press_t*)blob_ptr->action.touch_ptr;
-  
-  uint8_t key_id = 0;
 
-  uint8_t key_x = (uint8_t)lround((blob_ptr->centroid.x - grid_ptr->params.rect.from.x) * grid_ptr->params.scale_factor_x); // Compute X grid position
-  uint8_t key_y = (uint8_t)lround((blob_ptr->centroid.y - grid_ptr->params.rect.from.y) * grid_ptr->params.scale_factor_y); // Compute Y grid position
-  touch_ptr->press.last_val = key_id;
-  key_id = key_y * grid_ptr->params.cols + key_x; // Compute 1D key index position
+  uint8_t key_id = grid_key_id(grid_ptr, blob_ptr);
 
   if (key_id != touch_ptr->press.last_val) {
     if (grid_ptr->params.press == NoteOn) {
+      mapping_send_midi_note_off(&grid_ptr->params.key[touch_ptr->press.last_val].press);
       mapping_send_midi_note_on(&grid_ptr->params.key[key_id].press, blob_ptr);
     }
+    touch_ptr->press.last_val = key_id;
   }
 };
 
@@ -105,7 +107,7 @@ void mapping_grid_stop(blob_t* blob_ptr) {
   mapp_grid_t* grid_ptr = (mapp_grid_t*)blob_ptr->action.mapping_ptr;
   touch_press_t* touch_ptr = (touch_press_t*)blob_ptr->action.touch_ptr;
   if (grid_ptr->params.press == NoteOn) {
-    mapping_send_midi_note_off(&touch_ptr->press);
+    mapping_send_midi_note_off(&grid_ptr->params.key[touch_ptr->press.last_val].press);
   }
 };
 
