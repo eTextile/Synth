@@ -111,6 +111,9 @@ void matrix_find_blobs(void) {
         // Each iteration processes one row: expands left/right, accumulates centroid,
         // then pushes neighbours above/below onto the context stack for while_B.
         while (1) { // while_A
+          // posX can reach NEW_COLS when the push block sets posX = i++ with i == NEW_COLS-1.
+          // Cap it so the mark loop and depth reads never go out of bounds.
+          if (posX >= NEW_COLS) posX = NEW_COLS - 1;
           uint8_t left = posX;
           uint8_t right = posX;
 
@@ -147,6 +150,17 @@ void matrix_find_blobs(void) {
           blob_cx += sum;
           blob_cy += posY * pixels;
 
+          // Early exit: blob is already too large to be classified — bail out now
+          // rather than exploring thousands more pixels and appearing to freeze.
+          // Drain llist_context first so the next seed starts with a clean stack.
+          if (blob_pixels > BLOB_MAX_PIX) {
+            while (llist_context.head_ptr != NULL) {
+              xylr_t* ctx = (xylr_t*)llist_pop_front(&llist_context);
+              if (ctx) llist_push_front(&llist_context_pool, ctx);
+            }
+            break; // exits while_A; blob_pixels > BLOB_MAX_PIX so blob is dropped
+          }
+
           uint8_t top_left = left;
           uint8_t bot_left = left;
 
@@ -169,7 +183,7 @@ void matrix_find_blobs(void) {
 
                   // Save state and jump up one row to process the new seed.
                   xylr_t* context = (xylr_t*)llist_pop_front(&llist_context_pool);
-                  if (!context) { recurse = false; break; } // pool exhausted
+                  if (!context) { IMAGE_SET_PIXEL_FAST(bmp_row_ptr_b, i, 1); recurse = false; break; } // pool exhausted: mark to avoid re-finding
                   context->x = posX;
                   context->y = posY;
                   context->l = left;
@@ -188,34 +202,36 @@ void matrix_find_blobs(void) {
               };
             };
 
-            row_ptr_b = COMPUTE_IMAGE_ROW_PTR(&interp_frame, posY + 1);
-            bmp_row_ptr_b = &bitmap_array[0] + (posY + 1) * NEW_COLS;
+            if (posY < NEW_ROWS - 1) {
+              row_ptr_b = COMPUTE_IMAGE_ROW_PTR(&interp_frame, posY + 1);
+              bmp_row_ptr_b = &bitmap_array[0] + (posY + 1) * NEW_COLS;
 
-            bool recurse = true;
-            for (uint8_t i = bot_left; i <= right; i++) {
+              bool recurse = true;
+              for (uint8_t i = bot_left; i <= right; i++) {
 
-              if (!IMAGE_GET_PIXEL_FAST(bmp_row_ptr_b, i) &&
-                  PIXEL_THRESHOLD(IMAGE_GET_PIXEL_FAST(row_ptr_b, i), e256_ctr.levels[THRESHOLD].val)) {
+                if (!IMAGE_GET_PIXEL_FAST(bmp_row_ptr_b, i) &&
+                    PIXEL_THRESHOLD(IMAGE_GET_PIXEL_FAST(row_ptr_b, i), e256_ctr.levels[THRESHOLD].val)) {
 
-                // Save state and jump down one row to process the new seed.
-                xylr_t* context = (xylr_t*)llist_pop_front(&llist_context_pool);
-                if (!context) { recurse = false; break; } // pool exhausted
-                context->x = posX;
-                context->y = posY;
-                context->l = left;
-                context->r = right;
-                context->t_l = top_left;
-                context->b_l = i++; // Don't test the same pixel again
-                llist_push_front(&llist_context, context);
-                posX = i;
-                posY++;
-                recurse = false;
+                  // Save state and jump down one row to process the new seed.
+                  xylr_t* context = (xylr_t*)llist_pop_front(&llist_context_pool);
+                  if (!context) { IMAGE_SET_PIXEL_FAST(bmp_row_ptr_b, i, 1); recurse = false; break; } // pool exhausted: mark to avoid re-finding
+                  context->x = posX;
+                  context->y = posY;
+                  context->l = left;
+                  context->r = right;
+                  context->t_l = top_left;
+                  context->b_l = i++; // Don't test the same pixel again
+                  llist_push_front(&llist_context, context);
+                  posX = i;
+                  posY++;
+                  recurse = false;
+                  break;
+                };
+              };
+
+              if (!recurse) {
                 break;
               };
-            };
-
-            if (!recurse) {
-              break;
             };
             // Stack empty: blob is fully explored.
             if (llist_context.head_ptr == NULL) {

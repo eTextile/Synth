@@ -62,7 +62,7 @@
 #define Z_MIN 0   // Blob centroid Z min value
 #define Z_MAX 127 // Blob centroid Z max value
 
-#define TWO_PI         (float)(2 * PI)
+#define TWO_PI          (float)(2 * PI)
 #define THREE_PI_OVER_2 (float)(3 * PI / 2)
 #define PI_OVER_2       (float)(PI / 2)
 #define LONG_HOLD 1500
@@ -70,7 +70,7 @@
 #define PENDING_MODE_TIMEOUT 4000
 
 #define MIDI_THROTTLE_MS 10
-#define MATRIX_MIDI_THROTTLE_MS 50 // 20Hz
+#define MATRIX_MIDI_THROTTLE_MS 50     // 20Hz
 
 #define VELOCITY_MIN_INTERVAL_MS 10    // Min time between velocity updates (ms)
 #define VELOCITY_EMA_ALPHA       0.4f  // EMA smoothing factor: 0=frozen, 1=raw (no smoothing)
