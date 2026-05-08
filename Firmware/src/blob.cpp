@@ -47,10 +47,12 @@ void blob_setup(void) {
   };
 };
 
-// Monotonically increasing UID — wraps at 256 but blobs are short-lived.
+// Monotonically increasing UID — wraps at 128 to stay within MIDI SysEx 7-bit data range (0-127).
 inline uint8_t set_id(void) {
   static uint8_t UID = 0;
-  return UID++;
+  uint8_t id = UID;
+  UID = (UID + 1) & 0x7F;
+  return id;
 };
 
 /////////////////////////////// Scanline flood fill algorithm / SFF
@@ -412,9 +414,10 @@ void matrix_find_blobs(void) {
     }
     else if (blob_ptr->status == PRESENT) {
 
-      // XY velocity: updated every frame (min 1ms) for responsive ROL slider velocity.
+      // XY velocity: throttled to VELOCITY_MIN_INTERVAL_MS to suppress centroid jitter.
+      // At 600fps a 1-pixel jitter gives ~590 units/s; averaging over 10ms reduces this.
       uint32_t dt_xy = now - blob_ptr->velocity.time_stamp_xy;
-      if (dt_xy >= 1) {
+      if (dt_xy >= VELOCITY_MIN_INTERVAL_MS) {
         float dt_s = dt_xy * 0.001f;
         float vx = blob_ptr->centroid.x - blob_ptr->velocity.xy_last_x;
         float vy = blob_ptr->centroid.y - blob_ptr->velocity.xy_last_y;

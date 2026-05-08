@@ -94,7 +94,7 @@ void usb_midi_transmit_blobs(void) {
   for (lnode_t* node_ptr = ITERATOR_START_FROM_HEAD(&llist_blobs); node_ptr != NULL; node_ptr = ITERATOR_NEXT(node_ptr)) {
     blob_t* blob_ptr = (blob_t*)ITERATOR_DATA(node_ptr);
 
-    bool is_event = (blob_ptr->status == NEW || blob_ptr->status == FREE);
+    bool is_event = (blob_ptr->status == NEW || blob_ptr->status == FREE || blob_ptr->status == RELEASED);
     if (!is_event && !send_steady) continue;
 
     blob_msg[B_STATUS]      = (uint8_t)blob_ptr->status;
