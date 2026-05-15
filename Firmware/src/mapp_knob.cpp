@@ -86,8 +86,9 @@ void mapping_knob_continue(blob_t* blob_ptr) {
 
   float theta = 0;
   // Rotation of Axes through an angle without shifting Origin
-  float pos_x = x * cos(knob_ptr->params.offset) + y * sin(knob_ptr->params.offset);
-  float pos_y = -x * sin(knob_ptr->params.offset) + y * cos(knob_ptr->params.offset);
+  float offset_rad = knob_ptr->params.offset * (PI / 180.0f);
+  float pos_x = x * cos(offset_rad) + y * sin(offset_rad);
+  float pos_y = -x * sin(offset_rad) + y * cos(offset_rad);
   
   if (pos_x == 0 && 0 < pos_y) {
     theta = PI_OVER_2;
@@ -103,22 +104,34 @@ void mapping_knob_continue(blob_t* blob_ptr) {
 
   touch_ptr->theta.last_val = touch_ptr->theta.msg.data2;
 
-  touch_ptr->theta.msg.data2 = map(
-    round(theta),
-    0,
-    127,
-    touch_ptr->theta.limit.min,
-    touch_ptr->theta.limit.max
+  touch_ptr->theta.msg.data2 = (uint8_t)constrain(
+    map(
+      (long)round(theta * 1000),
+      0,
+      (long)round(TWO_PI * 1000),
+      touch_ptr->theta.limit.min,
+      touch_ptr->theta.limit.max
+    ),
+    0, 127
   );
 
-  if (touch_ptr->theta.msg.data2 != touch_ptr->theta.last_val) llist_push_front(&llist_midi_out, &touch_ptr->theta.msg); // Add a midi_msg to the llist_midi_out linked list
+  if (touch_ptr->theta.msg.data2 != touch_ptr->theta.last_val) llist_push_front(&llist_midi_out, &touch_ptr->theta.msg);
 
   touch_ptr->radius.last_val = touch_ptr->radius.msg.data2;
-  touch_ptr->radius.msg.data2 = round(sqrt(x * x + y * y)); // Is it ok?
-  
+  touch_ptr->radius.msg.data2 = (uint8_t)constrain(
+    map(
+      (long)round(sqrt(x * x + y * y)),
+      0,
+      (long)round(knob_ptr->params.radius),
+      touch_ptr->radius.limit.min,
+      touch_ptr->radius.limit.max
+    ),
+    0, 127
+  );
+
   if (touch_ptr->radius.msg.data2 != touch_ptr->radius.last_val) llist_push_front(&llist_midi_out, &touch_ptr->radius.msg);
   
-  mapping_send_midi_msg_press(&touch_ptr->theta, blob_ptr);
+  mapping_send_midi_msg_press(&touch_ptr->press, blob_ptr);
 
 };
 
@@ -190,7 +203,7 @@ void mapping_knob_create(const JsonObject &config) {
   knob_ptr->params.rect.to.x = config["to"][0].as<float>();
   knob_ptr->params.rect.to.y = config["to"][1].as<float>();
   knob_ptr->params.offset = config["offset"].as<uint8_t>();
-  knob_ptr->params.press = config["press"].as<MidiType>();
+  knob_ptr->params.press = (MidiType)config["press"].as<uint8_t>();
   knob_ptr->params.input_chan = config["input_chan"].as<uint8_t>();
 
   if (knob_ptr->params.touchs <= MAX_KNOB_TOUCHS) {
