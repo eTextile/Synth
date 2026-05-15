@@ -28,7 +28,7 @@ ADC::Sync_result result;
 #define ADC0_PIN A3  // Pin 17 — output of multiplexer A (SIG pin)
 #define ADC1_PIN A2  // Pin 16 — output of multiplexer B (SIG pin)
 
-#define DISCHARGE_DEL 5 // µs — capacitance discharge time before ADC read
+#define DISCHARGE_DEL 10 // µs — capacitance discharge time before ADC read
 
 #define DUAL_COLS (RAW_COLS / 2)
 

@@ -1,5 +1,5 @@
 /*
-  FORKED FROM https://github.com/openmv/openmv/blob/master/src/omv/imlib/blob.c
+  FORKED FROM https://github.com/openmv/openmv/blob/master/lib/imlib/blob.c
     - This file is part of the OpenMV project.
     - Copyright (c) 2013- Ibrahim Abdelkader <iabdalkader@openmv.io> & Kwabena W. Agyeman <kwagyeman@openmv.io>
     - This work is licensed under the MIT license, see the file LICENSE for details.
@@ -40,8 +40,8 @@ void blob_setup(void) {
   for (lnode_t* node_ptr = ITERATOR_START_FROM_HEAD(&llist_blobs_pool); node_ptr != NULL; node_ptr = ITERATOR_NEXT(node_ptr)) {
     blob_t* blob_ptr = (blob_t*)ITERATOR_DATA(node_ptr);
     blob_ptr->UID = 0;
-    blob_ptr->status = MISSING;
-    blob_ptr->last_status = FREE;
+    blob_ptr->status = FREE;
+    blob_ptr->last_status = MISSING;
     blob_ptr->action.touch_ptr = NULL;
     blob_ptr->action.mapping_ptr = NULL;
   };
@@ -261,16 +261,16 @@ void matrix_find_blobs(void) {
 
         // ---- Blob classification ----
         // Discard blobs outside the pixel-count range (noise or entire-palm touches).
-        if (blob_pixels > BLOB_MIN_PIX && blob_pixels < BLOB_MAX_PIX && blob_count < MAX_BLOBS) {
-          blob_t* undefined_blob_ptr = (blob_t*)llist_pop_front(&llist_blobs_pool);
-          if (undefined_blob_ptr) {
+        if (blob_pixels > BLOB_MIN_PIX && blob_pixels < BLOB_MAX_PIX) {
 
-          // Weighted centroid: divide accumulated sums by total pixel count.
-          undefined_blob_ptr->centroid.x = (blob_cx / blob_pixels);
-          undefined_blob_ptr->centroid.y = (blob_cy / blob_pixels);
+          // Stack-allocated temp for centroid comparison — never consumes the pool,
+          // so existing blobs can always be re-found even when the pool is exhausted.
+          blob_t match_blob;
+          match_blob.centroid.x = (blob_cx / blob_pixels);
+          match_blob.centroid.y = (blob_cy / blob_pixels);
 
           // Check if this blob matches one already tracked (proximity test).
-          blob_t* blob_ptr = (blob_t*)llist_find_node(&llist_blobs, undefined_blob_ptr, (llist_compare_func_t*)&is_blob_existing);
+          blob_t* blob_ptr = (blob_t*)llist_find_node(&llist_blobs, &match_blob, (llist_compare_func_t*)&is_blob_existing);
 
           // ---- Status state machine ----
           if (blob_ptr) {
@@ -309,32 +309,34 @@ void matrix_find_blobs(void) {
               }
             }
 
-            blob_ptr->centroid.x = undefined_blob_ptr->centroid.x;
-            blob_ptr->centroid.y = undefined_blob_ptr->centroid.y;
+            blob_ptr->centroid.x = match_blob.centroid.x;
+            blob_ptr->centroid.y = match_blob.centroid.y;
             blob_ptr->centroid.z = min(blob_depth, 127);
             blob_ptr->box.w = (blob_x2 - blob_x1);
             blob_ptr->box.h = blob_height;
 
             blob_ptr->life_time_stamp = millis();
-
-            llist_push_back(&llist_blobs_pool, undefined_blob_ptr);
           }
-          else {
-            // New blob: assign a fresh UID and push to the active list.
-            blob_count++;
-            undefined_blob_ptr->UID = set_id();
-            undefined_blob_ptr->last_status = FREE;
-            undefined_blob_ptr->status = NEW;
+          else if (blob_count < MAX_BLOBS) {
+            // New blob — consume a pool node only when adding a truly new blob.
+            blob_t* new_blob_ptr = (blob_t*)llist_pop_front(&llist_blobs_pool);
+            if (new_blob_ptr) {
+              blob_count++;
+              new_blob_ptr->UID = set_id();
+              new_blob_ptr->last_status = FREE;
+              new_blob_ptr->status = NEW;
 
-            undefined_blob_ptr->centroid.z = min(blob_depth, 127);
-            undefined_blob_ptr->box.w = (blob_x2 - blob_x1);
-            undefined_blob_ptr->box.h = blob_height;
+              new_blob_ptr->centroid.x = match_blob.centroid.x;
+              new_blob_ptr->centroid.y = match_blob.centroid.y;
+              new_blob_ptr->centroid.z = min(blob_depth, 127);
+              new_blob_ptr->box.w = (blob_x2 - blob_x1);
+              new_blob_ptr->box.h = blob_height;
 
-            undefined_blob_ptr->life_time_stamp = millis();
+              new_blob_ptr->life_time_stamp = millis();
 
-            llist_push_back(&llist_blobs, undefined_blob_ptr);
+              llist_push_back(&llist_blobs, new_blob_ptr);
+            }
           }
-          } // if (undefined_blob_ptr)
         }
         posX = oldX;
         posY = oldY;

@@ -9,12 +9,8 @@
 
 #include "midi_bus.h"
 
-extern uint8_t hardware_midi_input_channel; // runtime-configurable, set from JSON config
-
 void hardware_midi_setup(void);
 void hardware_midi_receive(void);
-void hardware_midi_set_input_channel(uint8_t channel);
-void hardware_midi_handle_input(const Message<128u> &midi_msg);
 void mapping_hardware_midi_transmit(void);
 void hardware_midi_send_clock(void);
 

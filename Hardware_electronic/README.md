@@ -90,7 +90,8 @@ A short press on the **DOT** or **STAR** button exits MIDI LEARN mode and return
 -  Matt Venn : for his [teensy 4.0 Open-Hardware sound_card](https://github.com/mattvenn/teensy-audio-fx) made with KiCad ;-)
 
 ## TODO
-- add MIDI THRU
-- Make a casing
+- R10 470Ω -> 2.2kΩ
+- R15 → 4.7 kΩ
+- add hardware MIDI THRU
 - Make eTextile-Synthesizer/Dasy PCB
 

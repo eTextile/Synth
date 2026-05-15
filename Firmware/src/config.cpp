@@ -89,7 +89,7 @@ const char* get_level_name(level_code_t code) {
 const char* get_error_name(error_code_t code) {
   const char* char_code = NULL;
   switch (code) {
-    case WAITING_FOR_CONFIG: char_code = "WAITING_FOR_CONFIG"; break;
+    case CONFIG_FILE_MISSING: char_code = "CONFIG_FILE_MISSING"; break;
     case CONNECTING_FLASH: char_code = "CONNECTING_FLASH"; break;
     case FLASH_FULL: char_code = "FLASH_FULL"; break;
     case FILE_TO_BIG: char_code = "FILE_TO_BIG"; break;
@@ -155,7 +155,7 @@ size_t flash_config_size = 0;
 // [Bounce2]: https://github.com/thomasfredericks/Bounce2
 // https://www.pjrc.com/teensy/interrupts.html
 // https://github.com/khoih-prog/Teensy_TimerInterrupt/blob/main/examples/SwitchDebounce/SwitchDebounce.ino
-inline void setup_buttons() {
+static void setup_buttons(void) {
   BUTTON_L.attach(BUTTON_PIN_L, INPUT_PULLUP);  // Attach the debouncer to a pin with INPUT_PULLUP mode
   BUTTON_R.attach(BUTTON_PIN_R, INPUT_PULLUP);  // Attach the debouncer to a pin with INPUT_PULLUP mode
   BUTTON_L.interval(25);                        // Debounce interval of 25 millis
@@ -186,7 +186,7 @@ void set_mode(mode_code_t mode) {
   e256_ctr.levels[(uint8_t)e256_current_level].leds.update = false;
   setup_leds(&e256_ctr.modes[(uint8_t)mode]);
   e256_ctr.modes[(uint8_t)mode].leds.update = true;
-  //e256_lastMode = e256_current_mode;
+  //e256_last_mode = e256_current_mode;
   e256_current_mode = mode;
   #if defined(USB_MIDI_SERIAL) && defined(DEBUG_MODES)
     Serial.printf("\nMODE:\t%s", get_mode_name(mode));
@@ -239,7 +239,7 @@ static bool flash_file(const char *fileName, uint8_t* data_ptr, uint16_t size) {
 };
 
 // Selec the current mode and perform the matrix sensor calibration 
-inline void update_buttons() {
+static void update_buttons(void) {
   BUTTON_L.update();
   BUTTON_R.update();
   // ACTION: BUTTON_L short pressure
@@ -248,23 +248,22 @@ inline void update_buttons() {
     matrix_calibrate();
     blink(10, 50);
   }
+
   // ACTION: BUTTON_L long pressure
   // FONCTION: save the mapping config file to the permanent flash memory
   if (BUTTON_L.rose() && BUTTON_L.previousDuration() > LONG_HOLD) {
+    if (e256_current_mode == STANDALONE_MODE) return;
     if (sysEx_data_length > 0) {
       if (flash_file("config.json", sysEx_data_ptr, sysEx_data_length)){
         usb_midi_send_info((uint8_t)WRITE_MODE_DONE, MIDI_VERBOSITY_CHANNEL);
       }
       else {
         usb_midi_send_info((uint8_t)FLASH_CONFIG_WRITE_FAILED, MIDI_ERROR_CHANNEL);
-        #if defined(USB_MIDI_SERIAL) && defined(DEBUG_CONFIG)
-          Serial.printf("\nSYSEX_CONFIG_WRITE: ");
-          print_bytes(sysEx_data_ptr, sysEx_data_length);
-        #endif
-        set_mode(ERROR_MODE);
+        //set_mode(ERROR_MODE);
       }
     }
   }
+
   // ACTION: BUTTON_R long pressure
   // FONCTION: PENDING_MODE (waiting for mode)
   // LEDs: blink slowly (500ms) alternately
@@ -284,12 +283,12 @@ inline void update_buttons() {
   }
 };
 
-static void setup_encoder() {
+static void setup_encoder(void) {
   e256_ctr.encoder->write(e256_ctr.levels[(uint8_t)e256_current_level].val << 2);
 }
 
 // Levels values adjustment using rotary encoder
-inline bool read_encoder(level_code_t level) {
+static bool read_encoder(level_code_t level) {
   level_t* lev = &e256_ctr.levels[(uint8_t)level];
   int32_t raw = e256_ctr.encoder->read() >> 2; // signed: goes negative when turning CCW below 0
   uint8_t val;
@@ -312,7 +311,7 @@ inline bool read_encoder(level_code_t level) {
 };
 
 // Update levels[level] of each mode using the rotary encoder
-inline void update_encoder() {
+static void update_encoder(void) {
   static uint32_t level_time_stamp = 0;
   static bool level_toggle = false;
 
@@ -328,7 +327,7 @@ inline void update_encoder() {
   }
 };
 
-inline void blink_leds(uint8_t mode) {
+static void blink_leds(uint8_t mode) {
   static uint32_t ledsTimeStamp = 0;
 
   if (e256_ctr.modes[mode].leds.update) {
@@ -348,7 +347,7 @@ inline void blink_leds(uint8_t mode) {
   }
 };
 
-inline void fade_leds(level_code_t level) {
+static void fade_leds(level_code_t level) {
   if (e256_ctr.levels[(uint8_t)level].leds.update) {
     e256_ctr.levels[(uint8_t)level].leds.update = false;
     uint8_t ledVal = constrain(map(e256_ctr.levels[(uint8_t)level].val, e256_ctr.levels[(uint8_t)level].min_val, e256_ctr.levels[(uint8_t)level].max_val, 0, 255), 0, 255);
@@ -358,14 +357,13 @@ inline void fade_leds(level_code_t level) {
 };
 
 // Update LEDs according to the mode and rotary encoder values
-inline void update_leds() {
+static void update_leds() {
   blink_leds((uint8_t)e256_current_mode);
   fade_leds(e256_current_level);
 };
 
 /////////////////////////////////////////////////////
 // LOAD CONFIG PARAMS FROM JSON FILE
-// https://arduinojson.org/v7/how-to/upgrade-from-v6/
 /////////////////////////////////////////////////////
 
 /*
@@ -448,9 +446,9 @@ static bool config_load_mappings_polygons(const JsonArray& config) {
 bool mappings_load_config(const JsonObject config) {
   if (config.isNull()) {
     //usb_midi_send_info((uint8_t)CONFIG_FILE_IS_NULL, MIDI_ERROR_CHANNEL);
-    //Serial.println("CONFIG_ERROR");
     return false;
   }
+  while (llist_pop_front(&llist_mappings) != NULL) {}
   if (!config_load_mappings_switchs(config["switch"])) {
     //Serial.println("CONFIG_LOAD_SWITCHS: FAILD");
   }
@@ -470,8 +468,6 @@ bool mappings_load_config(const JsonObject config) {
 };
 
 bool mappings_apply_config(uint8_t* conf_ptr, size_t conf_size) {
-  //DynamicJsonDocument e256_config(conf_size);
-  //StaticJsonDocument<4095> e256_config;
   JsonDocument e256_config;
   DeserializationError error = deserializeJson(e256_config, conf_ptr, conf_size);
   if (error) {
@@ -480,34 +476,26 @@ bool mappings_apply_config(uint8_t* conf_ptr, size_t conf_size) {
     #endif
     return false;
   }
-  if (!e256_config["global"]["hardware_midi_input_channel"].isNull()) {
-    hardware_midi_set_input_channel(e256_config["global"]["hardware_midi_input_channel"].as<uint8_t>());
-  }
   if (mappings_load_config(e256_config["mappings"])) {
-    #if defined(USB_MIDI_SERIAL) && defined(DEBUG_CONFIG)
-      Serial.printf("\nCONFIG_APPLY_DONE");
-    #endif
     return true;
-  } else {
-    #if defined(USB_MIDI_SERIAL) && defined(DEBUG_CONFIG)
-      Serial.printf("\nCONFIG_APPLY_FAILED");
-    #endif
+  }
+  else {
     return false;
   }
 };
 
-inline void setup_serial_flash() {
+static void setup_serial_flash(void) {
   if (!SerialFlash.begin(FLASH_CHIP_SELECT)) {
-    #if defined(USB_MIDI_SERIAL)
+    if (e256_current_mode != STANDALONE_MODE) {
       usb_midi_send_info((uint8_t)CONNECTING_FLASH, MIDI_ERROR_CHANNEL);
-    #endif
+    }
   }
   else {
     SerialFlash.sleep();
   }
 };
 
-bool load_flash_config() {
+bool load_flash_config(void) {
   SerialFlash.wakeup();
   while (!SerialFlash.ready());
   if (SerialFlash.exists("config.json")) {
@@ -517,21 +505,14 @@ bool load_flash_config() {
     configFile.read(flash_config_ptr, flash_config_size);
     configFile.close();
     SerialFlash.sleep();
-    #if defined(USB_MIDI_SERIAL) && defined(DEBUG_CONFIG)
-      Serial.printf("\nFLASH_CONFIG_LOADED");
-      //print_bytes(flash_config_ptr, flash_config_size);
-    #endif
     return true;
   }
   else {
-    #if defined(USB_MIDI_SERIAL) && defined(DEBUG_CONFIG)
-      Serial.printf("\nCONFIG_FILE_MISSING");
-    #endif
     return false;
   }
 };
 
-void hardware_setup() {
+void hardware_setup(void) {
   pinMode(LED_PIN_D1, OUTPUT);
   pinMode(LED_PIN_D2, OUTPUT);
   setup_buttons();
@@ -539,7 +520,7 @@ void hardware_setup() {
   setup_serial_flash();
 };
 
-void update_controls() {
+void update_controls(void) {
   update_buttons();
   update_encoder();
   update_leds();

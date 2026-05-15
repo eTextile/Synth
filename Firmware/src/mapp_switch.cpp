@@ -150,9 +150,9 @@ void mapping_switch_create(const JsonObject &config) {
 
   mapp_switch_t* switch_ptr = (mapp_switch_t*)llist_pop_front(&llist_switchs_pool);
 
-  switch_ptr->common.midi_hardware_receive_func_ptr = &mapping_switch_hardware_midi_receive;
-  switch_ptr->common.midi_hardware_update_func_ptr = &mapping_switch_hardware_midi_update;
-  switch_ptr->common.midi_hardware_dispose_func_ptr = &mapping_switch_hardware_midi_dispose;
+  switch_ptr->common.hardware_midi_receive_func_ptr = &mapping_switch_hardware_midi_receive;
+  switch_ptr->common.hardware_midi_update_func_ptr = &mapping_switch_hardware_midi_update;
+  switch_ptr->common.hardware_midi_dispose_func_ptr = &mapping_switch_hardware_midi_dispose;
 
   switch_ptr->common.is_blob_inside_func_ptr = &mapping_switch_is_blob_inside;
   switch_ptr->common.blob_assign_func_ptr = &mapping_switch_assign_blob;
@@ -182,6 +182,7 @@ void mapping_switch_create(const JsonObject &config) {
       switch_ptr->params.touch[i].press.msg.channel = status.channel;
       switch_ptr->params.touch[i].press.limit.min = config["msg"][i]["press"]["limit"]["min"].as<uint8_t>();
       switch_ptr->params.touch[i].press.limit.max = config["msg"][i]["press"]["limit"]["max"].as<uint8_t>();
+      switch_ptr->params.touch[i].press.enabled = config["msg"][i]["press"]["enabled"] | true;
     }
   llist_push_back(&llist_mappings, switch_ptr);
   }

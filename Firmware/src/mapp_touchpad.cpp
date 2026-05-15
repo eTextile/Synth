@@ -134,9 +134,9 @@ void mapping_touchpad_create(const JsonObject &config) {
 
   mapp_touchpad_t* touchpad_ptr = (mapp_touchpad_t*)llist_pop_front(&llist_touchpads_pool);
 
-  touchpad_ptr->common.midi_hardware_receive_func_ptr = &mapping_touchpad_hardware_midi_receive;  
-  touchpad_ptr->common.midi_hardware_update_func_ptr = &mapping_touchpad_hardware_midi_update;  
-  touchpad_ptr->common.midi_hardware_dispose_func_ptr = &mapping_touchpad_hardware_midi_dispose;
+  touchpad_ptr->common.hardware_midi_receive_func_ptr = &mapping_touchpad_hardware_midi_receive;  
+  touchpad_ptr->common.hardware_midi_update_func_ptr = &mapping_touchpad_hardware_midi_update;  
+  touchpad_ptr->common.hardware_midi_dispose_func_ptr = &mapping_touchpad_hardware_midi_dispose;
 
   touchpad_ptr->common.is_blob_inside_func_ptr = &mapping_touchpad_is_blob_inside;
   touchpad_ptr->common.blob_assign_func_ptr = &mapping_touchpad_assign_blob;
@@ -167,6 +167,7 @@ void mapping_touchpad_create(const JsonObject &config) {
       touchpad_ptr->params.touch[i].pos_x.msg.channel = status.channel;
       touchpad_ptr->params.touch[i].pos_x.limit.min = config["msg"][i]["pos_x"]["limit"]["min"].as<uint8_t>();
       touchpad_ptr->params.touch[i].pos_x.limit.max = config["msg"][i]["pos_x"]["limit"]["max"].as<uint8_t>();
+      touchpad_ptr->params.touch[i].pos_x.enabled = config["msg"][i]["pos_x"]["enabled"] | true;
 
       midi_msg_status_unpack(config["msg"][i]["pos_y"]["midi"]["status"].as<uint8_t>(), &status);
       // if status.type != Undefined_F4
@@ -176,7 +177,8 @@ void mapping_touchpad_create(const JsonObject &config) {
       touchpad_ptr->params.touch[i].pos_y.msg.channel = status.channel;
       touchpad_ptr->params.touch[i].pos_y.limit.min = config["msg"][i]["pos_y"]["limit"]["min"].as<uint8_t>();
       touchpad_ptr->params.touch[i].pos_y.limit.max = config["msg"][i]["pos_y"]["limit"]["max"].as<uint8_t>();
-      
+      touchpad_ptr->params.touch[i].pos_y.enabled = config["msg"][i]["pos_y"]["enabled"] | true;
+
       midi_msg_status_unpack(config["msg"][i]["press"]["midi"]["status"].as<uint8_t>(), &status);
       touchpad_ptr->params.touch[i].press.msg.type = status.type;
       touchpad_ptr->params.touch[i].press.msg.data1 = config["msg"][i]["press"]["midi"]["data1"].as<uint8_t>();
@@ -184,6 +186,7 @@ void mapping_touchpad_create(const JsonObject &config) {
       touchpad_ptr->params.touch[i].press.msg.channel = status.channel;
       touchpad_ptr->params.touch[i].press.limit.min = config["msg"][i]["press"]["limit"]["min"].as<uint8_t>();
       touchpad_ptr->params.touch[i].press.limit.max = config["msg"][i]["press"]["limit"]["max"].as<uint8_t>();
+      touchpad_ptr->params.touch[i].press.enabled = config["msg"][i]["press"]["enabled"] | true;
     }
     llist_push_back(&llist_mappings, touchpad_ptr);
   }

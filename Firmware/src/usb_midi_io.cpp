@@ -6,6 +6,7 @@
 
 #include "usb_midi_io.h"
 
+#include "midi_bus.h"
 #include "config.h"
 #include "scan.h"
 #include "interp.h"
@@ -13,21 +14,27 @@
 #include "blob.h"
 #include "allocate.h"
 
-#include "hardware_midi_io.h"
-
 uint32_t boot_time = 0;
 size_t sysEx_data_length = 0;
 uint8_t* sysEx_data_ptr = NULL;
 
+static void usb_midi_read_note_on(uint8_t, uint8_t, uint8_t);
+static void usb_midi_read_note_off(uint8_t, uint8_t, uint8_t);
+static void usb_read_control_change(uint8_t, uint8_t, uint8_t);
+static void usb_read_after_touch_poly(uint8_t, uint8_t, uint8_t);
+static void usb_read_pitch_bend(uint8_t, int);
+static void usb_read_program_change(uint8_t, uint8_t);
+static void usb_read_system_exclusive(const uint8_t*, uint16_t, bool);
+
 // Register all USB MIDI message handlers and start the USB MIDI stack.
 void usb_midi_setup(void) {
   usbMIDI.begin();
-  usbMIDI.setHandleProgramChange(usb_read_program_change);
-  usbMIDI.setHandleNoteOn(usb_read_note_on);
-  usbMIDI.setHandleNoteOff(usb_read_note_off);
+  usbMIDI.setHandleNoteOn(usb_midi_read_note_on);
+  usbMIDI.setHandleNoteOff(usb_midi_read_note_off);
   usbMIDI.setHandleControlChange(usb_read_control_change);
   usbMIDI.setHandleAfterTouchPoly(usb_read_after_touch_poly);
   usbMIDI.setHandlePitchChange(usb_read_pitch_bend);
+  usbMIDI.setHandleProgramChange(usb_read_program_change);
   usbMIDI.setHandleSystemExclusive(usb_read_system_exclusive);
 };
 
@@ -40,9 +47,9 @@ void usb_midi_receive(void) {
 // Send the raw (pre-interpolation) sensor frame as a single SysEx message.
 // Throttled to MATRIX_MIDI_THROTTLE_MS to avoid flooding the USB bus.
 void usb_midi_transmit_raw_matrix(void) {
-  static uint32_t usbTransmitTimeStamp = 0;
-  if (millis() - usbTransmitTimeStamp > MATRIX_MIDI_THROTTLE_MS) {
-    usbTransmitTimeStamp = millis();
+  static uint32_t usb_transmit_time_stamp = 0;
+  if (millis() - usb_transmit_time_stamp > MATRIX_MIDI_THROTTLE_MS) {
+    usb_transmit_time_stamp = millis();
     usbMIDI.sendSysEx(RAW_FRAME, raw_frame.data_ptr, false);
     usbMIDI.send_now();
   }
@@ -57,9 +64,9 @@ static const uint16_t INTERP_CHUNK_SIZE = 256;
 static const uint8_t  INTERP_NUM_CHUNKS = NEW_FRAME / INTERP_CHUNK_SIZE;
 
 void usb_midi_transmit_interp_matrix(void) {
-  static uint32_t usbTransmitTimeStamp = 0;
-  if (millis() - usbTransmitTimeStamp > MATRIX_MIDI_THROTTLE_MS) {
-    usbTransmitTimeStamp = millis();
+  static uint32_t usb_transmit_time_stamp = 0;
+  if (millis() - usb_transmit_time_stamp > MATRIX_MIDI_THROTTLE_MS) {
+    usb_transmit_time_stamp = millis();
     uint8_t chunk[INTERP_CHUNK_SIZE + 1];
     for (uint8_t i = 0; i < INTERP_NUM_CHUNKS; i++) {
       chunk[0] = i;
@@ -84,17 +91,17 @@ void usb_midi_transmit_interp_matrix(void) {
 // send_now() is called once after the full loop to flush all blobs in a single
 // USB transaction instead of one per blob.
 void usb_midi_transmit_blobs(void) {
-  static uint32_t usbTransmitTimeStamp = 0;
+  static uint32_t usb_transmit_time_stamp = 0;
 
   uint32_t now = millis();
-  bool send_steady = (now - usbTransmitTimeStamp) >= MATRIX_MIDI_THROTTLE_MS;
+  bool send_steady = (now - usb_transmit_time_stamp) >= MATRIX_MIDI_THROTTLE_MS;
 
   uint8_t blob_msg[B_COUNT];
   bool any_sent = false;
   for (lnode_t* node_ptr = ITERATOR_START_FROM_HEAD(&llist_blobs); node_ptr != NULL; node_ptr = ITERATOR_NEXT(node_ptr)) {
     blob_t* blob_ptr = (blob_t*)ITERATOR_DATA(node_ptr);
 
-    bool is_event = (blob_ptr->status == NEW || blob_ptr->status == FREE || blob_ptr->status == RELEASED);
+    bool is_event = (blob_ptr->status == NEW || blob_ptr->status == RELEASED || blob_ptr->status == FREE );
     if (!is_event && !send_steady) continue;
 
     blob_msg[B_STATUS]      = (uint8_t)blob_ptr->status;
@@ -118,14 +125,14 @@ void usb_midi_transmit_blobs(void) {
   }
 
   if (!any_sent) return;
-  if (send_steady) usbTransmitTimeStamp = now;
+  if (send_steady) usb_transmit_time_stamp = now;
   usbMIDI.send_now();
   usb_midi_receive();
 };
 
 // Forward all pending outbound MIDI messages from llist_midi_out to the USB host.
 // Called in MAPPING / PLAY / THROUGH modes to deliver note-on/off, CC, etc.
-void usb_midi_transmit_mappings_midi_msg(void) {
+void mapping_usb_midi_transmit(void) {
   for (lnode_t* midi_node_ptr = ITERATOR_START_FROM_HEAD(&llist_midi_out); midi_node_ptr != NULL; midi_node_ptr = ITERATOR_NEXT(midi_node_ptr)) {
     midi_msg_t* midi_msg_ptr = (midi_msg_t*)ITERATOR_DATA(midi_node_ptr);
     usbMIDI.send((uint8_t)midi_msg_ptr->type, midi_msg_ptr->data1, midi_msg_ptr->data2, midi_msg_ptr->channel, 0);
@@ -148,7 +155,7 @@ void usb_midi_send_info(uint8_t program, uint8_t channel) {
 
 // Store an incoming Note On from the USB host.
 // In THROUGH_MODE the message is forwarded directly to the hardware MIDI output.
-void usb_read_note_on(uint8_t channel, uint8_t note, uint8_t velocity) {
+static void usb_midi_read_note_on(uint8_t channel, uint8_t note, uint8_t velocity) {
   if (e256_current_mode != THROUGH_MODE) return;
   midi_msg_t* midi_msg_ptr = (midi_msg_t*)llist_pop_front(&llist_midi_nodes_pool);
   if (midi_msg_ptr != NULL) {
@@ -162,7 +169,7 @@ void usb_read_note_on(uint8_t channel, uint8_t note, uint8_t velocity) {
 
 // Store an incoming Note Off from the USB host.
 // In THROUGH_MODE the message is forwarded directly to the hardware MIDI output.
-void usb_read_note_off(uint8_t channel, uint8_t note, uint8_t velocity) {
+static void usb_midi_read_note_off(uint8_t channel, uint8_t note, uint8_t velocity) {
   if (e256_current_mode != THROUGH_MODE) return;
   midi_msg_t* midi_msg_ptr = (midi_msg_t*)llist_pop_front(&llist_midi_nodes_pool);
   if (midi_msg_ptr != NULL) {
@@ -177,7 +184,7 @@ void usb_read_note_off(uint8_t channel, uint8_t note, uint8_t velocity) {
 // Handle an incoming Control Change from the USB host.
 // MIDI_CCS_CHANNEL is reserved for live level adjustments (threshold, gain…);
 // all other channels are forwarded in THROUGH_MODE.
-void usb_read_control_change(uint8_t channel, uint8_t control, uint8_t value) {
+static void usb_read_control_change(uint8_t channel, uint8_t control, uint8_t value) {
   if (channel == MIDI_CCS_CHANNEL) {
     set_level((level_code_t)control, value);
     return;
@@ -195,7 +202,7 @@ void usb_read_control_change(uint8_t channel, uint8_t control, uint8_t value) {
 
 // Store an incoming Polyphonic Aftertouch from the USB host.
 // In THROUGH_MODE the message is forwarded to the hardware MIDI output.
-void usb_read_after_touch_poly(uint8_t channel, uint8_t note, uint8_t pressure) {
+static void usb_read_after_touch_poly(uint8_t channel, uint8_t note, uint8_t pressure) {
   if (e256_current_mode != THROUGH_MODE) return;
   midi_msg_t* midi_msg_ptr = (midi_msg_t*)llist_pop_front(&llist_midi_nodes_pool);
   if (midi_msg_ptr != NULL) {
@@ -210,7 +217,7 @@ void usb_read_after_touch_poly(uint8_t channel, uint8_t note, uint8_t pressure) 
 // Store an incoming Pitch Bend from the USB host.
 // The 14-bit value is split into LSB (data1) and MSB (data2).
 // In THROUGH_MODE the message is forwarded to the hardware MIDI output.
-void usb_read_pitch_bend(uint8_t channel, int pitch) {
+static void usb_read_pitch_bend(uint8_t channel, int pitch) {
   if (e256_current_mode != THROUGH_MODE) return;
   midi_msg_t* midi_msg_ptr = (midi_msg_t*)llist_pop_front(&llist_midi_nodes_pool);
   if (midi_msg_ptr != NULL) {
@@ -225,7 +232,7 @@ void usb_read_pitch_bend(uint8_t channel, int pitch) {
 // Dispatch mode-change commands received as Program Change messages on
 // MIDI_MODES_CHANNEL. Each case switches the firmware operating mode and
 // sends an acknowledgement back to the host via MIDI_VERBOSITY_CHANNEL.
-void usb_read_program_change(uint8_t channel, uint8_t program) {
+static void usb_read_program_change(uint8_t channel, uint8_t program) {
   if (channel == MIDI_MODES_CHANNEL) {
     switch (program) {
 
@@ -329,7 +336,7 @@ void usb_read_program_change(uint8_t channel, uint8_t program) {
 //                - Middle chunks: copy verbatim, advance pointer.
 //                - Last chunk:    strip 1-byte footer, reply UPLOAD_DONE.
 //
-void usb_read_system_exclusive(const uint8_t *data_ptr, uint16_t sysEx_chunk_size, bool complete) {
+static void usb_read_system_exclusive(const uint8_t *data_ptr, uint16_t sysEx_chunk_size, bool complete) {
   static uint8_t *sysEx_chunk_ptr = NULL;
   static uint16_t sysEx_last_chunk_size = 0;
   static uint8_t sysEx_chunks = 0;

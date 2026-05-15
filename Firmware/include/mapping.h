@@ -44,6 +44,7 @@ struct rect_s {
 
 typedef struct axis_s axis_t;
 struct axis_s {
+  bool enabled;
   midi_msg_t msg;
   midi_limit_t limit;
   uint8_t last_val;
@@ -78,9 +79,9 @@ extern llist_t llist_mappings;
 
 typedef struct common_s common_t;
 
-typedef bool midi_hardware_receive_func_t(void*, midi_msg_t*);
-typedef void midi_hardware_update_func_t(void*, midi_msg_t*);
-typedef void midi_hardware_dispose_func_t(void*, midi_msg_t*);
+typedef bool hardware_midi_receive_func_t(void*, midi_msg_t*);
+typedef void hardware_midi_update_func_t(void*, midi_msg_t*);
+typedef void hardware_midi_dispose_func_t(void*, midi_msg_t*);
 
 typedef bool is_blob_inside_func_t(void*, blob_t*);
 typedef bool blob_assign_func_t(void*, blob_t*);
@@ -107,9 +108,9 @@ typedef void stop_func_t(blob_t*);
 //   continue (blob) : called every frame while the blob is held     (status == PRESENT)
 //   stop     (blob) : called once when the blob is released          (status == RELEASED)
 struct common_s {
-  midi_hardware_receive_func_t* midi_hardware_receive_func_ptr;
-  midi_hardware_update_func_t* midi_hardware_update_func_ptr;
-  midi_hardware_dispose_func_t* midi_hardware_dispose_func_ptr;
+  hardware_midi_receive_func_t* hardware_midi_receive_func_ptr;
+  hardware_midi_update_func_t* hardware_midi_update_func_ptr;
+  hardware_midi_dispose_func_t* hardware_midi_dispose_func_ptr;
 
   is_blob_inside_func_t* is_blob_inside_func_ptr;
   blob_assign_func_t* blob_assign_func_ptr;

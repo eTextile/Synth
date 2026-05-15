@@ -117,6 +117,7 @@ void mapping_send_midi_note_off(axis_t* axis_ptr) {
 };
 
 void mapping_send_midi_msg_pos_x(rect_t* bounding_box_ptr, axis_t* axis_ptr, blob_t* blob_ptr) {
+  if (!axis_ptr->enabled) return;
   axis_ptr->msg.data2 = map(
     blob_ptr->centroid.x,
     bounding_box_ptr->to.x,
@@ -134,6 +135,7 @@ void mapping_send_midi_msg_pos_x(rect_t* bounding_box_ptr, axis_t* axis_ptr, blo
 };
 
 void mapping_send_midi_msg_pos_y(rect_t* bounding_box_ptr, axis_t* axis_ptr, blob_t* blob_ptr) {
+  if (!axis_ptr->enabled) return;
   axis_ptr->msg.data2 = map(
     blob_ptr->centroid.y,
     bounding_box_ptr->from.y,
@@ -151,6 +153,7 @@ void mapping_send_midi_msg_pos_y(rect_t* bounding_box_ptr, axis_t* axis_ptr, blo
 };
 
 void mapping_send_midi_msg_press(axis_t* axis_ptr, blob_t* blob_ptr) {
+  if (!axis_ptr->enabled) return;
   axis_ptr->msg.data2 = map(
     blob_ptr->centroid.z,
     Z_MIN,

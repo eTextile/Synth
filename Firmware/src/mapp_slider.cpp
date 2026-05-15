@@ -292,9 +292,9 @@ void mapping_slider_create(const JsonObject &config) {
 
   mapp_slider_t* slider_ptr = (mapp_slider_t*)llist_pop_front(&llist_sliders_pool);
 
-  slider_ptr->common.midi_hardware_receive_func_ptr = &mapping_slider_hardware_midi_receive;
-  slider_ptr->common.midi_hardware_update_func_ptr = &mapping_slider_hardware_midi_update;
-  slider_ptr->common.midi_hardware_dispose_func_ptr = &mapping_slider_hardware_midi_dispose;
+  slider_ptr->common.hardware_midi_receive_func_ptr = &mapping_slider_hardware_midi_receive;
+  slider_ptr->common.hardware_midi_update_func_ptr = &mapping_slider_hardware_midi_update;
+  slider_ptr->common.hardware_midi_dispose_func_ptr = &mapping_slider_hardware_midi_dispose;
 
   slider_ptr->common.is_blob_inside_func_ptr = &mapping_slider_is_blob_inside;
   slider_ptr->common.blob_assign_func_ptr = &mapping_slider_assign_blob;
@@ -330,6 +330,7 @@ void mapping_slider_create(const JsonObject &config) {
       slider_ptr->params.touch[i].pos.msg.channel = status.channel;
       slider_ptr->params.touch[i].pos.limit.min = config["msg"][i]["pos"]["limit"]["min"].as<uint8_t>();
       slider_ptr->params.touch[i].pos.limit.max = config["msg"][i]["pos"]["limit"]["max"].as<uint8_t>();
+      slider_ptr->params.touch[i].pos.enabled = config["msg"][i]["pos"]["enabled"] | true;
 
       switch (slider_ptr->params.press) {
 
@@ -341,6 +342,7 @@ void mapping_slider_create(const JsonObject &config) {
           slider_ptr->params.touch[i].press.msg.channel = status.channel;
           slider_ptr->params.touch[i].press.limit.min = config["msg"][i]["press"]["limit"]["min"].as<uint8_t>();
           slider_ptr->params.touch[i].press.limit.max = config["msg"][i]["press"]["limit"]["max"].as<uint8_t>();
+          slider_ptr->params.touch[i].press.enabled = config["msg"][i]["press"]["enabled"] | true;
           break;
 
         case ControlChange:
@@ -351,6 +353,7 @@ void mapping_slider_create(const JsonObject &config) {
           slider_ptr->params.touch[i].press.msg.channel = status.channel;
           slider_ptr->params.touch[i].press.limit.min = config["msg"][i]["press"]["limit"]["min"].as<uint8_t>();
           slider_ptr->params.touch[i].press.limit.max = config["msg"][i]["press"]["limit"]["max"].as<uint8_t>();
+          slider_ptr->params.touch[i].press.enabled = config["msg"][i]["press"]["enabled"] | true;
           break;
 
         case AfterTouchPoly:
@@ -361,6 +364,7 @@ void mapping_slider_create(const JsonObject &config) {
           slider_ptr->params.touch[i].press.msg.channel = status.channel;
           slider_ptr->params.touch[i].press.limit.min = config["msg"][i]["press"]["limit"]["min"].as<uint8_t>();
           slider_ptr->params.touch[i].press.limit.max = config["msg"][i]["press"]["limit"]["max"].as<uint8_t>();
+          slider_ptr->params.touch[i].press.enabled = config["msg"][i]["press"]["enabled"] | true;
           break;
 
         default:

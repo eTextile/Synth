@@ -149,9 +149,9 @@ void mapping_grid_create(const JsonObject &config) {
 
   mapp_grid_t* grid_ptr = (mapp_grid_t*)llist_pop_front(&llist_grids_pool);
 
-  grid_ptr->common.midi_hardware_receive_func_ptr = &mapping_grid_hardware_midi_receive;
-  grid_ptr->common.midi_hardware_update_func_ptr = &mapping_grid_hardware_midi_update;
-  grid_ptr->common.midi_hardware_dispose_func_ptr = &mapping_grid_hardware_midi_dispose;
+  grid_ptr->common.hardware_midi_receive_func_ptr = &mapping_grid_hardware_midi_receive;
+  grid_ptr->common.hardware_midi_update_func_ptr = &mapping_grid_hardware_midi_update;
+  grid_ptr->common.hardware_midi_dispose_func_ptr = &mapping_grid_hardware_midi_dispose;
 
   grid_ptr->common.is_blob_inside_func_ptr = &mapping_grid_is_blob_inside;
   grid_ptr->common.blob_assign_func_ptr = &mapping_grid_assign_blob;

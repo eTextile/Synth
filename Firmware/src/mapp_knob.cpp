@@ -68,19 +68,10 @@ void mapping_knob_start(blob_t* blob_ptr) {
   mapp_knob_t* knob_ptr = (mapp_knob_t*)blob_ptr->action.mapping_ptr;
   knob_touch_t* touch_ptr = (knob_touch_t*)blob_ptr->action.touch_ptr;
 
-  switch (knob_ptr->params.press) {
-    case NoteOn:
+  if (knob_ptr->params.press == NoteOn) {
       mapping_send_midi_note_on(&touch_ptr->press, blob_ptr);
-      break;
-    case ControlChange:
+  } else {
       mapping_send_midi_msg_press(&touch_ptr->press, blob_ptr);
-      break;
-    case AfterTouchPoly:
-      mapping_send_midi_msg_press(&touch_ptr->press, blob_ptr);
-      break;
-    default:
-      // Not handled in mapping_knob
-      break;
   }
 };
 
@@ -181,9 +172,9 @@ void mapping_knob_create(const JsonObject &config) {
 
   mapp_knob_t* knob_ptr = (mapp_knob_t*)llist_pop_front(&llist_knobs_pool);
 
-  knob_ptr->common.midi_hardware_receive_func_ptr = &mapping_knob_hardware_midi_receive;  
-  knob_ptr->common.midi_hardware_update_func_ptr = &mapping_knob_hardware_midi_update;  
-  knob_ptr->common.midi_hardware_dispose_func_ptr = &mapping_knob_hardware_midi_dispose;
+  knob_ptr->common.hardware_midi_receive_func_ptr = &mapping_knob_hardware_midi_receive;  
+  knob_ptr->common.hardware_midi_update_func_ptr = &mapping_knob_hardware_midi_update;  
+  knob_ptr->common.hardware_midi_dispose_func_ptr = &mapping_knob_hardware_midi_dispose;
 
   knob_ptr->common.is_blob_inside_func_ptr = &mapping_knob_is_blob_inside;
   knob_ptr->common.blob_assign_func_ptr = &mapping_knob_assign_blob;
@@ -217,7 +208,8 @@ void mapping_knob_create(const JsonObject &config) {
       knob_ptr->params.touch[i].radius.msg.channel = status.channel;
       knob_ptr->params.touch[i].radius.limit.min = config["msg"][i]["radius"]["limit"]["min"].as<uint8_t>();
       knob_ptr->params.touch[i].radius.limit.max = config["msg"][i]["radius"]["limit"]["max"].as<uint8_t>();
-    
+      knob_ptr->params.touch[i].radius.enabled = config["msg"][i]["radius"]["enabled"] | true;
+
       midi_msg_status_unpack(config["msg"][i]["theta"]["midi"]["status"].as<uint8_t>(), &status);
       knob_ptr->params.touch[i].theta.msg.type = status.type;
       knob_ptr->params.touch[i].theta.msg.data1 = config["msg"][i]["theta"]["midi"]["data1"].as<uint8_t>();
@@ -225,6 +217,7 @@ void mapping_knob_create(const JsonObject &config) {
       knob_ptr->params.touch[i].theta.msg.channel = status.channel;
       knob_ptr->params.touch[i].theta.limit.min = config["msg"][i]["theta"]["limit"]["min"].as<uint8_t>();
       knob_ptr->params.touch[i].theta.limit.max = config["msg"][i]["theta"]["limit"]["max"].as<uint8_t>();
+      knob_ptr->params.touch[i].theta.enabled = config["msg"][i]["theta"]["enabled"] | true;
 
       switch (knob_ptr->params.press) {
 
@@ -234,6 +227,7 @@ void mapping_knob_create(const JsonObject &config) {
           knob_ptr->params.touch[i].press.msg.data1 = config["msg"][i]["press"]["midi"]["data1"].as<uint8_t>();
           knob_ptr->params.touch[i].press.msg.data2 = 0;
           knob_ptr->params.touch[i].press.msg.channel = status.channel;
+          knob_ptr->params.touch[i].press.enabled = config["msg"][i]["press"]["enabled"] | true;
           break;
 
         case ControlChange:
@@ -244,6 +238,7 @@ void mapping_knob_create(const JsonObject &config) {
           knob_ptr->params.touch[i].press.msg.channel = status.channel;
           knob_ptr->params.touch[i].press.limit.min = config["msg"][i]["press"]["limit"]["min"].as<uint8_t>();
           knob_ptr->params.touch[i].press.limit.max = config["msg"][i]["press"]["limit"]["max"].as<uint8_t>();
+          knob_ptr->params.touch[i].press.enabled = config["msg"][i]["press"]["enabled"] | true;
           break;
 
         case AfterTouchPoly:
@@ -254,6 +249,7 @@ void mapping_knob_create(const JsonObject &config) {
           knob_ptr->params.touch[i].press.msg.channel = status.channel;
           knob_ptr->params.touch[i].press.limit.min = config["msg"][i]["press"]["limit"]["min"].as<uint8_t>();
           knob_ptr->params.touch[i].press.limit.max = config["msg"][i]["press"]["limit"]["max"].as<uint8_t>();
+          knob_ptr->params.touch[i].press.enabled = config["msg"][i]["press"]["enabled"] | true;
           break;
 
         default:

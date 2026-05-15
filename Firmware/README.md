@@ -46,6 +46,30 @@
 
 ---
 
+## Config Upload Protocol
+
+When the web app sends a new mapping configuration, the exchange follows a strict handshake over USB MIDI Program Change messages:
+
+```
+Web app → ALLOCATE_CONFIG (PC ch.4)
+              ← firmware allocates buffer → ALLOCATE_DONE (PC ch.5)
+Web app → UPLOAD_CONFIG (PC ch.4)
+              ← web app sends JSON as SysEx chunks
+              ← firmware stores data → UPLOAD_DONE (PC ch.5)
+Web app → APPLY_CONFIG (PC ch.4)
+              ← firmware calls mappings_apply_config() → CONFIG_APPLY_DONE (PC ch.5)
+              ← web app returns to EDIT_MODE
+              ← alert: "press LEFT BUTTON to save to flash"
+User presses LEFT BUTTON
+              ← firmware writes config to flash → WRITE_MODE_DONE (PC ch.5)
+              ← alert: "STANDALONE MODE available"
+```
+
+- **RAM apply** — automatic at every upload (APPLY_CONFIG step). The device immediately uses the new mapping.
+- **Flash write** — manual, requires a physical long-press on the LEFT BUTTON. Required for the config to survive a power cycle or standalone use.
+
+---
+
 ## Firmware Operating Modes
 
 | Mode | Description |

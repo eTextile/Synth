@@ -16,7 +16,6 @@
 #define NAME "256"
 #define VERSION "1.0.27"
 #define SENSOR_UID 1 // Unique sensor ID 
-#define FLASH_BUFFER_SIZE 4096
 
 // E256 HARDWARE CONSTANTS
 #define LED_PIN_D1 5
@@ -62,15 +61,15 @@
 #define Z_MIN 0   // Blob centroid Z min value
 #define Z_MAX 127 // Blob centroid Z max value
 
-#define TWO_PI          (float)(2 * PI)
+//#define TWO_PI          (float)(2 * PI)
 #define THREE_PI_OVER_2 (float)(3 * PI / 2)
 #define PI_OVER_2       (float)(PI / 2)
 #define LONG_HOLD 1500
 #define LEVEL_TIMEOUT 3000
 #define PENDING_MODE_TIMEOUT 4000
 
-#define MIDI_THROTTLE_MS 10
-#define MATRIX_MIDI_THROTTLE_MS 50     // 20Hz
+#define MIDI_THROTTLE_MS 33            // 30Hz — safe for hardware MIDI DIN with multiple simultaneous mapping streams
+#define MATRIX_MIDI_THROTTLE_MS 50     // 20Hz — throttle for raw/interp matrix SysEx stream over USB
 
 #define VELOCITY_MIN_INTERVAL_MS 10    // Min time between velocity updates (ms)
 #define VELOCITY_EMA_ALPHA       0.4f  // EMA smoothing factor: 0=frozen, 1=raw (no smoothing)
@@ -82,7 +81,7 @@
 #define VELOCITY_XY_MAX          200   // Max expected velocity.xy in units/s for ROL sliders (tune to calibrate MIDI range)
 
 // E256 MIDI I/O CHANNELS CONSTANTS [1:15]
-#define MIDI_INPUT_CHANNEL 1
+#define HARDWARE_MIDI_INPUT_CHANNEL 1
 
 #define MIDI_CCS_CHANNEL 3
 #define MIDI_MODES_CHANNEL 4
@@ -133,7 +132,7 @@ typedef enum mode_code_e {
   MATRIX_INTERP_MODE, //
   MAPPING_MODE,    // 
   EDIT_MODE,       // Send all blobs values over USB_MIDI OUTPUT
-  THROUGH_MODE,    // Forward mappings values to the MIDI_HARDWARE OUTPUT
+  THROUGH_MODE,    // Forward mappings values to the HARDWARE_MIDI OUTPUT
   PLAY_MODE,       // Send mappings values to the USB_MIDI OUTPUT
   ALLOCATE_MODE,   //
   UPLOAD_MODE,     //
@@ -172,8 +171,10 @@ typedef enum verbosity_code_e{
 
 extern verbosity_code_t e256_verbosity_code;
 
+// TODO adding :
+  // DESERIALIZATION_ERROR
 typedef enum error_code_e {
-  WAITING_FOR_CONFIG,
+  CONFIG_FILE_MISSING,
   CONNECTING_FLASH,
   FLASH_FULL,
   FILE_TO_BIG,

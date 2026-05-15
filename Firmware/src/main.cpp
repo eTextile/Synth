@@ -18,28 +18,34 @@
 uint32_t fpsTimeStamp = 0;
 uint16_t fps = 0;
 
-void setup() {
+void setup(void) {
   #if defined(USB_MIDI_SERIAL)
-    //while (!Serial);
-    //Serial.printf("\nVERSION:\t%s", VERSION);
+  Serial.begin(BAUD_RATE);
+  while (!Serial);
+    Serial.printf("\nVERSION:\t%s", VERSION);
   #endif
   hardware_setup();
   scan_setup();
   interp_setup();
   llist_setup();
   blob_setup();
+  midi_bus_setup();
   hardware_midi_setup();
   usb_midi_setup();
-  midi_bus_setup();
   matrix_calibrate();
   
   if (load_flash_config()) {
+    //usb_midi_send_info((uint8_t)CONFIG_LOAD_DONE, MIDI_VERBOSITY_CHANNEL); // TODO
     if (mappings_apply_config(flash_config_ptr, flash_config_size)) {
-      //
+      usb_midi_send_info((uint8_t)CONFIG_APPLY_DONE, MIDI_VERBOSITY_CHANNEL);
     }
     else {
+      usb_midi_send_info((uint8_t)CONFIG_APPLY_FAILED, MIDI_ERROR_CHANNEL);
       set_mode(ERROR_MODE);
     }
+  }
+  else {
+    usb_midi_send_info((uint8_t)CONFIG_FILE_MISSING, MIDI_ERROR_CHANNEL);
   }
   set_mode(PENDING_MODE);
   boot_time = millis();
@@ -58,7 +64,7 @@ void setup() {
 // │ PLAY            │ ✓            │             │ ✓ + interp   │ ✓              │ transmit_mappings + blobs│ transmit_mappings        │                       │
 // │ STANDALONE      │              │ ✓           │ ✓ + interp   │ ✓              │                          │ transmit_mappings        │ no USB host needed    │
 // └─────────────────┴──────────────┴─────────────┴──────────────┴────────────────┴──────────────────────────┴──────────────────────────┴───────────────────────┘
-void loop() {
+void loop(void) {
 
   update_controls();
   update_levels();
@@ -70,7 +76,7 @@ void loop() {
     case PENDING_MODE:
       usb_midi_receive();
       if ((millis() - boot_time) > PENDING_MODE_TIMEOUT) {
-        set_mode(PLAY_MODE);
+        set_mode(STANDALONE_MODE);
       }
       break;
 
@@ -109,15 +115,13 @@ void loop() {
       
     case PLAY_MODE:
       usb_midi_receive();
+      hardware_midi_receive();
       matrix_scan();
       matrix_interp();
       matrix_find_blobs();
       mapping_lib_update();
-      usb_midi_transmit_mappings_midi_msg();
       mapping_hardware_midi_transmit();
-      #if defined(BLOB_VELOCITY) // DEBUG MODE!!
-      usb_midi_transmit_blobs();
-      #endif
+      mapping_usb_midi_transmit();
       break;
 
     case STANDALONE_MODE:
