@@ -80,50 +80,51 @@ void mapping_polygon_dispose_blob(void* mapping_ptr, blob_t* blob_ptr) {
 
 void mapping_polygon_start(blob_t* blob_ptr) {
   mapp_polygon_t* polygon_ptr = (mapp_polygon_t*)blob_ptr->action.mapping_ptr;
-  touch_planar_t* touch_ptr = (touch_planar_t*)blob_ptr->action.touch_ptr;
+  touch_polygon_t* touch_ptr = (touch_polygon_t*)blob_ptr->action.touch_ptr;
 
-  switch (polygon_ptr->params.press) {
-    case NoteOn:
-      mapping_send_midi_note_on(&touch_ptr->press, blob_ptr);
-      break; 
-    case ControlChange:
-      mapping_send_midi_msg_press(&touch_ptr->press, blob_ptr);
-      break;
-    case AfterTouchPoly:
-      mapping_send_midi_msg_press(&touch_ptr->press, blob_ptr);
-      break;
-    default:
-      // Not handled in mapping_polygon
-      break;
+  if (polygon_ptr->params.press == NoteOn) {
+    mapping_send_midi_note_on(&touch_ptr->press, blob_ptr);
+  } else {
+    mapping_send_midi_msg_press(&touch_ptr->press, blob_ptr);
   }
 };
 
 void mapping_polygon_continue(blob_t* blob_ptr) {
   mapp_polygon_t* polygon_ptr = (mapp_polygon_t*)blob_ptr->action.mapping_ptr;
-  touch_press_t* touch_ptr = (touch_press_t*)blob_ptr->action.touch_ptr;
+  touch_polygon_t* touch_ptr = (touch_polygon_t*)blob_ptr->action.touch_ptr;
 
   if (polygon_ptr->params.press != NoteOn) {
     mapping_send_midi_msg_press(&touch_ptr->press, blob_ptr);
+  }
+
+  for (uint8_t vi = 0; vi < polygon_ptr->params.point_cnt; vi++) {
+    if (!touch_ptr->source[vi].enabled) continue;
+    float dx = blob_ptr->centroid.x - polygon_ptr->params.point[vi].x;
+    float dy = blob_ptr->centroid.y - polygon_ptr->params.point[vi].y;
+    float dist = sqrtf(dx * dx + dy * dy);
+    uint8_t new_val = (uint8_t)constrain(
+      (int)roundf(touch_ptr->source[vi].limit.max +
+        (float)(touch_ptr->source[vi].limit.min - touch_ptr->source[vi].limit.max) *
+        (dist / polygon_ptr->params.max_dist)),
+      0, 127
+    );
+    if (new_val != touch_ptr->source[vi].last_val) {
+      if ((millis() - touch_ptr->source[vi].midi_time_stamp) > MIDI_THROTTLE_MS) {
+        touch_ptr->source[vi].msg.data2 = new_val;
+        llist_push_front(&llist_midi_out, &touch_ptr->source[vi].msg);
+        touch_ptr->source[vi].last_val = new_val;
+        touch_ptr->source[vi].midi_time_stamp = millis();
+      }
+    }
   }
 };
 
 void mapping_polygon_stop(blob_t* blob_ptr) {
   mapp_polygon_t* polygon_ptr = (mapp_polygon_t*)blob_ptr->action.mapping_ptr;
-  touch_press_t* touch_ptr = (touch_press_t*)blob_ptr->action.touch_ptr;
+  touch_polygon_t* touch_ptr = (touch_polygon_t*)blob_ptr->action.touch_ptr;
 
-  switch (polygon_ptr->params.press) {
-    case NoteOn:
-      mapping_send_midi_note_off(&touch_ptr->press);
-      break;
-    case ControlChange:
-      // N/A
-      break;
-    case AfterTouchPoly:
-      // N/A
-      break;
-    default:
-      // Not handled in mapping_polygon
-      break;
+  if (polygon_ptr->params.press == NoteOn) {
+    mapping_send_midi_note_off(&touch_ptr->press);
   }
 };
 
@@ -169,16 +170,25 @@ void mapping_polygon_create(const JsonObject &config) {
   polygon_ptr->common.stop_func_ptr = &mapping_polygon_stop;
 
   polygon_ptr->params.touchs = config["touchs"].as<uint8_t>();
-  polygon_ptr->params.press = config["press"].as<MidiType>();
+  polygon_ptr->params.press = (MidiType)config["press"].as<uint8_t>();
 
-  polygon_ptr->params.point_cnt = config["cnt"].as<uint8_t>();
+  polygon_ptr->params.point_cnt = config["segments"].size();
 
+  float min_x = 1e9f, max_x = -1e9f, min_y = 1e9f, max_y = -1e9f;
   for (uint8_t i = 0; i < polygon_ptr->params.point_cnt; i++) {
-    polygon_ptr->params.point[i].x = config["point"][i]["X"].as<float>();
-    polygon_ptr->params.point[i].y = config["point"][i]["Y"].as<float>();
+    polygon_ptr->params.point[i].x = config["segments"][i][0].as<float>();
+    polygon_ptr->params.point[i].y = config["segments"][i][1].as<float>();
+    if (polygon_ptr->params.point[i].x < min_x) min_x = polygon_ptr->params.point[i].x;
+    if (polygon_ptr->params.point[i].x > max_x) max_x = polygon_ptr->params.point[i].x;
+    if (polygon_ptr->params.point[i].y < min_y) min_y = polygon_ptr->params.point[i].y;
+    if (polygon_ptr->params.point[i].y > max_y) max_y = polygon_ptr->params.point[i].y;
   };
-  
-  // For line equation y = mx + c, we pre-compute m and c for all edges of a given polygon
+  float bw = max_x - min_x;
+  float bh = max_y - min_y;
+  polygon_ptr->params.max_dist = sqrtf(bw * bw + bh * bh);
+  if (polygon_ptr->params.max_dist < 1.0f) polygon_ptr->params.max_dist = 1.0f;
+
+  // Pre-compute m and c for all edges (line equation y = mx + c)
   float x1, x2, y1, y2;
   uint8_t v1, v2 = (polygon_ptr->params.point_cnt - 1);
   polygon_ptr->params.is_inside = false;
@@ -196,6 +206,33 @@ void mapping_polygon_create(const JsonObject &config) {
       polygon_ptr->params.m[v1] = (x2 - x1) / (y2 - y1);
     };
     v2 = v1;
+  }
+
+  midi_status_t status;
+  char key[16];
+  for (uint8_t ti = 0; ti < polygon_ptr->params.touchs; ti++) {
+    midi_msg_status_unpack(config["msg"][ti]["press"]["midi"]["status"].as<uint8_t>(), &status);
+    polygon_ptr->params.touch[ti].press.msg.type = status.type;
+    polygon_ptr->params.touch[ti].press.msg.data1 = config["msg"][ti]["press"]["midi"]["data1"].as<uint8_t>();
+    polygon_ptr->params.touch[ti].press.msg.data2 = 0;
+    polygon_ptr->params.touch[ti].press.msg.channel = status.channel;
+    polygon_ptr->params.touch[ti].press.limit.min = config["msg"][ti]["press"]["limit"]["min"].as<uint8_t>();
+    polygon_ptr->params.touch[ti].press.limit.max = config["msg"][ti]["press"]["limit"]["max"].as<uint8_t>();
+    polygon_ptr->params.touch[ti].press.enabled = config["msg"][ti]["press"]["enabled"] | true;
+
+    for (uint8_t vi = 0; vi < polygon_ptr->params.point_cnt; vi++) {
+      snprintf(key, sizeof(key), "source_%u", vi);
+      midi_msg_status_unpack(config["msg"][ti][key]["midi"]["status"].as<uint8_t>(), &status);
+      polygon_ptr->params.touch[ti].source[vi].msg.type = ControlChange;
+      polygon_ptr->params.touch[ti].source[vi].msg.data1 = config["msg"][ti][key]["midi"]["data1"].as<uint8_t>();
+      polygon_ptr->params.touch[ti].source[vi].msg.data2 = 0;
+      polygon_ptr->params.touch[ti].source[vi].msg.channel = status.channel;
+      polygon_ptr->params.touch[ti].source[vi].limit.min = config["msg"][ti][key]["limit"]["min"].as<uint8_t>();
+      polygon_ptr->params.touch[ti].source[vi].limit.max = config["msg"][ti][key]["limit"]["max"].as<uint8_t>();
+      polygon_ptr->params.touch[ti].source[vi].enabled = config["msg"][ti][key]["enabled"] | true;
+      polygon_ptr->params.touch[ti].source[vi].last_val = 255;
+      polygon_ptr->params.touch[ti].source[vi].midi_time_stamp = 0;
+    }
   }
   llist_push_back(&llist_mappings, polygon_ptr);
 };
