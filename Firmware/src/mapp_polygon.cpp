@@ -10,10 +10,10 @@
 
 typedef struct mapp_polygon_s mapp_polygon_t;
 struct mapp_polygon_s {
-  common_t common;
+  common_t common;              // vtable — must be first member for safe common_t* cast
   polygon_t params;
-  uint8_t active_blob_count;
-  uint8_t touch_index;
+  uint8_t active_blob_count;    // number of blobs currently assigned to this polygon
+  uint8_t touch_index;          // next free touch slot; reset to 0 when last blob lifts
   llist_t llist_active_midi_msg;
   uint8_t active_midi_msg_count;
 };
@@ -97,6 +97,8 @@ void mapping_polygon_continue(blob_t* blob_ptr) {
     mapping_send_midi_msg_press(&touch_ptr->press, blob_ptr);
   }
 
+  // For each vertex, map Euclidean distance to a MIDI CC value.
+  // Mapping is inverted: dist=0 (touch on vertex) → limit.max, dist=max_dist → limit.min.
   for (uint8_t vi = 0; vi < polygon_ptr->params.point_cnt; vi++) {
     if (!touch_ptr->source[vi].enabled) continue;
     float dx = blob_ptr->centroid.x - polygon_ptr->params.point[vi].x;
@@ -172,8 +174,10 @@ void mapping_polygon_create(const JsonObject &config) {
   polygon_ptr->params.touchs = config["touchs"].as<uint8_t>();
   polygon_ptr->params.press = (MidiType)config["press"].as<uint8_t>();
 
+  // Segments are exported normalized to [0, NEW_COLS] × [0, NEW_ROWS] by the JS UI.
   polygon_ptr->params.point_cnt = config["segments"].size();
 
+  // Read vertices and compute the bounding-box diagonal used as the max distance reference.
   float min_x = 1e9f, max_x = -1e9f, min_y = 1e9f, max_y = -1e9f;
   for (uint8_t i = 0; i < polygon_ptr->params.point_cnt; i++) {
     polygon_ptr->params.point[i].x = config["segments"][i][0].as<float>();
@@ -185,10 +189,11 @@ void mapping_polygon_create(const JsonObject &config) {
   };
   float bw = max_x - min_x;
   float bh = max_y - min_y;
+  // Diagonal of the bounding box — used as the 100% distance reference in the CC mapping.
   polygon_ptr->params.max_dist = sqrtf(bw * bw + bh * bh);
-  if (polygon_ptr->params.max_dist < 1.0f) polygon_ptr->params.max_dist = 1.0f;
+  if (polygon_ptr->params.max_dist < 1.0f) polygon_ptr->params.max_dist = 1.0f; // avoid division by zero
 
-  // Pre-compute m and c for all edges (line equation y = mx + c)
+  // Pre-compute m and c for all edges (line equation y = mx + c) used by is_blob_inside.
   float x1, x2, y1, y2;
   uint8_t v1, v2 = (polygon_ptr->params.point_cnt - 1);
   polygon_ptr->params.is_inside = false;
@@ -208,8 +213,9 @@ void mapping_polygon_create(const JsonObject &config) {
     v2 = v1;
   }
 
+  // Read per-touch MIDI params: one press axis + one source_N CC axis per vertex.
   midi_status_t status;
-  char key[16];
+  char key[16]; // "source_63" is the longest possible key (9 chars + NUL)
   for (uint8_t ti = 0; ti < polygon_ptr->params.touchs; ti++) {
     midi_msg_status_unpack(config["msg"][ti]["press"]["midi"]["status"].as<uint8_t>(), &status);
     polygon_ptr->params.touch[ti].press.msg.type = status.type;
@@ -221,7 +227,7 @@ void mapping_polygon_create(const JsonObject &config) {
     polygon_ptr->params.touch[ti].press.enabled = config["msg"][ti]["press"]["enabled"] | true;
 
     for (uint8_t vi = 0; vi < polygon_ptr->params.point_cnt; vi++) {
-      snprintf(key, sizeof(key), "source_%u", vi);
+      snprintf(key, sizeof(key), "source_%u", vi); // key matches JS: "source_0", "source_1", …
       midi_msg_status_unpack(config["msg"][ti][key]["midi"]["status"].as<uint8_t>(), &status);
       polygon_ptr->params.touch[ti].source[vi].msg.type = ControlChange;
       polygon_ptr->params.touch[ti].source[vi].msg.data1 = config["msg"][ti][key]["midi"]["data1"].as<uint8_t>();
@@ -230,7 +236,7 @@ void mapping_polygon_create(const JsonObject &config) {
       polygon_ptr->params.touch[ti].source[vi].limit.min = config["msg"][ti][key]["limit"]["min"].as<uint8_t>();
       polygon_ptr->params.touch[ti].source[vi].limit.max = config["msg"][ti][key]["limit"]["max"].as<uint8_t>();
       polygon_ptr->params.touch[ti].source[vi].enabled = config["msg"][ti][key]["enabled"] | true;
-      polygon_ptr->params.touch[ti].source[vi].last_val = 255;
+      polygon_ptr->params.touch[ti].source[vi].last_val = 255;   // force send on first continue
       polygon_ptr->params.touch[ti].source[vi].midi_time_stamp = 0;
     }
   }
