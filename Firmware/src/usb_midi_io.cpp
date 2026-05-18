@@ -265,6 +265,7 @@ static void usb_read_system_exclusive(const uint8_t *data_ptr, uint16_t sysEx_ch
 
     if (sysEx_last_chunk_size != 0) sysEx_chunks++;
 
+    e256_current_mode = UPLOAD_MODE; // prevent Phase 1 from re-firing on the next CMD packet
     usb_midi_send_sysex_ack((uint8_t)ALLOCATE_DONE);
     return;
   }
