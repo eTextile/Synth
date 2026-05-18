@@ -168,7 +168,7 @@ void mapping_grid_create(const JsonObject &config) {
   grid_ptr->params.rect.to.y = config["to"][1].as<float>();
   grid_ptr->params.cols = config["cols"].as<uint8_t>();
   grid_ptr->params.rows = config["rows"].as<uint8_t>();
-  grid_ptr->params.press = config["press"].as<MidiType>();
+  grid_ptr->params.press = (MidiType)config["press"].as<uint8_t>();
   grid_ptr->params.input_chan = config["input_chan"].as<uint8_t>();
   
   grid_ptr->params.keys = grid_ptr->params.cols * grid_ptr->params.rows;

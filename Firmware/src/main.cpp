@@ -37,15 +37,15 @@ void setup(void) {
   if (load_flash_config()) {
     //usb_midi_send_info((uint8_t)CONFIG_LOAD_DONE, MIDI_VERBOSITY_CHANNEL); // TODO
     if (mappings_apply_config(flash_config_ptr, flash_config_size)) {
-      usb_midi_send_info((uint8_t)CONFIG_APPLY_DONE, MIDI_VERBOSITY_CHANNEL);
+      usb_midi_send_sysex_ack((uint8_t)CONFIG_APPLY_DONE);
     }
     else {
-      usb_midi_send_info((uint8_t)CONFIG_APPLY_FAILED, MIDI_ERROR_CHANNEL);
+      usb_midi_send_sysex_err((uint8_t)CONFIG_APPLY_FAILED);
       set_mode(ERROR_MODE);
     }
   }
   else {
-    usb_midi_send_info((uint8_t)CONFIG_FILE_MISSING, MIDI_ERROR_CHANNEL);
+    usb_midi_send_sysex_err((uint8_t)CONFIG_FILE_MISSING);
   }
   set_mode(PENDING_MODE);
   boot_time = millis();

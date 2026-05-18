@@ -67,19 +67,10 @@ void mapping_touchpad_start(blob_t* blob_ptr) {
   mapp_touchpad_t* touchpad_ptr = (mapp_touchpad_t*)blob_ptr->action.mapping_ptr;
   touch_planar_t* touch_ptr = (touch_planar_t*)blob_ptr->action.touch_ptr;
 
-  switch (touchpad_ptr->params.press) {
-    case NoteOn:
+  if (touchpad_ptr->params.press == NoteOn) {
       mapping_send_midi_note_on(&touch_ptr->press, blob_ptr);
-      break;
-    case ControlChange:
+  } else {
       mapping_send_midi_msg_press(&touch_ptr->press, blob_ptr);
-      break;
-    case AfterTouchPoly:
-      mapping_send_midi_msg_press(&touch_ptr->press, blob_ptr);
-      break;
-    default:
-      // Not handled in mapping_touchpad
-      break;
   }
 };
 
@@ -151,7 +142,7 @@ void mapping_touchpad_create(const JsonObject &config) {
   touchpad_ptr->params.rect.from.y = config["from"][1].as<float>();
   touchpad_ptr->params.rect.to.x = config["to"][0].as<float>();
   touchpad_ptr->params.rect.to.y = config["to"][1].as<float>();
-  touchpad_ptr->params.press = config["press"].as<MidiType>();
+  touchpad_ptr->params.press = (MidiType)config["press"].as<uint8_t>();
   touchpad_ptr->params.input_chan = config["input_chan"].as<uint8_t>();
 
   if (touchpad_ptr->params.touchs <= MAX_TOUCHPAD_TOUCHS) {

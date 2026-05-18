@@ -209,7 +209,6 @@ void mapping_slider_hardware_midi_update(void* mapping_ptr, midi_msg_t* midi_msg
 
     case POPULATE_OFF:
       break;
-
     case POPULATE_AS_PLAYED: {
       uint8_t zone = (slider_ptr->active_midi_msg_count - 1) % steps;
       slider_ptr->params.step_note[zone] = midi_msg_ptr->data1;
@@ -258,7 +257,6 @@ void mapping_slider_hardware_midi_update(void* mapping_ptr, midi_msg_t* midi_msg
       }
       break;
     }
-
     case POPULATE_PING_PONG:
       if (steps > 1) {
         uint8_t period = 2 * (steps - 1);

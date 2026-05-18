@@ -130,8 +130,10 @@ void mapping_knob_continue(blob_t* blob_ptr) {
   );
 
   if (touch_ptr->radius.msg.data2 != touch_ptr->radius.last_val) llist_push_front(&llist_midi_out, &touch_ptr->radius.msg);
-  
-  mapping_send_midi_msg_press(&touch_ptr->press, blob_ptr);
+
+  if (knob_ptr->params.press != NoteOn) {
+    mapping_send_midi_msg_press(&touch_ptr->press, blob_ptr);
+  }
 
 };
 

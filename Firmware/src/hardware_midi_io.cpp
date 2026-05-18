@@ -17,7 +17,6 @@ static void hardware_midi_read_note_off(byte, byte, byte);
 
 void hardware_midi_setup(void) {
   HARDWARE_MIDI.begin(MIDI_CHANNEL_OMNI);
-  //Serial.println("SETUP");
   HARDWARE_MIDI.turnThruOff();
   HARDWARE_MIDI.setHandleNoteOn(hardware_midi_read_note_on);
   HARDWARE_MIDI.setHandleNoteOff(hardware_midi_read_note_off);

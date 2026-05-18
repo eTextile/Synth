@@ -23,7 +23,6 @@ static void usb_midi_read_note_off(uint8_t, uint8_t, uint8_t);
 static void usb_read_control_change(uint8_t, uint8_t, uint8_t);
 static void usb_read_after_touch_poly(uint8_t, uint8_t, uint8_t);
 static void usb_read_pitch_bend(uint8_t, int);
-static void usb_read_program_change(uint8_t, uint8_t);
 static void usb_read_system_exclusive(const uint8_t*, uint16_t, bool);
 
 // Register all USB MIDI message handlers and start the USB MIDI stack.
@@ -34,7 +33,6 @@ void usb_midi_setup(void) {
   usbMIDI.setHandleControlChange(usb_read_control_change);
   usbMIDI.setHandleAfterTouchPoly(usb_read_after_touch_poly);
   usbMIDI.setHandlePitchChange(usb_read_pitch_bend);
-  usbMIDI.setHandleProgramChange(usb_read_program_change);
   usbMIDI.setHandleSystemExclusive(usb_read_system_exclusive);
 };
 
@@ -145,10 +143,23 @@ void usb_midi_send_clock(void) {
   usbMIDI.sendClock();
 };
 
-// Send a Program Change on `channel` to report a mode acknowledgement or error
-// code back to the host. Used by usb_read_program_change() after every mode switch.
-void usb_midi_send_info(uint8_t program, uint8_t channel) {
-  usbMIDI.sendProgramChange(program, channel);
+void usb_midi_send_sysex_ack(uint8_t ack) {
+  uint8_t pkt[3] = { SYSEX_DEVICE_ID, SYSEX_PKT_ACK, ack };
+  usbMIDI.sendSysEx(3, pkt, false);
+  usbMIDI.send_now();
+  while (usbMIDI.read());
+};
+
+void usb_midi_send_sysex_err(uint8_t err) {
+  uint8_t pkt[3] = { SYSEX_DEVICE_ID, SYSEX_PKT_ERR, err };
+  usbMIDI.sendSysEx(3, pkt, false);
+  usbMIDI.send_now();
+  while (usbMIDI.read());
+};
+
+void usb_midi_send_sysex_param(uint8_t param_id, uint8_t value) {
+  uint8_t pkt[4] = { SYSEX_DEVICE_ID, SYSEX_PKT_PARAM, param_id, value };
+  usbMIDI.sendSysEx(4, pkt, false);
   usbMIDI.send_now();
   while (usbMIDI.read());
 };
@@ -181,14 +192,8 @@ static void usb_midi_read_note_off(uint8_t channel, uint8_t note, uint8_t veloci
   }
 };
 
-// Handle an incoming Control Change from the USB host.
-// MIDI_CCS_CHANNEL is reserved for live level adjustments (threshold, gain…);
-// all other channels are forwarded in THROUGH_MODE.
+// Forward an incoming Control Change from the USB host to hardware MIDI in THROUGH_MODE.
 static void usb_read_control_change(uint8_t channel, uint8_t control, uint8_t value) {
-  if (channel == MIDI_CCS_CHANNEL) {
-    set_level((level_code_t)control, value);
-    return;
-  }
   if (e256_current_mode != THROUGH_MODE) return;
   midi_msg_t* midi_msg_ptr = (midi_msg_t*)llist_pop_front(&llist_midi_nodes_pool);
   if (midi_msg_ptr != NULL) {
@@ -229,108 +234,14 @@ static void usb_read_pitch_bend(uint8_t channel, int pitch) {
   }
 };
 
-// Dispatch mode-change commands received as Program Change messages on
-// MIDI_MODES_CHANNEL. Each case switches the firmware operating mode and
-// sends an acknowledgement back to the host via MIDI_VERBOSITY_CHANNEL.
-static void usb_read_program_change(uint8_t channel, uint8_t program) {
-  if (channel == MIDI_MODES_CHANNEL) {
-    switch (program) {
-
-      case PENDING_MODE:
-        set_mode(PENDING_MODE);
-        usb_midi_send_info((uint8_t)PENDING_MODE_DONE, MIDI_VERBOSITY_CHANNEL);
-        break;
-
-      case SYNC_MODE:
-        set_mode(SYNC_MODE);
-        usb_midi_send_info((uint8_t)SYNC_MODE_DONE, MIDI_VERBOSITY_CHANNEL);
-        break;
-
-      case MATRIX_RAW_MODE:
-        set_mode(MATRIX_RAW_MODE);
-        usb_midi_send_info((uint8_t)MATRIX_RAW_MODE_DONE, MIDI_VERBOSITY_CHANNEL);
-        break;
-
-      case MATRIX_INTERP_MODE:
-        set_mode(MATRIX_INTERP_MODE);
-        usb_midi_send_info((uint8_t)MATRIX_INTERP_MODE_DONE, MIDI_VERBOSITY_CHANNEL);
-        break;
-
-      case MAPPING_MODE:
-        set_mode(MAPPING_MODE);
-        usb_midi_send_info((uint8_t)MAPPING_MODE_DONE, MIDI_VERBOSITY_CHANNEL);
-        break;
-
-      case EDIT_MODE:
-        set_mode(EDIT_MODE);
-        usb_midi_send_info((uint8_t)EDIT_MODE_DONE, MIDI_VERBOSITY_CHANNEL);
-        break;
-
-      case THROUGH_MODE:
-        set_mode(THROUGH_MODE);
-        usb_midi_send_info((uint8_t)THROUGH_MODE_DONE, MIDI_VERBOSITY_CHANNEL);
-        break;
-
-      case PLAY_MODE:
-        set_mode(PLAY_MODE);
-        usb_midi_send_info((uint8_t)PLAY_MODE_DONE, MIDI_VERBOSITY_CHANNEL);
-        break;
-
-      case LOAD_MODE:
-        if(load_flash_config()) {
-          usb_midi_send_info((uint8_t)LOAD_MODE_DONE, MIDI_VERBOSITY_CHANNEL);
-        }
-        else {
-          usb_midi_send_info((uint8_t)NO_CONFIG_FILE, MIDI_ERROR_CHANNEL);
-        }
-        break;
-
-      case FETCH_MODE:
-        usbMIDI.sendSysEx(flash_config_size, flash_config_ptr, false);
-        usb_midi_send_info((uint8_t)FETCH_MODE_DONE, MIDI_VERBOSITY_CHANNEL);
-        break;
-
-      case ALLOCATE_MODE:
-        e256_current_mode = ALLOCATE_MODE;
-        usb_midi_send_info((uint8_t)ALLOCATE_MODE_DONE, MIDI_VERBOSITY_CHANNEL);
-        break;
-
-      case UPLOAD_MODE:
-        e256_current_mode = UPLOAD_MODE;
-        usb_midi_send_info((uint8_t)UPLOAD_MODE_DONE, MIDI_VERBOSITY_CHANNEL);
-        break;
-
-      case APPLY_MODE:
-        if (mappings_apply_config(sysEx_data_ptr, sysEx_data_length)) {
-          usb_midi_send_info((uint8_t)CONFIG_APPLY_DONE, MIDI_VERBOSITY_CHANNEL);
-        }
-        else {
-          usb_midi_send_info((uint8_t)CONFIG_APPLY_FAILED, MIDI_ERROR_CHANNEL);
-          set_mode(ERROR_MODE);
-        }
-        break;
-
-      case CALIBRATE_MODE:
-        matrix_calibrate();
-        blink(10, 50);
-        usb_midi_send_info((uint8_t)CALIBRATE_MODE_DONE, MIDI_VERBOSITY_CHANNEL);
-        break;
-
-      default:
-        #if defined(USB_MIDI_SERIAL) && defined(DEBUG_MODES)
-          Serial.println("MODE_NOT_HANDLED!"); // DROP!
-        #endif
-        break;
-    }
-  }
-};
-
-// Receive a JSON config uploaded by the host as a chunked SysEx stream.
+// Receive SysEx from the USB host.
 //
-// The upload protocol is two-phase:
-//   1. ALLOCATE: host sends [ 0xF0, DEVICE_ID, SIZE_MSB, SIZE_LSB, 0xF7 ]
+// Three packet types are handled:
+//   1. ALLOCATE: mode == ALLOCATE_MODE, host sends [ 0xF0, DEVICE_ID, SIZE_MSB, SIZE_LSB, 0xF7 ]
 //                firmware allocates a buffer and replies ALLOCATE_DONE.
-//   2. UPLOAD:   host sends data in one or more chunks of up to USB_MIDI_SYSEX_MAX bytes.
+//   2. CMD:      [ 0xF0, DEVICE_ID, SYSEX_PKT_CMD, mode_value, 0xF7 ]
+//                firmware switches mode and replies with ACK.
+//   3. UPLOAD:   mode == UPLOAD_MODE, host sends JSON data in one or more chunks.
 //                - Single chunk:  strip 2-byte header + 1-byte footer, reply UPLOAD_DONE.
 //                - First chunk:   strip 2-byte header, advance pointer.
 //                - Middle chunks: copy verbatim, advance pointer.
@@ -342,14 +253,10 @@ static void usb_read_system_exclusive(const uint8_t *data_ptr, uint16_t sysEx_ch
   static uint8_t sysEx_chunks = 0;
   static uint8_t sysEx_chunk_count = 0;
 
-  switch (e256_current_mode) {
-
-  case ALLOCATE_MODE:
-    uint8_t sysEx_data_length_MSB;
-    uint8_t sysEx_data_length_LSB;
-
-    sysEx_data_length_MSB = *(data_ptr + 2);
-    sysEx_data_length_LSB = *(data_ptr + 3);
+  // Phase 1: JSON allocation packet — must be checked before CMD detection
+  if (e256_current_mode == ALLOCATE_MODE) {
+    uint8_t sysEx_data_length_MSB = *(data_ptr + 2);
+    uint8_t sysEx_data_length_LSB = *(data_ptr + 3);
     sysEx_data_length = sysEx_data_length_MSB << 7 | sysEx_data_length_LSB;
 
     sysEx_chunk_ptr = sysEx_data_ptr = (uint8_t *)allocate(sysEx_data_ptr, sysEx_data_length + 1);
@@ -358,16 +265,111 @@ static void usb_read_system_exclusive(const uint8_t *data_ptr, uint16_t sysEx_ch
 
     if (sysEx_last_chunk_size != 0) sysEx_chunks++;
 
-    usb_midi_send_info((uint8_t)ALLOCATE_DONE, MIDI_VERBOSITY_CHANNEL);
-    break;
+    usb_midi_send_sysex_ack((uint8_t)ALLOCATE_DONE);
+    return;
+  }
 
-  case UPLOAD_MODE:
-    if (sysEx_chunks == 1 && complete) { // Only one chunk to load
-      memcpy(sysEx_chunk_ptr, data_ptr + 2, sizeof(uint8_t) * sysEx_chunk_size - 2); // -3 removing heder & footer size
-      usb_midi_send_info((uint8_t)UPLOAD_DONE, MIDI_VERBOSITY_CHANNEL);
+  // Phase 2: Control CMD packet [ 0xF0, DEVICE_ID, SYSEX_PKT_CMD, mode_value, 0xF7 ]
+  if (sysEx_chunk_size >= 4 && data_ptr[1] == SYSEX_DEVICE_ID && data_ptr[2] == SYSEX_PKT_CMD) {
+    switch (data_ptr[3]) {
+
+      case PENDING_MODE:
+        set_mode(PENDING_MODE);
+        usb_midi_send_sysex_ack((uint8_t)PENDING_MODE_DONE);
+        break;
+
+      case SYNC_MODE:
+        set_mode(SYNC_MODE);
+        usb_midi_send_sysex_ack((uint8_t)SYNC_MODE_DONE);
+        break;
+
+      case MATRIX_RAW_MODE:
+        set_mode(MATRIX_RAW_MODE);
+        usb_midi_send_sysex_ack((uint8_t)MATRIX_RAW_MODE_DONE);
+        break;
+
+      case MATRIX_INTERP_MODE:
+        set_mode(MATRIX_INTERP_MODE);
+        usb_midi_send_sysex_ack((uint8_t)MATRIX_INTERP_MODE_DONE);
+        break;
+
+      case MAPPING_MODE:
+        set_mode(MAPPING_MODE);
+        usb_midi_send_sysex_ack((uint8_t)MAPPING_MODE_DONE);
+        break;
+
+      case EDIT_MODE:
+        set_mode(EDIT_MODE);
+        usb_midi_send_sysex_ack((uint8_t)EDIT_MODE_DONE);
+        break;
+
+      case THROUGH_MODE:
+        set_mode(THROUGH_MODE);
+        usb_midi_send_sysex_ack((uint8_t)THROUGH_MODE_DONE);
+        break;
+
+      case PLAY_MODE:
+        set_mode(PLAY_MODE);
+        usb_midi_send_sysex_ack((uint8_t)PLAY_MODE_DONE);
+        break;
+
+      case LOAD_MODE:
+        if (load_flash_config()) {
+          usb_midi_send_sysex_ack((uint8_t)LOAD_MODE_DONE);
+        }
+        else {
+          usb_midi_send_sysex_err((uint8_t)NO_CONFIG_FILE);
+        }
+        break;
+
+      case FETCH_MODE:
+        usbMIDI.sendSysEx(flash_config_size, flash_config_ptr, false);
+        usb_midi_send_sysex_ack((uint8_t)FETCH_MODE_DONE);
+        break;
+
+      case ALLOCATE_MODE:
+        e256_current_mode = ALLOCATE_MODE;
+        usb_midi_send_sysex_ack((uint8_t)ALLOCATE_MODE_DONE);
+        break;
+
+      case UPLOAD_MODE:
+        e256_current_mode = UPLOAD_MODE;
+        usb_midi_send_sysex_ack((uint8_t)UPLOAD_MODE_DONE);
+        break;
+
+      case APPLY_MODE:
+        if (mappings_apply_config(sysEx_data_ptr, sysEx_data_length)) {
+          usb_midi_send_sysex_ack((uint8_t)CONFIG_APPLY_DONE);
+        }
+        else {
+          usb_midi_send_sysex_err((uint8_t)CONFIG_APPLY_FAILED);
+          set_mode(ERROR_MODE);
+        }
+        break;
+
+      case CALIBRATE_MODE:
+        matrix_calibrate();
+        blink(10, 50);
+        usb_midi_send_sysex_ack((uint8_t)CALIBRATE_MODE_DONE);
+        break;
+
+      default:
+        #if defined(USB_MIDI_SERIAL) && defined(DEBUG_MODES)
+          Serial.println("MODE_NOT_HANDLED!");
+        #endif
+        break;
+    }
+    return;
+  }
+
+  // Phase 3: JSON upload data
+  if (e256_current_mode == UPLOAD_MODE) {
+    if (complete && sysEx_chunk_count == 0) { // All data in one callback (Teensy 4.x behaviour)
+      memcpy(sysEx_chunk_ptr, data_ptr + 2, sysEx_data_length); // exact length, skips F0 + DEVICE_ID
+      usb_midi_send_sysex_ack((uint8_t)UPLOAD_DONE);
     }
     else if (sysEx_chunks > 1 && sysEx_chunk_count == 0) { // First chunk
-      memcpy(sysEx_chunk_ptr, data_ptr + 2, sizeof(uint8_t) * sysEx_chunk_size - 2); // -2 removing heder size
+      memcpy(sysEx_chunk_ptr, data_ptr + 2, sizeof(uint8_t) * sysEx_chunk_size - 2); // -2 removing header size
       sysEx_chunk_ptr += (sysEx_chunk_size - 2);
       sysEx_chunk_count++;
     }
@@ -379,13 +381,11 @@ static void usb_read_system_exclusive(const uint8_t *data_ptr, uint16_t sysEx_ch
     else { // Last chunk
       memcpy(sysEx_chunk_ptr, data_ptr, sizeof(uint8_t) * sysEx_chunk_size - 1); // -1 removing footer size
       sysEx_chunk_count = 0;
-      usb_midi_send_info((uint8_t)UPLOAD_DONE, MIDI_VERBOSITY_CHANNEL);
-    };
-    break;
+      usb_midi_send_sysex_ack((uint8_t)UPLOAD_DONE);
+    }
+    return;
+  }
 
-  default:
-    usb_midi_send_info((uint8_t)UNKNOWN_SYSEX, MIDI_ERROR_CHANNEL);
-    set_mode(ERROR_MODE);
-    break;
-  };
+  usb_midi_send_sysex_err((uint8_t)UNKNOWN_SYSEX);
+  set_mode(ERROR_MODE);
 };

@@ -22,7 +22,9 @@ void usb_midi_transmit_blobs(void);
 void mapping_usb_midi_transmit(void);
 
 void usb_midi_send_clock(void);
-void usb_midi_send_info(uint8_t msg, uint8_t channel);
+void usb_midi_send_sysex_ack(uint8_t ack);
+void usb_midi_send_sysex_err(uint8_t err);
+void usb_midi_send_sysex_param(uint8_t param_id, uint8_t value);
 
 
 #endif /*__USB_MIDI_IO_H__*/

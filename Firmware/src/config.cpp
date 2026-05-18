@@ -216,12 +216,12 @@ static bool flash_file(const char *fileName, uint8_t* data_ptr, uint16_t size) {
     if (SerialFlash.create(fileName, size)) {
       tmpFile = SerialFlash.open(fileName);
       if (!tmpFile){
-        usb_midi_send_info((uint8_t)WHILE_OPEN_FLASH_FILE, MIDI_ERROR_CHANNEL);
+        usb_midi_send_sysex_err((uint8_t)WHILE_OPEN_FLASH_FILE);
         return false;
       }
     }
     else {
-      usb_midi_send_info((uint8_t)FLASH_FULL, MIDI_ERROR_CHANNEL);
+      usb_midi_send_sysex_err((uint8_t)FLASH_FULL);
       return false;
     }
     if (sysEx_data_length < FLASH_CHIP_SIZE) {
@@ -231,7 +231,7 @@ static bool flash_file(const char *fileName, uint8_t* data_ptr, uint16_t size) {
       return true;
     }
     else {
-      usb_midi_send_info((uint8_t)FILE_TO_BIG, MIDI_ERROR_CHANNEL);
+      usb_midi_send_sysex_err((uint8_t)FILE_TO_BIG);
       return false;
     }
   }
@@ -255,10 +255,10 @@ static void update_buttons(void) {
     if (e256_current_mode == STANDALONE_MODE) return;
     if (sysEx_data_length > 0) {
       if (flash_file("config.json", sysEx_data_ptr, sysEx_data_length)){
-        usb_midi_send_info((uint8_t)WRITE_MODE_DONE, MIDI_VERBOSITY_CHANNEL);
+        usb_midi_send_sysex_ack((uint8_t)WRITE_MODE_DONE);
       }
       else {
-        usb_midi_send_info((uint8_t)FLASH_CONFIG_WRITE_FAILED, MIDI_ERROR_CHANNEL);
+        usb_midi_send_sysex_err((uint8_t)FLASH_CONFIG_WRITE_FAILED);
         //set_mode(ERROR_MODE);
       }
     }
@@ -306,7 +306,7 @@ static bool read_encoder(level_code_t level) {
   if (val == lev->val) return false;
   lev->val = val;
   lev->leds.update = true;
-  usbMIDI.sendControlChange((uint8_t)level, val, MIDI_CCS_CHANNEL);
+  usb_midi_send_sysex_param((uint8_t)level, val);
   return true;
 };
 
@@ -487,7 +487,7 @@ bool mappings_apply_config(uint8_t* conf_ptr, size_t conf_size) {
 static void setup_serial_flash(void) {
   if (!SerialFlash.begin(FLASH_CHIP_SELECT)) {
     if (e256_current_mode != STANDALONE_MODE) {
-      usb_midi_send_info((uint8_t)CONNECTING_FLASH, MIDI_ERROR_CHANNEL);
+      usb_midi_send_sysex_err((uint8_t)CONNECTING_FLASH);
     }
   }
   else {

@@ -75,19 +75,10 @@ void mapping_switch_start(blob_t* blob_ptr) {
     return;
   }
 
-  switch (switch_ptr->params.press) {
-    case NoteOn:
+  if (switch_ptr->params.press == NoteOn) {
       mapping_send_midi_note_on(&touch_ptr->press, blob_ptr);
-      break;
-    case ControlChange:
+  } else {
       mapping_send_midi_msg_press(&touch_ptr->press, blob_ptr);
-      break;
-    case AfterTouchPoly:
-      mapping_send_midi_msg_press(&touch_ptr->press, blob_ptr);
-      break;
-    default:
-      // Not handled in mapping_switch
-      break;
   }
 };
 
@@ -167,7 +158,7 @@ void mapping_switch_create(const JsonObject &config) {
   switch_ptr->params.rect.from.y = config["from"][1].as<float>();
   switch_ptr->params.rect.to.x = config["to"][0].as<float>();
   switch_ptr->params.rect.to.y = config["to"][1].as<float>();
-  switch_ptr->params.press = config["press"].as<MidiType>();
+  switch_ptr->params.press = (MidiType)config["press"].as<uint8_t>();
   switch_ptr->params.input_chan = config["input_chan"].as<uint8_t>();
   switch_ptr->params.tap_tempo = config["tap_tempo"] | false;
 

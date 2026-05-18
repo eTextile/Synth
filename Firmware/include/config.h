@@ -88,6 +88,13 @@
 #define MIDI_VERBOSITY_CHANNEL 5
 #define MIDI_ERROR_CHANNEL 6
 
+// SysEx control packet constants
+#define SYSEX_DEVICE_ID  0x7D
+#define SYSEX_PKT_CMD    0x01  // web → firmware: mode command
+#define SYSEX_PKT_ACK    0x02  // firmware → web: mode acknowledgment
+#define SYSEX_PKT_ERR    0x03  // firmware → web: error
+#define SYSEX_PKT_PARAM  0x04  // firmware → web: level parameter value
+
 // E256 MAPPING_LIB CONSTANTS
 #define MAX_BLOBS 16 // [1:16] How many blobs can be tracked at the same time
 

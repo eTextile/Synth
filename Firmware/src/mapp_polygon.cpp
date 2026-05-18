@@ -173,6 +173,7 @@ void mapping_polygon_create(const JsonObject &config) {
 
   polygon_ptr->params.touchs = config["touchs"].as<uint8_t>();
   polygon_ptr->params.press = (MidiType)config["press"].as<uint8_t>();
+  polygon_ptr->params.input_chan = config["input_chan"].as<uint8_t>();
 
   // Segments are exported normalized to [0, NEW_COLS] × [0, NEW_ROWS] by the JS UI.
   polygon_ptr->params.point_cnt = config["segments"].size();
