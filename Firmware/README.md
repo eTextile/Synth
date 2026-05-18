@@ -28,12 +28,12 @@
 
 ### With USB cable + power plug
 
-1. The device is detected by the web app, which sends `[SYNC_MODE_REQUEST]`.
-2. The device replies `[SYNC_MODE_DONE]`.
-3. The app sends `[CONFIG_FILE_REQUEST]`.
-4. The device responds with either `[FLASH_CONFIG_LOAD_DONE]` or `[FLASH_CONFIG_LOAD_FAILED]`.
-    - **`FLASH_CONFIG_LOAD_DONE`**: the device sends the current config file via MIDI SysEx; the web app loads it on screen. The config can be modified and re-uploaded, overwriting the previous one.
-    - **`FLASH_CONFIG_LOAD_FAILED`**: the web app prompts **NO CONFIG FILE IN THE DEVICE** — you start from scratch.
+1. The device is detected by the web app, which sends a `SYNC` SysEx command.
+2. The device replies `SYNC_MODE_DONE` (SysEx ACK).
+3. The app switches to `MATRIX_RAW_MODE` to verify the sensor is live.
+4. To load a previously saved configuration, click **FETCH CONFIG** in the web app:
+    - **Success** (`LOAD_MODE_DONE`): the device sends the config JSON via SysEx; the web app loads it on screen. The config can be modified and re-uploaded, overwriting the previous one.
+    - **No config found**: the web app shows **NO CONFIG FILE IN THE DEVICE** — you start from scratch.
 
 ### With power plug only (no USB cable)
 
@@ -48,20 +48,27 @@
 
 ## Config Upload Protocol
 
-When the web app sends a new mapping configuration, the exchange follows a strict handshake over USB MIDI Program Change messages:
+When the web app sends a new mapping configuration, the exchange follows a strict handshake over USB MIDI SysEx:
 
 ```
-Web app → ALLOCATE_CONFIG (PC ch.4)
-              ← firmware allocates buffer → ALLOCATE_DONE (PC ch.5)
-Web app → UPLOAD_CONFIG (PC ch.4)
-              ← web app sends JSON as SysEx chunks
-              ← firmware stores data → UPLOAD_DONE (PC ch.5)
-Web app → APPLY_CONFIG (PC ch.4)
-              ← firmware calls mappings_apply_config() → CONFIG_APPLY_DONE (PC ch.5)
+CMD  format: [F0, 0x7D, 0x01, mode_value, F7]
+ACK  format: [F0, 0x7D, 0x02, ack_value,  F7]
+ERR  format: [F0, 0x7D, 0x03, err_code,   F7]
+
+Web app → ALLOCATE_CONFIG (SysEx CMD)
+              ← firmware sets ALLOCATE_MODE → ALLOCATE_MODE_DONE (SysEx ACK)
+Web app → [F0, 0x7D, SIZE_MSB, SIZE_LSB, F7]   ← allocation size packet
+              ← firmware allocates buffer → ALLOCATE_DONE (SysEx ACK)
+Web app → UPLOAD_CONFIG (SysEx CMD)
+              ← firmware sets UPLOAD_MODE → UPLOAD_MODE_DONE (SysEx ACK)
+Web app → [F0, 0x7D, ...JSON bytes..., F7]      ← JSON config data
+              ← firmware stores data in RAM → UPLOAD_DONE (SysEx ACK)
+Web app → APPLY_CONFIG (SysEx CMD)
+              ← firmware calls mappings_apply_config() → CONFIG_APPLY_DONE (SysEx ACK)
               ← web app returns to EDIT_MODE
               ← alert: "press LEFT BUTTON to save to flash"
-User presses LEFT BUTTON
-              ← firmware writes config to flash → WRITE_MODE_DONE (PC ch.5)
+User long-presses LEFT BUTTON
+              ← firmware writes config to flash → WRITE_MODE_DONE (SysEx ACK)
               ← alert: "STANDALONE MODE available"
 ```
 
@@ -78,6 +85,7 @@ User presses LEFT BUTTON
 | `SYNC_MODE` | Handshake with the web app |
 | `CALIBRATE_MODE` | Full matrix calibration |
 | `MATRIX_RAW_MODE` | Stream raw 16×16 sensor values over USB MIDI |
+| `MATRIX_INTERP_MODE` | Stream interpolated 64×64 sensor values over USB MIDI |
 | `EDIT_MODE` | Stream all blob values over USB MIDI |
 | `PLAY_MODE` | Send mapping values over USB MIDI |
 | `THROUGH_MODE` | Forward mapping values to hardware MIDI output |
@@ -254,15 +262,20 @@ FREE → NEW → PRESENT → MISSING → RELEASED → FREE
 | `MISSING` | Not detected for < 50 ms (debounce) |
 | `RELEASED` | Not detected for 50–500 ms (triggers note-off) |
 
-### MIDI Channels
+### SysEx Packet Types
 
-| Channel | Role |
-|---------|------|
-| 1 | MIDI input |
-| 3 | Threshold / signal levels |
-| 4 | Operating modes |
-| 5 | Verbosity / acknowledgments |
-| 6 | Error codes |
+All control traffic between the web app and the firmware uses SysEx with device ID `0x7D`:
+
+| Byte 2 (`pkt_type`) | Direction | Purpose |
+|---------------------|-----------|---------|
+| `0x01` (`PKT_CMD`) | web → firmware | Mode switch command |
+| `0x02` (`PKT_ACK`) | firmware → web | Acknowledgment |
+| `0x03` (`PKT_ERR`) | firmware → web | Error notification |
+| `0x04` (`PKT_PARAM`) | firmware → web | Parameter value (threshold, levels) |
+
+### MIDI Channels (user mappings)
+
+Standard MIDI channels are used for user-defined TUI mappings only. All mode control, configuration upload, and device feedback use SysEx (no MIDI channel).
 
 ### Key Source Files
 
