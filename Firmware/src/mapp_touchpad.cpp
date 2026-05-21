@@ -14,6 +14,7 @@ struct mapp_touchpad_s {
   uint8_t touch_index;
   llist_t llist_active_midi_msg;
   uint8_t active_midi_msg_count;
+  midi_msg_t chord_notes[MAX_TOUCHPAD_TOUCHS][MAX_CHORD_NOTES];
 };
 
 static mapp_touchpad_t mapp_touchpads[MAX_TOUCHPADS];
@@ -67,10 +68,19 @@ void mapping_touchpad_start(blob_t* blob_ptr) {
   mapp_touchpad_t* touchpad_ptr = (mapp_touchpad_t*)blob_ptr->action.mapping_ptr;
   touch_planar_t* touch_ptr = (touch_planar_t*)blob_ptr->action.touch_ptr;
 
-  if (touchpad_ptr->params.press == NoteOn) {
+  uint8_t ti = (uint8_t)(touch_ptr - &touchpad_ptr->params.touch[0]);
+  switch (touchpad_ptr->params.press) {
+    case NoteOn:
       mapping_send_midi_note_on(&touch_ptr->press, blob_ptr);
-  } else {
+      break;
+    case MIDI_TYPE_CHORD:
+      midi_send_chord_on(touchpad_ptr->chord_notes[ti], &touchpad_ptr->params.chord[ti],
+                         touchpad_ptr->params.input_chan,
+                         (uint8_t)map(blob_ptr->centroid.z, Z_MIN, Z_MAX, 1, 127));
+      break;
+    default:
       mapping_send_midi_msg_press(&touch_ptr->press, blob_ptr);
+      break;
   }
 };
 
@@ -90,8 +100,16 @@ void mapping_touchpad_stop(blob_t* blob_ptr) {
   mapp_touchpad_t* touchpad_ptr = (mapp_touchpad_t*)blob_ptr->action.mapping_ptr;
   touch_planar_t* touch_ptr = (touch_planar_t*)blob_ptr->action.touch_ptr;
 
-  if (touchpad_ptr->params.press == NoteOn) {
-    mapping_send_midi_note_off(&touch_ptr->press);
+  uint8_t ti = (uint8_t)(touch_ptr - &touchpad_ptr->params.touch[0]);
+  switch (touchpad_ptr->params.press) {
+    case NoteOn:
+      mapping_send_midi_note_off(&touch_ptr->press);
+      break;
+    case MIDI_TYPE_CHORD:
+      midi_send_chord_off(touchpad_ptr->chord_notes[ti], touchpad_ptr->params.chord[ti].type);
+      break;
+    default:
+      break;
   }
 };
 
@@ -190,8 +208,12 @@ void mapping_touchpad_create(const JsonObject &config) {
           touchpad_ptr->params.touch[i].press.limit.max = config["msg"][i]["press"]["limit"]["max"].as<uint8_t>();
           touchpad_ptr->params.touch[i].press.enabled = config["msg"][i]["press"]["enabled"] | true;
           break;
+        case MIDI_TYPE_CHORD:
+          touchpad_ptr->params.chord[i].type = config["msg"][i]["press"]["chord"].as<uint8_t>();
+          touchpad_ptr->params.chord[i].note = config["msg"][i]["press"]["note"].as<uint8_t>();
+          break;
         default:
-          // None (0xFF) or Chord (0xFE) — no midi fields in JSON
+          // None (0xFF) — no press output
           break;
       }
     }

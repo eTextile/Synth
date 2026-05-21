@@ -39,10 +39,24 @@ struct midi_status_s {
   uint8_t channel;
 };
 
+// Chord press mode sentinel — matches web app 0xFE (outside standard MIDI range)
+#define MIDI_TYPE_CHORD ((MidiType)0xFE)
+
+#define MAX_CHORD_NOTES 4
+
+typedef struct midi_chord_s midi_chord_t;
+struct midi_chord_s {
+  uint8_t type;  // 1=Major 2=Minor 3=Dim 4=Aug 5=Maj7 6=Min7 7=Dom7 8=Sus2 9=Sus4
+  uint8_t note;  // root note 0–127
+};
+
 void midi_bus_setup(void);
 
 uint8_t midi_msg_status_pack(MidiType type, uint8_t channel);
 void midi_msg_status_unpack(uint8_t in_status, midi_status_t* out_status);
+
+void midi_send_chord_on(midi_msg_t* chord_msgs, const midi_chord_t* chord, uint8_t channel, uint8_t velocity);
+void midi_send_chord_off(midi_msg_t* chord_msgs, uint8_t chord_type);
 
 const char* get_type_name(MidiType code);
 

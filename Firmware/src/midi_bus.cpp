@@ -47,6 +47,45 @@ const char* get_type_name(MidiType code) {
   return char_code;
 };
 
+// Chord intervals indexed by type (1–9), matching web app CHORD_NAMES.
+// Rows: up to 4 semitone offsets from root; unused slots filled with 0.
+static const uint8_t CHORD_INTERVALS[10][MAX_CHORD_NOTES] = {
+  {0,  0,  0,  0},  // [0] unused
+  {0,  4,  7,  0},  // [1] Major
+  {0,  3,  7,  0},  // [2] Minor
+  {0,  3,  6,  0},  // [3] Diminished
+  {0,  4,  8,  0},  // [4] Augmented
+  {0,  4,  7, 11},  // [5] Maj7
+  {0,  3,  7, 10},  // [6] Min7
+  {0,  4,  7, 10},  // [7] Dom7
+  {0,  2,  7,  0},  // [8] Sus2
+  {0,  5,  7,  0},  // [9] Sus4
+};
+static const uint8_t CHORD_NOTE_COUNT[10] = {0, 3, 3, 3, 3, 4, 4, 4, 3, 3};
+
+// chord_msgs: pre-allocated array of MAX_CHORD_NOTES midi_msg_t embedded in the mapping struct.
+void midi_send_chord_on(midi_msg_t* chord_msgs, const midi_chord_t* chord, uint8_t channel, uint8_t velocity) {
+  uint8_t t = (chord->type >= 1 && chord->type <= 9) ? chord->type : 1;
+  uint8_t n = CHORD_NOTE_COUNT[t];
+  for (uint8_t j = 0; j < n; j++) {
+    chord_msgs[j].type    = NoteOn;
+    chord_msgs[j].channel = channel;
+    chord_msgs[j].data1   = (uint8_t)constrain(chord->note + CHORD_INTERVALS[t][j], 0, 127);
+    chord_msgs[j].data2   = velocity;
+    llist_push_front(&llist_midi_out, &chord_msgs[j]);
+  }
+}
+
+void midi_send_chord_off(midi_msg_t* chord_msgs, uint8_t chord_type) {
+  uint8_t t = (chord_type >= 1 && chord_type <= 9) ? chord_type : 1;
+  uint8_t n = CHORD_NOTE_COUNT[t];
+  for (uint8_t j = 0; j < n; j++) {
+    chord_msgs[j].type  = NoteOff;
+    chord_msgs[j].data2 = 0;
+    llist_push_front(&llist_midi_out, &chord_msgs[j]);
+  }
+}
+
 void print_bytes(const uint8_t* data_ptr, size_t data_length) {
   Serial.printf("\nPRINT_BYTES / DATA_LENGTH: %d", data_length);
   Serial.printf("\nPRINT_BYTES / DATA: ");

@@ -15,6 +15,7 @@ struct mapp_switch_s {
   uint8_t touch_index;
   llist_t llist_active_midi_msg;
   uint8_t active_midi_msg_count;
+  midi_msg_t chord_notes[MAX_SWITCH_TOUCHS][MAX_CHORD_NOTES]; // pre-allocated for chord mode
 };
 
 static mapp_switch_t mapp_switches[MAX_SWITCHS];
@@ -75,10 +76,19 @@ void mapping_switch_start(blob_t* blob_ptr) {
     return;
   }
 
-  if (switch_ptr->params.press == NoteOn) {
+  uint8_t ti = (uint8_t)(touch_ptr - &switch_ptr->params.touch[0]);
+  switch (switch_ptr->params.press) {
+    case NoteOn:
       mapping_send_midi_note_on(&touch_ptr->press, blob_ptr);
-  } else {
+      break;
+    case MIDI_TYPE_CHORD:
+      midi_send_chord_on(switch_ptr->chord_notes[ti], &switch_ptr->params.chord[ti],
+                         switch_ptr->params.input_chan,
+                         (uint8_t)map(blob_ptr->centroid.z, Z_MIN, Z_MAX, 1, 127));
+      break;
+    default:
       mapping_send_midi_msg_press(&touch_ptr->press, blob_ptr);
+      break;
   }
 };
 
@@ -95,18 +105,15 @@ void mapping_switch_stop(blob_t* blob_ptr) {
   mapp_switch_t* switch_ptr = (mapp_switch_t*)blob_ptr->action.mapping_ptr;
   touch_press_t* touch_ptr = (touch_press_t*)blob_ptr->action.touch_ptr;
 
+  uint8_t ti = (uint8_t)(touch_ptr - &switch_ptr->params.touch[0]);
   switch (switch_ptr->params.press) {
     case NoteOn:
       mapping_send_midi_note_off(&touch_ptr->press);
       break;
-    case ControlChange:
-      // N/A
-      break;
-    case AfterTouchPoly:
-      // N/A
+    case MIDI_TYPE_CHORD:
+      midi_send_chord_off(switch_ptr->chord_notes[ti], switch_ptr->params.chord[ti].type);
       break;
     default:
-      // Not handled in mapp_switch
       break;
   }
 };
@@ -186,8 +193,12 @@ void mapping_switch_create(const JsonObject &config) {
           switch_ptr->params.touch[i].press.limit.max = config["msg"][i]["press"]["limit"]["max"].as<uint8_t>();
           switch_ptr->params.touch[i].press.enabled = config["msg"][i]["press"]["enabled"] | true;
           break;
+        case MIDI_TYPE_CHORD:
+          switch_ptr->params.chord[i].type = config["msg"][i]["press"]["chord"].as<uint8_t>();
+          switch_ptr->params.chord[i].note = config["msg"][i]["press"]["note"].as<uint8_t>();
+          break;
         default:
-          // None (0xFF) or Chord (0xFE) — no midi fields in JSON
+          // None (0xFF) — no press output
           break;
       }
     }
