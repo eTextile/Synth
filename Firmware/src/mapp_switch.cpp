@@ -76,16 +76,17 @@ void mapping_switch_start(blob_t* blob_ptr) {
     return;
   }
 
-  uint8_t ti = (uint8_t)(touch_ptr - &switch_ptr->params.touch[0]);
   switch (switch_ptr->params.press) {
     case NoteOn:
       mapping_send_midi_note_on(&touch_ptr->press, blob_ptr);
       break;
-    case MIDI_TYPE_CHORD:
+    case MIDI_TYPE_CHORD: {
+      uint8_t ti = (uint8_t)(touch_ptr - &switch_ptr->params.touch[0]);
       midi_send_chord_on(switch_ptr->chord_notes[ti], &switch_ptr->params.chord[ti],
                          switch_ptr->params.input_chan,
                          (uint8_t)map(blob_ptr->centroid.z, Z_MIN, Z_MAX, 1, 127));
       break;
+    }
     default:
       mapping_send_midi_msg_press(&touch_ptr->press, blob_ptr);
       break;
@@ -105,14 +106,15 @@ void mapping_switch_stop(blob_t* blob_ptr) {
   mapp_switch_t* switch_ptr = (mapp_switch_t*)blob_ptr->action.mapping_ptr;
   touch_press_t* touch_ptr = (touch_press_t*)blob_ptr->action.touch_ptr;
 
-  uint8_t ti = (uint8_t)(touch_ptr - &switch_ptr->params.touch[0]);
   switch (switch_ptr->params.press) {
     case NoteOn:
       mapping_send_midi_note_off(&touch_ptr->press);
       break;
-    case MIDI_TYPE_CHORD:
+    case MIDI_TYPE_CHORD: {
+      uint8_t ti = (uint8_t)(touch_ptr - &switch_ptr->params.touch[0]);
       midi_send_chord_off(switch_ptr->chord_notes[ti], switch_ptr->params.chord[ti].type);
       break;
+    }
     default:
       break;
   }

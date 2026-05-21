@@ -68,16 +68,17 @@ void mapping_touchpad_start(blob_t* blob_ptr) {
   mapp_touchpad_t* touchpad_ptr = (mapp_touchpad_t*)blob_ptr->action.mapping_ptr;
   touch_planar_t* touch_ptr = (touch_planar_t*)blob_ptr->action.touch_ptr;
 
-  uint8_t ti = (uint8_t)(touch_ptr - &touchpad_ptr->params.touch[0]);
   switch (touchpad_ptr->params.press) {
     case NoteOn:
       mapping_send_midi_note_on(&touch_ptr->press, blob_ptr);
       break;
-    case MIDI_TYPE_CHORD:
+    case MIDI_TYPE_CHORD: {
+      uint8_t ti = (uint8_t)(touch_ptr - &touchpad_ptr->params.touch[0]);
       midi_send_chord_on(touchpad_ptr->chord_notes[ti], &touchpad_ptr->params.chord[ti],
                          touchpad_ptr->params.input_chan,
                          (uint8_t)map(blob_ptr->centroid.z, Z_MIN, Z_MAX, 1, 127));
       break;
+    }
     default:
       mapping_send_midi_msg_press(&touch_ptr->press, blob_ptr);
       break;
@@ -100,14 +101,15 @@ void mapping_touchpad_stop(blob_t* blob_ptr) {
   mapp_touchpad_t* touchpad_ptr = (mapp_touchpad_t*)blob_ptr->action.mapping_ptr;
   touch_planar_t* touch_ptr = (touch_planar_t*)blob_ptr->action.touch_ptr;
 
-  uint8_t ti = (uint8_t)(touch_ptr - &touchpad_ptr->params.touch[0]);
   switch (touchpad_ptr->params.press) {
     case NoteOn:
       mapping_send_midi_note_off(&touch_ptr->press);
       break;
-    case MIDI_TYPE_CHORD:
+    case MIDI_TYPE_CHORD: {
+      uint8_t ti = (uint8_t)(touch_ptr - &touchpad_ptr->params.touch[0]);
       midi_send_chord_off(touchpad_ptr->chord_notes[ti], touchpad_ptr->params.chord[ti].type);
       break;
+    }
     default:
       break;
   }
