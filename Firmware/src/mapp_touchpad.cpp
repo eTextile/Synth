@@ -170,14 +170,30 @@ void mapping_touchpad_create(const JsonObject &config) {
       touchpad_ptr->params.touch[i].pos_y.limit.max = config["msg"][i]["pos_y"]["limit"]["max"].as<uint8_t>();
       touchpad_ptr->params.touch[i].pos_y.enabled = config["msg"][i]["pos_y"]["enabled"] | true;
 
-      midi_msg_status_unpack(config["msg"][i]["press"]["midi"]["status"].as<uint8_t>(), &status);
-      touchpad_ptr->params.touch[i].press.msg.type = status.type;
-      touchpad_ptr->params.touch[i].press.msg.data1 = config["msg"][i]["press"]["midi"]["data1"].as<uint8_t>();
-      touchpad_ptr->params.touch[i].press.msg.data2 = 0;
-      touchpad_ptr->params.touch[i].press.msg.channel = status.channel;
-      touchpad_ptr->params.touch[i].press.limit.min = config["msg"][i]["press"]["limit"]["min"].as<uint8_t>();
-      touchpad_ptr->params.touch[i].press.limit.max = config["msg"][i]["press"]["limit"]["max"].as<uint8_t>();
-      touchpad_ptr->params.touch[i].press.enabled = config["msg"][i]["press"]["enabled"] | true;
+      switch (touchpad_ptr->params.press) {
+        case NoteOn:
+          midi_msg_status_unpack(config["msg"][i]["press"]["midi"]["status"].as<uint8_t>(), &status);
+          touchpad_ptr->params.touch[i].press.msg.type = NoteOn;
+          touchpad_ptr->params.touch[i].press.msg.data1 = config["msg"][i]["press"]["midi"]["data1"].as<uint8_t>();
+          touchpad_ptr->params.touch[i].press.msg.data2 = 0;
+          touchpad_ptr->params.touch[i].press.msg.channel = status.channel;
+          touchpad_ptr->params.touch[i].press.enabled = config["msg"][i]["press"]["enabled"] | true;
+          break;
+        case ControlChange:
+        case AfterTouchPoly:
+          midi_msg_status_unpack(config["msg"][i]["press"]["midi"]["status"].as<uint8_t>(), &status);
+          touchpad_ptr->params.touch[i].press.msg.type = status.type;
+          touchpad_ptr->params.touch[i].press.msg.data1 = config["msg"][i]["press"]["midi"]["data1"].as<uint8_t>();
+          touchpad_ptr->params.touch[i].press.msg.data2 = 0;
+          touchpad_ptr->params.touch[i].press.msg.channel = status.channel;
+          touchpad_ptr->params.touch[i].press.limit.min = config["msg"][i]["press"]["limit"]["min"].as<uint8_t>();
+          touchpad_ptr->params.touch[i].press.limit.max = config["msg"][i]["press"]["limit"]["max"].as<uint8_t>();
+          touchpad_ptr->params.touch[i].press.enabled = config["msg"][i]["press"]["enabled"] | true;
+          break;
+        default:
+          // None (0xFF) or Chord (0xFE) — no midi fields in JSON
+          break;
+      }
     }
     llist_push_back(&llist_mappings, touchpad_ptr);
   }
