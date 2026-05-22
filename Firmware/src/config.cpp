@@ -204,7 +204,7 @@ void set_level(level_code_t level, uint8_t value) {
   #endif
 };
 
-static bool flash_file(const char *fileName, uint8_t* data_ptr, uint16_t size) {
+static bool flash_file(const char* fileName, uint8_t* data_ptr, uint16_t size) {
   if (sysEx_data_length != 0) {
     SerialFlash.wakeup();
     while (!SerialFlash.ready());
@@ -501,7 +501,7 @@ bool load_flash_config(void) {
   if (SerialFlash.exists("config.json")) {
     SerialFlashFile configFile = SerialFlash.open("config.json");
     flash_config_size = configFile.size();
-    flash_config_ptr = (uint8_t *)allocate(flash_config_ptr, flash_config_size);
+    flash_config_ptr = (uint8_t*)allocate(flash_config_ptr, flash_config_size);
     configFile.read(flash_config_ptr, flash_config_size);
     configFile.close();
     SerialFlash.sleep();

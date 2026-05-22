@@ -232,8 +232,8 @@ static void usb_read_pitch_bend(uint8_t channel, int pitch) {
 //                - Middle chunks: copy verbatim, advance pointer.
 //                - Last chunk:    strip 1-byte footer, reply UPLOAD_DONE.
 //
-static void usb_read_system_exclusive(const uint8_t *data_ptr, uint16_t sysEx_chunk_size, bool complete) {
-  static uint8_t *sysEx_chunk_ptr = NULL;
+static void usb_read_system_exclusive(const uint8_t* data_ptr, uint16_t sysEx_chunk_size, bool complete) {
+  static uint8_t* sysEx_chunk_ptr = NULL;
   static uint16_t sysEx_last_chunk_size = 0;
   static uint8_t sysEx_chunks = 0;
   static uint8_t sysEx_chunk_count = 0;
