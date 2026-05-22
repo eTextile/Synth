@@ -35,10 +35,7 @@ void setup(void) {
   matrix_calibrate();
   
   if (load_flash_config()) {
-    if (mappings_apply_config(flash_config_ptr, flash_config_size)) {
-      boot_config_ack = (uint8_t)CONFIG_APPLY_DONE;
-    }
-    else {
+    if (!mappings_apply_config(flash_config_ptr, flash_config_size)) {
       boot_config_err = (uint8_t)CONFIG_APPLY_FAILED;
       set_mode(ERROR_MODE);
     }

@@ -12,7 +12,6 @@
 extern uint32_t boot_time;
 extern size_t sysEx_data_length;
 extern uint8_t* sysEx_data_ptr;
-extern uint8_t boot_config_ack;
 extern uint8_t boot_config_err;
 
 void usb_midi_setup(void);
