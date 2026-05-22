@@ -17,6 +17,8 @@
 uint32_t boot_time = 0;
 size_t sysEx_data_length = 0;
 uint8_t* sysEx_data_ptr = NULL;
+uint8_t boot_config_ack = 0;
+uint8_t boot_config_err = 0;
 
 static void usb_midi_read_note_on(uint8_t, uint8_t, uint8_t);
 static void usb_midi_read_note_off(uint8_t, uint8_t, uint8_t);
@@ -267,6 +269,8 @@ static void usb_read_system_exclusive(const uint8_t* data_ptr, uint16_t sysEx_ch
       case SYNC_MODE:
         set_mode(SYNC_MODE);
         usb_midi_send_sysex_ack((uint8_t)SYNC_MODE_DONE);
+        if (boot_config_ack) { usb_midi_send_sysex_ack(boot_config_ack); boot_config_ack = 0; }
+        if (boot_config_err) { usb_midi_send_sysex_err(boot_config_err); boot_config_err = 0; }
         break;
 
       case MATRIX_RAW_MODE:
