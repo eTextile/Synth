@@ -51,7 +51,6 @@ static void hardware_midi_read_note_on(byte channel, byte note, byte velocity) {
 static void hardware_midi_read_note_off(byte channel, byte note, byte velocity) {
   midi_msg_t msg = { .channel = (uint8_t)channel, .type = NoteOff, .data1 = note, .data2 = velocity };
 
-
   for (lnode_t* node_ptr = ITERATOR_START_FROM_HEAD(&llist_mappings); node_ptr != NULL; node_ptr = ITERATOR_NEXT(node_ptr)) {
     common_t* mapping_ptr = (common_t*)ITERATOR_DATA(node_ptr);
     if (mapping_ptr->hardware_midi_receive_func_ptr(mapping_ptr, &msg)) {

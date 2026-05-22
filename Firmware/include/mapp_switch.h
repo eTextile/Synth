@@ -11,7 +11,6 @@ struct switch_s {
   midi_chord_t chord[MAX_SWITCH_TOUCHS]; // only used when press == MIDI_TYPE_CHORD
   MidiType press;
   uint8_t input_chan;
-  bool tap_tempo; // true = tap tempo mode: each touch sends MIDI TimingClock at tapped BPM
 };
 
 bool mapping_switchs_alloc(uint8_t switchs_cnt);

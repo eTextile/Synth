@@ -71,7 +71,7 @@ void mapping_switch_start(blob_t* blob_ptr) {
   mapp_switch_t* switch_ptr = (mapp_switch_t*)blob_ptr->action.mapping_ptr;
   touch_press_t* touch_ptr = (touch_press_t*)blob_ptr->action.touch_ptr;
 
-  if (switch_ptr->params.tap_tempo) {
+  if (switch_ptr->params.press == Clock) {
     tap_tempo_hit();
     return;
   }
@@ -169,7 +169,6 @@ void mapping_switch_create(const JsonObject &config) {
   switch_ptr->params.rect.to.y = config["to"][1].as<float>();
   switch_ptr->params.press = (MidiType)config["press"].as<uint8_t>();
   switch_ptr->params.input_chan = config["input_chan"].as<uint8_t>();
-  switch_ptr->params.tap_tempo = config["tap_tempo"] | false;
 
   if (switch_ptr->params.touchs <= MAX_SWITCH_TOUCHS) {
 

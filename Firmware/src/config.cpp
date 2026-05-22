@@ -366,13 +366,6 @@ static void update_leds() {
 // LOAD CONFIG PARAMS FROM JSON FILE
 /////////////////////////////////////////////////////
 
-/*
-  uint8_t type;     // For MIDI status bytes see: https://github.com/PaulStoffregen/MIDI/blob/master/src/midi_Defs.h
-  uint8_t data1;    // First value  [0:127], controller number or note number
-  uint8_t data2;    // Second value [0:127], controller value or velocity
-  uint8_t channel;  // MIDI channel [1:15]
-*/
-
 static bool config_load_mappings_switchs(const JsonArray &config) {
   if (config.isNull()) {
     return false;
