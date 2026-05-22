@@ -15,10 +15,11 @@
 #include "allocate.h"
 
 uint32_t boot_time = 0;
-size_t sysEx_data_length = 0;
-uint8_t* sysEx_data_ptr = NULL;
 uint8_t boot_config_ack = 0;
 uint8_t boot_config_err = 0;
+
+size_t sysEx_data_length = 0;
+uint8_t* sysEx_data_ptr = NULL;
 
 static void usb_midi_read_note_on(uint8_t, uint8_t, uint8_t);
 static void usb_midi_read_note_off(uint8_t, uint8_t, uint8_t);
