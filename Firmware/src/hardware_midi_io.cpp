@@ -31,13 +31,7 @@ static void hardware_midi_forward_input(midi_msg_t* msg) {
 };
 
 static void hardware_midi_read_note_on(byte channel, byte note, byte velocity) {
-  // midi_msg_t msg = { (uint8_t)channel, NoteOn, note, velocity };
-  midi_msg_t msg;
-  
-  msg.channel = (uint8_t)channel;
-  msg.type = NoteOn;
-  msg.data1 = (uint8_t)note;
-  msg.data2 = (uint8_t)velocity;
+  midi_msg_t msg = { .channel = (uint8_t)channel, .type = NoteOn, .data1 = note, .data2 = velocity };
 
   for (lnode_t* node_ptr = ITERATOR_START_FROM_HEAD(&llist_mappings); node_ptr != NULL; node_ptr = ITERATOR_NEXT(node_ptr)) {
     common_t* mapping_ptr = (common_t*)ITERATOR_DATA(node_ptr);
@@ -55,13 +49,7 @@ static void hardware_midi_read_note_on(byte channel, byte note, byte velocity) {
 };
 
 static void hardware_midi_read_note_off(byte channel, byte note, byte velocity) {
-  // midi_msg_t msg = { (uint8_t)channel, NoteOff, note, velocity };
-  midi_msg_t msg;
-  
-  msg.channel = (uint8_t)channel;
-  msg.type = NoteOff;
-  msg.data1 = (uint8_t)note;
-  msg.data2 = (uint8_t)velocity;
+  midi_msg_t msg = { .channel = (uint8_t)channel, .type = NoteOff, .data1 = note, .data2 = velocity };
 
 
   for (lnode_t* node_ptr = ITERATOR_START_FROM_HEAD(&llist_mappings); node_ptr != NULL; node_ptr = ITERATOR_NEXT(node_ptr)) {
