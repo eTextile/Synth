@@ -18,6 +18,7 @@ struct knob_s {
   float offset;
   uint8_t touchs;
   knob_touch_t touch[MAX_KNOB_TOUCHS];
+  midi_chord_t chord[MAX_KNOB_TOUCHS]; // only used when press == MIDI_TYPE_CHORD
   MidiType press;
   uint8_t chan_in;
   uint8_t chan_out;

@@ -14,6 +14,7 @@ struct mapp_knob_s {
   uint8_t touch_index;
   llist_t llist_active_midi_msg;
   uint8_t active_midi_msg_count;
+  midi_msg_t chord_notes[MAX_KNOB_TOUCHS][MAX_CHORD_NOTES];
 };
 
 static mapp_knob_t mapp_knobs[MAX_KNOBS];
@@ -68,10 +69,20 @@ void mapping_knob_start(blob_t* blob_ptr) {
   mapp_knob_t* knob_ptr = (mapp_knob_t*)blob_ptr->action.mapping_ptr;
   knob_touch_t* touch_ptr = (knob_touch_t*)blob_ptr->action.touch_ptr;
 
-  if (knob_ptr->params.press == NoteOn) {
+  switch (knob_ptr->params.press) {
+    case NoteOn:
       mapping_send_midi_note_on(&touch_ptr->press, blob_ptr);
-  } else {
+      break;
+    case MIDI_TYPE_CHORD: {
+      uint8_t ti = (uint8_t)(touch_ptr - &knob_ptr->params.touch[0]);
+      midi_send_chord_on(knob_ptr->chord_notes[ti], &knob_ptr->params.chord[ti],
+                         knob_ptr->params.chan_out,
+                         (uint8_t)map(blob_ptr->centroid.z, Z_MIN, Z_MAX, 1, 127));
+      break;
+    }
+    default:
       mapping_send_midi_msg_press(&touch_ptr->press, blob_ptr);
+      break;
   }
 };
 
@@ -145,14 +156,12 @@ void mapping_knob_stop(blob_t* blob_ptr) {
     case NoteOn:
       mapping_send_midi_note_off(&touch_ptr->press);
       break;
-    case ControlChange:
-      // N/A
+    case MIDI_TYPE_CHORD: {
+      uint8_t ti = (uint8_t)(touch_ptr - &knob_ptr->params.touch[0]);
+      midi_send_chord_off(knob_ptr->chord_notes[ti], knob_ptr->params.chord[ti].type);
       break;
-    case AfterTouchPoly:
-      //
-      break;
+    }
     default:
-      // Not handled in mapping_knob
       break;
   }
 };
@@ -266,6 +275,11 @@ void mapping_knob_create(const JsonObject &config) {
           knob_ptr->params.touch[i].press.limit.min = config["msg"][i]["press"]["limit"]["min"].as<uint8_t>();
           knob_ptr->params.touch[i].press.limit.max = config["msg"][i]["press"]["limit"]["max"].as<uint8_t>();
           knob_ptr->params.touch[i].press.enabled = config["msg"][i]["press"]["enabled"] | true;
+          break;
+
+        case MIDI_TYPE_CHORD:
+          knob_ptr->params.chord[i].type = config["msg"][i]["press"]["chord"].as<uint8_t>();
+          knob_ptr->params.chord[i].note = config["msg"][i]["press"]["note"].as<uint8_t>();
           break;
 
         default:
