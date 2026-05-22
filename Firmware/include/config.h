@@ -80,9 +80,6 @@
 #define VELOCITY_Z_DISPLAY_MAX   500   // Scale for SysEx Vz display (separate from attack — lower = more sensitive)
 #define VELOCITY_XY_MAX          200   // Max expected velocity.xy in units/s for ROL sliders (tune to calibrate MIDI range)
 
-// E256 MIDI I/O CHANNELS CONSTANTS [1:15]
-#define HARDWARE_MIDI_INPUT_CHANNEL 1
-
 #define MIDI_CCS_CHANNEL 3
 #define MIDI_MODES_CHANNEL 4
 #define MIDI_VERBOSITY_CHANNEL 5
