@@ -106,8 +106,8 @@ void matrix_find_blobs(void) {
         uint8_t blob_depth = 0;
 
         uint16_t blob_pixels = 0;
-        float blob_cx = 0;
-        float blob_cy = 0;
+        uint32_t blob_cx = 0;
+        uint32_t blob_cy = 0;
 
         // while_A: iterates over horizontal scanlines of the blob.
         // Each iteration processes one row: expands left/right, accumulates centroid,
@@ -145,7 +145,7 @@ void matrix_find_blobs(void) {
 
           // Weighted centroid accumulation: sum of column indices over the run.
           // sum = left + (left+1) + ... + right = (right*(right+1) - left*(left-1)) / 2
-          float sum = ((right * (right + 1)) - (left * (left - 1))) / 2;
+          uint16_t sum = ((right * (right + 1)) - (left * (left - 1))) / 2;
 
           uint8_t pixels = right - left + 1;
           blob_pixels += pixels;
@@ -266,8 +266,8 @@ void matrix_find_blobs(void) {
           // Stack-allocated temp for centroid comparison — never consumes the pool,
           // so existing blobs can always be re-found even when the pool is exhausted.
           blob_t match_blob;
-          match_blob.centroid.x = (blob_cx / blob_pixels);
-          match_blob.centroid.y = (blob_cy / blob_pixels);
+          match_blob.centroid.x = (float)blob_cx / blob_pixels;
+          match_blob.centroid.y = (float)blob_cy / blob_pixels;
 
           // Check if this blob matches one already tracked (proximity test).
           blob_t* blob_ptr = (blob_t*)llist_find_node(&llist_blobs, &match_blob, (llist_compare_func_t*)&is_blob_existing);
@@ -497,11 +497,9 @@ void matrix_find_blobs(void) {
 // Two blobs match if their centroids are within BLOB_LAST_DIST pixels — used to
 // correlate detections across frames without requiring exact positional overlap.
 bool is_blob_existing(blob_t* blob_ptr, blob_t* undefined_blob_ptr) {
-  float dist = sqrtf(pow(blob_ptr->centroid.x - undefined_blob_ptr->centroid.x, 2) + pow(blob_ptr->centroid.y - undefined_blob_ptr->centroid.y, 2));
-  if (dist < BLOB_LAST_DIST) {
-    return true;
-  }
-  return false;
+  float dx = blob_ptr->centroid.x - undefined_blob_ptr->centroid.x;
+  float dy = blob_ptr->centroid.y - undefined_blob_ptr->centroid.y;
+  return (dx * dx + dy * dy) < (BLOB_LAST_DIST * BLOB_LAST_DIST);
 };
 
 const char* get_blob_status_name(status_code_t code) {

@@ -27,6 +27,7 @@ void mapping_lib_update(void) {
         if (assigned == NULL) {
           if (mapping_ptr->blob_assign_func_ptr(mapping_ptr, blob_ptr)) {
             mapping_ptr->start_func_ptr(blob_ptr);
+            break;
           }
         }
         else if (assigned == mapping_ptr) {
