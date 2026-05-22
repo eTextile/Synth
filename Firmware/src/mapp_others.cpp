@@ -63,7 +63,7 @@ cSlider_t mapp_cSliders[CS_SLIDERS] = {
 };
 
 uint8_t mapp_csliders = 0;
-cSlider_t *mapp_csliders_params = NULL;
+cSlider_t* mapp_csliders_params = NULL;
 static cSlider_t mapp_csliders_params_privStore[MAX_CSLIDERS];
 cSlider_t* mapp_cSliders_ptr[CS_SLIDERS] = {NULL};
 
