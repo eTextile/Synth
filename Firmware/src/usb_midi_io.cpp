@@ -244,7 +244,7 @@ static void usb_read_system_exclusive(const uint8_t* data_ptr, uint16_t sysEx_ch
     uint8_t sysEx_data_length_LSB = *(data_ptr + 3);
     sysEx_data_length = sysEx_data_length_MSB << 7 | sysEx_data_length_LSB;
 
-    sysEx_chunk_ptr = sysEx_data_ptr = (uint8_t *)allocate(sysEx_data_ptr, sysEx_data_length + 1);
+    sysEx_chunk_ptr = sysEx_data_ptr = (uint8_t*)allocate(sysEx_data_ptr, sysEx_data_length + 1);
     sysEx_chunks = (uint8_t)((sysEx_data_length + 3) / USB_MIDI_SYSEX_MAX); // +3 adding heder & footer size
     sysEx_last_chunk_size = (sysEx_data_length + 3) % USB_MIDI_SYSEX_MAX; // +3 adding heder & footer size
 
