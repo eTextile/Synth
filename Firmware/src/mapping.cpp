@@ -9,10 +9,13 @@
 
 llist_t llist_mappings;
 
+static uint32_t frame_now = 0;
+
 static void mapping_flush_pending_note_on_xy(blob_t*);
 static void mapping_flush_pending_note_on(blob_t*);
 
 void mapping_lib_update(void) {
+  frame_now = millis();
   tap_tempo_clock_tick();
 
   for (lnode_t* mapping_node_ptr = ITERATOR_START_FROM_HEAD(&llist_mappings); mapping_node_ptr != NULL; mapping_node_ptr = ITERATOR_NEXT(mapping_node_ptr)) {
@@ -127,10 +130,10 @@ void mapping_send_midi_msg_pos_x(rect_t* bounding_box_ptr, axis_t* axis_ptr, blo
     axis_ptr->limit.min
   );
   if (axis_ptr->msg.data2 != axis_ptr->last_val) {
-    if ((millis() - axis_ptr->midi_time_stamp) > MIDI_THROTTLE_MS) {
+    if ((frame_now - axis_ptr->midi_time_stamp) > MIDI_THROTTLE_MS) {
       llist_push_front(&llist_midi_out, &axis_ptr->msg);
       axis_ptr->last_val = axis_ptr->msg.data2;
-      axis_ptr->midi_time_stamp = millis();
+      axis_ptr->midi_time_stamp = frame_now;
     }
   }
 };
@@ -145,10 +148,10 @@ void mapping_send_midi_msg_pos_y(rect_t* bounding_box_ptr, axis_t* axis_ptr, blo
     axis_ptr->limit.max
   );
   if (axis_ptr->msg.data2 != axis_ptr->last_val) {
-    if ((millis() - axis_ptr->midi_time_stamp) > MIDI_THROTTLE_MS) {
+    if ((frame_now - axis_ptr->midi_time_stamp) > MIDI_THROTTLE_MS) {
       llist_push_front(&llist_midi_out, &axis_ptr->msg);
       axis_ptr->last_val = axis_ptr->msg.data2;
-      axis_ptr->midi_time_stamp = millis();
+      axis_ptr->midi_time_stamp = frame_now;
     }
   }
 };
@@ -163,10 +166,10 @@ void mapping_send_midi_msg_press(axis_t* axis_ptr, blob_t* blob_ptr) {
     axis_ptr->limit.max
   );
   if (axis_ptr->msg.data2 != axis_ptr->last_val) {
-    if ((millis() - axis_ptr->midi_time_stamp) > MIDI_THROTTLE_MS) {
+    if ((frame_now - axis_ptr->midi_time_stamp) > MIDI_THROTTLE_MS) {
       llist_push_front(&llist_midi_out, &axis_ptr->msg);
       axis_ptr->last_val = axis_ptr->msg.data2;
-      axis_ptr->midi_time_stamp = millis();
+      axis_ptr->midi_time_stamp = frame_now;
     }
   }
 };
