@@ -170,10 +170,7 @@ static void usb_midi_read_note_on(uint8_t channel, uint8_t note, uint8_t velocit
   if (e256_current_mode != THROUGH_MODE) return;
   midi_msg_t* midi_msg_ptr = (midi_msg_t*)llist_pop_front(&llist_midi_nodes_pool);
   if (midi_msg_ptr != NULL) {
-    midi_msg_ptr->channel = channel;
-    midi_msg_ptr->type = NoteOn;
-    midi_msg_ptr->data1 = note;
-    midi_msg_ptr->data2 = velocity;
+    *midi_msg_ptr = (midi_msg_t){ .channel = channel, .type = NoteOn, .data1 = note, .data2 = velocity };
     llist_push_front(&llist_midi_out, midi_msg_ptr);
   }
 };
@@ -184,10 +181,7 @@ static void usb_midi_read_note_off(uint8_t channel, uint8_t note, uint8_t veloci
   if (e256_current_mode != THROUGH_MODE) return;
   midi_msg_t* midi_msg_ptr = (midi_msg_t*)llist_pop_front(&llist_midi_nodes_pool);
   if (midi_msg_ptr != NULL) {
-    midi_msg_ptr->channel = channel;
-    midi_msg_ptr->type = NoteOff;
-    midi_msg_ptr->data1 = note;
-    midi_msg_ptr->data2 = velocity;
+    *midi_msg_ptr = (midi_msg_t){ .channel = channel, .type = NoteOff, .data1 = note, .data2 = velocity };
     llist_push_front(&llist_midi_out, midi_msg_ptr);
   }
 };
@@ -197,10 +191,7 @@ static void usb_read_control_change(uint8_t channel, uint8_t control, uint8_t va
   if (e256_current_mode != THROUGH_MODE) return;
   midi_msg_t* midi_msg_ptr = (midi_msg_t*)llist_pop_front(&llist_midi_nodes_pool);
   if (midi_msg_ptr != NULL) {
-    midi_msg_ptr->channel = channel;
-    midi_msg_ptr->type = ControlChange;
-    midi_msg_ptr->data1 = control;
-    midi_msg_ptr->data2 = value;
+    *midi_msg_ptr = (midi_msg_t){ .channel = channel, .type = ControlChange, .data1 = control, .data2 = value };
     llist_push_front(&llist_midi_out, midi_msg_ptr);
   }
 };
@@ -211,10 +202,7 @@ static void usb_read_after_touch_poly(uint8_t channel, uint8_t note, uint8_t pre
   if (e256_current_mode != THROUGH_MODE) return;
   midi_msg_t* midi_msg_ptr = (midi_msg_t*)llist_pop_front(&llist_midi_nodes_pool);
   if (midi_msg_ptr != NULL) {
-    midi_msg_ptr->channel = channel;
-    midi_msg_ptr->type = AfterTouchPoly;
-    midi_msg_ptr->data1 = note;
-    midi_msg_ptr->data2 = pressure;
+    *midi_msg_ptr = (midi_msg_t){ .channel = channel, .type = AfterTouchPoly, .data1 = note, .data2 = pressure };
     llist_push_front(&llist_midi_out, midi_msg_ptr);
   }
 };
@@ -226,10 +214,7 @@ static void usb_read_pitch_bend(uint8_t channel, int pitch) {
   if (e256_current_mode != THROUGH_MODE) return;
   midi_msg_t* midi_msg_ptr = (midi_msg_t*)llist_pop_front(&llist_midi_nodes_pool);
   if (midi_msg_ptr != NULL) {
-    midi_msg_ptr->channel = channel;
-    midi_msg_ptr->type = PitchBend;
-    midi_msg_ptr->data1 = pitch & 0x7F; // Lsb
-    midi_msg_ptr->data2 = pitch >> 7;   // Msb
+    *midi_msg_ptr = (midi_msg_t){ .channel = channel, .type = PitchBend, .data1 = (uint8_t)(pitch & 0x7F), .data2 = (uint8_t)(pitch >> 7) };
     llist_push_front(&llist_midi_out, midi_msg_ptr);
   }
 };
