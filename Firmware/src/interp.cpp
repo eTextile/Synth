@@ -65,6 +65,9 @@ inline void update_interp_threshold(level_t* levels_ptr) {
 // Windowing: source cells at or below threshold are skipped (output stays 0).
 // Edge clamping: neighbors outside [0, RAW_ROWS/COLS - 1] are clamped to the border.
 // Output clamped to [0, 255]: Catmull-Rom can produce slight overshoot (<3% on smooth data).
+//
+// Separable decomposition: val(ky,kx) = Σ_dx w_x[kx][dx] * (Σ_dy w_y[ky][dy] * nb[dy][dx])
+// Pre-computing row_sums[ky][dx] reduces multiplications from SCALE²×4²=256 to 2×SCALE×4²=128.
 void matrix_interp(void) {
   update_interp_threshold(&e256_ctr.levels[THRESHOLD]);
   memset(&interp_frame_array[0], 0, SIZEOF_FRAME);
@@ -75,7 +78,7 @@ void matrix_interp(void) {
     for (uint8_t col_pos = 0; col_pos < RAW_COLS; col_pos++) {
       if (IMAGE_GET_PIXEL_FAST(raw_row_ptr, col_pos) <= interp_threshold) continue;
 
-      // Cache the 4×4 raw neighborhood (edge-clamped) to avoid repeated pointer arithmetic.
+      // Cache the 4×4 raw neighborhood (edge-clamped).
       uint8_t nb[4][4];
       for (int8_t dy = -1; dy <= 2; dy++) {
         uint8_t r = (uint8_t)constrain((int)row_pos + dy, 0, RAW_ROWS - 1);
@@ -86,25 +89,25 @@ void matrix_interp(void) {
         }
       }
 
-      // Write SCALE_Y × SCALE_X output pixels for this source cell.
+      // Phase 1: row_sums[ky][dx] = Σ_dy catmull_w[ky][dy] * nb[dy][dx]
+      float row_sums[SCALE_Y][4];
       for (uint8_t ky = 0; ky < SCALE_Y; ky++) {
-        uint16_t out_row = (uint16_t)row_pos * SCALE_Y + ky;
-        if (out_row >= NEW_ROWS) break;
+        for (uint8_t dx = 0; dx < 4; dx++) {
+          float s = 0.0f;
+          for (uint8_t dy = 0; dy < 4; dy++) s += catmull_w[ky][dy] * nb[dy][dx];
+          row_sums[ky][dx] = s;
+        }
+      }
+
+      // Phase 2: val = Σ_dx catmull_w[kx][dx] * row_sums[ky][dx]
+      // out_row = row_pos*SCALE_Y + ky is always < NEW_ROWS by construction — no bounds check needed.
+      for (uint8_t ky = 0; ky < SCALE_Y; ky++) {
+        uint8_t* out_row_ptr = &interp_frame_array[(row_pos * SCALE_Y + ky) * NEW_COLS];
 
         for (uint8_t kx = 0; kx < SCALE_X; kx++) {
-          uint16_t out_col = (uint16_t)col_pos * SCALE_X + kx;
-          if (out_col >= NEW_COLS) break;
-
-          // Separable 2D Catmull-Rom: outer loop Y, inner loop X.
           float val = 0.0f;
-          for (uint8_t dy = 0; dy < 4; dy++) {
-            float wy = catmull_w[ky][dy];
-            for (uint8_t dx = 0; dx < 4; dx++) {
-              val += wy * catmull_w[kx][dx] * (float)nb[dy][dx];
-            }
-          }
-          interp_frame_array[out_row * NEW_COLS + out_col] =
-            (uint8_t)constrain((int)lroundf(val), 0, 255);
+          for (uint8_t dx = 0; dx < 4; dx++) val += catmull_w[kx][dx] * row_sums[ky][dx];
+          out_row_ptr[col_pos * SCALE_X + kx] = (uint8_t)constrain((int)(val + 0.5f), 0, 255);
         }
       }
     }
