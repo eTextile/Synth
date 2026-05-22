@@ -75,7 +75,7 @@ void mapping_touchpad_start(blob_t* blob_ptr) {
     case MIDI_TYPE_CHORD: {
       uint8_t ti = (uint8_t)(touch_ptr - &touchpad_ptr->params.touch[0]);
       midi_send_chord_on(touchpad_ptr->chord_notes[ti], &touchpad_ptr->params.chord[ti],
-                         touchpad_ptr->params.input_chan,
+                         touchpad_ptr->params.chan_out,
                          (uint8_t)map(blob_ptr->centroid.z, Z_MIN, Z_MAX, 1, 127));
       break;
     }
@@ -117,7 +117,7 @@ void mapping_touchpad_stop(blob_t* blob_ptr) {
 
 bool mapping_touchpad_hardware_midi_receive(void* mapping_ptr, midi_msg_t* midi_msg_ptr) {
   mapp_touchpad_t* touchpad_ptr = (mapp_touchpad_t*)mapping_ptr;
-  if (midi_msg_ptr->channel == touchpad_ptr->params.input_chan) {
+  if (midi_msg_ptr->channel == touchpad_ptr->params.chan_in) {
     return true;
   }
   return false;
@@ -163,7 +163,8 @@ void mapping_touchpad_create(const JsonObject &config) {
   touchpad_ptr->params.rect.to.x = config["to"][0].as<float>();
   touchpad_ptr->params.rect.to.y = config["to"][1].as<float>();
   touchpad_ptr->params.press = (MidiType)config["press"].as<uint8_t>();
-  touchpad_ptr->params.input_chan = config["input_chan"].as<uint8_t>();
+  touchpad_ptr->params.chan_in  = config["chan"]["in"].as<uint8_t>();
+  touchpad_ptr->params.chan_out = config["chan"]["out"].as<uint8_t>();
 
   if (touchpad_ptr->params.touchs <= MAX_TOUCHPAD_TOUCHS) {
     

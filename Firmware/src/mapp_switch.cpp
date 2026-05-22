@@ -83,7 +83,7 @@ void mapping_switch_start(blob_t* blob_ptr) {
     case MIDI_TYPE_CHORD: {
       uint8_t ti = (uint8_t)(touch_ptr - &switch_ptr->params.touch[0]);
       midi_send_chord_on(switch_ptr->chord_notes[ti], &switch_ptr->params.chord[ti],
-                         switch_ptr->params.input_chan,
+                         switch_ptr->params.chan_out,
                          (uint8_t)map(blob_ptr->centroid.z, Z_MIN, Z_MAX, 1, 127));
       break;
     }
@@ -122,7 +122,7 @@ void mapping_switch_stop(blob_t* blob_ptr) {
 
 bool mapping_switch_hardware_midi_receive(void* mapping_ptr, midi_msg_t* midi_msg_ptr) {
   mapp_switch_t* switch_ptr = (mapp_switch_t*)mapping_ptr;
-  if (midi_msg_ptr->channel == switch_ptr->params.input_chan) {
+  if (midi_msg_ptr->channel == switch_ptr->params.chan_in) {
     return true;
   }
   return false;
@@ -168,7 +168,8 @@ void mapping_switch_create(const JsonObject &config) {
   switch_ptr->params.rect.to.x = config["to"][0].as<float>();
   switch_ptr->params.rect.to.y = config["to"][1].as<float>();
   switch_ptr->params.press = (MidiType)config["press"].as<uint8_t>();
-  switch_ptr->params.input_chan = config["input_chan"].as<uint8_t>();
+  switch_ptr->params.chan_in  = config["chan"]["in"].as<uint8_t>();
+  switch_ptr->params.chan_out = config["chan"]["out"].as<uint8_t>();
 
   if (switch_ptr->params.touchs <= MAX_SWITCH_TOUCHS) {
 

@@ -10,7 +10,8 @@ struct switch_s {
   touch_press_t touch[MAX_SWITCH_TOUCHS];
   midi_chord_t chord[MAX_SWITCH_TOUCHS]; // only used when press == MIDI_TYPE_CHORD
   MidiType press;
-  uint8_t input_chan;
+  uint8_t chan_in;
+  uint8_t chan_out;
 };
 
 bool mapping_switchs_alloc(uint8_t switchs_cnt);

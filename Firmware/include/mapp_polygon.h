@@ -20,7 +20,8 @@ struct polygon_s {
   uint8_t touchs;
   touch_polygon_t touch[MAX_POLYGON_TOUCHS];
   MidiType press;
-  uint8_t input_chan;
+  uint8_t chan_in;
+  uint8_t chan_out;
 };
 
 bool mapping_polygons_alloc(uint8_t polygons_cnt);

@@ -159,7 +159,7 @@ void mapping_knob_stop(blob_t* blob_ptr) {
 
 bool mapping_knob_hardware_midi_receive(void* mapping_ptr, midi_msg_t* midi_msg_ptr) {
   mapp_knob_t* knob_ptr = (mapp_knob_t*)mapping_ptr;
-  if (midi_msg_ptr->channel == knob_ptr->params.input_chan) {
+  if (midi_msg_ptr->channel == knob_ptr->params.chan_in) {
     return true;
   }
   return false;
@@ -206,7 +206,8 @@ void mapping_knob_create(const JsonObject &config) {
   knob_ptr->params.rect.to.y = config["to"][1].as<float>();
   knob_ptr->params.offset = config["offset"].as<uint8_t>();
   knob_ptr->params.press = (MidiType)config["press"].as<uint8_t>();
-  knob_ptr->params.input_chan = config["input_chan"].as<uint8_t>();
+  knob_ptr->params.chan_in  = config["chan"]["in"].as<uint8_t>();
+  knob_ptr->params.chan_out = config["chan"]["out"].as<uint8_t>();
 
   if (knob_ptr->params.touchs <= MAX_KNOB_TOUCHS) {
 

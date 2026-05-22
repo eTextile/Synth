@@ -132,7 +132,7 @@ void mapping_polygon_stop(blob_t* blob_ptr) {
 
 bool mapping_polygon_hardware_midi_receive(void* mapping_ptr, midi_msg_t* midi_msg_ptr) {
   mapp_polygon_t* polygon_ptr = (mapp_polygon_t*)mapping_ptr;
-  if (midi_msg_ptr->channel == polygon_ptr->params.input_chan) { // FIXME
+  if (midi_msg_ptr->channel == polygon_ptr->params.chan_in) {
     return true;
   }
   return false;
@@ -173,7 +173,8 @@ void mapping_polygon_create(const JsonObject &config) {
 
   polygon_ptr->params.touchs = config["touchs"].as<uint8_t>();
   polygon_ptr->params.press = (MidiType)config["press"].as<uint8_t>();
-  polygon_ptr->params.input_chan = config["input_chan"].as<uint8_t>();
+  polygon_ptr->params.chan_in  = config["chan"]["in"].as<uint8_t>();
+  polygon_ptr->params.chan_out = config["chan"]["out"].as<uint8_t>();
 
   // Segments are exported normalized to [0, NEW_COLS] × [0, NEW_ROWS] by the JS UI.
   polygon_ptr->params.point_cnt = config["segments"].size();

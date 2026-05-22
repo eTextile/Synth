@@ -184,13 +184,13 @@ void mapping_slider_stop(blob_t* blob_ptr) {
 // qualifying it for step-note population via mapping_slider_hardware_midi_update().
 bool mapping_slider_hardware_midi_receive(void* mapping_ptr, midi_msg_t* midi_msg_ptr) {
   mapp_slider_t* slider_ptr = (mapp_slider_t*)mapping_ptr;
-  if (midi_msg_ptr->channel == slider_ptr->params.input_chan) {
+  if (midi_msg_ptr->channel == slider_ptr->params.chan_in) {
     return true;
   }
   return false;
 };
 
-// Populates the slider's step_note table from a hardware MIDI NoteOn received on input_chan.
+// Populates the slider's step_note table from a hardware MIDI NoteOn received on chan_in.
 // Each populate mode distributes the incoming notes differently across the step array:
 //   POPULATE_AS_PLAYED  — fills steps in arrival order (wraps around).
 //   POPULATE_UP         — re-sorts all held notes ascending after each new arrival.
@@ -311,7 +311,8 @@ void mapping_slider_create(const JsonObject &config) {
   slider_ptr->params.move = config["move"].as<move_t>();
   slider_ptr->params.populate = config["populate"].as<populate_t>();
   slider_ptr->params.steps = config["steps"].as<uint8_t>();
-  slider_ptr->params.input_chan = config["input_chan"].as<uint8_t>();
+  slider_ptr->params.chan_in  = config["chan"]["in"].as<uint8_t>();
+  slider_ptr->params.chan_out = config["chan"]["out"].as<uint8_t>();
 
   for (uint8_t i = 0; i < MAX_SLIDER_STEPS; i++) {
     slider_ptr->params.step_note[i] = 60 + i;

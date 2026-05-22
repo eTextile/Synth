@@ -10,7 +10,8 @@ struct touchpad_s {
   touch_planar_t touch[MAX_TOUCHPAD_TOUCHS];
   midi_chord_t chord[MAX_TOUCHPAD_TOUCHS]; // only used when press == MIDI_TYPE_CHORD
   MidiType press;
-  uint8_t input_chan;
+  uint8_t chan_in;
+  uint8_t chan_out;
 };
 
 bool mapping_touchpads_alloc(uint8_t touchpads_cnt);

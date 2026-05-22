@@ -113,7 +113,7 @@ void mapping_grid_stop(blob_t* blob_ptr) {
 
 bool mapping_grid_hardware_midi_receive(void* mapping_ptr, midi_msg_t* midi_msg_ptr) {
   mapp_grid_t* grid_ptr = (mapp_grid_t*)mapping_ptr;
-  if (midi_msg_ptr->channel == grid_ptr->params.input_chan) {
+  if (midi_msg_ptr->channel == grid_ptr->params.chan_in) {
     return true;
   }
   return false;
@@ -169,7 +169,8 @@ void mapping_grid_create(const JsonObject &config) {
   grid_ptr->params.cols = config["cols"].as<uint8_t>();
   grid_ptr->params.rows = config["rows"].as<uint8_t>();
   grid_ptr->params.press = (MidiType)config["press"].as<uint8_t>();
-  grid_ptr->params.input_chan = config["input_chan"].as<uint8_t>();
+  grid_ptr->params.chan_in  = config["chan"]["in"].as<uint8_t>();
+  grid_ptr->params.chan_out = config["chan"]["out"].as<uint8_t>();
   
   grid_ptr->params.keys = grid_ptr->params.cols * grid_ptr->params.rows;
 

@@ -95,7 +95,7 @@ typedef void stop_func_t(blob_t*);
 // Each mapping struct embeds common_s as its FIRST member so a (common_t*) cast is safe.
 //
 // Hardware MIDI input path (called by hardware_midi_io.cpp):
-//   receive (mapping_ptr, msg) → bool   : return true if msg->channel matches this mapping's input_chan
+//   receive (mapping_ptr, msg) → bool   : return true if msg->channel matches this mapping's chan_in
 //   update  (mapping_ptr, msg)           : store msg (pool node) in the mapping's active-note list
 //   dispose (mapping_ptr, msg)           : decrement active count; drain pool when count reaches 0
 //
