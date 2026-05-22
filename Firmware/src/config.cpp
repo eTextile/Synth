@@ -306,7 +306,8 @@ static bool read_encoder(level_code_t level) {
   if (val == lev->val) return false;
   lev->val = val;
   lev->leds.update = true;
-  usb_midi_send_sysex_param((uint8_t)level, val);
+  if (e256_current_mode != STANDALONE_MODE)
+    usb_midi_send_sysex_param((uint8_t)level, val);
   return true;
 };
 
