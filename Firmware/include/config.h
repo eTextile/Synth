@@ -80,9 +80,6 @@
 #define VELOCITY_Z_DISPLAY_MAX   500   // Scale for SysEx Vz display (separate from attack — lower = more sensitive)
 #define VELOCITY_XY_MAX          200   // Max expected velocity.xy in units/s for ROL sliders (tune to calibrate MIDI range)
 
-#define MIDI_VERBOSITY_CHANNEL 5
-#define MIDI_ERROR_CHANNEL 6
-
 // SysEx control packet constants
 #define SYSEX_DEVICE_ID  0x7D
 #define SYSEX_PKT_CMD    0x01  // web → firmware: mode command
@@ -97,7 +94,7 @@
 #define MAX_SWITCH_TOUCHS 2
 
 #define MAX_SLIDERS 6
-#define MAX_SLIDER_TOUCHS 2
+#define MAX_SLIDER_TOUCHS 3
 #define MAX_SLIDER_STEPS 24
 
 #define MAX_KNOBS 4
@@ -187,7 +184,8 @@ typedef enum error_code_e {
   FLASH_CONFIG_WRITE_FAILED,
   CONFIG_APPLY_FAILED,
   UNKNOWN_SYSEX,
-  TOO_MANY_BLOBS
+  TOO_MANY_BLOBS,
+  TOO_MANY_TOUCHS
 } error_code_t;
 
 extern error_code_t e256_error_code;

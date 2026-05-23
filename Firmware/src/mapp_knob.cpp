@@ -5,6 +5,7 @@
 */
 
 #include "mapp_knob.h"
+#include "usb_midi_io.h"
 
 typedef struct mapp_knob_s mapp_knob_t;
 struct mapp_knob_s {
@@ -287,5 +288,7 @@ void mapping_knob_create(const JsonObject &config) {
       }
     }
     llist_push_back(&llist_mappings, knob_ptr);
+  } else {
+    usb_midi_send_sysex_err((uint8_t)TOO_MANY_TOUCHS);
   }
 };

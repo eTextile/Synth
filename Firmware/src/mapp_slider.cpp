@@ -5,6 +5,7 @@
 */
 
 #include "mapp_slider.h"
+#include "usb_midi_io.h"
 
 typedef struct mapp_slider_s mapp_slider_t;
 struct mapp_slider_s {
@@ -379,5 +380,7 @@ void mapping_slider_create(const JsonObject &config) {
       }
     }
     llist_push_back(&llist_mappings, slider_ptr);
+  } else {
+    usb_midi_send_sysex_err((uint8_t)TOO_MANY_TOUCHS);
   }
 };

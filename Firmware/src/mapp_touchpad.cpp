@@ -5,6 +5,7 @@
 */
 
 #include "mapp_touchpad.h"
+#include "usb_midi_io.h"
 
 typedef struct mapp_touchpad_s mapp_touchpad_t;
 struct mapp_touchpad_s {
@@ -221,5 +222,7 @@ void mapping_touchpad_create(const JsonObject &config) {
       }
     }
     llist_push_back(&llist_mappings, touchpad_ptr);
+  } else {
+    usb_midi_send_sysex_err((uint8_t)TOO_MANY_TOUCHS);
   }
 };

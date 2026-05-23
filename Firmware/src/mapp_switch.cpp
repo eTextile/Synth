@@ -5,6 +5,7 @@
 */
 
 #include "mapp_switch.h"
+#include "usb_midi_io.h"
 #include "midi_tap_tempo.h"
 
 typedef struct mapp_switch_s mapp_switch_t;
@@ -205,5 +206,7 @@ void mapping_switch_create(const JsonObject &config) {
       }
     }
     llist_push_back(&llist_mappings, switch_ptr);
+  } else {
+    usb_midi_send_sysex_err((uint8_t)TOO_MANY_TOUCHS);
   }
 };

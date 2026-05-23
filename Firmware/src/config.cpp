@@ -101,6 +101,7 @@ const char* get_error_name(error_code_t code) {
     case CONFIG_APPLY_FAILED: char_code = "CONFIG_APPLY_FAILED"; break;
     case UNKNOWN_SYSEX: char_code = "UNKNOWN_SYSEX"; break;
     case TOO_MANY_BLOBS: char_code = "TOO_MANY_BLOBS"; break;
+    case TOO_MANY_TOUCHS: char_code = "TOO_MANY_TOUCHS"; break;
   }
   return char_code;
 };
