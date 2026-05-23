@@ -58,12 +58,12 @@ A short press on the **DOT** or **STAR** button exits MIDI LEARN mode and return
 - Configuring KiCad Libraries
 ```
     KiCad > Préférences > Configure path
-    KICAD_SYMBOL_DIR : (add your own path)/KiCad_Libraries/kicad-symbols
+    KICAD_SYMBOL_DIR : (add your own path) .../KiCad_Libraries/kicad-symbols
     KICAD_TEMPLATE_DIR : DO NOT CHANGE
     KICAD_USER_TEMPLATE_DIR : DO NOT CHANGE
-    KIGITHUB : DO NOT CHANGEMIDI-wiring-diagram.jpg
-    KISYS3DMOD : (add your own path)/KiCad_Libraries/kicad-packages3D
-    KISYSMOD : (add your own path)/KiCad_Libraries/kicad-footprints
+    KIGITHUB : DO NOT CHANGE
+    KISYS3DMOD : (add your own path) .../KiCad_Libraries/kicad-packages3D
+    KISYSMOD : (add your own path) .../KiCad_Libraries/kicad-footprints
 ```
 ##### PCB specifications
 - **Base Material** : FR-4 TG130
@@ -90,8 +90,8 @@ A short press on the **DOT** or **STAR** button exits MIDI LEARN mode and return
 -  Matt Venn : for his [teensy 4.0 Open-Hardware sound_card](https://github.com/mattvenn/teensy-audio-fx) made with KiCad ;-)
 
 ## TODO
-- R10 470Ω -> 2.2kΩ
+- R10 470Ω → 2.2kΩ
 - R15 → 4.7 kΩ
-- add hardware MIDI THRU
+- Add hardware MIDI THRU
 - Make eTextile-Synthesizer/Dasy PCB
 
