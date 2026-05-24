@@ -28,9 +28,19 @@ void hardware_midi_setup(void) {
 
 // ─── INPUT ────────────────────────────────────────────────────────────────────
 
-// Forward a hardware MIDI IN message to the USB host (PLAY mode only).
+// Forward a hardware MIDI IN message to the USB host as a SysEx notification (PLAY mode only).
+// type_nibble = (type >> 4) encodes the MIDI type in a SysEx-safe byte (< 0x80).
 static void hardware_midi_forward_input(midi_msg_t* msg) {
-  usbMIDI.send((uint8_t)msg->type, msg->data1, msg->data2, msg->channel, 0);
+  uint8_t pkt[6] = {
+    SYSEX_DEVICE_ID,
+    SYSEX_PKT_MIDI_IN,
+    (uint8_t)((msg->type >> 4) & 0x0F),
+    (uint8_t)(msg->channel - 1),
+    msg->data1,
+    msg->data2
+  };
+  usbMIDI.sendSysEx(6, pkt, false);
+  usbMIDI.send_now();
 };
 
 static void hardware_midi_read_note_on(byte channel, byte note, byte velocity) {
