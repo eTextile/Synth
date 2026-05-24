@@ -12,6 +12,8 @@ MIDI_CREATE_INSTANCE(HardwareSerial, Serial3, HARDWARE_MIDI);
 
 static void hardware_midi_read_note_on(byte, byte, byte);
 static void hardware_midi_read_note_off(byte, byte, byte);
+static void hardware_midi_read_control_change(byte, byte, byte);
+static void hardware_midi_read_aftertouch_poly(byte, byte, byte);
 
 // ─── SETUP ────────────────────────────────────────────────────────────────────
 
@@ -20,6 +22,8 @@ void hardware_midi_setup(void) {
   HARDWARE_MIDI.turnThruOff();
   HARDWARE_MIDI.setHandleNoteOn(hardware_midi_read_note_on);
   HARDWARE_MIDI.setHandleNoteOff(hardware_midi_read_note_off);
+  HARDWARE_MIDI.setHandleControlChange(hardware_midi_read_control_change);
+  HARDWARE_MIDI.setHandleAfterTouchPoly(hardware_midi_read_aftertouch_poly);
 };
 
 // ─── INPUT ────────────────────────────────────────────────────────────────────
@@ -27,7 +31,6 @@ void hardware_midi_setup(void) {
 // Forward a hardware MIDI IN message to the USB host (PLAY mode only).
 static void hardware_midi_forward_input(midi_msg_t* msg) {
   usbMIDI.send((uint8_t)msg->type, msg->data1, msg->data2, msg->channel, 0);
-  while (usbMIDI.read());
 };
 
 static void hardware_midi_read_note_on(byte channel, byte note, byte velocity) {
@@ -61,6 +64,38 @@ static void hardware_midi_read_note_off(byte channel, byte note, byte velocity) 
   if (e256_current_mode == PLAY_MODE) hardware_midi_forward_input(&msg);
 };
 
+static void hardware_midi_read_control_change(byte channel, byte number, byte value) {
+  midi_msg_t msg = { .channel = (uint8_t)channel, .type = ControlChange, .data1 = number, .data2 = value };
+  for (lnode_t* node_ptr = ITERATOR_START_FROM_HEAD(&llist_mappings); node_ptr != NULL; node_ptr = ITERATOR_NEXT(node_ptr)) {
+    common_t* mapping_ptr = (common_t*)ITERATOR_DATA(node_ptr);
+    if (mapping_ptr->hardware_midi_receive_func_ptr(mapping_ptr, &msg)) {
+      midi_msg_t* stored = (midi_msg_t*)llist_pop_front(&llist_midi_nodes_pool);
+      if (stored != NULL) {
+        *stored = msg;
+        mapping_ptr->hardware_midi_update_func_ptr(mapping_ptr, stored);
+      }
+      break;
+    }
+  }
+  if (e256_current_mode == PLAY_MODE) hardware_midi_forward_input(&msg);
+};
+
+static void hardware_midi_read_aftertouch_poly(byte channel, byte note, byte pressure) {
+  midi_msg_t msg = { .channel = (uint8_t)channel, .type = AfterTouchPoly, .data1 = note, .data2 = pressure };
+  for (lnode_t* node_ptr = ITERATOR_START_FROM_HEAD(&llist_mappings); node_ptr != NULL; node_ptr = ITERATOR_NEXT(node_ptr)) {
+    common_t* mapping_ptr = (common_t*)ITERATOR_DATA(node_ptr);
+    if (mapping_ptr->hardware_midi_receive_func_ptr(mapping_ptr, &msg)) {
+      midi_msg_t* stored = (midi_msg_t*)llist_pop_front(&llist_midi_nodes_pool);
+      if (stored != NULL) {
+        *stored = msg;
+        mapping_ptr->hardware_midi_update_func_ptr(mapping_ptr, stored);
+      }
+      break;
+    }
+  }
+  if (e256_current_mode == PLAY_MODE) hardware_midi_forward_input(&msg);
+};
+
 void hardware_midi_receive(void) {
   while (HARDWARE_MIDI.read());
 };
@@ -77,5 +112,4 @@ void mapping_hardware_midi_transmit(void) {
     midi_msg_t* midi_msg_ptr = (midi_msg_t*)ITERATOR_DATA(midi_node_ptr);
     HARDWARE_MIDI.send(midi_msg_ptr->type, midi_msg_ptr->data1, midi_msg_ptr->data2, midi_msg_ptr->channel);
   }
-  while (HARDWARE_MIDI.read());
 };
