@@ -23,6 +23,9 @@ Once the conductive fabric layers are cut and bonded to the backing material, fu
 The E256 matrix uses an interdigitated zig-zag pattern with a built-in eTextile bus (pitch 4.2 mm).
 Cutting file (TOP and BOTTOM antenna layers): [E256_path.svg](./E256_path.svg)
 
+[E256_path_02.svg](./E256_path_02.svg) is an experimental version that aims to increase the physical interpolation fineness of the sensor.
+> **Work in progress — not ready for use.**
+
 ### SOFTWARE REQUIREMENTS
 - [Inkscape](https://inkscape.org/)
 - [Inkcut](https://github.com/codelv/inkcut)

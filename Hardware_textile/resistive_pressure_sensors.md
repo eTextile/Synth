@@ -19,11 +19,10 @@ The cross-section below illustrates the deformation under a localised load (top)
   -  -  -  -  -  -  -  -  -  ← spacer
   ||||||||||||||||||||||||||  ← resistive layer
   --------------------------  ← conductive layer
-
-
+```
+```
            |     |     |
            v     v     v
-
   ----- \ ___________ / ----  ← conductive layer
   -  -  -  -  -  -  -  -  -  ← spacer
   ||||||||||||||||||||||||||  ← resistive layer
@@ -40,7 +39,9 @@ Piezo-resistive coatings are combined with highly resilient substrates such as o
 
 ```
   ----------------------------------------------------------------  ← conductive layer
-  ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~  ← piezo-resistive layer
+```
+<div style="display:flex;align-items:center;gap:12px;"><img src="./docs/piezo_resistive.png" alt="Piezo-resistive layer"><span>← piezo-resistive layer</span></div>
+```
   ----------------------------------------------------------------  ← conductive layer
 ```
 
