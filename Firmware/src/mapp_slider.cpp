@@ -150,13 +150,13 @@ void mapping_slider_continue(blob_t* blob_ptr) {
   }
   else {
     if (slider_ptr->params.dir == HORIZONTAL) {
-      mapping_send_midi_msg_pos_x(&slider_ptr->params.rect, &touch_ptr->pos, blob_ptr);
+      mapping_send_midi_msg_pos_x(&slider_ptr->params.rect, &touch_ptr->pos, blob_ptr, slider_ptr->params.move);
     }
     else {
       rect_t rect_inv = slider_ptr->params.rect;
       rect_inv.from.y = slider_ptr->params.rect.to.y;
       rect_inv.to.y   = slider_ptr->params.rect.from.y;
-      mapping_send_midi_msg_pos_y(&rect_inv, &touch_ptr->pos, blob_ptr);
+      mapping_send_midi_msg_pos_y(&rect_inv, &touch_ptr->pos, blob_ptr, slider_ptr->params.move);
     }
     if (slider_ptr->params.press != NoteOn) {
       mapping_send_midi_msg_press(&touch_ptr->press, blob_ptr);

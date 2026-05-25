@@ -72,13 +72,13 @@
 #define MATRIX_MIDI_THROTTLE_MS 50     // 20Hz — throttle for raw/interp matrix SysEx stream over USB
 
 #define VELOCITY_MIN_INTERVAL_MS 10    // Min time between velocity updates (ms)
-#define VELOCITY_EMA_ALPHA       0.4f  // EMA smoothing factor: 0=frozen, 1=raw (no smoothing)
+#define VELOCITY_EMA_ALPHA       0.5   // EMA smoothing factor: 0=frozen, 1=raw (no smoothing)
 #define VELOCITY_ATTACK_MIN_MS   5     // Minimum guard before peak detection kicks in (ms)
 #define VELOCITY_ATTACK_MAX_MS   80    // Hard deadline: force attack_done even without peak drop (ms)
 #define VELOCITY_ATTACK_DROP     0.5f  // Peak-drop ratio: attack_done when |vz| < peak * ratio
 #define VELOCITY_ATTACK_Z_MAX    1500  // Max expected |velocity.z| in units/s (tune to calibrate MIDI range)
 #define VELOCITY_Z_DISPLAY_MAX   500   // Scale for SysEx Vz display (separate from attack — lower = more sensitive)
-#define VELOCITY_XY_MAX          200   // Max expected velocity.xy in units/s for ROL sliders (tune to calibrate MIDI range)
+#define VELOCITY_XY_MAX          120   // Max expected velocity.xy in units/s for ROL sliders (tune to calibrate MIDI range)
 
 // SysEx control packet constants
 #define SYSEX_DEVICE_ID  0x7D
