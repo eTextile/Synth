@@ -2,175 +2,175 @@
  This file is part of the eTextile-Synthesizer project - http://synth.eTextile.org
  Copyright (c) 2014- Maurin Donneaud <maurin@etextile.org>
  This work is licensed under Creative Commons Attribution-ShareAlike 4.0 International license, see the LICENSE file for details.
- */
+*/
 
-// Import librarys    
 // http://www.smallbutdigital.com/projects/themidibus/
-// https://docs.oracle.com/javase/7/docs/api/javax/sound/midi/MidiMessage.html
-  
 import themidibus.*;
 import javax.sound.midi.MidiMessage;
-import javax.sound.midi.ShortMessage;
+import javax.sound.midi.SysexMessage;
+import javax.sound.midi.InvalidMidiDataException;
 
-MidiBus usbMIDI; // The MidiBus
+MidiBus usbMIDI;
 
-final String POROJECT_NAME = "ETEXTILE-SYNTH";
-final String MIDI_PORT_NAME = "E256";
-final String VERSION = "1.0.8";
-final String MIDI_PORT_IN = "MIDI [hw:1,0,0]";
-final String MIDI_PORT_OUT = "MIDI [hw:1,0,0]";
+final String VERSION = "1.0.27";
 
-int MIDI_OUT_CHANNEL = 1; // [1:X] Set the OUTPUT_MIDI channel
+// Input index 1 / Output index 2  (from MidiBus.list() output)
+final int MIDI_IN_INDEX  = 1;
+final int MIDI_OUT_INDEX = 2;
 
-class blob_t {
-  int  id;
-  int  bx;
-  int  by;
-  int  bz;
-  int  bw;
-  int  bh;
-};
+// Blob status codes — must match firmware blob.h status_code_e
+final int FREE     = 0;
+final int NEW      = 1;
+final int PRESENT  = 2;
+final int MISSING  = 3;
+final int RELEASED = 4;
 
-final int BlobX = 3; // [3] Blob X centroid position
-final int BlobY = 4; // [4] Blob Y centroid position
-final int BlobZ = 5; // [5] Blob depth
-final int BlobW = 6; // [6] Blob width
-final int BlobH = 7; // [7] Blob Height
+// SysEx blob message field indices — must match firmware blob.h blob_params_e
+final int B_STATUS      = 0;
+final int B_LAST_STATUS = 1;
+final int B_UID         = 2;
+final int B_X_WHOLE     = 3;
+final int B_X_FRAC      = 4;
+final int B_Y_WHOLE     = 5;
+final int B_Y_FRAC      = 6;
+final int B_WIDTH       = 7;
+final int B_HEIGHT      = 8;
+final int B_DEPTH       = 9;
+final int B_VELOCITY_XY = 10;
+final int B_VELOCITY_Z  = 11;
+final int B_ATTACK_Z    = 12;
+final int B_ATTACK_DONE = 13;
+final int B_COUNT       = 14;
 
-// MIDI_CONTROL_CHANGE
-final byte THRESHOLD =        3;
-final byte CALIBRATE =        4;
-final byte MIDI_BLOBS_PLAY =  6;
-final byte MIDI_BLOBS_LEARN = 7;
-final byte MIDI_MAPPING =     8;
-final byte MIDI_RAW =         9;
-final byte MIDI_INTERP =      10;
-final byte MIDI_OFF =         11;
+// SysEx control packet constants — must match firmware config.h
+final int SYSEX_DEVICE_ID = 0x7D;
+final int SYSEX_PKT_CMD   = 0x01;
+final int SYSEX_PKT_ACK   = 0x02;
+final int SYSEX_PKT_ERR   = 0x03;
 
-byte mode = MIDI_BLOBS_PLAY;
+// Mode codes — must match firmware config.h mode_code_e
+final int EDIT_MODE = 6;
 
-ArrayList<MidiMessage> midiInput = new ArrayList<MidiMessage>();
-ArrayList<MidiMessage> midiInputCopy  = new ArrayList<MidiMessage>();
-ArrayList<blob_t> blobs = new ArrayList<blob_t>();
+// Sensor grid dimensions (NEW_COLS x NEW_ROWS after interpolation)
+final int GRID_COLS = 64;
+final int GRID_ROWS = 64;
 
-ShortMessage lastMidiMsg_ON = new ShortMessage();
-ShortMessage lastMidiMsg_OFF = new ShortMessage();
+class Blob {
+  int   uid;
+  float x, y;
+  int   z, w, h;
+  int   vxy, vz, attackZ;
+  boolean attackDone;
+}
+
+HashMap<Integer, Blob> blobs = new HashMap<Integer, Blob>();
 
 void setup() {
-  size(800, 800, P3D);
-  frameRate(60);
-  stroke(255);
-  strokeWeight(2);
+  size(800, 800);
+  frameRate(30);
   MidiBus.list();
-  usbMIDI = new MidiBus(this, MIDI_PORT_IN, MIDI_PORT_OUT);
-  //println(usbMIDI.attachedInputs());
-  //println(usbMIDI.attachedOutputs());
-};
+  usbMIDI = new MidiBus(this, MIDI_IN_INDEX, MIDI_OUT_INDEX);
+  println("Press [E] to enter EDIT mode");
+}
 
 void draw() {
-  update();
   background(0);
-  pushMatrix();
-  for (int i = 0; i < blobs.size(); i++) {
-    blob_t theBlob = blobs.get(i);
-    textSize(50);
-    text(theBlob.id, theBlob.bx * (height/127), theBlob.by * (height/127));
-    translate(theBlob.bx * (height/127), theBlob.by * (height/127)); 
-    //rotateZ(0.5);
-    noFill();
-    box(theBlob.bw * 10, theBlob.bh * 10, theBlob.bz * 5);
-  };
-  popMatrix();
-};
+  float scaleX = (float)width  / GRID_COLS;
+  float scaleY = (float)height / GRID_ROWS;
 
-void update() {
-  midiInputCopy.addAll(midiInput);
-  midiInput.clear();
-  for (int msg = 0; msg < midiInputCopy.size(); msg++) {
-    switch (mode) {
-    case MIDI_BLOBS_PLAY:
-      ShortMessage midiMsg = (ShortMessage) midiInputCopy.get(msg);
-      int status = -1;
-      try {
-        status = midiMsg.getCommand();
-      }
-      catch (Exception e) {
-        print(e);
-      } 
-      if (status == ShortMessage.NOTE_ON) {
-        //if (midiMsg.getData1() != lastMidiMsg_ON.getData1()) {
-        //lastMidiMsg_ON = midiMsg;
-        println("blob_ID_ON: " + midiMsg.getData1());
-        blob_t newBlob = new blob_t();
-        newBlob.id = midiMsg.getData1();
-        blobs.add(newBlob);
-        //};
-      } else if (status == ShortMessage.NOTE_OFF) {
-        //if (midiMsg.getData1() != lastMidiMsg_OFF.getData1()) {
-        //lastMidiMsg_OFF = midiMsg;
-        println("blob_ID_OFF: " + midiMsg.getData1());
-        for (int b = 0; b < blobs.size(); b++) {
-          if (blobs.get(b).id == midiMsg.getData1()) {
-            blobs.remove(b);
-            break;
-            //};
-          };
-        };
-      } else if (status == ShortMessage.CONTROL_CHANGE) {
-        //println("blob_Channel:" + midiMsg.getChannel());
-        for (int i = 0; i < blobs.size(); i++) {
-          blob_t blobToUpdate = blobs.get(i); 
-          
-          if (midiMsg.getChannel() + 1 == blobToUpdate.id) {
-            switch (midiMsg.getData1()) {
-            case BlobX:
-              //print(" X: " + midiMsg.getData2() + "_");
-              blobToUpdate.bx = midiMsg.getData2();
-              break;
-            case BlobY:
-              //print(" Y: " + midiMsg.getData2() + "_");
-              blobToUpdate.by = midiMsg.getData2();
-              break;
-            case BlobZ:
-              //print(" Z: " + midiMsg.getData2() +  "_");
-              blobToUpdate.bz = midiMsg.getData2();
-              break;
-            case BlobW:
-              //print(" W: " + midiMsg.getData2() + "_");
-              blobToUpdate.bw = midiMsg.getData2();
-              break;
-            case BlobH:
-              //print(" H: " + midiMsg.getData2());
-              blobToUpdate.bh = midiMsg.getData2();
-              break;
-            default:
-              break;
-            };
-          };
-        };
-      };
-    case MIDI_RAW:
-      // TODO SYSEX
-      break;
-    default:
-      break;
-    };
-  };
-  midiInputCopy.clear();
-};
+  HashMap<Integer, Blob> snapshot;
+  synchronized(blobs) {
+    snapshot = new HashMap<Integer, Blob>(blobs);
+  }
+
+  for (Blob b : snapshot.values()) {
+    float px = b.x * scaleX;
+    float py = b.y * scaleY;
+    float bw = b.w * scaleX;
+    float bh = b.h * scaleY;
+    float r  = b.z * 1.5;
+
+    // Bounding box
+    noFill();
+    stroke(255, 200, 0);
+    strokeWeight(1);
+    rect(px - bw * 0.5, py - bh * 0.5, bw, bh);
+
+    // Pressure circle
+    fill(255, 150, 0, 180);
+    noStroke();
+    ellipse(px, py, r, r);
+
+    // Labels
+    fill(255);
+    textSize(12);
+    text("id:" + b.uid,       px + 6, py - 4);
+    text("z:" + b.z,          px + 6, py + 8);
+    text("vz:" + (b.vz - 64), px + 6, py + 20);
+  }
+}
 
 void midiMessage(MidiMessage message) {
-  midiInput.add(message);
-  /*
-  while (midiInput.size() > 255) {
-   midiInput.remove(0);
-   };
-   */
-};
+  if (!(message instanceof SysexMessage)) return;
 
-void delay(int time) {
-  int current = millis();
-  while (millis () < current+time) {
-    Thread.yield();
-  };
-};
+  byte[] raw = message.getMessage();
+  if (raw == null || raw.length < 2) return;
+
+  if ((raw[1] & 0xFF) == SYSEX_DEVICE_ID) {
+    handleControlPacket(raw);
+    return;
+  }
+
+  if (raw.length < B_COUNT + 1) return;
+
+  int status = raw[1 + B_STATUS] & 0xFF;
+  int uid    = raw[1 + B_UID]    & 0xFF;
+
+  if (status == FREE || status == RELEASED) {
+    synchronized(blobs) { blobs.remove(uid); }
+    return;
+  }
+
+  synchronized(blobs) {
+    Blob b = blobs.get(uid);
+    if (b == null) {
+      b = new Blob();
+      b.uid = uid;
+      blobs.put(uid, b);
+    }
+    b.x          = (raw[1 + B_X_WHOLE] & 0xFF) + (raw[1 + B_X_FRAC] & 0xFF) / 100.0;
+    b.y          = (raw[1 + B_Y_WHOLE] & 0xFF) + (raw[1 + B_Y_FRAC] & 0xFF) / 100.0;
+    b.z          =  raw[1 + B_DEPTH]       & 0xFF;
+    b.w          =  raw[1 + B_WIDTH]       & 0xFF;
+    b.h          =  raw[1 + B_HEIGHT]      & 0xFF;
+    b.vxy        =  raw[1 + B_VELOCITY_XY] & 0xFF;
+    b.vz         =  raw[1 + B_VELOCITY_Z]  & 0xFF;
+    b.attackZ    =  raw[1 + B_ATTACK_Z]    & 0xFF;
+    b.attackDone = (raw[1 + B_ATTACK_DONE] & 0xFF) != 0;
+  }
+}
+
+void handleControlPacket(byte[] raw) {
+  if (raw.length < 4) return;
+  int pktType = raw[2] & 0xFF;
+  int value   = raw[3] & 0xFF;
+  if      (pktType == SYSEX_PKT_ACK) println("ACK: " + value);
+  else if (pktType == SYSEX_PKT_ERR) println("ERR: " + value);
+}
+
+void sendModeCommand(int mode) {
+  if (usbMIDI == null) return;
+  try {
+    byte[] data = { (byte)SYSEX_DEVICE_ID, (byte)SYSEX_PKT_CMD, (byte)mode };
+    SysexMessage sysex = new SysexMessage();
+    sysex.setMessage(SysexMessage.SYSTEM_EXCLUSIVE, data, data.length);
+    usbMIDI.sendMessage(sysex);
+    println("Sent mode: " + mode);
+  } catch (InvalidMidiDataException e) {
+    println("sendModeCommand error: " + e.getMessage());
+  }
+}
+
+void keyPressed() {
+  if (key == 'e' || key == 'E') sendModeCommand(EDIT_MODE);
+}

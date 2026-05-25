@@ -13,16 +13,17 @@ The greater the pressure, the more parallel conduction paths are created, and th
 The cross-section below illustrates the deformation under a localised load (top) and a distributed load (bottom):
 
 ```
-              |
-              v
+               |
+               v
   -------- \ ____ / --------  ← conductive layer
   -  -  -  -  -  -  -  -  -  ← spacer
   ||||||||||||||||||||||||||  ← resistive layer
   --------------------------  ← conductive layer
 ```
+
 ```
-           |     |     |
-           v     v     v
+           |   |   |
+           v   v   v
   ----- \ ___________ / ----  ← conductive layer
   -  -  -  -  -  -  -  -  -  ← spacer
   ||||||||||||||||||||||||||  ← resistive layer
