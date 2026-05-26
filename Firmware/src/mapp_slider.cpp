@@ -285,7 +285,8 @@ void mapping_slider_hardware_midi_dispose(void* mapping_ptr, midi_msg_t* midi_ms
 
 // Deserialises one slider entry from the JSON config, wires all function pointers,
 // and appends the fully configured slider to llist_mappings.
-// dir (VERTICAL / HORIZONTAL) is inferred from the bounding-box aspect ratio.
+// dir (VERTICAL / HORIZONTAL) is read from the "dir" JSON field when present (0=VERTICAL, 1=HORIZONTAL);
+// falls back to bounding-box aspect ratio for configs that predate the explicit dir field.
 // step_note[] is pre-filled with a chromatic run starting at MIDI note 60.
 void mapping_slider_create(const JsonObject &config) {
 
@@ -371,13 +372,13 @@ void mapping_slider_create(const JsonObject &config) {
           break;
       }
 
-      uint8_t size_x = slider_ptr->params.rect.to.x - slider_ptr->params.rect.from.x;
-      uint8_t size_y = slider_ptr->params.rect.to.y - slider_ptr->params.rect.from.y;
-      if (size_x < size_y) {
-        slider_ptr->params.dir = VERTICAL;
-      } else {
-        slider_ptr->params.dir = HORIZONTAL;
-      }
+    }
+    if (config["dir"].is<int>()) {
+      slider_ptr->params.dir = (dir_t)config["dir"].as<uint8_t>();
+    } else {
+      uint8_t size_x = (uint8_t)(slider_ptr->params.rect.to.x - slider_ptr->params.rect.from.x);
+      uint8_t size_y = (uint8_t)(slider_ptr->params.rect.to.y - slider_ptr->params.rect.from.y);
+      slider_ptr->params.dir = (size_x < size_y) ? VERTICAL : HORIZONTAL;
     }
     llist_push_back(&llist_mappings, slider_ptr);
   } else {
