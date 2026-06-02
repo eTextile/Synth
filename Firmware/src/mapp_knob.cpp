@@ -12,7 +12,7 @@ struct mapp_knob_s {
   common_t common;
   knob_t params;
   uint8_t active_blob_count;
-  uint8_t touch_index;
+  uint8_t slot_mask; // bitmask of occupied touch slots — bit i set means touch[i] is in use
   llist_t llist_active_midi_msg;
   uint8_t active_midi_msg_count;
   midi_msg_t chord_notes[MAX_KNOB_TOUCHS][MAX_CHORD_NOTES];
@@ -45,12 +45,14 @@ bool mapping_knob_is_blob_inside(void* mapping_ptr, blob_t* blob_ptr) {
 bool mapping_knob_assign_blob(void* mapping_ptr, blob_t* blob_ptr) {
   mapp_knob_t* knob_ptr = (mapp_knob_t*)mapping_ptr;
 
-  if (knob_ptr->touch_index < knob_ptr->params.touchs) {
-    blob_ptr->action.mapping_ptr = knob_ptr;
-    blob_ptr->action.touch_ptr = &knob_ptr->params.touch[knob_ptr->touch_index];
-    knob_ptr->touch_index++;
-    knob_ptr->active_blob_count++;
-    return true;
+  for (uint8_t i = 0; i < knob_ptr->params.touchs; i++) {
+    if (!(knob_ptr->slot_mask & (1 << i))) {
+      blob_ptr->action.mapping_ptr = knob_ptr;
+      blob_ptr->action.touch_ptr = &knob_ptr->params.touch[i];
+      knob_ptr->slot_mask |= (1 << i);
+      knob_ptr->active_blob_count++;
+      return true;
+    }
   }
   return false;
 };
@@ -58,12 +60,11 @@ bool mapping_knob_assign_blob(void* mapping_ptr, blob_t* blob_ptr) {
 void mapping_knob_dispose_blob(void* mapping_ptr, blob_t* blob_ptr) {
   mapp_knob_t* knob_ptr = (mapp_knob_t*)mapping_ptr;
 
+  uint8_t slot = (uint8_t)((knob_touch_t*)blob_ptr->action.touch_ptr - knob_ptr->params.touch);
   blob_ptr->action.mapping_ptr = NULL;
   blob_ptr->action.touch_ptr = NULL;
+  knob_ptr->slot_mask &= ~(1 << slot);
   knob_ptr->active_blob_count--;
-  if (knob_ptr->active_blob_count == 0) {
-    knob_ptr->touch_index = 0;
-  }
 };
 
 void mapping_knob_start(blob_t* blob_ptr) {
@@ -196,6 +197,8 @@ void mapping_knob_hardware_midi_dispose(void* mapping_ptr, midi_msg_t* midi_msg_
 void mapping_knob_create(const JsonObject &config) {
 
   mapp_knob_t* knob_ptr = (mapp_knob_t*)llist_pop_front(&llist_knobs_pool);
+  knob_ptr->slot_mask        = 0;
+  knob_ptr->active_blob_count = 0;
 
   knob_ptr->common.hardware_midi_receive_func_ptr = &mapping_knob_hardware_midi_receive;  
   knob_ptr->common.hardware_midi_update_func_ptr = &mapping_knob_hardware_midi_update;  

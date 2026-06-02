@@ -117,9 +117,7 @@ void usb_midi_transmit_blobs(void) {
     blob_msg[B_HEIGHT]      = blob_ptr->box.h;
     blob_msg[B_DEPTH]       = blob_ptr->centroid.z;
     blob_msg[B_VELOCITY_XY] = (uint8_t)constrain((int)(blob_ptr->velocity.xy * 127.0f / VELOCITY_XY_MAX), 0, 127);
-    blob_msg[B_VELOCITY_Z]  = (uint8_t)constrain(64 + (int)(blob_ptr->velocity.z * 64.0f / VELOCITY_Z_DISPLAY_MAX), 0, 127);
     blob_msg[B_ATTACK_Z]    = (uint8_t)constrain((int)(blob_ptr->velocity.attack_z * 127.0f / VELOCITY_ATTACK_Z_MAX), 0, 127);
-    blob_msg[B_ATTACK_DONE] = blob_ptr->velocity.attack_done ? 1 : 0;
     usbMIDI.sendSysEx(B_COUNT, blob_msg, false);
     any_sent = true;
   }
@@ -133,10 +131,13 @@ void usb_midi_transmit_blobs(void) {
 // Forward all pending outbound MIDI messages from llist_midi_out to the USB host.
 // Called in MAPPING / PLAY / THROUGH modes to deliver note-on/off, CC, etc.
 void mapping_usb_midi_transmit(void) {
+  bool sent = false;
   for (lnode_t* midi_node_ptr = ITERATOR_START_FROM_HEAD(&llist_midi_out); midi_node_ptr != NULL; midi_node_ptr = ITERATOR_NEXT(midi_node_ptr)) {
     midi_msg_t* midi_msg_ptr = (midi_msg_t*)ITERATOR_DATA(midi_node_ptr);
     usbMIDI.send((uint8_t)midi_msg_ptr->type, midi_msg_ptr->data1, midi_msg_ptr->data2, midi_msg_ptr->channel, 0);
+    sent = true;
   }
+  if (sent) usbMIDI.send_now();
   while (usbMIDI.read());
 };
 

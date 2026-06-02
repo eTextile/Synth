@@ -73,6 +73,7 @@ struct touch_planar_s {
   axis_t press;
   axis_t pos_x;
   axis_t pos_y;
+  axis_t size;
 };
 
 extern llist_t llist_mappings;
@@ -130,5 +131,6 @@ void mapping_send_midi_note_off(axis_t* axis_ptr);
 void mapping_send_midi_msg_pos_x(rect_t* bounding_box_ptr, axis_t* axis_ptr, blob_t* blob_ptr, move_t move = MOVE_LIN);
 void mapping_send_midi_msg_pos_y(rect_t* bounding_box_ptr, axis_t* axis_ptr, blob_t* blob_ptr, move_t move = MOVE_LIN);
 void mapping_send_midi_msg_press(axis_t* axis_ptr, blob_t* blob_ptr);
+void mapping_send_midi_msg_size(axis_t* axis_ptr, blob_t* blob_ptr);
 
 #endif /*__MAPPING_LIB_H__*/

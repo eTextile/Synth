@@ -31,10 +31,8 @@ typedef enum blob_params_e {
   B_HEIGHT,        // [8]  bounding box height (matrix rows)
   B_DEPTH,         // [9]  pressure depth (centroid.z, raw 0-255)
   B_VELOCITY_XY,   // [10] lateral velocity scaled to 0-127 (VELOCITY_XY_MAX → 127)
-  B_VELOCITY_Z,    // [11] vertical velocity scaled to 0-127, centred at 64 (press>64, release<64)
-  B_ATTACK_Z,      // [12] peak |velocity.z| during attack, scaled to 0-127 (VELOCITY_ATTACK_Z_MAX → 127)
-  B_ATTACK_DONE,   // [13] 1 once the attack peak has been captured (NoteOn velocity ready)
-  B_COUNT          // = 14 (total bytes in the SysEx blob message)
+  B_ATTACK_Z,      // [11] peak |velocity.z| during attack, scaled to 0-127 (VELOCITY_ATTACK_Z_MAX → 127)
+  B_COUNT          // = 12 (total bytes in the SysEx blob message)
 } blob_params_t;
 
 typedef struct image_s image_t;

@@ -12,7 +12,7 @@ struct mapp_slider_s {
   common_t common;
   slider_t params;
   uint8_t active_blob_count;
-  uint8_t touch_index;
+  uint8_t slot_mask; // bitmask of occupied touch slots — bit i set means touch[i] is in use
   llist_t llist_active_midi_msg;
   uint8_t active_midi_msg_count;
   midi_msg_t note_off_msgs[MAX_SLIDER_TOUCHS];
@@ -47,33 +47,32 @@ bool mapping_slider_is_blob_inside(void* mapping_ptr, blob_t* blob_ptr) {
 };
 
 // Claims the next free touch slot for this blob.
-// touch_index advances sequentially; resets to 0 when all touches are released.
 // Returns false when all configured touch slots are already occupied.
+// Assigns the first free slot (first clear bit in slot_mask) so freed slots are recycled
+// immediately — a lifted-and-replaced finger always gets a valid slot.
 bool mapping_slider_assign_blob(void* mapping_ptr, blob_t* blob_ptr) {
   mapp_slider_t* slider_ptr = (mapp_slider_t*)mapping_ptr;
 
-  if (slider_ptr->touch_index < slider_ptr->params.touchs) {
-    blob_ptr->action.mapping_ptr = slider_ptr;
-    blob_ptr->action.touch_ptr = &slider_ptr->params.touch[slider_ptr->touch_index];
-    slider_ptr->touch_index++;
-    slider_ptr->active_blob_count++;
-    return true;
+  for (uint8_t i = 0; i < slider_ptr->params.touchs; i++) {
+    if (!(slider_ptr->slot_mask & (1 << i))) {
+      blob_ptr->action.mapping_ptr = slider_ptr;
+      blob_ptr->action.touch_ptr = &slider_ptr->params.touch[i];
+      slider_ptr->slot_mask |= (1 << i);
+      slider_ptr->active_blob_count++;
+      return true;
+    }
   }
   return false;
 };
 
-// Releases a blob from its touch slot and decrements the active count.
-// Resets touch_index to 0 once the last active touch lifts so the next
-// incoming blob starts from slot 0 again.
 void mapping_slider_dispose_blob(void* mapping_ptr, blob_t* blob_ptr) {
   mapp_slider_t* slider_ptr = (mapp_slider_t*)mapping_ptr;
 
+  uint8_t slot = (uint8_t)((touch_linear_t*)blob_ptr->action.touch_ptr - slider_ptr->params.touch);
   blob_ptr->action.mapping_ptr = NULL;
   blob_ptr->action.touch_ptr = NULL;
+  slider_ptr->slot_mask &= ~(1 << slot);
   slider_ptr->active_blob_count--;
-  if (slider_ptr->active_blob_count == 0) {
-    slider_ptr->touch_index = 0;
-  }
 };
 
 // Called on the first frame a blob is detected inside the slider (status == NEW).
@@ -275,10 +274,10 @@ void mapping_slider_hardware_midi_update(void* mapping_ptr, midi_msg_t* midi_msg
 void mapping_slider_hardware_midi_dispose(void* mapping_ptr, midi_msg_t* midi_msg_ptr) {
   mapp_slider_t* slider_ptr = (mapp_slider_t*)mapping_ptr;
   slider_ptr->active_midi_msg_count--;
-  if (slider_ptr->active_midi_msg_count == 0) {  // Save/rescue all llist nodes
-    midi_msg_t* midi_msg_ptr = NULL;
-    while ((midi_msg_ptr = (midi_msg_t*)llist_pop_front(&slider_ptr->llist_active_midi_msg)) != NULL) {
-      llist_push_front(&llist_midi_nodes_pool, midi_msg_ptr);
+  if (slider_ptr->active_midi_msg_count == 0) {
+    midi_msg_t* freed_msg = NULL;
+    while ((freed_msg = (midi_msg_t*)llist_pop_front(&slider_ptr->llist_active_midi_msg)) != NULL) {
+      llist_push_front(&llist_midi_nodes_pool, freed_msg);
     }
   }
 };
@@ -291,6 +290,8 @@ void mapping_slider_hardware_midi_dispose(void* mapping_ptr, midi_msg_t* midi_ms
 void mapping_slider_create(const JsonObject &config) {
 
   mapp_slider_t* slider_ptr = (mapp_slider_t*)llist_pop_front(&llist_sliders_pool);
+  slider_ptr->slot_mask        = 0;
+  slider_ptr->active_blob_count = 0;
 
   slider_ptr->common.hardware_midi_receive_func_ptr = &mapping_slider_hardware_midi_receive;
   slider_ptr->common.hardware_midi_update_func_ptr = &mapping_slider_hardware_midi_update;

@@ -262,6 +262,27 @@ FREE → NEW → PRESENT → MISSING → RELEASED → FREE
 | `MISSING` | Not detected for < 50 ms (debounce) |
 | `RELEASED` | Not detected for 50–500 ms (triggers note-off) |
 
+### Blob SysEx Message Format
+
+Each active blob is broadcast as a 14-byte SysEx message once per frame (in `EDIT` and `PLAY` modes).
+
+| Byte | Field | Description |
+|------|-------|-------------|
+| 0 | `B_STATUS` | Blob lifecycle state: `FREE=0 NEW=1 PRESENT=2 MISSING=3 RELEASED=4` |
+| 1 | `B_LAST_STATUS` | Previous state — used by the web app to detect transitions |
+| 2 | `B_UID` | Unique blob ID, stable across frames |
+| 3 | `B_X_WHOLE` | Centroid X — integer part |
+| 4 | `B_X_FRAC` | Centroid X — fractional part (value / 100) |
+| 5 | `B_Y_WHOLE` | Centroid Y — integer part |
+| 6 | `B_Y_FRAC` | Centroid Y — fractional part (value / 100) |
+| 7 | `B_WIDTH` | Bounding box width (matrix columns) |
+| 8 | `B_HEIGHT` | Bounding box height (matrix rows) |
+| 9 | `B_DEPTH` | Pressure depth — raw centroid Z (0–255) |
+| 10 | `B_VELOCITY_XY` | Lateral velocity scaled to 0–127 (`VELOCITY_XY_MAX` → 127) |
+| 11 | `B_ATTACK_Z` | Peak `\|velocity.z\|` during attack window, scaled to 0–127 (`VELOCITY_ATTACK_Z_MAX` → 127) |
+
+---
+
 ### SysEx Packet Types
 
 All control traffic between the web app and the firmware uses SysEx with device ID `0x7D`:

@@ -118,6 +118,7 @@ void loop(void) {
       mapping_lib_update();
       mapping_hardware_midi_transmit();
       mapping_usb_midi_transmit();
+      usb_midi_transmit_blobs();
       break;
 
     case STANDALONE_MODE:

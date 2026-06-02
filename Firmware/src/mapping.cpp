@@ -189,3 +189,22 @@ void mapping_send_midi_msg_press(axis_t* axis_ptr, blob_t* blob_ptr) {
     }
   }
 };
+
+void mapping_send_midi_msg_size(axis_t* axis_ptr, blob_t* blob_ptr) {
+  if (!axis_ptr->enabled) return;
+  uint16_t raw_size = (uint16_t)blob_ptr->box.w * blob_ptr->box.h;
+  axis_ptr->msg.data2 = (uint8_t)map(
+    raw_size,
+    0,
+    NEW_FRAME,
+    axis_ptr->limit.min,
+    axis_ptr->limit.max
+  );
+  if (axis_ptr->msg.data2 != axis_ptr->last_val) {
+    if ((frame_now - axis_ptr->midi_time_stamp) > MIDI_THROTTLE_MS) {
+      llist_push_front(&llist_midi_out, &axis_ptr->msg);
+      axis_ptr->last_val = axis_ptr->msg.data2;
+      axis_ptr->midi_time_stamp = frame_now;
+    }
+  }
+};

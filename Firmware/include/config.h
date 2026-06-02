@@ -44,7 +44,7 @@
 
 #define BLOB_LAST_DIST 7       // This is the minimum distance used to identify two corresponding blobs contains int two sequential frames
 #define BLOB_MISSING_TIME 50   // After this amount of time the blob is set to RELEASED
-#define BLOB_RELEASE_TIME 500  // After this amount of time the blob is set to FREE
+#define BLOB_RELEASE_TIME 1000  // After this amount of time the blob is set to FREE
 
 #define X_PADDING_LEFT   0
 #define X_PADDING_REIGHT 0

@@ -12,7 +12,7 @@ struct mapp_touchpad_s {
   common_t common;
   touchpad_t params;
   uint8_t active_blob_count;
-  uint8_t touch_index;
+  uint8_t slot_mask; // bitmask of occupied touch slots — bit i set means touch[i] is in use
   llist_t llist_active_midi_msg;
   uint8_t active_midi_msg_count;
   midi_msg_t chord_notes[MAX_TOUCHPAD_TOUCHS][MAX_CHORD_NOTES];
@@ -44,12 +44,14 @@ bool mapping_touchpad_is_blob_inside(void* mapping_ptr, blob_t* blob_ptr) {
 bool mapping_touchpad_assign_blob(void* mapping_ptr, blob_t* blob_ptr) {
   mapp_touchpad_t* touchpad_ptr = (mapp_touchpad_t*)mapping_ptr;
 
-  if (touchpad_ptr->touch_index < touchpad_ptr->params.touchs) {
-    blob_ptr->action.mapping_ptr = touchpad_ptr;
-    blob_ptr->action.touch_ptr = &touchpad_ptr->params.touch[touchpad_ptr->touch_index];
-    touchpad_ptr->touch_index++;
-    touchpad_ptr->active_blob_count++;
-    return true;
+  for (uint8_t i = 0; i < touchpad_ptr->params.touchs; i++) {
+    if (!(touchpad_ptr->slot_mask & (1 << i))) {
+      blob_ptr->action.mapping_ptr = touchpad_ptr;
+      blob_ptr->action.touch_ptr = &touchpad_ptr->params.touch[i];
+      touchpad_ptr->slot_mask |= (1 << i);
+      touchpad_ptr->active_blob_count++;
+      return true;
+    }
   }
   return false;
 };
@@ -57,12 +59,11 @@ bool mapping_touchpad_assign_blob(void* mapping_ptr, blob_t* blob_ptr) {
 void mapping_touchpad_dispose_blob(void* mapping_ptr, blob_t* blob_ptr) {
   mapp_touchpad_t* touchpad_ptr = (mapp_touchpad_t*)mapping_ptr;
 
+  uint8_t slot = (uint8_t)((touch_planar_t*)blob_ptr->action.touch_ptr - touchpad_ptr->params.touch);
   blob_ptr->action.mapping_ptr = NULL;
   blob_ptr->action.touch_ptr = NULL;
+  touchpad_ptr->slot_mask &= ~(1 << slot);
   touchpad_ptr->active_blob_count--;
-  if (touchpad_ptr->active_blob_count == 0) {
-    touchpad_ptr->touch_index = 0;
-  }
 };
 
 void mapping_touchpad_start(blob_t* blob_ptr) {
@@ -92,7 +93,8 @@ void mapping_touchpad_continue(blob_t* blob_ptr) {
 
   mapping_send_midi_msg_pos_x(&touchpad_ptr->params.rect, &touch_ptr->pos_x, blob_ptr);
   mapping_send_midi_msg_pos_y(&touchpad_ptr->params.rect, &touch_ptr->pos_y, blob_ptr);
-  
+  mapping_send_midi_msg_size(&touch_ptr->size, blob_ptr);
+
   if (touchpad_ptr->params.press != NoteOn) {
     mapping_send_midi_msg_press(&touch_ptr->press, blob_ptr);
   }
@@ -145,6 +147,8 @@ void mapping_touchpad_hardware_midi_dispose(void* mapping_ptr, midi_msg_t* midi_
 void mapping_touchpad_create(const JsonObject &config) {
 
   mapp_touchpad_t* touchpad_ptr = (mapp_touchpad_t*)llist_pop_front(&llist_touchpads_pool);
+  touchpad_ptr->slot_mask        = 0;
+  touchpad_ptr->active_blob_count = 0;
 
   touchpad_ptr->common.hardware_midi_receive_func_ptr = &mapping_touchpad_hardware_midi_receive;  
   touchpad_ptr->common.hardware_midi_update_func_ptr = &mapping_touchpad_hardware_midi_update;  
@@ -191,6 +195,19 @@ void mapping_touchpad_create(const JsonObject &config) {
       touchpad_ptr->params.touch[i].pos_y.limit.min = config["msg"][i]["pos_y"]["limit"]["min"].as<uint8_t>();
       touchpad_ptr->params.touch[i].pos_y.limit.max = config["msg"][i]["pos_y"]["limit"]["max"].as<uint8_t>();
       touchpad_ptr->params.touch[i].pos_y.enabled = config["msg"][i]["pos_y"]["enabled"] | true;
+
+      if (config["msg"][i]["size"].is<JsonObject>()) {
+        midi_msg_status_unpack(config["msg"][i]["size"]["midi"]["status"].as<uint8_t>(), &status);
+        touchpad_ptr->params.touch[i].size.msg.type = ControlChange;
+        touchpad_ptr->params.touch[i].size.msg.data1 = config["msg"][i]["size"]["midi"]["data1"].as<uint8_t>();
+        touchpad_ptr->params.touch[i].size.msg.data2 = 0;
+        touchpad_ptr->params.touch[i].size.msg.channel = status.channel;
+        touchpad_ptr->params.touch[i].size.limit.min = config["msg"][i]["size"]["limit"]["min"].as<uint8_t>();
+        touchpad_ptr->params.touch[i].size.limit.max = config["msg"][i]["size"]["limit"]["max"].as<uint8_t>();
+        touchpad_ptr->params.touch[i].size.enabled = config["msg"][i]["size"]["enabled"] | true;
+      } else {
+        touchpad_ptr->params.touch[i].size.enabled = false;
+      }
 
       switch (touchpad_ptr->params.press) {
         case NoteOn:
