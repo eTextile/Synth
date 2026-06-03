@@ -177,25 +177,29 @@ void mapping_switch_create(const JsonObject &config) {
     for (uint8_t i = 0; i < switch_ptr->params.touchs; i++) {
       midi_status_t status;
       switch (switch_ptr->params.press) {
-        case NoteOn:
-          midi_msg_status_unpack(config["msg"][i]["press"]["midi"]["status"].as<uint8_t>(), &status);
-          switch_ptr->params.touch[i].press.msg.type = NoteOn;
-          switch_ptr->params.touch[i].press.msg.data1 = config["msg"][i]["press"]["midi"]["data1"].as<uint8_t>();
-          switch_ptr->params.touch[i].press.msg.data2 = 0;
+        case NoteOn: {
+          uint8_t press_status = config["msg"][i]["press"]["midi"]["status"].as<uint8_t>();
+          midi_msg_status_unpack(press_status, &status);
+          switch_ptr->params.touch[i].press.enabled     = (press_status != 0);
+          switch_ptr->params.touch[i].press.msg.type    = NoteOn;
+          switch_ptr->params.touch[i].press.msg.data1   = config["msg"][i]["press"]["midi"]["data1"].as<uint8_t>();
+          switch_ptr->params.touch[i].press.msg.data2   = 0;
           switch_ptr->params.touch[i].press.msg.channel = status.channel;
-          switch_ptr->params.touch[i].press.enabled = config["msg"][i]["press"]["enabled"] | true;
           break;
+        }
         case ControlChange:
-        case AfterTouchPoly:
-          midi_msg_status_unpack(config["msg"][i]["press"]["midi"]["status"].as<uint8_t>(), &status);
-          switch_ptr->params.touch[i].press.msg.type = status.type;
-          switch_ptr->params.touch[i].press.msg.data1 = config["msg"][i]["press"]["midi"]["data1"].as<uint8_t>();
-          switch_ptr->params.touch[i].press.msg.data2 = 0;
+        case AfterTouchPoly: {
+          uint8_t press_status = config["msg"][i]["press"]["midi"]["status"].as<uint8_t>();
+          midi_msg_status_unpack(press_status, &status);
+          switch_ptr->params.touch[i].press.enabled     = (press_status != 0);
+          switch_ptr->params.touch[i].press.msg.type    = status.type;
+          switch_ptr->params.touch[i].press.msg.data1   = config["msg"][i]["press"]["midi"]["data1"].as<uint8_t>();
+          switch_ptr->params.touch[i].press.msg.data2   = 0;
           switch_ptr->params.touch[i].press.msg.channel = status.channel;
-          switch_ptr->params.touch[i].press.limit.min = config["msg"][i]["press"]["limit"]["min"].as<uint8_t>();
-          switch_ptr->params.touch[i].press.limit.max = config["msg"][i]["press"]["limit"]["max"].as<uint8_t>();
-          switch_ptr->params.touch[i].press.enabled = config["msg"][i]["press"]["enabled"] | true;
+          switch_ptr->params.touch[i].press.limit.min   = config["msg"][i]["press"]["limit"]["min"].as<uint8_t>();
+          switch_ptr->params.touch[i].press.limit.max   = config["msg"][i]["press"]["limit"]["max"].as<uint8_t>();
           break;
+        }
         case MIDI_TYPE_CHORD:
           switch_ptr->params.chord[i].type = config["msg"][i]["press"]["chord"].as<uint8_t>();
           switch_ptr->params.chord[i].note = config["msg"][i]["press"]["note"].as<uint8_t>();

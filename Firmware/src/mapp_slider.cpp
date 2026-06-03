@@ -325,51 +325,45 @@ void mapping_slider_create(const JsonObject &config) {
 
     for (uint8_t i = 0; i<slider_ptr->params.touchs; i++) {
 
-      midi_msg_status_unpack(config["msg"][i]["pos"]["midi"]["status"].as<uint8_t>(), &status);
-      slider_ptr->params.touch[i].pos.msg.type = status.type;
-      slider_ptr->params.touch[i].pos.msg.data1 = config["msg"][i]["pos"]["midi"]["data1"].as<uint8_t>();
-      slider_ptr->params.touch[i].pos.msg.data2 = 0;
+      uint8_t pos_status = config["msg"][i]["pos"]["midi"]["status"].as<uint8_t>();
+      midi_msg_status_unpack(pos_status, &status);
+      slider_ptr->params.touch[i].pos.enabled     = (pos_status != 0);
+      slider_ptr->params.touch[i].pos.msg.type    = status.type;
+      slider_ptr->params.touch[i].pos.msg.data1   = config["msg"][i]["pos"]["midi"]["data1"].as<uint8_t>();
+      slider_ptr->params.touch[i].pos.msg.data2   = 0;
       slider_ptr->params.touch[i].pos.msg.channel = status.channel;
-      slider_ptr->params.touch[i].pos.limit.min = config["msg"][i]["pos"]["limit"]["min"].as<uint8_t>();
-      slider_ptr->params.touch[i].pos.limit.max = config["msg"][i]["pos"]["limit"]["max"].as<uint8_t>();
-      slider_ptr->params.touch[i].pos.enabled = config["msg"][i]["pos"]["enabled"] | true;
+      slider_ptr->params.touch[i].pos.limit.min   = config["msg"][i]["pos"]["limit"]["min"].as<uint8_t>();
+      slider_ptr->params.touch[i].pos.limit.max   = config["msg"][i]["pos"]["limit"]["max"].as<uint8_t>();
 
       switch (slider_ptr->params.press) {
 
-        case NoteOn:
-          midi_msg_status_unpack(config["msg"][i]["press"]["midi"]["status"].as<uint8_t>(), &status);
-          slider_ptr->params.touch[i].press.msg.type = NoteOn;
-          slider_ptr->params.touch[i].press.msg.data1 = config["msg"][i]["press"]["midi"]["data1"].as<uint8_t>();
-          slider_ptr->params.touch[i].press.msg.data2 = 0;
+        case NoteOn: {
+          uint8_t press_status = config["msg"][i]["press"]["midi"]["status"].as<uint8_t>();
+          midi_msg_status_unpack(press_status, &status);
+          slider_ptr->params.touch[i].press.enabled     = (press_status != 0);
+          slider_ptr->params.touch[i].press.msg.type    = NoteOn;
+          slider_ptr->params.touch[i].press.msg.data1   = config["msg"][i]["press"]["midi"]["data1"].as<uint8_t>();
+          slider_ptr->params.touch[i].press.msg.data2   = 0;
           slider_ptr->params.touch[i].press.msg.channel = status.channel;
-          slider_ptr->params.touch[i].press.limit.min = config["msg"][i]["press"]["limit"]["min"].as<uint8_t>();
-          slider_ptr->params.touch[i].press.limit.max = config["msg"][i]["press"]["limit"]["max"].as<uint8_t>();
-          slider_ptr->params.touch[i].press.enabled = config["msg"][i]["press"]["enabled"] | true;
+          slider_ptr->params.touch[i].press.limit.min   = config["msg"][i]["press"]["limit"]["min"].as<uint8_t>();
+          slider_ptr->params.touch[i].press.limit.max   = config["msg"][i]["press"]["limit"]["max"].as<uint8_t>();
           break;
-
+        }
         case ControlChange:
-          midi_msg_status_unpack(config["msg"][i]["press"]["midi"]["status"].as<uint8_t>(), &status);
-          slider_ptr->params.touch[i].press.msg.type = status.type;
-          slider_ptr->params.touch[i].press.msg.data1 = config["msg"][i]["press"]["midi"]["data1"].as<uint8_t>();
-          slider_ptr->params.touch[i].press.msg.data2 = 0;
+        case AfterTouchPoly: {
+          uint8_t press_status = config["msg"][i]["press"]["midi"]["status"].as<uint8_t>();
+          midi_msg_status_unpack(press_status, &status);
+          slider_ptr->params.touch[i].press.enabled     = (press_status != 0);
+          slider_ptr->params.touch[i].press.msg.type    = status.type;
+          slider_ptr->params.touch[i].press.msg.data1   = config["msg"][i]["press"]["midi"]["data1"].as<uint8_t>();
+          slider_ptr->params.touch[i].press.msg.data2   = 0;
           slider_ptr->params.touch[i].press.msg.channel = status.channel;
-          slider_ptr->params.touch[i].press.limit.min = config["msg"][i]["press"]["limit"]["min"].as<uint8_t>();
-          slider_ptr->params.touch[i].press.limit.max = config["msg"][i]["press"]["limit"]["max"].as<uint8_t>();
-          slider_ptr->params.touch[i].press.enabled = config["msg"][i]["press"]["enabled"] | true;
+          slider_ptr->params.touch[i].press.limit.min   = config["msg"][i]["press"]["limit"]["min"].as<uint8_t>();
+          slider_ptr->params.touch[i].press.limit.max   = config["msg"][i]["press"]["limit"]["max"].as<uint8_t>();
           break;
-
-        case AfterTouchPoly:
-          midi_msg_status_unpack(config["msg"][i]["press"]["midi"]["status"].as<uint8_t>(), &status);
-          slider_ptr->params.touch[i].press.msg.type = status.type;
-          slider_ptr->params.touch[i].press.msg.data1 = config["msg"][i]["press"]["midi"]["data1"].as<uint8_t>();
-          slider_ptr->params.touch[i].press.msg.data2 = 0;
-          slider_ptr->params.touch[i].press.msg.channel = status.channel;
-          slider_ptr->params.touch[i].press.limit.min = config["msg"][i]["press"]["limit"]["min"].as<uint8_t>();
-          slider_ptr->params.touch[i].press.limit.max = config["msg"][i]["press"]["limit"]["max"].as<uint8_t>();
-          slider_ptr->params.touch[i].press.enabled = config["msg"][i]["press"]["enabled"] | true;
-          break;
-
+        }
         default:
+          slider_ptr->params.touch[i].press.enabled = false;
           break;
       }
 

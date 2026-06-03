@@ -176,65 +176,70 @@ void mapping_touchpad_create(const JsonObject &config) {
     midi_status_t status;
     for (uint8_t i = 0; i<touchpad_ptr->params.touchs; i++) {
 
-      midi_msg_status_unpack(config["msg"][i]["pos_x"]["midi"]["status"].as<uint8_t>(), &status);
-      // if status.type != Undefined_F4
-      touchpad_ptr->params.touch[i].pos_x.msg.type = ControlChange;
-      touchpad_ptr->params.touch[i].pos_x.msg.data1 = config["msg"][i]["pos_x"]["midi"]["data1"].as<uint8_t>();
-      touchpad_ptr->params.touch[i].pos_x.msg.data2 = 0;
+      uint8_t pos_x_status = config["msg"][i]["pos_x"]["midi"]["status"].as<uint8_t>();
+      midi_msg_status_unpack(pos_x_status, &status);
+      touchpad_ptr->params.touch[i].pos_x.enabled   = (pos_x_status != 0);
+      touchpad_ptr->params.touch[i].pos_x.msg.type    = ControlChange;
+      touchpad_ptr->params.touch[i].pos_x.msg.data1   = config["msg"][i]["pos_x"]["midi"]["data1"].as<uint8_t>();
+      touchpad_ptr->params.touch[i].pos_x.msg.data2   = 0;
       touchpad_ptr->params.touch[i].pos_x.msg.channel = status.channel;
-      touchpad_ptr->params.touch[i].pos_x.limit.min = config["msg"][i]["pos_x"]["limit"]["min"].as<uint8_t>();
-      touchpad_ptr->params.touch[i].pos_x.limit.max = config["msg"][i]["pos_x"]["limit"]["max"].as<uint8_t>();
-      touchpad_ptr->params.touch[i].pos_x.enabled = config["msg"][i]["pos_x"]["enabled"] | true;
+      touchpad_ptr->params.touch[i].pos_x.limit.min   = config["msg"][i]["pos_x"]["limit"]["min"].as<uint8_t>();
+      touchpad_ptr->params.touch[i].pos_x.limit.max   = config["msg"][i]["pos_x"]["limit"]["max"].as<uint8_t>();
 
-      midi_msg_status_unpack(config["msg"][i]["pos_y"]["midi"]["status"].as<uint8_t>(), &status);
-      // if status.type != Undefined_F4
-      touchpad_ptr->params.touch[i].pos_y.msg.type = ControlChange;
-      touchpad_ptr->params.touch[i].pos_y.msg.data1 = config["msg"][i]["pos_y"]["midi"]["data1"].as<uint8_t>();
-      touchpad_ptr->params.touch[i].pos_y.msg.data2 = 0;
+      uint8_t pos_y_status = config["msg"][i]["pos_y"]["midi"]["status"].as<uint8_t>();
+      midi_msg_status_unpack(pos_y_status, &status);
+      touchpad_ptr->params.touch[i].pos_y.enabled   = (pos_y_status != 0);
+      touchpad_ptr->params.touch[i].pos_y.msg.type    = ControlChange;
+      touchpad_ptr->params.touch[i].pos_y.msg.data1   = config["msg"][i]["pos_y"]["midi"]["data1"].as<uint8_t>();
+      touchpad_ptr->params.touch[i].pos_y.msg.data2   = 0;
       touchpad_ptr->params.touch[i].pos_y.msg.channel = status.channel;
-      touchpad_ptr->params.touch[i].pos_y.limit.min = config["msg"][i]["pos_y"]["limit"]["min"].as<uint8_t>();
-      touchpad_ptr->params.touch[i].pos_y.limit.max = config["msg"][i]["pos_y"]["limit"]["max"].as<uint8_t>();
-      touchpad_ptr->params.touch[i].pos_y.enabled = config["msg"][i]["pos_y"]["enabled"] | true;
+      touchpad_ptr->params.touch[i].pos_y.limit.min   = config["msg"][i]["pos_y"]["limit"]["min"].as<uint8_t>();
+      touchpad_ptr->params.touch[i].pos_y.limit.max   = config["msg"][i]["pos_y"]["limit"]["max"].as<uint8_t>();
 
       if (config["msg"][i]["size"].is<JsonObject>()) {
-        midi_msg_status_unpack(config["msg"][i]["size"]["midi"]["status"].as<uint8_t>(), &status);
-        touchpad_ptr->params.touch[i].size.msg.type = ControlChange;
-        touchpad_ptr->params.touch[i].size.msg.data1 = config["msg"][i]["size"]["midi"]["data1"].as<uint8_t>();
-        touchpad_ptr->params.touch[i].size.msg.data2 = 0;
+        uint8_t size_status = config["msg"][i]["size"]["midi"]["status"].as<uint8_t>();
+        midi_msg_status_unpack(size_status, &status);
+        touchpad_ptr->params.touch[i].size.enabled   = (size_status != 0);
+        touchpad_ptr->params.touch[i].size.msg.type    = ControlChange;
+        touchpad_ptr->params.touch[i].size.msg.data1   = config["msg"][i]["size"]["midi"]["data1"].as<uint8_t>();
+        touchpad_ptr->params.touch[i].size.msg.data2   = 0;
         touchpad_ptr->params.touch[i].size.msg.channel = status.channel;
-        touchpad_ptr->params.touch[i].size.limit.min = config["msg"][i]["size"]["limit"]["min"].as<uint8_t>();
-        touchpad_ptr->params.touch[i].size.limit.max = config["msg"][i]["size"]["limit"]["max"].as<uint8_t>();
-        touchpad_ptr->params.touch[i].size.enabled = config["msg"][i]["size"]["enabled"] | true;
+        touchpad_ptr->params.touch[i].size.limit.min   = config["msg"][i]["size"]["limit"]["min"].as<uint8_t>();
+        touchpad_ptr->params.touch[i].size.limit.max   = config["msg"][i]["size"]["limit"]["max"].as<uint8_t>();
       } else {
         touchpad_ptr->params.touch[i].size.enabled = false;
       }
 
       switch (touchpad_ptr->params.press) {
-        case NoteOn:
-          midi_msg_status_unpack(config["msg"][i]["press"]["midi"]["status"].as<uint8_t>(), &status);
-          touchpad_ptr->params.touch[i].press.msg.type = NoteOn;
-          touchpad_ptr->params.touch[i].press.msg.data1 = config["msg"][i]["press"]["midi"]["data1"].as<uint8_t>();
-          touchpad_ptr->params.touch[i].press.msg.data2 = 0;
+        case NoteOn: {
+          uint8_t press_status = config["msg"][i]["press"]["midi"]["status"].as<uint8_t>();
+          midi_msg_status_unpack(press_status, &status);
+          touchpad_ptr->params.touch[i].press.enabled     = (press_status != 0);
+          touchpad_ptr->params.touch[i].press.msg.type    = NoteOn;
+          touchpad_ptr->params.touch[i].press.msg.data1   = config["msg"][i]["press"]["midi"]["data1"].as<uint8_t>();
+          touchpad_ptr->params.touch[i].press.msg.data2   = 0;
           touchpad_ptr->params.touch[i].press.msg.channel = status.channel;
-          touchpad_ptr->params.touch[i].press.enabled = config["msg"][i]["press"]["enabled"] | true;
           break;
+        }
         case ControlChange:
-        case AfterTouchPoly:
-          midi_msg_status_unpack(config["msg"][i]["press"]["midi"]["status"].as<uint8_t>(), &status);
-          touchpad_ptr->params.touch[i].press.msg.type = status.type;
-          touchpad_ptr->params.touch[i].press.msg.data1 = config["msg"][i]["press"]["midi"]["data1"].as<uint8_t>();
-          touchpad_ptr->params.touch[i].press.msg.data2 = 0;
+        case AfterTouchPoly: {
+          uint8_t press_status = config["msg"][i]["press"]["midi"]["status"].as<uint8_t>();
+          midi_msg_status_unpack(press_status, &status);
+          touchpad_ptr->params.touch[i].press.enabled     = (press_status != 0);
+          touchpad_ptr->params.touch[i].press.msg.type    = status.type;
+          touchpad_ptr->params.touch[i].press.msg.data1   = config["msg"][i]["press"]["midi"]["data1"].as<uint8_t>();
+          touchpad_ptr->params.touch[i].press.msg.data2   = 0;
           touchpad_ptr->params.touch[i].press.msg.channel = status.channel;
-          touchpad_ptr->params.touch[i].press.limit.min = config["msg"][i]["press"]["limit"]["min"].as<uint8_t>();
-          touchpad_ptr->params.touch[i].press.limit.max = config["msg"][i]["press"]["limit"]["max"].as<uint8_t>();
-          touchpad_ptr->params.touch[i].press.enabled = config["msg"][i]["press"]["enabled"] | true;
+          touchpad_ptr->params.touch[i].press.limit.min   = config["msg"][i]["press"]["limit"]["min"].as<uint8_t>();
+          touchpad_ptr->params.touch[i].press.limit.max   = config["msg"][i]["press"]["limit"]["max"].as<uint8_t>();
           break;
+        }
         case MIDI_TYPE_CHORD:
           touchpad_ptr->params.chord[i].type = config["msg"][i]["press"]["chord"].as<uint8_t>();
           touchpad_ptr->params.chord[i].note = config["msg"][i]["press"]["note"].as<uint8_t>();
           break;
         default:
-          // None (0xFF) — no press output
+          touchpad_ptr->params.touch[i].press.enabled = false;
           break;
       }
     }

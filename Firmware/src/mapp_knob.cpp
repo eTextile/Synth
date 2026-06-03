@@ -230,63 +230,58 @@ void mapping_knob_create(const JsonObject &config) {
   
     midi_status_t status;
     for (uint8_t i = 0; i<knob_ptr->params.touchs; i++){
-      midi_msg_status_unpack(config["msg"][i]["radius"]["midi"]["status"].as<uint8_t>(), &status);
-      knob_ptr->params.touch[i].radius.msg.type = status.type;
-      knob_ptr->params.touch[i].radius.msg.data1 = config["msg"][i]["radius"]["midi"]["data1"].as<uint8_t>();
-      knob_ptr->params.touch[i].radius.msg.data2 = 0;
+      uint8_t radius_status = config["msg"][i]["radius"]["midi"]["status"].as<uint8_t>();
+      midi_msg_status_unpack(radius_status, &status);
+      knob_ptr->params.touch[i].radius.enabled     = (radius_status != 0);
+      knob_ptr->params.touch[i].radius.msg.type    = status.type;
+      knob_ptr->params.touch[i].radius.msg.data1   = config["msg"][i]["radius"]["midi"]["data1"].as<uint8_t>();
+      knob_ptr->params.touch[i].radius.msg.data2   = 0;
       knob_ptr->params.touch[i].radius.msg.channel = status.channel;
-      knob_ptr->params.touch[i].radius.limit.min = config["msg"][i]["radius"]["limit"]["min"].as<uint8_t>();
-      knob_ptr->params.touch[i].radius.limit.max = config["msg"][i]["radius"]["limit"]["max"].as<uint8_t>();
-      knob_ptr->params.touch[i].radius.enabled = config["msg"][i]["radius"]["enabled"] | true;
+      knob_ptr->params.touch[i].radius.limit.min   = config["msg"][i]["radius"]["limit"]["min"].as<uint8_t>();
+      knob_ptr->params.touch[i].radius.limit.max   = config["msg"][i]["radius"]["limit"]["max"].as<uint8_t>();
 
-      midi_msg_status_unpack(config["msg"][i]["theta"]["midi"]["status"].as<uint8_t>(), &status);
-      knob_ptr->params.touch[i].theta.msg.type = status.type;
-      knob_ptr->params.touch[i].theta.msg.data1 = config["msg"][i]["theta"]["midi"]["data1"].as<uint8_t>();
-      knob_ptr->params.touch[i].theta.msg.data2 = 0;
+      uint8_t theta_status = config["msg"][i]["theta"]["midi"]["status"].as<uint8_t>();
+      midi_msg_status_unpack(theta_status, &status);
+      knob_ptr->params.touch[i].theta.enabled     = (theta_status != 0);
+      knob_ptr->params.touch[i].theta.msg.type    = status.type;
+      knob_ptr->params.touch[i].theta.msg.data1   = config["msg"][i]["theta"]["midi"]["data1"].as<uint8_t>();
+      knob_ptr->params.touch[i].theta.msg.data2   = 0;
       knob_ptr->params.touch[i].theta.msg.channel = status.channel;
-      knob_ptr->params.touch[i].theta.limit.min = config["msg"][i]["theta"]["limit"]["min"].as<uint8_t>();
-      knob_ptr->params.touch[i].theta.limit.max = config["msg"][i]["theta"]["limit"]["max"].as<uint8_t>();
-      knob_ptr->params.touch[i].theta.enabled = config["msg"][i]["theta"]["enabled"] | true;
+      knob_ptr->params.touch[i].theta.limit.min   = config["msg"][i]["theta"]["limit"]["min"].as<uint8_t>();
+      knob_ptr->params.touch[i].theta.limit.max   = config["msg"][i]["theta"]["limit"]["max"].as<uint8_t>();
 
       switch (knob_ptr->params.press) {
 
-        case NoteOn:
-          midi_msg_status_unpack(config["msg"][i]["press"]["midi"]["status"].as<uint8_t>(), &status);
-          knob_ptr->params.touch[i].press.msg.type = NoteOn;
-          knob_ptr->params.touch[i].press.msg.data1 = config["msg"][i]["press"]["midi"]["data1"].as<uint8_t>();
-          knob_ptr->params.touch[i].press.msg.data2 = 0;
+        case NoteOn: {
+          uint8_t press_status = config["msg"][i]["press"]["midi"]["status"].as<uint8_t>();
+          midi_msg_status_unpack(press_status, &status);
+          knob_ptr->params.touch[i].press.enabled     = (press_status != 0);
+          knob_ptr->params.touch[i].press.msg.type    = NoteOn;
+          knob_ptr->params.touch[i].press.msg.data1   = config["msg"][i]["press"]["midi"]["data1"].as<uint8_t>();
+          knob_ptr->params.touch[i].press.msg.data2   = 0;
           knob_ptr->params.touch[i].press.msg.channel = status.channel;
-          knob_ptr->params.touch[i].press.enabled = config["msg"][i]["press"]["enabled"] | true;
           break;
-
+        }
         case ControlChange:
-          midi_msg_status_unpack(config["msg"][i]["press"]["midi"]["status"].as<uint8_t>(), &status);
-          knob_ptr->params.touch[i].press.msg.type = status.type;
-          knob_ptr->params.touch[i].press.msg.data1 = config["msg"][i]["press"]["midi"]["data1"].as<uint8_t>();
-          knob_ptr->params.touch[i].press.msg.data2 = 0;
+        case AfterTouchPoly: {
+          uint8_t press_status = config["msg"][i]["press"]["midi"]["status"].as<uint8_t>();
+          midi_msg_status_unpack(press_status, &status);
+          knob_ptr->params.touch[i].press.enabled     = (press_status != 0);
+          knob_ptr->params.touch[i].press.msg.type    = status.type;
+          knob_ptr->params.touch[i].press.msg.data1   = config["msg"][i]["press"]["midi"]["data1"].as<uint8_t>();
+          knob_ptr->params.touch[i].press.msg.data2   = 0;
           knob_ptr->params.touch[i].press.msg.channel = status.channel;
-          knob_ptr->params.touch[i].press.limit.min = config["msg"][i]["press"]["limit"]["min"].as<uint8_t>();
-          knob_ptr->params.touch[i].press.limit.max = config["msg"][i]["press"]["limit"]["max"].as<uint8_t>();
-          knob_ptr->params.touch[i].press.enabled = config["msg"][i]["press"]["enabled"] | true;
+          knob_ptr->params.touch[i].press.limit.min   = config["msg"][i]["press"]["limit"]["min"].as<uint8_t>();
+          knob_ptr->params.touch[i].press.limit.max   = config["msg"][i]["press"]["limit"]["max"].as<uint8_t>();
           break;
-
-        case AfterTouchPoly:
-          midi_msg_status_unpack(config["msg"][i]["press"]["midi"]["status"].as<uint8_t>(), &status);
-          knob_ptr->params.touch[i].press.msg.type = status.type;
-          knob_ptr->params.touch[i].press.msg.data1 = config["msg"][i]["press"]["midi"]["data1"].as<uint8_t>();
-          knob_ptr->params.touch[i].press.msg.data2 = 0;
-          knob_ptr->params.touch[i].press.msg.channel = status.channel;
-          knob_ptr->params.touch[i].press.limit.min = config["msg"][i]["press"]["limit"]["min"].as<uint8_t>();
-          knob_ptr->params.touch[i].press.limit.max = config["msg"][i]["press"]["limit"]["max"].as<uint8_t>();
-          knob_ptr->params.touch[i].press.enabled = config["msg"][i]["press"]["enabled"] | true;
-          break;
-
+        }
         case MIDI_TYPE_CHORD:
           knob_ptr->params.chord[i].type = config["msg"][i]["press"]["chord"].as<uint8_t>();
           knob_ptr->params.chord[i].note = config["msg"][i]["press"]["note"].as<uint8_t>();
           break;
 
         default:
+          knob_ptr->params.touch[i].press.enabled = false;
           break;
       }
     }

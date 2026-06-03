@@ -219,25 +219,27 @@ void mapping_polygon_create(const JsonObject &config) {
   midi_status_t status;
   char key[16]; // "source_63" is the longest possible key (9 chars + NUL)
   for (uint8_t ti = 0; ti < polygon_ptr->params.touchs; ti++) {
-    midi_msg_status_unpack(config["msg"][ti]["press"]["midi"]["status"].as<uint8_t>(), &status);
-    polygon_ptr->params.touch[ti].press.msg.type = status.type;
-    polygon_ptr->params.touch[ti].press.msg.data1 = config["msg"][ti]["press"]["midi"]["data1"].as<uint8_t>();
-    polygon_ptr->params.touch[ti].press.msg.data2 = 0;
+    uint8_t press_status = config["msg"][ti]["press"]["midi"]["status"].as<uint8_t>();
+    midi_msg_status_unpack(press_status, &status);
+    polygon_ptr->params.touch[ti].press.enabled     = (press_status != 0);
+    polygon_ptr->params.touch[ti].press.msg.type    = status.type;
+    polygon_ptr->params.touch[ti].press.msg.data1   = config["msg"][ti]["press"]["midi"]["data1"].as<uint8_t>();
+    polygon_ptr->params.touch[ti].press.msg.data2   = 0;
     polygon_ptr->params.touch[ti].press.msg.channel = status.channel;
-    polygon_ptr->params.touch[ti].press.limit.min = config["msg"][ti]["press"]["limit"]["min"].as<uint8_t>();
-    polygon_ptr->params.touch[ti].press.limit.max = config["msg"][ti]["press"]["limit"]["max"].as<uint8_t>();
-    polygon_ptr->params.touch[ti].press.enabled = config["msg"][ti]["press"]["enabled"] | true;
+    polygon_ptr->params.touch[ti].press.limit.min   = config["msg"][ti]["press"]["limit"]["min"].as<uint8_t>();
+    polygon_ptr->params.touch[ti].press.limit.max   = config["msg"][ti]["press"]["limit"]["max"].as<uint8_t>();
 
     for (uint8_t vi = 0; vi < polygon_ptr->params.point_cnt; vi++) {
       snprintf(key, sizeof(key), "source_%u", vi); // key matches JS: "source_0", "source_1", …
-      midi_msg_status_unpack(config["msg"][ti][key]["midi"]["status"].as<uint8_t>(), &status);
-      polygon_ptr->params.touch[ti].source[vi].msg.type = ControlChange;
-      polygon_ptr->params.touch[ti].source[vi].msg.data1 = config["msg"][ti][key]["midi"]["data1"].as<uint8_t>();
-      polygon_ptr->params.touch[ti].source[vi].msg.data2 = 0;
+      uint8_t src_status = config["msg"][ti][key]["midi"]["status"].as<uint8_t>();
+      midi_msg_status_unpack(src_status, &status);
+      polygon_ptr->params.touch[ti].source[vi].enabled     = (src_status != 0);
+      polygon_ptr->params.touch[ti].source[vi].msg.type    = ControlChange;
+      polygon_ptr->params.touch[ti].source[vi].msg.data1   = config["msg"][ti][key]["midi"]["data1"].as<uint8_t>();
+      polygon_ptr->params.touch[ti].source[vi].msg.data2   = 0;
       polygon_ptr->params.touch[ti].source[vi].msg.channel = status.channel;
-      polygon_ptr->params.touch[ti].source[vi].limit.min = config["msg"][ti][key]["limit"]["min"].as<uint8_t>();
-      polygon_ptr->params.touch[ti].source[vi].limit.max = config["msg"][ti][key]["limit"]["max"].as<uint8_t>();
-      polygon_ptr->params.touch[ti].source[vi].enabled = config["msg"][ti][key]["enabled"] | true;
+      polygon_ptr->params.touch[ti].source[vi].limit.min   = config["msg"][ti][key]["limit"]["min"].as<uint8_t>();
+      polygon_ptr->params.touch[ti].source[vi].limit.max   = config["msg"][ti][key]["limit"]["max"].as<uint8_t>();
       polygon_ptr->params.touch[ti].source[vi].last_val = 255;   // force send on first continue
       polygon_ptr->params.touch[ti].source[vi].midi_time_stamp = 0;
     }
