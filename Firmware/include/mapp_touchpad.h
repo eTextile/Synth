@@ -8,8 +8,7 @@ struct touchpad_s {
   rect_t rect;
   uint8_t touchs;
   touch_planar_t touch[MAX_TOUCHPAD_TOUCHS];
-  midi_chord_t chord[MAX_TOUCHPAD_TOUCHS]; // only used when press == MIDI_TYPE_CHORD
-  MidiType press;
+  midi_chord_t chord[MAX_TOUCHPAD_TOUCHS];
   uint8_t chan_in;
   uint8_t chan_out;
 };

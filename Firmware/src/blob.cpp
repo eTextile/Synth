@@ -44,6 +44,7 @@ void blob_setup(void) {
     blob_ptr->last_status = MISSING;
     blob_ptr->action.touch_ptr = NULL;
     blob_ptr->action.mapping_ptr = NULL;
+    blob_ptr->action.touch_slot = TOUCH_SLOT_NONE;
   };
 };
 
@@ -70,6 +71,7 @@ void matrix_find_blobs(void) {
     if (tmp_blob_ptr->status == FREE) {
       common_t* blob_mapping_ptr = (common_t*)tmp_blob_ptr->action.mapping_ptr;
       if (blob_mapping_ptr) blob_mapping_ptr->blob_dispose_func_ptr(blob_mapping_ptr, tmp_blob_ptr);
+      tmp_blob_ptr->action.touch_slot = TOUCH_SLOT_NONE; // ensure clean state for next use
       llist_push_back(&llist_blobs_pool, tmp_blob_ptr);
     }
     else {
@@ -461,7 +463,7 @@ void matrix_find_blobs(void) {
 
   #if defined(USB_MIDI_SERIAL) && defined(DEBUG_BITMAP)
   for (uint8_t row_pos = 0; row_pos < NEW_ROWS; row_pos++) {
-    uint8_t* row_pos_ptr = &bitmap_array[0] + row_pos * NEW_ROWS;
+    uint8_t* row_pos_ptr = &bitmap_array[0] + row_pos * NEW_COLS;
     for (int col_pos = 0; col_pos < NEW_COLS; col_pos++) {
       Serial.printf("%d-", IMAGE_GET_PIXEL_FAST(row_pos_ptr, col_pos));
     };

@@ -10,9 +10,9 @@ struct grid_s {
   touch_press_t touch[MAX_GRID_TOUCHS];
   uint8_t keys;
   touch_press_t key[MAX_GRID_KEYS];
+  midi_chord_t chord[MAX_GRID_KEYS];
   uint8_t cols;
   uint8_t rows;
-  MidiType press;
   uint8_t chan_in;
   uint8_t chan_out;
   float scale_factor_x;

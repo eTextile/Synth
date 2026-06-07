@@ -12,6 +12,8 @@
 #define ENCODER_OPTIMIZE_INTERRUPTS
 #include <Encoder.h> // https://github.com/PaulStoffregen/Encoder
 
+//#define SOUND_CARD
+
 #define PROJECT "ETEXTILE-SYNTHESIZER"
 #define NAME "256"
 #define VERSION "1.0.27"
@@ -54,9 +56,9 @@
 //#define MATRIX_RESOLUTION_Y (NEW_FRAME - Y_PADDING_TOP - Y_PADDING_BOTTOM)
 
 #define X_MIN X_PADDING_LEFT                                  // Blob centroid X min value
-#define X_MAX (NEW_FRAME - X_PADDING_LEFT - X_PADDING_REIGHT) // Blob centroid X max value
+#define X_MAX (NEW_COLS - X_PADDING_LEFT - X_PADDING_REIGHT)  // Blob centroid X max value
 #define Y_MIN Y_PADDING_TOP                                   // Blob centroid Y min value
-#define Y_MAX (NEW_FRAME - Y_PADDING_TOP- Y_PADDING_BOTTOM)   // Blob centroid Y max value
+#define Y_MAX (NEW_ROWS - Y_PADDING_TOP - Y_PADDING_BOTTOM)   // Blob centroid Y max value
 
 #define Z_MIN 0   // Blob centroid Z min value
 #define Z_MAX 127 // Blob centroid Z max value

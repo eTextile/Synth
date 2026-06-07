@@ -21,6 +21,7 @@
 #include "mapp_touchpad.h"
 #include "mapp_knob.h"
 #include "mapp_polygon.h"
+#include "mapp_grid.h"
 
 Bounce BUTTON_L = Bounce();
 Bounce BUTTON_R = Bounce();
@@ -438,6 +439,20 @@ static bool config_load_mappings_polygons(const JsonArray& config) {
   return false;
 };
 
+static bool config_load_mappings_grids(const JsonArray& config) {
+  if (config.isNull()) {
+    return false;
+  }
+  uint8_t n = config.size();
+  if (mapping_grids_alloc(n)) {
+    for (uint8_t i = 0; i < n; i++) {
+      mapping_grid_create(config[i]);
+    }
+    return true;
+  }
+  return false;
+};
+
 bool mappings_load_config(const JsonObject config) {
   if (config.isNull()) {
     //usb_midi_send_info((uint8_t)CONFIG_FILE_IS_NULL, MIDI_ERROR_CHANNEL);
@@ -458,6 +473,9 @@ bool mappings_load_config(const JsonObject config) {
   }
   if (!config_load_mappings_polygons(config["polygon"])) {
     //Serial.println("CONFIG_LOAD_POLYGONS: FAILD");
+  }
+  if (!config_load_mappings_grids(config["grid"])) {
+    //Serial.println("CONFIG_LOAD_GRIDS: FAILD");
   }
   return true;
 };

@@ -32,7 +32,8 @@ typedef enum blob_params_e {
   B_DEPTH,         // [9]  pressure depth (centroid.z, raw 0-255)
   B_VELOCITY_XY,   // [10] lateral velocity scaled to 0-127 (VELOCITY_XY_MAX → 127)
   B_ATTACK_Z,      // [11] peak |velocity.z| during attack, scaled to 0-127 (VELOCITY_ATTACK_Z_MAX → 127)
-  B_COUNT          // = 12 (total bytes in the SysEx blob message)
+  B_TOUCH_SLOT,    // [12] mapping touch slot index (0-based), TOUCH_SLOT_NONE = not assigned
+  B_COUNT          // = 13 (total bytes in the SysEx blob message)
 } blob_params_t;
 
 typedef struct image_s image_t;
@@ -130,12 +131,15 @@ typedef enum status_code_e {
   RELEASED
 } status_code_t;
 
+#define TOUCH_SLOT_NONE 0xFF  // touch_slot sentinel: blob not assigned to any mapping slot
+
 typedef struct blob_action_s blob_action_t;
 struct blob_action_s {
-  void* mapping_ptr;
-  void* touch_ptr;
-  bool  note_on_z_pending;  // true = NoteOn deferred until z-attack peak captured
-  bool  note_on_xy_pending; // true = NoteOn deferred until first xy velocity sample (ROL sliders)
+  void*   mapping_ptr;
+  void*   touch_ptr;
+  uint8_t touch_slot;       // slot index (0-based) within the mapping's touch array; TOUCH_SLOT_NONE = unassigned
+  bool    note_on_z_pending;
+  bool    note_on_xy_pending;
 };
 
 typedef struct blob_s blob_t;

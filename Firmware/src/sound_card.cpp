@@ -6,6 +6,8 @@
 
 #include "sound_card.h"
 
+#ifdef SOUND_CARD
+
 AudioControlSGTL5000  sgtl5000;
 
 void sound_card_setup() {
@@ -59,3 +61,5 @@ void update_levels(void) {
       break;
   };
 };
+
+#endif /*SOUND_CARD*/

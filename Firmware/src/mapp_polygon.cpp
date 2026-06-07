@@ -60,6 +60,7 @@ bool mapping_polygon_assign_blob(void* mapping_ptr, blob_t* blob_ptr) {
   if (polygon_ptr->touch_index < polygon_ptr->params.touchs) {
     blob_ptr->action.mapping_ptr = polygon_ptr;
     blob_ptr->action.touch_ptr = &polygon_ptr->params.touch[polygon_ptr->touch_index];
+    blob_ptr->action.touch_slot = polygon_ptr->touch_index;
     polygon_ptr->touch_index++;
     polygon_ptr->active_blob_count++;
     return true;
@@ -72,6 +73,7 @@ void mapping_polygon_dispose_blob(void* mapping_ptr, blob_t* blob_ptr) {
 
   blob_ptr->action.mapping_ptr = NULL;
   blob_ptr->action.touch_ptr = NULL;
+  blob_ptr->action.touch_slot = TOUCH_SLOT_NONE;
   polygon_ptr->active_blob_count--;
   if (polygon_ptr->active_blob_count == 0) {
     polygon_ptr->touch_index = 0;
@@ -79,13 +81,15 @@ void mapping_polygon_dispose_blob(void* mapping_ptr, blob_t* blob_ptr) {
 };
 
 void mapping_polygon_start(blob_t* blob_ptr) {
-  mapp_polygon_t* polygon_ptr = (mapp_polygon_t*)blob_ptr->action.mapping_ptr;
   touch_polygon_t* touch_ptr = (touch_polygon_t*)blob_ptr->action.touch_ptr;
 
-  if (polygon_ptr->params.press == NoteOn) {
-    mapping_send_midi_note_on(&touch_ptr->press, blob_ptr);
-  } else {
-    mapping_send_midi_msg_press(&touch_ptr->press, blob_ptr);
+  if (touch_ptr->press.enabled) {
+    const MidiType _pt = touch_ptr->press.msg.type;
+    if (_pt == NoteOn) {
+      mapping_send_midi_note_on(&touch_ptr->press, blob_ptr);
+    } else if (_pt == ControlChange || _pt == AfterTouchPoly) {
+      mapping_send_midi_msg_press(&touch_ptr->press, blob_ptr);
+    }
   }
 };
 
@@ -93,7 +97,8 @@ void mapping_polygon_continue(blob_t* blob_ptr) {
   mapp_polygon_t* polygon_ptr = (mapp_polygon_t*)blob_ptr->action.mapping_ptr;
   touch_polygon_t* touch_ptr = (touch_polygon_t*)blob_ptr->action.touch_ptr;
 
-  if (polygon_ptr->params.press != NoteOn) {
+  const MidiType _pt = touch_ptr->press.msg.type;
+  if (_pt == ControlChange || _pt == AfterTouchPoly) {
     mapping_send_midi_msg_press(&touch_ptr->press, blob_ptr);
   }
 
@@ -119,13 +124,13 @@ void mapping_polygon_continue(blob_t* blob_ptr) {
       }
     }
   }
+  mapping_send_midi_msg_move(&touch_ptr->move, blob_ptr);
 };
 
 void mapping_polygon_stop(blob_t* blob_ptr) {
-  mapp_polygon_t* polygon_ptr = (mapp_polygon_t*)blob_ptr->action.mapping_ptr;
   touch_polygon_t* touch_ptr = (touch_polygon_t*)blob_ptr->action.touch_ptr;
 
-  if (polygon_ptr->params.press == NoteOn) {
+  if (touch_ptr->press.enabled && touch_ptr->press.msg.type == NoteOn) {
     mapping_send_midi_note_off(&touch_ptr->press);
   }
 };
@@ -172,7 +177,6 @@ void mapping_polygon_create(const JsonObject &config) {
   polygon_ptr->common.stop_func_ptr = &mapping_polygon_stop;
 
   polygon_ptr->params.touchs = config["touchs"].as<uint8_t>();
-  polygon_ptr->params.press = (MidiType)config["press"].as<uint8_t>();
   polygon_ptr->params.chan_in  = config["chan"]["in"].as<uint8_t>();
   polygon_ptr->params.chan_out = config["chan"]["out"].as<uint8_t>();
 
@@ -221,7 +225,7 @@ void mapping_polygon_create(const JsonObject &config) {
   for (uint8_t ti = 0; ti < polygon_ptr->params.touchs; ti++) {
     uint8_t press_status = config["msg"][ti]["press"]["midi"]["status"].as<uint8_t>();
     midi_msg_status_unpack(press_status, &status);
-    polygon_ptr->params.touch[ti].press.enabled     = (press_status != 0);
+    polygon_ptr->params.touch[ti].press.enabled     = (press_status != 0) && (config["msg"][ti]["press"]["enabled"] | true);
     polygon_ptr->params.touch[ti].press.msg.type    = status.type;
     polygon_ptr->params.touch[ti].press.msg.data1   = config["msg"][ti]["press"]["midi"]["data1"].as<uint8_t>();
     polygon_ptr->params.touch[ti].press.msg.data2   = 0;
@@ -233,7 +237,7 @@ void mapping_polygon_create(const JsonObject &config) {
       snprintf(key, sizeof(key), "source_%u", vi); // key matches JS: "source_0", "source_1", …
       uint8_t src_status = config["msg"][ti][key]["midi"]["status"].as<uint8_t>();
       midi_msg_status_unpack(src_status, &status);
-      polygon_ptr->params.touch[ti].source[vi].enabled     = (src_status != 0);
+      polygon_ptr->params.touch[ti].source[vi].enabled     = (src_status != 0) && (config["msg"][ti][key]["enabled"] | true);
       polygon_ptr->params.touch[ti].source[vi].msg.type    = ControlChange;
       polygon_ptr->params.touch[ti].source[vi].msg.data1   = config["msg"][ti][key]["midi"]["data1"].as<uint8_t>();
       polygon_ptr->params.touch[ti].source[vi].msg.data2   = 0;
@@ -242,6 +246,20 @@ void mapping_polygon_create(const JsonObject &config) {
       polygon_ptr->params.touch[ti].source[vi].limit.max   = config["msg"][ti][key]["limit"]["max"].as<uint8_t>();
       polygon_ptr->params.touch[ti].source[vi].last_val = 255;   // force send on first continue
       polygon_ptr->params.touch[ti].source[vi].midi_time_stamp = 0;
+    }
+
+    if (config["msg"][ti]["move"].is<JsonObject>()) {
+      uint8_t move_status = config["msg"][ti]["move"]["midi"]["status"].as<uint8_t>();
+      midi_msg_status_unpack(move_status, &status);
+      polygon_ptr->params.touch[ti].move.enabled     = (move_status != 0) && (config["msg"][ti]["move"]["enabled"] | true);
+      polygon_ptr->params.touch[ti].move.msg.type    = ControlChange;
+      polygon_ptr->params.touch[ti].move.msg.data1   = config["msg"][ti]["move"]["midi"]["data1"].as<uint8_t>();
+      polygon_ptr->params.touch[ti].move.msg.data2   = 0;
+      polygon_ptr->params.touch[ti].move.msg.channel = status.channel;
+      polygon_ptr->params.touch[ti].move.limit.min   = config["msg"][ti]["move"]["limit"]["min"].as<uint8_t>();
+      polygon_ptr->params.touch[ti].move.limit.max   = config["msg"][ti]["move"]["limit"]["max"].as<uint8_t>();
+    } else {
+      polygon_ptr->params.touch[ti].move.enabled = false;
     }
   }
   llist_push_back(&llist_mappings, polygon_ptr);

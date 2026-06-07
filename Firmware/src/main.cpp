@@ -13,7 +13,9 @@
 #include "mapping.h"
 #include "usb_midi_io.h"
 #include "hardware_midi_io.h"
+#ifdef SOUND_CARD
 #include "sound_card.h"
+#endif
 
 uint32_t fpsTimeStamp = 0;
 uint16_t fps = 0;
@@ -63,7 +65,9 @@ void setup(void) {
 void loop(void) {
 
   update_controls();
+  #ifdef SOUND_CARD
   update_levels();
+  #endif
 
   midi_msg_t* midi_msg_ptr = NULL;
 

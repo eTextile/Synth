@@ -8,8 +8,7 @@ struct switch_s {
   rect_t rect;
   uint8_t touchs;
   touch_press_t touch[MAX_SWITCH_TOUCHS];
-  midi_chord_t chord[MAX_SWITCH_TOUCHS]; // only used when press == MIDI_TYPE_CHORD
-  MidiType press;
+  midi_chord_t chord[MAX_SWITCH_TOUCHS];
   uint8_t chan_in;
   uint8_t chan_out;
 };

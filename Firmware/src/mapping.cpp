@@ -100,7 +100,8 @@ void mapping_send_midi_note_on(axis_t* axis_ptr, blob_t* blob_ptr) {
 #if defined(BLOB_VELOCITY)
   blob_ptr->action.note_on_z_pending = true; // flushed by mapping_flush_pending_note_on()
 #else
-  axis_ptr->msg.data2 = (uint8_t)map(blob_ptr->centroid.z, Z_MIN, Z_MAX, axis_ptr->limit.min, axis_ptr->limit.max);
+  float t = constrain((blob_ptr->centroid.z - Z_MIN) / (float)(Z_MAX - Z_MIN), 0.0f, 1.0f);
+  axis_ptr->msg.data2 = (uint8_t)roundf(axis_ptr->limit.min + t * (float)(axis_ptr->limit.max - axis_ptr->limit.min));
   llist_push_front(&llist_midi_out, &axis_ptr->msg);
 #endif
 };
@@ -115,28 +116,25 @@ void mapping_send_midi_note_on_xy(axis_t* axis_ptr, blob_t* blob_ptr) {
 };
 
 void mapping_send_midi_note_off(axis_t* axis_ptr) {
-  axis_ptr->msg.type = NoteOff;
+  // NoteOn with velocity 0 == NoteOff (MIDI spec §1.3) — preserves msg.type = NoteOn
+  // so the next start event's switch(msg.type) still matches case NoteOn.
   axis_ptr->msg.data2 = 0;
   llist_push_front(&llist_midi_out, &axis_ptr->msg);
 };
 
 void mapping_send_midi_msg_pos_x(rect_t* bounding_box_ptr, axis_t* axis_ptr, blob_t* blob_ptr, move_t move) {
   if (!axis_ptr->enabled) return;
+  float t = constrain(
+    (blob_ptr->centroid.x - bounding_box_ptr->from.x) /
+    (bounding_box_ptr->to.x - bounding_box_ptr->from.x),
+    0.0f, 1.0f
+  );
   if (move == MOVE_LOG) {
-    float t = (blob_ptr->centroid.x - bounding_box_ptr->from.x) /
-              (bounding_box_ptr->to.x   - bounding_box_ptr->from.x);
-    t = constrain(t, 0.0f, 1.0f);
     t = logf(1.0f + t * 1.71828182f); // log curve [0,1]→[0,1]
-    axis_ptr->msg.data2 = (uint8_t)(axis_ptr->limit.min + t * (axis_ptr->limit.max - axis_ptr->limit.min));
-  } else {
-    axis_ptr->msg.data2 = map(
-      blob_ptr->centroid.x,
-      bounding_box_ptr->to.x,
-      bounding_box_ptr->from.x,
-      axis_ptr->limit.max,
-      axis_ptr->limit.min
-    );
   }
+  axis_ptr->msg.data2 = (uint8_t)roundf(
+    axis_ptr->limit.min + t * (float)(axis_ptr->limit.max - axis_ptr->limit.min)
+  );
   if (axis_ptr->msg.data2 != axis_ptr->last_val) {
     if ((frame_now - axis_ptr->midi_time_stamp) > MIDI_THROTTLE_MS) {
       llist_push_front(&llist_midi_out, &axis_ptr->msg);
@@ -148,21 +146,17 @@ void mapping_send_midi_msg_pos_x(rect_t* bounding_box_ptr, axis_t* axis_ptr, blo
 
 void mapping_send_midi_msg_pos_y(rect_t* bounding_box_ptr, axis_t* axis_ptr, blob_t* blob_ptr, move_t move) {
   if (!axis_ptr->enabled) return;
+  float t = constrain(
+    (blob_ptr->centroid.y - bounding_box_ptr->from.y) /
+    (bounding_box_ptr->to.y - bounding_box_ptr->from.y),
+    0.0f, 1.0f
+  );
   if (move == MOVE_LOG) {
-    float t = (blob_ptr->centroid.y - bounding_box_ptr->from.y) /
-              (bounding_box_ptr->to.y   - bounding_box_ptr->from.y);
-    t = constrain(t, 0.0f, 1.0f);
     t = logf(1.0f + t * 1.71828182f); // log curve [0,1]→[0,1]
-    axis_ptr->msg.data2 = (uint8_t)(axis_ptr->limit.min + t * (axis_ptr->limit.max - axis_ptr->limit.min));
-  } else {
-    axis_ptr->msg.data2 = map(
-      blob_ptr->centroid.y,
-      bounding_box_ptr->from.y,
-      bounding_box_ptr->to.y,
-      axis_ptr->limit.min,
-      axis_ptr->limit.max
-    );
   }
+  axis_ptr->msg.data2 = (uint8_t)roundf(
+    axis_ptr->limit.min + t * (float)(axis_ptr->limit.max - axis_ptr->limit.min)
+  );
   if (axis_ptr->msg.data2 != axis_ptr->last_val) {
     if ((frame_now - axis_ptr->midi_time_stamp) > MIDI_THROTTLE_MS) {
       llist_push_front(&llist_midi_out, &axis_ptr->msg);
@@ -174,13 +168,8 @@ void mapping_send_midi_msg_pos_y(rect_t* bounding_box_ptr, axis_t* axis_ptr, blo
 
 void mapping_send_midi_msg_press(axis_t* axis_ptr, blob_t* blob_ptr) {
   if (!axis_ptr->enabled) return;
-  axis_ptr->msg.data2 = map(
-    blob_ptr->centroid.z,
-    Z_MIN,
-    Z_MAX,
-    axis_ptr->limit.min,
-    axis_ptr->limit.max
-  );
+  float t = constrain((blob_ptr->centroid.z - Z_MIN) / (float)(Z_MAX - Z_MIN), 0.0f, 1.0f);
+  axis_ptr->msg.data2 = (uint8_t)roundf(axis_ptr->limit.min + t * (float)(axis_ptr->limit.max - axis_ptr->limit.min));
   if (axis_ptr->msg.data2 != axis_ptr->last_val) {
     if ((frame_now - axis_ptr->midi_time_stamp) > MIDI_THROTTLE_MS) {
       llist_push_front(&llist_midi_out, &axis_ptr->msg);
@@ -193,13 +182,22 @@ void mapping_send_midi_msg_press(axis_t* axis_ptr, blob_t* blob_ptr) {
 void mapping_send_midi_msg_size(axis_t* axis_ptr, blob_t* blob_ptr) {
   if (!axis_ptr->enabled) return;
   uint16_t raw_size = (uint16_t)blob_ptr->box.w * blob_ptr->box.h;
-  axis_ptr->msg.data2 = (uint8_t)map(
-    raw_size,
-    0,
-    NEW_FRAME,
-    axis_ptr->limit.min,
-    axis_ptr->limit.max
+  axis_ptr->msg.data2 = (uint8_t)constrain(
+    map(raw_size, 0, BLOB_MAX_PIX, axis_ptr->limit.min, axis_ptr->limit.max),
+    axis_ptr->limit.min, axis_ptr->limit.max
   );
+  if (axis_ptr->msg.data2 != axis_ptr->last_val) {
+    if ((frame_now - axis_ptr->midi_time_stamp) > MIDI_THROTTLE_MS) {
+      llist_push_front(&llist_midi_out, &axis_ptr->msg);
+      axis_ptr->last_val = axis_ptr->msg.data2;
+      axis_ptr->midi_time_stamp = frame_now;
+    }
+  }
+};
+
+void mapping_send_midi_msg_move(axis_t* axis_ptr, blob_t* blob_ptr) {
+  if (!axis_ptr->enabled) return;
+  axis_ptr->msg.data2 = (uint8_t)constrain((int)(blob_ptr->velocity.xy * 127.0f / VELOCITY_XY_MAX), 0, 127);
   if (axis_ptr->msg.data2 != axis_ptr->last_val) {
     if ((frame_now - axis_ptr->midi_time_stamp) > MIDI_THROTTLE_MS) {
       llist_push_front(&llist_midi_out, &axis_ptr->msg);

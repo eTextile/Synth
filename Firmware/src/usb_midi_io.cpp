@@ -118,6 +118,7 @@ void usb_midi_transmit_blobs(void) {
     blob_msg[B_DEPTH]       = blob_ptr->centroid.z;
     blob_msg[B_VELOCITY_XY] = (uint8_t)constrain((int)(blob_ptr->velocity.xy * 127.0f / VELOCITY_XY_MAX), 0, 127);
     blob_msg[B_ATTACK_Z]    = (uint8_t)constrain((int)(blob_ptr->velocity.attack_z * 127.0f / VELOCITY_ATTACK_Z_MAX), 0, 127);
+    blob_msg[B_TOUCH_SLOT]  = blob_ptr->action.touch_slot;
     usbMIDI.sendSysEx(B_COUNT, blob_msg, false);
     any_sent = true;
   }

@@ -14,7 +14,6 @@ struct slider_s {
   dir_t dir;
   uint8_t touchs;
   touch_linear_t touch[MAX_SLIDER_TOUCHS];
-  MidiType press;
   move_t move;
   populate_t populate;
   uint8_t steps;

@@ -50,6 +50,7 @@ bool mapping_switch_assign_blob(void* mapping_ptr, blob_t* blob_ptr) {
   if (switch_ptr->touch_index < switch_ptr->params.touchs) {
     blob_ptr->action.mapping_ptr = switch_ptr;
     blob_ptr->action.touch_ptr = &switch_ptr->params.touch[switch_ptr->touch_index];
+    blob_ptr->action.touch_slot = switch_ptr->touch_index;
     switch_ptr->touch_index++;
     switch_ptr->active_blob_count++;
     return true;
@@ -62,6 +63,7 @@ void mapping_switch_dispose_blob(void* mapping_ptr, blob_t* blob_ptr) {
 
   blob_ptr->action.mapping_ptr = NULL;
   blob_ptr->action.touch_ptr = NULL;
+  blob_ptr->action.touch_slot = TOUCH_SLOT_NONE;
   switch_ptr->active_blob_count--;
   if (switch_ptr->active_blob_count == 0) {
     switch_ptr->touch_index = 0;
@@ -72,20 +74,22 @@ void mapping_switch_start(blob_t* blob_ptr) {
   mapp_switch_t* switch_ptr = (mapp_switch_t*)blob_ptr->action.mapping_ptr;
   touch_press_t* touch_ptr = (touch_press_t*)blob_ptr->action.touch_ptr;
 
-  if (switch_ptr->params.press == Clock) {
+  if (!touch_ptr->press.enabled) return;
+  if (touch_ptr->press.msg.type == Clock) {
     tap_tempo_hit();
     return;
   }
 
-  switch (switch_ptr->params.press) {
+  switch (touch_ptr->press.msg.type) {
     case NoteOn:
       mapping_send_midi_note_on(&touch_ptr->press, blob_ptr);
       break;
     case MIDI_TYPE_CHORD: {
+      if (!touch_ptr->press.enabled) break;
       uint8_t ti = (uint8_t)(touch_ptr - &switch_ptr->params.touch[0]);
       midi_send_chord_on(switch_ptr->chord_notes[ti], &switch_ptr->params.chord[ti],
                          switch_ptr->params.chan_out,
-                         (uint8_t)map(blob_ptr->centroid.z, Z_MIN, Z_MAX, 1, 127));
+                         (uint8_t)constrain((int)roundf(1.0f + constrain((blob_ptr->centroid.z - Z_MIN) / (float)(Z_MAX - Z_MIN), 0.0f, 1.0f) * 126.0f), 1, 127));
       break;
     }
     default:
@@ -95,23 +99,26 @@ void mapping_switch_start(blob_t* blob_ptr) {
 };
 
 void mapping_switch_continue(blob_t* blob_ptr) {
-  mapp_switch_t* switch_ptr = (mapp_switch_t*)blob_ptr->action.mapping_ptr;
   touch_press_t* touch_ptr = (touch_press_t*)blob_ptr->action.touch_ptr;
 
-  if (switch_ptr->params.press != NoteOn) {
+  const MidiType _pt = touch_ptr->press.msg.type;
+  if (_pt == ControlChange || _pt == AfterTouchPoly) {
     mapping_send_midi_msg_press(&touch_ptr->press, blob_ptr);
   }
+  mapping_send_midi_msg_move(&touch_ptr->move, blob_ptr);
 };
 
 void mapping_switch_stop(blob_t* blob_ptr) {
   mapp_switch_t* switch_ptr = (mapp_switch_t*)blob_ptr->action.mapping_ptr;
   touch_press_t* touch_ptr = (touch_press_t*)blob_ptr->action.touch_ptr;
 
-  switch (switch_ptr->params.press) {
+  if (!touch_ptr->press.enabled) return;
+  switch (touch_ptr->press.msg.type) {
     case NoteOn:
       mapping_send_midi_note_off(&touch_ptr->press);
       break;
     case MIDI_TYPE_CHORD: {
+      if (!touch_ptr->press.enabled) break;
       uint8_t ti = (uint8_t)(touch_ptr - &switch_ptr->params.touch[0]);
       midi_send_chord_off(switch_ptr->chord_notes[ti], switch_ptr->params.chord[ti].type);
       break;
@@ -168,7 +175,6 @@ void mapping_switch_create(const JsonObject &config) {
   switch_ptr->params.rect.from.y = config["from"][1].as<float>();
   switch_ptr->params.rect.to.x = config["to"][0].as<float>();
   switch_ptr->params.rect.to.y = config["to"][1].as<float>();
-  switch_ptr->params.press = (MidiType)config["press"].as<uint8_t>();
   switch_ptr->params.chan_in  = config["chan"]["in"].as<uint8_t>();
   switch_ptr->params.chan_out = config["chan"]["out"].as<uint8_t>();
 
@@ -176,37 +182,42 @@ void mapping_switch_create(const JsonObject &config) {
 
     for (uint8_t i = 0; i < switch_ptr->params.touchs; i++) {
       midi_status_t status;
-      switch (switch_ptr->params.press) {
-        case NoteOn: {
-          uint8_t press_status = config["msg"][i]["press"]["midi"]["status"].as<uint8_t>();
+      if (config["msg"][i]["press"]["clock"].as<bool>()) {
+        switch_ptr->params.touch[i].press.msg.type = Clock;
+        switch_ptr->params.touch[i].press.enabled  = true;
+      } else if (config["msg"][i]["press"]["chord"].is<JsonVariant>()) {
+        switch_ptr->params.chord[i].type = config["msg"][i]["press"]["chord"].as<uint8_t>();
+        switch_ptr->params.chord[i].note = config["msg"][i]["press"]["note"].as<uint8_t>();
+        switch_ptr->params.touch[i].press.msg.type = MIDI_TYPE_CHORD;
+        switch_ptr->params.touch[i].press.enabled  = config["msg"][i]["press"]["enabled"] | true;
+      } else {
+        uint8_t press_status = config["msg"][i]["press"]["midi"]["status"].as<uint8_t>();
+        if (press_status != 0) {
           midi_msg_status_unpack(press_status, &status);
-          switch_ptr->params.touch[i].press.enabled     = (press_status != 0);
-          switch_ptr->params.touch[i].press.msg.type    = NoteOn;
-          switch_ptr->params.touch[i].press.msg.data1   = config["msg"][i]["press"]["midi"]["data1"].as<uint8_t>();
-          switch_ptr->params.touch[i].press.msg.data2   = 0;
-          switch_ptr->params.touch[i].press.msg.channel = status.channel;
-          break;
-        }
-        case ControlChange:
-        case AfterTouchPoly: {
-          uint8_t press_status = config["msg"][i]["press"]["midi"]["status"].as<uint8_t>();
-          midi_msg_status_unpack(press_status, &status);
-          switch_ptr->params.touch[i].press.enabled     = (press_status != 0);
+          switch_ptr->params.touch[i].press.enabled     = config["msg"][i]["press"]["enabled"] | true;
           switch_ptr->params.touch[i].press.msg.type    = status.type;
           switch_ptr->params.touch[i].press.msg.data1   = config["msg"][i]["press"]["midi"]["data1"].as<uint8_t>();
           switch_ptr->params.touch[i].press.msg.data2   = 0;
           switch_ptr->params.touch[i].press.msg.channel = status.channel;
           switch_ptr->params.touch[i].press.limit.min   = config["msg"][i]["press"]["limit"]["min"].as<uint8_t>();
           switch_ptr->params.touch[i].press.limit.max   = config["msg"][i]["press"]["limit"]["max"].as<uint8_t>();
-          break;
+        } else {
+          switch_ptr->params.touch[i].press.enabled = false;
         }
-        case MIDI_TYPE_CHORD:
-          switch_ptr->params.chord[i].type = config["msg"][i]["press"]["chord"].as<uint8_t>();
-          switch_ptr->params.chord[i].note = config["msg"][i]["press"]["note"].as<uint8_t>();
-          break;
-        default:
-          // None (0xFF) — no press output
-          break;
+      }
+
+      if (config["msg"][i]["move"].is<JsonObject>()) {
+        uint8_t move_status = config["msg"][i]["move"]["midi"]["status"].as<uint8_t>();
+        midi_msg_status_unpack(move_status, &status);
+        switch_ptr->params.touch[i].move.enabled     = (move_status != 0) && (config["msg"][i]["move"]["enabled"] | true);
+        switch_ptr->params.touch[i].move.msg.type    = ControlChange;
+        switch_ptr->params.touch[i].move.msg.data1   = config["msg"][i]["move"]["midi"]["data1"].as<uint8_t>();
+        switch_ptr->params.touch[i].move.msg.data2   = 0;
+        switch_ptr->params.touch[i].move.msg.channel = status.channel;
+        switch_ptr->params.touch[i].move.limit.min   = config["msg"][i]["move"]["limit"]["min"].as<uint8_t>();
+        switch_ptr->params.touch[i].move.limit.max   = config["msg"][i]["move"]["limit"]["max"].as<uint8_t>();
+      } else {
+        switch_ptr->params.touch[i].move.enabled = false;
       }
     }
     llist_push_back(&llist_mappings, switch_ptr);

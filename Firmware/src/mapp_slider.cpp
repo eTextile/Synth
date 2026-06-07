@@ -57,6 +57,7 @@ bool mapping_slider_assign_blob(void* mapping_ptr, blob_t* blob_ptr) {
     if (!(slider_ptr->slot_mask & (1 << i))) {
       blob_ptr->action.mapping_ptr = slider_ptr;
       blob_ptr->action.touch_ptr = &slider_ptr->params.touch[i];
+      blob_ptr->action.touch_slot = i;
       slider_ptr->slot_mask |= (1 << i);
       slider_ptr->active_blob_count++;
       return true;
@@ -71,6 +72,7 @@ void mapping_slider_dispose_blob(void* mapping_ptr, blob_t* blob_ptr) {
   uint8_t slot = (uint8_t)((touch_linear_t*)blob_ptr->action.touch_ptr - slider_ptr->params.touch);
   blob_ptr->action.mapping_ptr = NULL;
   blob_ptr->action.touch_ptr = NULL;
+  blob_ptr->action.touch_slot = TOUCH_SLOT_NONE;
   slider_ptr->slot_mask &= ~(1 << slot);
   slider_ptr->active_blob_count--;
 };
@@ -99,15 +101,16 @@ void mapping_slider_start(blob_t* blob_ptr) {
     touch_ptr->press.msg.data1 = slider_ptr->params.step_note[step_idx];
   }
 
-  if (slider_ptr->params.press == NoteOn) {
-    if (slider_ptr->params.move == MOVE_ROL) {
-      touch_ptr->press.msg.type = NoteOn;
-      blob_ptr->action.note_on_xy_pending = true;
+  if (touch_ptr->press.enabled) {
+    if (touch_ptr->press.msg.type == NoteOn) {
+      if (slider_ptr->params.move == MOVE_ROL) {
+        blob_ptr->action.note_on_xy_pending = true;
+      } else {
+        mapping_send_midi_note_on(&touch_ptr->press, blob_ptr);
+      }
     } else {
-      mapping_send_midi_note_on(&touch_ptr->press, blob_ptr);
+      mapping_send_midi_msg_press(&touch_ptr->press, blob_ptr);
     }
-  } else {
-    mapping_send_midi_msg_press(&touch_ptr->press, blob_ptr);
   }
 };
 
@@ -157,10 +160,12 @@ void mapping_slider_continue(blob_t* blob_ptr) {
       rect_inv.to.y   = slider_ptr->params.rect.from.y;
       mapping_send_midi_msg_pos_y(&rect_inv, &touch_ptr->pos, blob_ptr, slider_ptr->params.move);
     }
-    if (slider_ptr->params.press != NoteOn) {
+    const MidiType _pt = touch_ptr->press.msg.type;
+    if (_pt == ControlChange || _pt == AfterTouchPoly) {
       mapping_send_midi_msg_press(&touch_ptr->press, blob_ptr);
     }
   }
+  mapping_send_midi_msg_move(&touch_ptr->move, blob_ptr);
 };
 
 // Called when the blob leaves the slider or is lost (status == RELEASED).
@@ -168,9 +173,8 @@ void mapping_slider_continue(blob_t* blob_ptr) {
 // the deferred flag; otherwise sends NoteOff for the currently playing note.
 // Other press types tail off naturally.
 void mapping_slider_stop(blob_t* blob_ptr) {
-  mapp_slider_t* slider_ptr = (mapp_slider_t*)blob_ptr->action.mapping_ptr;
   touch_linear_t* touch_ptr = (touch_linear_t*)blob_ptr->action.touch_ptr;
-  if (slider_ptr->params.press == NoteOn) {
+  if (touch_ptr->press.enabled && touch_ptr->press.msg.type == NoteOn) {
     if (blob_ptr->action.note_on_z_pending || blob_ptr->action.note_on_xy_pending) {
       blob_ptr->action.note_on_z_pending = false;
       blob_ptr->action.note_on_xy_pending = false;
@@ -310,7 +314,6 @@ void mapping_slider_create(const JsonObject &config) {
   slider_ptr->params.rect.from.y = config["from"][1].as<float>();
   slider_ptr->params.rect.to.x = config["to"][0].as<float>();
   slider_ptr->params.rect.to.y = config["to"][1].as<float>();
-  slider_ptr->params.press = config["press"].as<MidiType>();
   slider_ptr->params.move = config["move"].as<move_t>();
   slider_ptr->params.populate = config["populate"].as<populate_t>();
   slider_ptr->params.steps = config["steps"].as<uint8_t>();
@@ -327,7 +330,7 @@ void mapping_slider_create(const JsonObject &config) {
 
       uint8_t pos_status = config["msg"][i]["pos"]["midi"]["status"].as<uint8_t>();
       midi_msg_status_unpack(pos_status, &status);
-      slider_ptr->params.touch[i].pos.enabled     = (pos_status != 0);
+      slider_ptr->params.touch[i].pos.enabled     = (pos_status != 0) && (config["msg"][i]["pos"]["enabled"] | true);
       slider_ptr->params.touch[i].pos.msg.type    = status.type;
       slider_ptr->params.touch[i].pos.msg.data1   = config["msg"][i]["pos"]["midi"]["data1"].as<uint8_t>();
       slider_ptr->params.touch[i].pos.msg.data2   = 0;
@@ -335,36 +338,34 @@ void mapping_slider_create(const JsonObject &config) {
       slider_ptr->params.touch[i].pos.limit.min   = config["msg"][i]["pos"]["limit"]["min"].as<uint8_t>();
       slider_ptr->params.touch[i].pos.limit.max   = config["msg"][i]["pos"]["limit"]["max"].as<uint8_t>();
 
-      switch (slider_ptr->params.press) {
-
-        case NoteOn: {
-          uint8_t press_status = config["msg"][i]["press"]["midi"]["status"].as<uint8_t>();
+      {
+        uint8_t press_status = config["msg"][i]["press"]["midi"]["status"].as<uint8_t>();
+        if (press_status != 0) {
           midi_msg_status_unpack(press_status, &status);
-          slider_ptr->params.touch[i].press.enabled     = (press_status != 0);
-          slider_ptr->params.touch[i].press.msg.type    = NoteOn;
-          slider_ptr->params.touch[i].press.msg.data1   = config["msg"][i]["press"]["midi"]["data1"].as<uint8_t>();
-          slider_ptr->params.touch[i].press.msg.data2   = 0;
-          slider_ptr->params.touch[i].press.msg.channel = status.channel;
-          slider_ptr->params.touch[i].press.limit.min   = config["msg"][i]["press"]["limit"]["min"].as<uint8_t>();
-          slider_ptr->params.touch[i].press.limit.max   = config["msg"][i]["press"]["limit"]["max"].as<uint8_t>();
-          break;
-        }
-        case ControlChange:
-        case AfterTouchPoly: {
-          uint8_t press_status = config["msg"][i]["press"]["midi"]["status"].as<uint8_t>();
-          midi_msg_status_unpack(press_status, &status);
-          slider_ptr->params.touch[i].press.enabled     = (press_status != 0);
+          slider_ptr->params.touch[i].press.enabled     = config["msg"][i]["press"]["enabled"] | true;
           slider_ptr->params.touch[i].press.msg.type    = status.type;
           slider_ptr->params.touch[i].press.msg.data1   = config["msg"][i]["press"]["midi"]["data1"].as<uint8_t>();
           slider_ptr->params.touch[i].press.msg.data2   = 0;
           slider_ptr->params.touch[i].press.msg.channel = status.channel;
           slider_ptr->params.touch[i].press.limit.min   = config["msg"][i]["press"]["limit"]["min"].as<uint8_t>();
           slider_ptr->params.touch[i].press.limit.max   = config["msg"][i]["press"]["limit"]["max"].as<uint8_t>();
-          break;
-        }
-        default:
+        } else {
           slider_ptr->params.touch[i].press.enabled = false;
-          break;
+        }
+      }
+
+      if (config["msg"][i]["move"].is<JsonObject>()) {
+        uint8_t vel_status = config["msg"][i]["move"]["midi"]["status"].as<uint8_t>();
+        midi_msg_status_unpack(vel_status, &status);
+        slider_ptr->params.touch[i].move.enabled     = (vel_status != 0) && (config["msg"][i]["move"]["enabled"] | true);
+        slider_ptr->params.touch[i].move.msg.type    = ControlChange;
+        slider_ptr->params.touch[i].move.msg.data1   = config["msg"][i]["move"]["midi"]["data1"].as<uint8_t>();
+        slider_ptr->params.touch[i].move.msg.data2   = 0;
+        slider_ptr->params.touch[i].move.msg.channel = status.channel;
+        slider_ptr->params.touch[i].move.limit.min   = config["msg"][i]["move"]["limit"]["min"].as<uint8_t>();
+        slider_ptr->params.touch[i].move.limit.max   = config["msg"][i]["move"]["limit"]["max"].as<uint8_t>();
+      } else {
+        slider_ptr->params.touch[i].move.enabled = false;
       }
 
     }

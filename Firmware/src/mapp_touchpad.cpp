@@ -16,6 +16,7 @@ struct mapp_touchpad_s {
   llist_t llist_active_midi_msg;
   uint8_t active_midi_msg_count;
   midi_msg_t chord_notes[MAX_TOUCHPAD_TOUCHS][MAX_CHORD_NOTES];
+  bool note_on_only[MAX_TOUCHPAD_TOUCHS]; // true → suppress NoteOff on release
 };
 
 static mapp_touchpad_t mapp_touchpads[MAX_TOUCHPADS];
@@ -48,6 +49,7 @@ bool mapping_touchpad_assign_blob(void* mapping_ptr, blob_t* blob_ptr) {
     if (!(touchpad_ptr->slot_mask & (1 << i))) {
       blob_ptr->action.mapping_ptr = touchpad_ptr;
       blob_ptr->action.touch_ptr = &touchpad_ptr->params.touch[i];
+      blob_ptr->action.touch_slot = i;
       touchpad_ptr->slot_mask |= (1 << i);
       touchpad_ptr->active_blob_count++;
       return true;
@@ -62,6 +64,7 @@ void mapping_touchpad_dispose_blob(void* mapping_ptr, blob_t* blob_ptr) {
   uint8_t slot = (uint8_t)((touch_planar_t*)blob_ptr->action.touch_ptr - touchpad_ptr->params.touch);
   blob_ptr->action.mapping_ptr = NULL;
   blob_ptr->action.touch_ptr = NULL;
+  blob_ptr->action.touch_slot = TOUCH_SLOT_NONE;
   touchpad_ptr->slot_mask &= ~(1 << slot);
   touchpad_ptr->active_blob_count--;
 };
@@ -70,15 +73,17 @@ void mapping_touchpad_start(blob_t* blob_ptr) {
   mapp_touchpad_t* touchpad_ptr = (mapp_touchpad_t*)blob_ptr->action.mapping_ptr;
   touch_planar_t* touch_ptr = (touch_planar_t*)blob_ptr->action.touch_ptr;
 
-  switch (touchpad_ptr->params.press) {
+  if (!touch_ptr->press.enabled) return;
+  switch (touch_ptr->press.msg.type) {
     case NoteOn:
       mapping_send_midi_note_on(&touch_ptr->press, blob_ptr);
       break;
     case MIDI_TYPE_CHORD: {
+      if (!touch_ptr->press.enabled) break;
       uint8_t ti = (uint8_t)(touch_ptr - &touchpad_ptr->params.touch[0]);
       midi_send_chord_on(touchpad_ptr->chord_notes[ti], &touchpad_ptr->params.chord[ti],
                          touchpad_ptr->params.chan_out,
-                         (uint8_t)map(blob_ptr->centroid.z, Z_MIN, Z_MAX, 1, 127));
+                         (uint8_t)constrain((int)roundf(1.0f + constrain((blob_ptr->centroid.z - Z_MIN) / (float)(Z_MAX - Z_MIN), 0.0f, 1.0f) * 126.0f), 1, 127));
       break;
     }
     default:
@@ -94,8 +99,10 @@ void mapping_touchpad_continue(blob_t* blob_ptr) {
   mapping_send_midi_msg_pos_x(&touchpad_ptr->params.rect, &touch_ptr->pos_x, blob_ptr);
   mapping_send_midi_msg_pos_y(&touchpad_ptr->params.rect, &touch_ptr->pos_y, blob_ptr);
   mapping_send_midi_msg_size(&touch_ptr->size, blob_ptr);
+  mapping_send_midi_msg_move(&touch_ptr->move, blob_ptr);
 
-  if (touchpad_ptr->params.press != NoteOn) {
+  const MidiType _pt = touch_ptr->press.msg.type;
+  if (_pt == ControlChange || _pt == AfterTouchPoly) {
     mapping_send_midi_msg_press(&touch_ptr->press, blob_ptr);
   }
 };
@@ -104,11 +111,14 @@ void mapping_touchpad_stop(blob_t* blob_ptr) {
   mapp_touchpad_t* touchpad_ptr = (mapp_touchpad_t*)blob_ptr->action.mapping_ptr;
   touch_planar_t* touch_ptr = (touch_planar_t*)blob_ptr->action.touch_ptr;
 
-  switch (touchpad_ptr->params.press) {
+  if (!touch_ptr->press.enabled) return;
+  uint8_t slot = (uint8_t)(touch_ptr - &touchpad_ptr->params.touch[0]);
+  switch (touch_ptr->press.msg.type) {
     case NoteOn:
-      mapping_send_midi_note_off(&touch_ptr->press);
+      if (!touchpad_ptr->note_on_only[slot]) mapping_send_midi_note_off(&touch_ptr->press);
       break;
     case MIDI_TYPE_CHORD: {
+      if (!touch_ptr->press.enabled) break;
       uint8_t ti = (uint8_t)(touch_ptr - &touchpad_ptr->params.touch[0]);
       midi_send_chord_off(touchpad_ptr->chord_notes[ti], touchpad_ptr->params.chord[ti].type);
       break;
@@ -167,18 +177,17 @@ void mapping_touchpad_create(const JsonObject &config) {
   touchpad_ptr->params.rect.from.y = config["from"][1].as<float>();
   touchpad_ptr->params.rect.to.x = config["to"][0].as<float>();
   touchpad_ptr->params.rect.to.y = config["to"][1].as<float>();
-  touchpad_ptr->params.press = (MidiType)config["press"].as<uint8_t>();
   touchpad_ptr->params.chan_in  = config["chan"]["in"].as<uint8_t>();
   touchpad_ptr->params.chan_out = config["chan"]["out"].as<uint8_t>();
 
   if (touchpad_ptr->params.touchs <= MAX_TOUCHPAD_TOUCHS) {
-    
+
     midi_status_t status;
     for (uint8_t i = 0; i<touchpad_ptr->params.touchs; i++) {
 
       uint8_t pos_x_status = config["msg"][i]["pos_x"]["midi"]["status"].as<uint8_t>();
       midi_msg_status_unpack(pos_x_status, &status);
-      touchpad_ptr->params.touch[i].pos_x.enabled   = (pos_x_status != 0);
+      touchpad_ptr->params.touch[i].pos_x.enabled   = (pos_x_status != 0) && (config["msg"][i]["pos_x"]["enabled"] | true);
       touchpad_ptr->params.touch[i].pos_x.msg.type    = ControlChange;
       touchpad_ptr->params.touch[i].pos_x.msg.data1   = config["msg"][i]["pos_x"]["midi"]["data1"].as<uint8_t>();
       touchpad_ptr->params.touch[i].pos_x.msg.data2   = 0;
@@ -188,7 +197,7 @@ void mapping_touchpad_create(const JsonObject &config) {
 
       uint8_t pos_y_status = config["msg"][i]["pos_y"]["midi"]["status"].as<uint8_t>();
       midi_msg_status_unpack(pos_y_status, &status);
-      touchpad_ptr->params.touch[i].pos_y.enabled   = (pos_y_status != 0);
+      touchpad_ptr->params.touch[i].pos_y.enabled   = (pos_y_status != 0) && (config["msg"][i]["pos_y"]["enabled"] | true);
       touchpad_ptr->params.touch[i].pos_y.msg.type    = ControlChange;
       touchpad_ptr->params.touch[i].pos_y.msg.data1   = config["msg"][i]["pos_y"]["midi"]["data1"].as<uint8_t>();
       touchpad_ptr->params.touch[i].pos_y.msg.data2   = 0;
@@ -199,7 +208,7 @@ void mapping_touchpad_create(const JsonObject &config) {
       if (config["msg"][i]["size"].is<JsonObject>()) {
         uint8_t size_status = config["msg"][i]["size"]["midi"]["status"].as<uint8_t>();
         midi_msg_status_unpack(size_status, &status);
-        touchpad_ptr->params.touch[i].size.enabled   = (size_status != 0);
+        touchpad_ptr->params.touch[i].size.enabled   = (size_status != 0) && (config["msg"][i]["size"]["enabled"] | true);
         touchpad_ptr->params.touch[i].size.msg.type    = ControlChange;
         touchpad_ptr->params.touch[i].size.msg.data1   = config["msg"][i]["size"]["midi"]["data1"].as<uint8_t>();
         touchpad_ptr->params.touch[i].size.msg.data2   = 0;
@@ -210,37 +219,40 @@ void mapping_touchpad_create(const JsonObject &config) {
         touchpad_ptr->params.touch[i].size.enabled = false;
       }
 
-      switch (touchpad_ptr->params.press) {
-        case NoteOn: {
-          uint8_t press_status = config["msg"][i]["press"]["midi"]["status"].as<uint8_t>();
+      if (config["msg"][i]["move"].is<JsonObject>()) {
+        uint8_t vel_status = config["msg"][i]["move"]["midi"]["status"].as<uint8_t>();
+        midi_msg_status_unpack(vel_status, &status);
+        touchpad_ptr->params.touch[i].move.enabled     = (vel_status != 0) && (config["msg"][i]["move"]["enabled"] | true);
+        touchpad_ptr->params.touch[i].move.msg.type    = ControlChange;
+        touchpad_ptr->params.touch[i].move.msg.data1   = config["msg"][i]["move"]["midi"]["data1"].as<uint8_t>();
+        touchpad_ptr->params.touch[i].move.msg.data2   = 0;
+        touchpad_ptr->params.touch[i].move.msg.channel = status.channel;
+        touchpad_ptr->params.touch[i].move.limit.min   = config["msg"][i]["move"]["limit"]["min"].as<uint8_t>();
+        touchpad_ptr->params.touch[i].move.limit.max   = config["msg"][i]["move"]["limit"]["max"].as<uint8_t>();
+      } else {
+        touchpad_ptr->params.touch[i].move.enabled = false;
+      }
+
+      if (config["msg"][i]["press"]["chord"].is<JsonVariant>()) {
+        touchpad_ptr->params.touch[i].press.enabled  = config["msg"][i]["press"]["enabled"] | true;
+        touchpad_ptr->params.touch[i].press.msg.type = MIDI_TYPE_CHORD;
+        touchpad_ptr->params.chord[i].type = config["msg"][i]["press"]["chord"].as<uint8_t>();
+        touchpad_ptr->params.chord[i].note = config["msg"][i]["press"]["note"].as<uint8_t>();
+      } else {
+        uint8_t press_status = config["msg"][i]["press"]["midi"]["status"].as<uint8_t>();
+        if (press_status != 0) {
           midi_msg_status_unpack(press_status, &status);
-          touchpad_ptr->params.touch[i].press.enabled     = (press_status != 0);
-          touchpad_ptr->params.touch[i].press.msg.type    = NoteOn;
-          touchpad_ptr->params.touch[i].press.msg.data1   = config["msg"][i]["press"]["midi"]["data1"].as<uint8_t>();
-          touchpad_ptr->params.touch[i].press.msg.data2   = 0;
-          touchpad_ptr->params.touch[i].press.msg.channel = status.channel;
-          break;
-        }
-        case ControlChange:
-        case AfterTouchPoly: {
-          uint8_t press_status = config["msg"][i]["press"]["midi"]["status"].as<uint8_t>();
-          midi_msg_status_unpack(press_status, &status);
-          touchpad_ptr->params.touch[i].press.enabled     = (press_status != 0);
+          touchpad_ptr->params.touch[i].press.enabled     = config["msg"][i]["press"]["enabled"] | true;
           touchpad_ptr->params.touch[i].press.msg.type    = status.type;
+          touchpad_ptr->note_on_only[i]                   = config["msg"][i]["press"]["note_on_only"] | false;
           touchpad_ptr->params.touch[i].press.msg.data1   = config["msg"][i]["press"]["midi"]["data1"].as<uint8_t>();
           touchpad_ptr->params.touch[i].press.msg.data2   = 0;
           touchpad_ptr->params.touch[i].press.msg.channel = status.channel;
           touchpad_ptr->params.touch[i].press.limit.min   = config["msg"][i]["press"]["limit"]["min"].as<uint8_t>();
           touchpad_ptr->params.touch[i].press.limit.max   = config["msg"][i]["press"]["limit"]["max"].as<uint8_t>();
-          break;
-        }
-        case MIDI_TYPE_CHORD:
-          touchpad_ptr->params.chord[i].type = config["msg"][i]["press"]["chord"].as<uint8_t>();
-          touchpad_ptr->params.chord[i].note = config["msg"][i]["press"]["note"].as<uint8_t>();
-          break;
-        default:
+        } else {
           touchpad_ptr->params.touch[i].press.enabled = false;
-          break;
+        }
       }
     }
     llist_push_back(&llist_mappings, touchpad_ptr);

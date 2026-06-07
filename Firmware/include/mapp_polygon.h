@@ -7,6 +7,7 @@ typedef struct touch_polygon_s touch_polygon_t;
 struct touch_polygon_s {
   axis_t press;
   axis_t source[MAX_POLYGON_POINTS];
+  axis_t move;
 };
 
 typedef struct polygon_s polygon_t;
@@ -19,7 +20,6 @@ struct polygon_s {
   bool is_inside;
   uint8_t touchs;
   touch_polygon_t touch[MAX_POLYGON_TOUCHS];
-  MidiType press;
   uint8_t chan_in;
   uint8_t chan_out;
 };

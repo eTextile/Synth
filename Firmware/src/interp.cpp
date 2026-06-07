@@ -115,7 +115,7 @@ void matrix_interp(void) {
 
 #if defined(USB_MIDI_SERIAL) && defined(DEBUG_INTERP)
   for (uint8_t row_pos = 0; row_pos < NEW_ROWS; row_pos++) {
-    uint8_t* rowPos_ptr = &interp_frame_array[0] + row_pos * NEW_ROWS;
+    uint8_t* rowPos_ptr = &interp_frame_array[0] + row_pos * NEW_COLS;
     for (int col_pos = 0; col_pos < NEW_COLS; col_pos++) {
       Serial.printf("%d-", IMAGE_GET_PIXEL_FAST(rowPos_ptr, col_pos));
     };

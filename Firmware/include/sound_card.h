@@ -9,6 +9,8 @@
 
 #include "config.h"
 
+#ifdef SOUND_CARD
+
 #include <Audio.h>                    // https://github.com/PaulStoffregen/Audio
 
 extern AudioControlSGTL5000  sgtl5000;
@@ -16,4 +18,5 @@ extern AudioControlSGTL5000  sgtl5000;
 void sound_card_setup(void);
 void update_levels(void);
 
+#endif /*SOUND_CARD*/
 #endif /*__SOUND_CARD_H__*/
