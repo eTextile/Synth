@@ -131,7 +131,7 @@ typedef enum status_code_e {
   RELEASED
 } status_code_t;
 
-#define TOUCH_SLOT_NONE 0xFF  // touch_slot sentinel: blob not assigned to any mapping slot
+#define TOUCH_SLOT_NONE 0x7F  // touch_slot sentinel: blob not assigned (0x7F = max valid SysEx data byte)
 
 typedef struct blob_action_s blob_action_t;
 struct blob_action_s {
