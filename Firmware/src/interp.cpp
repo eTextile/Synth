@@ -23,9 +23,27 @@
 
 static_assert(SCALE_X == SCALE_Y, "Catmull-Rom impl requires SCALE_X == SCALE_Y");
 
+#define INTERP_THRESHOLD_OFFSET 1
+
 uint8_t interp_threshold = 5;
 uint8_t interp_frame_array[NEW_FRAME] = {0};
 image_t interp_frame;
+
+// One bit per source column: tracks which cells were written last frame.
+static uint16_t active_cells[RAW_ROWS] = {0};
+
+inline void clear_prev_active_cells(void) {
+  for (uint8_t row_pos = 0; row_pos < RAW_ROWS; row_pos++) {
+    uint16_t mask = active_cells[row_pos];
+    active_cells[row_pos] = 0;
+    while (mask) {
+      uint8_t col_pos = __builtin_ctz(mask);
+      mask &= mask - 1;
+      uint8_t* out = &interp_frame_array[row_pos * SCALE_Y * NEW_COLS + col_pos * SCALE_X];
+      for (uint8_t ky = 0; ky < SCALE_Y; ky++, out += NEW_COLS) memset(out, 0, SCALE_X);
+    }
+  }
+}
 
 // Catmull-Rom 1D weights for each of the SCALE_X sub-positions (t = k / SCALE_X).
 // catmull_w[k][d] is the weight of neighbor d in {0=i-1, 1=i, 2=i+1, 3=i+2}.
@@ -57,7 +75,7 @@ void interp_setup(void) {
 inline void update_interp_threshold(level_t* levels_ptr) {
   if (levels_ptr->leds.update) {
     levels_ptr->leds.update = false;
-    interp_threshold = constrain(levels_ptr->val - 4, 0, levels_ptr->max_val);
+    interp_threshold = constrain(levels_ptr->val - INTERP_THRESHOLD_OFFSET, 0, levels_ptr->max_val);
   }
 }
 
@@ -70,13 +88,14 @@ inline void update_interp_threshold(level_t* levels_ptr) {
 // Pre-computing row_sums[ky][dx] reduces multiplications from SCALE²×4²=256 to 2×SCALE×4²=128.
 void matrix_interp(void) {
   update_interp_threshold(&e256_ctr.levels[THRESHOLD]);
-  memset(&interp_frame_array[0], 0, SIZEOF_FRAME);
+  clear_prev_active_cells();
 
   for (uint8_t row_pos = 0; row_pos < RAW_ROWS; row_pos++) {
     uint8_t* raw_row_ptr = COMPUTE_IMAGE_ROW_PTR(&raw_frame, row_pos);
 
     for (uint8_t col_pos = 0; col_pos < RAW_COLS; col_pos++) {
       if (IMAGE_GET_PIXEL_FAST(raw_row_ptr, col_pos) <= interp_threshold) continue;
+      active_cells[row_pos] |= (1u << col_pos);
 
       // Cache the 4×4 raw neighborhood (edge-clamped).
       uint8_t nb[4][4];

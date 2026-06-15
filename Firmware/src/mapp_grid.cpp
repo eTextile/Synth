@@ -18,6 +18,7 @@ struct mapp_grid_s {
   llist_t llist_active_midi_msg;
   uint8_t active_midi_msg_count;
   midi_msg_t chord_notes[MAX_GRID_KEYS][MAX_CHORD_NOTES];
+  bool note_on_only[MAX_GRID_KEYS]; // true → suppress NoteOff on release (Trigger mode)
 };
 
 static mapp_grid_t mapp_grids[MAX_GRIDS];
@@ -130,7 +131,9 @@ void mapping_grid_continue(blob_t* blob_ptr) {
 
     if (grid_ptr->params.key[prev_id].press.enabled) {
       switch (grid_ptr->params.key[prev_id].press.msg.type) {
-        case NoteOn: mapping_send_midi_note_off(&grid_ptr->params.key[prev_id].press); break;
+        case NoteOn:
+          if (!grid_ptr->note_on_only[prev_id]) mapping_send_midi_note_off(&grid_ptr->params.key[prev_id].press);
+          break;
         case MIDI_TYPE_CHORD: midi_send_chord_off(grid_ptr->chord_notes[prev_id], grid_ptr->params.chord[prev_id].type); break;
         default: break;
       }
@@ -156,7 +159,9 @@ void mapping_grid_stop(blob_t* blob_ptr) {
   const uint8_t key_id = touch_ptr->press.last_val;
   if (grid_ptr->params.key[key_id].press.enabled) {
     switch (grid_ptr->params.key[key_id].press.msg.type) {
-      case NoteOn: mapping_send_midi_note_off(&grid_ptr->params.key[key_id].press); break;
+      case NoteOn:
+        if (!grid_ptr->note_on_only[key_id]) mapping_send_midi_note_off(&grid_ptr->params.key[key_id].press);
+        break;
       case MIDI_TYPE_CHORD: midi_send_chord_off(grid_ptr->chord_notes[key_id], grid_ptr->params.chord[key_id].type); break;
       default: break;
     }
@@ -243,6 +248,7 @@ void mapping_grid_create(const JsonObject &config) {
         grid_ptr->params.key[i].press.enabled  = config["msg"][i]["press"]["enabled"] | true;
         grid_ptr->params.chord[i].type         = config["msg"][i]["press"]["chord"].as<uint8_t>();
         grid_ptr->params.chord[i].note         = config["msg"][i]["press"]["note"].as<uint8_t>();
+        grid_ptr->note_on_only[i]              = false;
       } else {
         uint8_t press_status = config["msg"][i]["press"]["midi"]["status"].as<uint8_t>();
         midi_msg_status_unpack(press_status, &status);
@@ -253,6 +259,7 @@ void mapping_grid_create(const JsonObject &config) {
         grid_ptr->params.key[i].press.msg.channel = status.channel;
         grid_ptr->params.key[i].press.limit.min   = config["msg"][i]["press"]["limit"]["min"].as<uint8_t>();
         grid_ptr->params.key[i].press.limit.max   = config["msg"][i]["press"]["limit"]["max"].as<uint8_t>();
+        grid_ptr->note_on_only[i]                 = config["msg"][i]["press"]["note_on_only"] | false;
       }
     }
     llist_push_back(&llist_mappings, grid_ptr);
