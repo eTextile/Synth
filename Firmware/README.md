@@ -100,20 +100,29 @@ All mode switches are sent as a SysEx command `[F0 7D 01 <mode_value> F7]` and a
 
 ### Performance modes
 
+These are the two modes intended for actual playing. The full signal pipeline runs every frame: sensor scan → interpolation → blob tracking → mapping evaluation → MIDI output. No USB host or web app is required (though USB_INTERFACE_MODE uses USB as the MIDI output).
+
+| Mode | Value | USB recv | HW recv | Matrix | Mapping | USB transmit | HW transmit |
+|------|:-----:|:--------:|:-------:|:------:|:-------:|:------------:|:-----------:|
+| `STANDALONE_MODE` | 15 | — | ✓ | scan + interp + blobs | ✓ | — | ✓ |
+| `USB_INTERFACE_MODE` | 16 | ✓ | ✓ | scan + interp + blobs | ✓ | mappings | — |
+
+- **`STANDALONE_MODE`** — No USB host required. The device runs on power only (5 V). TUI mappings are evaluated and MIDI messages are sent exclusively to the hardware MIDI output (TRS-A mini-jack). Hardware MIDI input is active for live `populate` (note layout reprogramming). Requires a config previously saved to flash.
+
+- **`USB_INTERFACE_MODE`** — Full performance mode with USB as the MIDI output. TUI mappings are evaluated and MIDI messages are sent to the USB host (e.g. SuperCollider, Max/MSP, DAW). Hardware MIDI input remains active for `populate` or external clock. Intended for computer-based synthesis while keeping the hardware MIDI port free for input.
+
+### Connected / utility modes
+
+These modes require an active USB host connection. They are used alongside the web app or a DAW.
+
 | Mode | Value | USB recv | HW recv | Matrix | Mapping | USB transmit | HW transmit |
 |------|:-----:|:--------:|:-------:|:------:|:-------:|:------------:|:-----------:|
 | `THROUGH_MODE` | 7 | ✓ | — | — | — | — | ✓ |
 | `PLAY_MODE` | 8 | ✓ | ✓ | scan + interp + blobs | ✓ | mappings + blobs | ✓ |
-| `STANDALONE_MODE` | 15 | — | ✓ | scan + interp + blobs | ✓ | — | ✓ |
-| `USB_INTERFACE_MODE` | 16 | ✓ | ✓ | scan + interp + blobs | ✓ | mappings | — |
 
-- **`THROUGH_MODE`** — The e256 acts as a MIDI USB→DIN bridge. Notes and CCs received from the USB host are forwarded as-is to the hardware MIDI output (TRS-A). No sensor scanning. Useful to route a DAW or sequencer through the device to a hardware synthesizer.
+- **`THROUGH_MODE`** — The e256 acts as a USB→DIN MIDI bridge. Notes and CCs received from the USB host are forwarded as-is to the hardware MIDI output (TRS-A). No sensor scanning or mapping. Useful to route a DAW or sequencer through the device to a hardware synthesizer.
 
-- **`PLAY_MODE`** — Full performance mode. The sensor is scanned every frame, blobs are tracked, and all active TUI mappings are evaluated. Mapping MIDI messages are sent to **both** the USB host and the hardware MIDI output. Blob SysEx is also sent to the USB host (for the web app overlay). Hardware MIDI input is active for live `populate` (note layout reprogramming).
-
-- **`STANDALONE_MODE`** — No USB host required. The device runs on power only. TUI mappings are evaluated and MIDI messages are sent exclusively to the hardware MIDI output (TRS-A). Hardware MIDI input is active for `populate`. Requires a config previously saved to flash.
-
-- **`USB_INTERFACE_MODE`** — Like `PLAY_MODE` but mapping MIDI output goes to the **USB host only** (no hardware MIDI output). Hardware MIDI input remains active (for `populate` or external clock). Intended for use with a computer-based synthesizer (e.g. SuperCollider, Max/MSP) while keeping the hardware MIDI port free for input.
+- **`PLAY_MODE`** — Hybrid mode: the sensor runs the full pipeline and mapping MIDI messages are sent to **both** USB and hardware MIDI output simultaneously. Blob SysEx is also sent to the USB host so the web app can display the touch overlay in real time. Hardware MIDI input is active for `populate`.
 
 ### Config protocol modes (internal)
 
