@@ -153,7 +153,12 @@ All TUIs are fully parametric and configured via the web app config file.
 | `polygon()` | 8 | 3 | |
 | `grid()` | 1 | 3 | Note layout reprogrammable live via hardware MIDI input |
 
-> **grid()** is inspired by the [Omnichord](https://en.wikipedia.org/wiki/Omnichord). It maps a rectangular zone of the textile surface to a grid of MIDI notes. The layout can be updated live from a MIDI keyboard connected to the hardware MIDI input.
+> **grid()** is inspired by the [Omnichord](https://en.wikipedia.org/wiki/Omnichord). It maps a rectangular zone of the textile surface to a `cols × rows` grid of keys (up to 256). Each key can be configured independently in one of three modes:
+> - **Note gate** — touching a key sends a NoteOn; releasing sends a NoteOff.
+> - **Note trigger** (`note_on_only: true`) — NoteOn only; no NoteOff is sent on release.
+> - **Chord** — touching a key sends a full chord (all notes on simultaneously); pressure controls velocity.
+>
+> A 25 % hysteresis band prevents note oscillation when a finger rests near a cell boundary. The note or chord assigned to each key can be reprogrammed live from a MIDI keyboard connected to the hardware MIDI input.
 
 > **slider()** — when `steps > 0`, the slider is divided into `steps` equal zones along its axis. Entering a zone sends a NoteOn (this mode requires `press = NoteOn`). The note for each zone is set at configuration time or updated live from a MIDI keyboard via `populate` (see below).
 
