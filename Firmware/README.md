@@ -38,7 +38,7 @@
 ### With power plug only (no USB cable)
 
 1. The firmware boots in `PENDING_MODE`.
-2. After `PENDING_MODE_TIMEOUT` (4 s), it switches to `PLAY_MODE`.
+2. After `PENDING_MODE_TIMEOUT` (4 s), it switches to `STANDALONE_MODE`.
 3. The device loads `flash_config()`:
     - **`FLASH_CONFIG_LOAD_DONE`**: the **BUILTIN_LEDs** blink `STANDALONE_MODE`.
     - **`FLASH_CONFIG_LOAD_FAILED`**: the **BUILTIN_LEDs** blink an **ERROR_CODE**.
