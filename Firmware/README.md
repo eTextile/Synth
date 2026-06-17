@@ -113,7 +113,7 @@ These are the two modes intended for actual playing. The full signal pipeline ru
 
 ### Connected / utility modes
 
-These modes require an active USB host connection. They are used alongside the web app or a DAW.
+These modes require an active USB host connection. They are used alongside the web app.
 
 | Mode | Value | USB recv | HW recv | Matrix | Mapping | USB transmit | HW transmit |
 |------|:-----:|:--------:|:-------:|:------:|:-------:|:------------:|:-----------:|
