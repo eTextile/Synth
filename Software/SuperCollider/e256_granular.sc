@@ -1,5 +1,5 @@
 // ════════════════════════════════════════════════════════════════════════════
-// eTextile-Synthesizer — Live Granular Synthesis
+// eTextile-Synthesizer — Live Granular Synthesis (Bela)
 // Audio input granularisé, tous paramètres adressés via MIDI CC
 //
 // CC MAP
@@ -18,7 +18,15 @@
 //   CC 74  filter cutoff         200 – 8000 Hz       (exp)
 // ════════════════════════════════════════════════════════════════════════════
 
-(
+s = Server.default;
+
+s.options.numAnalogInChannels  = 8;
+s.options.numAnalogOutChannels = 8;
+s.options.numDigitalChannels   = 16;
+s.options.blockSize            = 16;
+s.options.numInputBusChannels  = 2;
+s.options.numOutputBusChannels = 2;
+
 s.waitForBoot {
 
   var bufDur = 8.0;  // secondes de buffer live
@@ -103,9 +111,8 @@ s.waitForBoot {
     );
 
     var wet = RLPF.ar(grains + (fbIn * feedback), cutoff, reson);
-    LocalOut.ar(wet);
-
     var dry = Pan2.ar(SoundIn.ar(0));
+    LocalOut.ar(wet);
     Out.ar(0, XFade2.ar(dry, wet * amp, mix * 2 - 1));
   }).add;
 
@@ -137,9 +144,15 @@ s.waitForBoot {
 
   // ── MIDI ─────────────────────────────────────────────────────────────────
   MIDIClient.init;
-  MIDIIn.connect(0, MIDIClient.sources.detect { |src| src.device == "ETEXTILE_SYNTH" });
-  ~midiOut = MIDIOut.newByName("ETEXTILE_SYNTH", "MIDI 1");
-  ~midiOut.sysex(Int8Array[0xF0.asInteger, 0x7D, 0x01, 0x10, 0xF7.asInteger]); // USB_INTERFACE_MODE
+  ~midiSrc = MIDIClient.sources.detect { |src| src.device == "ETEXTILE_SYNTH" };
+  if (~midiSrc.notNil) {
+    MIDIIn.connect(0, ~midiSrc);
+    ~midiOut = MIDIOut.newByName("ETEXTILE_SYNTH", "MIDI 1");
+    ~midiOut.sysex(Int8Array[0xF0.asInteger, 0x7D, 0x01, 0x10, 0xF7.asInteger]); // USB_INTERFACE_MODE
+    "── ETEXTILE_SYNTH connected ──".postln;
+  } {
+    "WARNING: ETEXTILE_SYNTH not found — running without MIDI control".postln;
+  };
 
   MIDIdef.cc(\e256_gran, { |val, num|
     var pair = ~specs[num];
@@ -153,9 +166,10 @@ s.waitForBoot {
     ~rec.free; ~gran.free; ~buf.free;
     ~buses.do(_.free);
     MIDIdef(\e256_gran).free;
-    ~midiOut.free;
+    if (~midiOut.notNil) { ~midiOut.free };
   });
 
   "── e256 granular synthesis ready ──".postln;
 };
-)
+
+ServerQuit.add({ 0.exit });
