@@ -61,7 +61,7 @@ void setup(void) {
 // │ THROUGH         │ ✓            │             │              │                │                          │ transmit_mappings (pool) │ pool nodes returned   │
 // │ PLAY            │ ✓            │             │ ✓ + interp   │ ✓              │ transmit_mappings + blobs│ transmit_mappings        │                       │
 // │ STANDALONE      │              │ ✓           │ ✓ + interp   │ ✓              │                          │ transmit_mappings        │ no USB host needed    │
-// │ USB_INTERFACE   │ ✓            │ ✓           │ ✓ + interp   │ ✓              │                          │ transmit_mappings        │ USB receive kept alive │
+// │ USB_INTERFACE   │ ✓            │ ✓           │ ✓ + interp   │ ✓              │ transmit_mappings        │                          │ hw MIDI in kept alive  │
 // └─────────────────┴──────────────┴─────────────┴──────────────┴────────────────┴──────────────────────────┴──────────────────────────┴───────────────────────┘
 void loop(void) {
 
@@ -142,7 +142,7 @@ void loop(void) {
       matrix_interp();
       matrix_find_blobs();
       mapping_lib_update();
-      mapping_hardware_midi_transmit();
+      mapping_usb_midi_transmit();
       break;
 
     default:
