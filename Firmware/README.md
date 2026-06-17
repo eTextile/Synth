@@ -79,23 +79,54 @@ User long-presses LEFT BUTTON
 
 ## Firmware Operating Modes
 
-| Mode | Description |
-|------|-------------|
-| `PENDING_MODE` | Waiting for USB connection (4 s timeout before `STANDALONE_MODE`) |
-| `SYNC_MODE` | Handshake with the web app |
-| `CALIBRATE_MODE` | Full matrix calibration |
-| `MATRIX_RAW_MODE` | Stream raw 16×16 sensor values over USB MIDI |
-| `MATRIX_INTERP_MODE` | Stream interpolated 64×64 sensor values over USB MIDI |
-| `EDIT_MODE` | Stream all blob values over USB MIDI |
-| `PLAY_MODE` | Send mapping values over USB MIDI |
-| `THROUGH_MODE` | Forward mapping values to hardware MIDI output |
-| `STANDALONE_MODE` | Run mappings using hardware MIDI output only |
-| `UPLOAD_MODE` | Receive config file from web app |
-| `APPLY_MODE` | Apply received config to mappings |
-| `WRITE_MODE` | Write config to flash |
-| `LOAD_MODE` | Load config from flash |
-| `FETCH_MODE` | Send current config file to the web app |
-| `ERROR_MODE` | Unexpected behaviour — LEDs blink error code |
+All mode switches are sent as a SysEx command `[F0 7D 01 <mode_value> F7]` and acknowledged with `[F0 7D 02 <ack_value> F7]`.
+
+### System modes
+
+| Mode | Value | Description |
+|------|:-----:|-------------|
+| `PENDING_MODE` | 0 | Boot state — listens for USB. Switches automatically to `STANDALONE_MODE` after 4 s if no USB host connects. |
+| `SYNC_MODE` | 1 | Handshake with the web app. Firmware replies `SYNC_MODE_DONE`; the app then switches to `MATRIX_RAW_MODE` to verify the sensor is live. |
+| `ERROR_MODE` | 17 | Unrecoverable error — LEDs blink the error code. Set on config apply failure or unknown SysEx. |
+
+### Sensor visualisation modes (web app only)
+
+| Mode | Value | USB receive | Matrix | USB transmit | Description |
+|------|:-----:|:-----------:|:------:|:------------:|-------------|
+| `CALIBRATE_MODE` | 2 | ✓ | scan | — | Full 16×16 matrix calibration. Resets the baseline for all sensor cells. |
+| `MATRIX_RAW_MODE` | 3 | ✓ | scan | raw 16×16 | Streams the raw ADC frame over USB MIDI SysEx. Used by the web app to display the live sensor image. |
+| `MATRIX_INTERP_MODE` | 4 | ✓ | scan + interp | interp 64×64 | Streams the bilinearly interpolated 64×64 frame over USB MIDI SysEx (16 chunks × 256 bytes). |
+| `EDIT_MODE` | 6 | ✓ | scan + interp + blobs | blob SysEx | Streams full blob data (position, size, pressure, velocity) over USB MIDI. Used by the web app while laying out and testing TUI elements. No mapping processing. |
+
+### Performance modes
+
+| Mode | Value | USB recv | HW recv | Matrix | Mapping | USB transmit | HW transmit |
+|------|:-----:|:--------:|:-------:|:------:|:-------:|:------------:|:-----------:|
+| `THROUGH_MODE` | 7 | ✓ | — | — | — | — | ✓ |
+| `PLAY_MODE` | 8 | ✓ | ✓ | scan + interp + blobs | ✓ | mappings + blobs | ✓ |
+| `STANDALONE_MODE` | 15 | — | ✓ | scan + interp + blobs | ✓ | — | ✓ |
+| `USB_INTERFACE_MODE` | 16 | ✓ | ✓ | scan + interp + blobs | ✓ | mappings | — |
+
+- **`THROUGH_MODE`** — The e256 acts as a MIDI USB→DIN bridge. Notes and CCs received from the USB host are forwarded as-is to the hardware MIDI output (TRS-A). No sensor scanning. Useful to route a DAW or sequencer through the device to a hardware synthesizer.
+
+- **`PLAY_MODE`** — Full performance mode. The sensor is scanned every frame, blobs are tracked, and all active TUI mappings are evaluated. Mapping MIDI messages are sent to **both** the USB host and the hardware MIDI output. Blob SysEx is also sent to the USB host (for the web app overlay). Hardware MIDI input is active for live `populate` (note layout reprogramming).
+
+- **`STANDALONE_MODE`** — No USB host required. The device runs on power only. TUI mappings are evaluated and MIDI messages are sent exclusively to the hardware MIDI output (TRS-A). Hardware MIDI input is active for `populate`. Requires a config previously saved to flash.
+
+- **`USB_INTERFACE_MODE`** — Like `PLAY_MODE` but mapping MIDI output goes to the **USB host only** (no hardware MIDI output). Hardware MIDI input remains active (for `populate` or external clock). Intended for use with a computer-based synthesizer (e.g. SuperCollider, Max/MSP) while keeping the hardware MIDI port free for input.
+
+### Config protocol modes (internal)
+
+These modes are managed automatically by the web app upload protocol. They are not intended to be set manually.
+
+| Mode | Value | Description |
+|------|:-----:|-------------|
+| `ALLOCATE_MODE` | 9 | Firmware allocates a RAM buffer sized for the incoming JSON config. |
+| `UPLOAD_MODE` | 10 | Firmware receives the JSON config bytes over SysEx. |
+| `APPLY_MODE` | 11 | Firmware parses the JSON and applies the new mapping configuration to RAM. Takes effect immediately. |
+| `WRITE_MODE` | 12 | Firmware writes the current RAM config to flash. Triggered by a **long press on the LEFT BUTTON**. Required for config to survive power cycles. |
+| `LOAD_MODE` | 13 | Firmware loads the config stored in flash into RAM and applies it. |
+| `FETCH_MODE` | 14 | Firmware sends the current flash config back to the web app as SysEx. |
 
 ---
 
