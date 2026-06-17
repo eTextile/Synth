@@ -137,7 +137,9 @@ s.waitForBoot {
 
   // ── MIDI ─────────────────────────────────────────────────────────────────
   MIDIClient.init;
-  MIDIIn.connectAll;
+  MIDIIn.connect(0, MIDIClient.sources.detect { |src| src.device == "ETEXTILE_SYNTH" });
+  ~midiOut = MIDIOut.newByName("ETEXTILE_SYNTH", "MIDI 1");
+  ~midiOut.sysex(Int8Array[0xF0.asInteger, 0x7D, 0x01, 0x10, 0xF7.asInteger]); // USB_INTERFACE_MODE
 
   MIDIdef.cc(\e256_gran, { |val, num|
     var pair = ~specs[num];
@@ -151,6 +153,7 @@ s.waitForBoot {
     ~rec.free; ~gran.free; ~buf.free;
     ~buses.do(_.free);
     MIDIdef(\e256_gran).free;
+    ~midiOut.free;
   });
 
   "── e256 granular synthesis ready ──".postln;

@@ -304,6 +304,11 @@ static void usb_read_system_exclusive(const uint8_t* data_ptr, uint16_t sysEx_ch
         usb_midi_send_sysex_ack((uint8_t)PLAY_MODE_DONE);
         break;
 
+      case USB_INTERFACE_MODE:
+        set_mode(USB_INTERFACE_MODE);
+        usb_midi_send_sysex_ack((uint8_t)USB_INTERFACE_MODE_DONE);
+        break;
+
       case LOAD_MODE:
         if (load_flash_config()) {
           usb_midi_send_sysex_ack((uint8_t)LOAD_MODE_DONE);

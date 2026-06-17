@@ -61,6 +61,7 @@ void setup(void) {
 // │ THROUGH         │ ✓            │             │              │                │                          │ transmit_mappings (pool) │ pool nodes returned   │
 // │ PLAY            │ ✓            │             │ ✓ + interp   │ ✓              │ transmit_mappings + blobs│ transmit_mappings        │                       │
 // │ STANDALONE      │              │ ✓           │ ✓ + interp   │ ✓              │                          │ transmit_mappings        │ no USB host needed    │
+// │ USB_INTERFACE   │ ✓            │ ✓           │ ✓ + interp   │ ✓              │                          │ transmit_mappings        │ USB receive kept alive │
 // └─────────────────┴──────────────┴─────────────┴──────────────┴────────────────┴──────────────────────────┴──────────────────────────┴───────────────────────┘
 void loop(void) {
 
@@ -126,6 +127,16 @@ void loop(void) {
       break;
 
     case STANDALONE_MODE:
+      hardware_midi_receive();
+      matrix_scan();
+      matrix_interp();
+      matrix_find_blobs();
+      mapping_lib_update();
+      mapping_hardware_midi_transmit();
+      break;
+
+    case USB_INTERFACE_MODE:
+      usb_midi_receive();
       hardware_midi_receive();
       matrix_scan();
       matrix_interp();

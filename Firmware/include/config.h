@@ -142,8 +142,9 @@ typedef enum mode_code_e {
   WRITE_MODE,      //
   LOAD_MODE,       //
   FETCH_MODE,      // Send mapping config file
-  STANDALONE_MODE, // Send mappings values over MIDI hardware
-  ERROR_MODE       // Unexpected behaviour
+  STANDALONE_MODE,     // Send mappings values over MIDI hardware (no USB)
+  USB_INTERFACE_MODE, // Send mappings values over MIDI hardware + keep USB MIDI active
+  ERROR_MODE           // Unexpected behaviour
 } mode_code_t;
 
 extern mode_code_t e256_current_mode;
@@ -168,6 +169,7 @@ typedef enum verbosity_code_e{
   LOAD_MODE_DONE,
   FETCH_MODE_DONE,
   STANDALONE_MODE_DONE,
+  USB_INTERFACE_MODE_DONE,
   DONE_ACTION
 } verbosity_code_t;
 

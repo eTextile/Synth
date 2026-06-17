@@ -45,6 +45,7 @@ const char* get_mode_name(mode_code_t code) {
     case LOAD_MODE: char_code = "LOAD_MODE"; break;
     case FETCH_MODE: char_code = "FETCH_MODE"; break;
     case STANDALONE_MODE: char_code = "STANDALONE_MODE"; break;
+    case USB_INTERFACE_MODE: char_code = "USB_INTERFACE_MODE"; break;
     case ERROR_MODE: char_code = "ERROR_MODE"; break;
   }
   return char_code;
@@ -71,6 +72,7 @@ const char* get_verbosity_name(verbosity_code_t code) {
     case LOAD_MODE_DONE: char_code = "LOAD_MODE_DONE"; break;
     case FETCH_MODE_DONE: char_code = "FETCH_MODE_DONE"; break;
     case STANDALONE_MODE_DONE: char_code = "STANDALONE_MODE_DONE"; break;
+    case USB_INTERFACE_MODE_DONE: char_code = "USB_INTERFACE_MODE_DONE"; break;
     case DONE_ACTION: char_code = "DONE_ACTION"; break;
   }
   return char_code;
@@ -107,7 +109,7 @@ const char* get_error_name(error_code_t code) {
   return char_code;
 };
 
-e256_mode_t e256_m[17] = {
+e256_mode_t e256_m[18] = {
   {{HIGH, LOW, false}, 50, 50, true},     // [0] PENDING_MODE
   {{HIGH, LOW, false}, 500, 500, true},   // [1] SYNC_MODE
   {{HIGH, LOW, false}, 15, 15, true},     // [2] CALIBRATE_MODE
@@ -124,7 +126,8 @@ e256_mode_t e256_m[17] = {
   {{HIGH, LOW, false}, 1000, 1000, true}, // [13] LOAD_MODE
   {{HIGH, LOW, false}, 1000, 1000, true}, // [14] FETCH_MODE
   {{LOW, HIGH, false}, 2000, 2000, true}, // [15] STANDALONE_MODE
-  {{HIGH, HIGH, false}, 5, 5, true}       // [16] ERROR_MODE
+  {{LOW, HIGH, false}, 1000, 500, true},  // [16] USB_INTERFACE_MODE
+  {{HIGH, HIGH, false}, 5, 5, true}       // [17] ERROR_MODE
 };
 
 // The E256 built-in encoder is used to adjust levels
