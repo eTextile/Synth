@@ -383,8 +383,5 @@ For information on usage, redistribution, and a DISCLAIMER OF ALL WARRANTIES, se
 
 ## Roadmap
 
-- **Gesture Recognizer** — pattern recognition on the tactile surface.
 - **MIDI MPE** — continuous per-note pitch and pressure control after note-on ([MPE spec](https://www.midi.org/midi-articles/midi-polyphonic-expression-mpe)).
-- **Embedded synthesizer** integration:
-    - [MicroDexed](https://www.parasitstudio.de/) — open source DX7-style FM synth
-    - [Dexed](https://github.com/asb2m10/dexed) — FM plugin synth
+- **Gesture Recognizer** — pattern recognition on the tactile surface.
