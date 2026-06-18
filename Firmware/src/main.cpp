@@ -13,6 +13,7 @@
 #include "mapping.h"
 #include "usb_midi_io.h"
 #include "hardware_midi_io.h"
+#include "allocate.h"
 #ifdef SOUND_CARD
 #include "sound_card.h"
 #endif
@@ -41,6 +42,12 @@ void setup(void) {
       boot_config_err = (uint8_t)CONFIG_APPLY_FAILED;
       set_mode(ERROR_MODE);
     }
+    // Copy flash config into sysEx_data so long-press LEFT can re-save it
+    // without a web-app upload first. Uses a separate buffer to avoid
+    // invalidating flash_config_ptr when ALLOCATE_MODE later reallocates sysEx_data_ptr.
+    sysEx_data_length = flash_config_size;
+    sysEx_data_ptr    = (uint8_t*)allocate(sysEx_data_ptr, sysEx_data_length + 1);
+    if (sysEx_data_ptr) memcpy(sysEx_data_ptr, flash_config_ptr, sysEx_data_length);
   }
   else {
     boot_config_err = (uint8_t)CONFIG_FILE_MISSING;
