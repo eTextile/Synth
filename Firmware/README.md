@@ -38,7 +38,7 @@
 ### With power plug only (no USB cable)
 
 1. The firmware boots in `PENDING_MODE`.
-2. After `PENDING_MODE_TIMEOUT` (4 s), it switches to `STANDALONE_MODE`.
+2. After `PENDING_MODE_TIMEOUT` (5 s), it switches to `STANDALONE_MODE`.
 3. The device loads `flash_config()`:
     - **`FLASH_CONFIG_LOAD_DONE`**: the **BUILTIN_LEDs** blink `STANDALONE_MODE`.
     - **`FLASH_CONFIG_LOAD_FAILED`**: the **BUILTIN_LEDs** blink an **ERROR_CODE**.
@@ -85,7 +85,7 @@ All mode switches are sent as a SysEx command `[F0 7D 01 <mode_value> F7]` and a
 
 | Mode | Value | Description |
 |------|:-----:|-------------|
-| `PENDING_MODE` | 0 | Boot state — listens for USB. Switches automatically to `STANDALONE_MODE` after 4 s if no USB host connects. |
+| `PENDING_MODE` | 0 | Boot state — listens for USB. Switches automatically to `STANDALONE_MODE` after 5 s if no USB host connects. |
 | `SYNC_MODE` | 1 | Handshake with the web app. Firmware replies `SYNC_MODE_DONE`; the app then switches to `MATRIX_RAW_MODE` to verify the sensor is live. |
 | `ERROR_MODE` | 17 | Unrecoverable error — LEDs blink the error code. Set on config apply failure or unknown SysEx. |
 

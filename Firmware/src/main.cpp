@@ -67,7 +67,7 @@ void setup(void) {
 // │ EDIT            │ ✓            │             │ ✓ + interp   │                │ transmit_blobs           │                          │                       │
 // │ THROUGH         │ ✓            │             │              │                │                          │ transmit_mappings (pool) │ pool nodes returned   │
 // │ PLAY            │ ✓            │             │ ✓ + interp   │ ✓              │ transmit_mappings + blobs│ transmit_mappings        │                       │
-// │ STANDALONE      │ ✓ (cmd only) │ ✓           │ ✓ + interp   │ ✓              │                          │ transmit_mappings        │ accepts USB mode cmd  │
+// │ STANDALONE      │              │ ✓           │ ✓ + interp   │ ✓              │                          │ transmit_mappings        │ no USB                │
 // │ USB_INTERFACE   │ ✓            │ ✓           │ ✓ + interp   │ ✓              │ transmit_mappings        │                          │ hw MIDI in kept alive  │
 // └─────────────────┴──────────────┴─────────────┴──────────────┴────────────────┴──────────────────────────┴──────────────────────────┴───────────────────────┘
 void loop(void) {
@@ -134,7 +134,6 @@ void loop(void) {
       break;
 
     case STANDALONE_MODE:
-      usb_midi_receive(); // allows web app / SC to send a mode command and exit standalone
       hardware_midi_receive();
       matrix_scan();
       matrix_interp();
