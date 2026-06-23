@@ -1,175 +1,185 @@
 // ════════════════════════════════════════════════════════════════════════════
-// eTextile-Synthesizer — Live Granular Synthesis (Bela)
-// Audio input granularisé, tous paramètres adressés via MIDI CC
+// eTextile-Synthesizer — Live Granular + Filtre + Reverb (Bela)
+// SoundIn → PitchShift → RLPF → FreeVerb → out
 //
-// CC MAP
-//   CC  1  grain duration        0.01 – 2.0 s       (exp)
-//   CC  2  grain density         1 – 200 grains/s    (exp)
-//   CC  3  pitch / playback rate 0.25 – 4.0 ×        (exp)
-//   CC  4  buffer position       0 – 100 %           (lin → 0–bufDur s)
-//   CC  5  position scatter      0 – 100 %           (lin)
-//   CC  6  rate scatter          0 – 100 %           (lin)
-//   CC  7  pan spread            0 – ±1              (lin)
-//   CC  8  output amplitude      0 – 100 %           (lin)
-//   CC 11  dry / wet mix         0 = dry  1 = wet    (lin)
-//   CC 12  feedback              0 – 95 %            (lin)
-//   CC 64  freeze record         0 = rec  1 = freeze (toggle)
-//   CC 71  filter resonance      0 – 95 %            (lin)
-//   CC 74  filter cutoff         200 – 8000 Hz       (exp)
+// MAPPING 2 TOUCHES — configurer le firmware pour envoyer :
+//
+//   Touch 1  X → CC 1   filter cutoff    200 – 8000 Hz (exp)  gauche=sombre droite=clair
+//   Touch 1  Y → CC 2   pitch ratio      0.5 – 2.0 ×  (exp)  bas=grave  haut=aigu
+//   Touch 1  Z → CC 3   amplitude        0 – 100 %    (lin)  pression = volume
+//
+//   Touch 2  X → CC 4   reverb room      0 – 100 %    (lin)  gauche=sec  droite=hall
+//   Touch 2  Y → CC 5   reverb mix       0 – 100 %    (lin)  bas=sec    haut=reverb
+//   Touch 2  Z → CC 6   dry / wet        0 – 100 %    (lin)  pression = engage effet
+//
+//   Fixe : grain window 0.1s · pitch disp 0 · time disp 0 · damping 0.5 · pan 0
 // ════════════════════════════════════════════════════════════════════════════
 
 s = Server.default;
 
-s.options.numAnalogInChannels  = 8;
-s.options.numAnalogOutChannels = 8;
-s.options.numDigitalChannels   = 16;
+s.options.numAnalogInChannels  = 2;
+s.options.numAnalogOutChannels = 2;
+s.options.pgaGainLeft          = 40;
+s.options.pgaGainRight         = 40;
+s.options.numDigitalChannels   = 0;
 s.options.blockSize            = 16;
 s.options.numInputBusChannels  = 2;
 s.options.numOutputBusChannels = 2;
+s.options.numWireBufs          = 256;
+s.options.memSize              = 16384;
 
+// ── MIDI — init avant le boot serveur ────────────────────────────────────────
+~handshake_done = false;
+~amidi_port     = nil;
+~midiOut        = nil;
+MIDIClient.init;
+
+MIDIdef.sysex(\e256_sysex, { |msg|
+    var b = msg.asArray;
+    if (b.size >= 5 && (b[0] & 0xFF) == 0xF0 && (b[1] & 0xFF) == 0x7D && (b[2] & 0xFF) == 0x02) {
+        if (b[3] == 18 && ~handshake_done.not) {
+            ~handshake_done = true;
+            "── USB_INTERFACE_MODE confirmed (SysEx ACK) ──".postln;
+        };
+    };
+});
+
+~amidi_sysex = { |hex|
+    if (~amidi_port.notNil) {
+        ("amidi -p " ++ ~amidi_port ++ " -S '" ++ hex ++ "'").unixCmd;
+    };
+};
+
+~find_amidi_port = {
+    var pipe = Pipe.new("amidi -l 2>&1 | grep ETEXTILE | awk '{print $2}'", "r");
+    var port = pipe.getLine;
+    pipe.close;
+    port
+};
+
+~send_handshake = {
+    if (~handshake_done.not) {
+        "── SYNC → USB_INTERFACE_MODE ──".postln;
+        ~amidi_sysex.value("F0 7D 01 01 F7");
+        0.5.wait;
+        if (~handshake_done.not) {
+            ~amidi_sysex.value("F0 7D 01 10 F7");
+        };
+        0.5.wait;
+    };
+};
+
+~midi_connect = {
+    ~midiSrc = MIDIClient.sources.detect      { |e| e.device == "ETEXTILE_SYNTH" };
+    ~midiDst = MIDIClient.destinations.detect { |e| e.device == "ETEXTILE_SYNTH" };
+    if (~midiSrc.notNil && ~midiDst.notNil) {
+        MIDIIn.connect(0, ~midiSrc);
+        ~midiOut = MIDIOut.new(0, ~midiDst.uid);
+        ~amidi_port = ~find_amidi_port.value;
+        ("amidi port: " ++ (~amidi_port ?? "non trouvé")).postln;
+        {
+            0.5.wait;
+            5.do { if (~handshake_done.not) { ~send_handshake.value } };
+            while { ~handshake_done.not && ~midiOut.notNil } {
+                "── pas de réponse — rebrancher le Teensy ou appuyer BUTTON_R long ──".postln;
+                ~send_handshake.value;
+                5.0.wait;
+            };
+        }.fork;
+        "── ETEXTILE_SYNTH trouvé ──".postln;
+        true
+    } {
+        MIDIClient.init;
+        false
+    }
+};
+
+~midi_poll = Routine({
+    while { ~midiOut.isNil } {
+        if (~midi_connect.value.not) { 1.0.wait };
+    };
+}).play;
+
+// ── Boot serveur audio ────────────────────────────────────────────────────────
 s.waitForBoot {
 
-  var bufDur = 8.0;  // secondes de buffer live
+    // CC 1-6 contrôlés par les 2 touches · reste fixe
+    ~buses = IdentityDictionary[
+        1 -> Bus.control(s),   // T1 X: filter cutoff
+        2 -> Bus.control(s),   // T1 Y: pitch ratio
+        3 -> Bus.control(s),   // T1 Z: amplitude
+        4 -> Bus.control(s),   // T2 X: reverb room
+        5 -> Bus.control(s),   // T2 Y: reverb mix
+        6 -> Bus.control(s)    // T2 Z: dry/wet
+    ];
 
-  // ── Buffer audio live ────────────────────────────────────────────────────
-  ~buf = Buffer.alloc(s, (s.sampleRate * bufDur).round, 1);
+    ~specs = IdentityDictionary[
+        1 -> [ControlSpec(200,  8000, \exp),  4000.0],  // T1 X: cutoff
+        2 -> [ControlSpec(0.5,  2.0,  \exp),  1.0   ],  // T1 Y: pitch
+        3 -> [ControlSpec(0.0,  1.0,  \lin),  0.7   ],  // T1 Z: amp
+        4 -> [ControlSpec(0.0,  1.0,  \lin),  0.5   ],  // T2 X: room
+        5 -> [ControlSpec(0.0,  1.0,  \lin),  0.3   ],  // T2 Y: revMix
+        6 -> [ControlSpec(0.0,  1.0,  \lin),  1.0   ]   // T2 Z: dry/wet
+    ];
 
-  // ── Control buses (un par CC) ────────────────────────────────────────────
-  ~buses = IdentityDictionary[
-    1  -> Bus.control(s),   // grain duration
-    2  -> Bus.control(s),   // grain density
-    3  -> Bus.control(s),   // rate / pitch
-    4  -> Bus.control(s),   // buffer position
-    5  -> Bus.control(s),   // position scatter
-    6  -> Bus.control(s),   // rate scatter
-    7  -> Bus.control(s),   // pan spread
-    8  -> Bus.control(s),   // amplitude
-    11 -> Bus.control(s),   // dry / wet
-    12 -> Bus.control(s),   // feedback
-    64 -> Bus.control(s),   // freeze
-    71 -> Bus.control(s),   // filter resonance
-    74 -> Bus.control(s)    // filter cutoff
-  ];
+    ~specs.keysValuesDo { |cc, pair| ~buses[cc].set(pair[1]) };
 
-  // ── Specs CC→paramètre + valeurs par défaut ──────────────────────────────
-  ~specs = IdentityDictionary[
-    //   cc -> [ControlSpec,                       default ]
-    1  -> [ControlSpec(0.01, 2.0,  \exp),          0.1   ],
-    2  -> [ControlSpec(1,    200,  \exp),           20.0  ],
-    3  -> [ControlSpec(0.25, 4.0,  \exp),           1.0   ],
-    4  -> [ControlSpec(0.0,  1.0,  \lin),           0.0   ],
-    5  -> [ControlSpec(0.0,  1.0,  \lin),           0.0   ],
-    6  -> [ControlSpec(0.0,  1.0,  \lin),           0.0   ],
-    7  -> [ControlSpec(0.0,  1.0,  \lin),           0.0   ],
-    8  -> [ControlSpec(0.0,  1.0,  \lin),           0.7   ],
-    11 -> [ControlSpec(0.0,  1.0,  \lin),           1.0   ],
-    12 -> [ControlSpec(0.0,  0.95, \lin),           0.0   ],
-    64 -> [ControlSpec(0,    1,    \lin),           0     ],
-    71 -> [ControlSpec(0.0,  0.95, \lin),           0.0   ],
-    74 -> [ControlSpec(200,  8000, \exp),           4000.0]
-  ];
+    SynthDef(\e256_live, {
+        |cutoffBus, pitchBus, ampBus, roomBus, reverbMixBus, mixBus|
 
-  // Initialisation des buses aux valeurs par défaut
-  ~specs.keysValuesDo { |cc, pair| ~buses[cc].set(pair[1]) };
+        var in       = SoundIn.ar(0);
+        // paramètres fixes (pas de capteur)
+        var winSize  = 0.1;
+        var damp     = 0.5;
+        // paramètres capteur
+        var cutoff   = Lag.kr(In.kr(cutoffBus),    0.05).clip(20, 20000);
+        var pitch    = Lag.kr(In.kr(pitchBus),     0.05);
+        var amp      = Lag.kr(In.kr(ampBus),       0.05);
+        var room     = Lag.kr(In.kr(roomBus),      0.1);
+        var revMix   = Lag.kr(In.kr(reverbMixBus), 0.1);
+        var mix      = Lag.kr(In.kr(mixBus),       0.05);
 
-  // ── SynthDef : enregistrement en boucle de l'entrée audio ────────────────
-  SynthDef(\e256_recorder, { |buf, freezeBus|
-    var freeze = In.kr(freezeBus);
-    RecordBuf.ar(SoundIn.ar(0), buf, loop: 1, run: 1 - freeze);
-  }).add;
+        var shifted  = PitchShift.ar(in, winSize, pitch, 0, 0);
+        var filtered = RLPF.ar(shifted, cutoff, 1.0);
+        var reverbed = FreeVerb.ar(filtered, revMix, room, damp);
+        var wet      = Pan2.ar(reverbed * amp);
+        var dry      = Pan2.ar(in);
 
-  // ── SynthDef : moteur granulaire ─────────────────────────────────────────
-  SynthDef(\e256_granular, {
-    |buf, bufDurArg = 8.0,
-     durBus, densityBus, rateBus, posBus, posRandBus, rateRandBus,
-     panBus, ampBus, mixBus, feedbackBus, cutoffBus, resonBus|
+        Out.ar(0, XFade2.ar(dry, wet, mix * 2 - 1));
+    }).add;
 
-    var grainDur  = In.kr(durBus);
-    var density   = In.kr(densityBus);
-    var rate      = In.kr(rateBus);
-    var pos       = In.kr(posBus)     * bufDurArg;        // 0–1 → 0–bufDur s
-    var posRand   = In.kr(posRandBus) * bufDurArg;
-    var rateRand  = In.kr(rateRandBus);
-    var panSpread = In.kr(panBus);
-    var amp       = In.kr(ampBus);
-    var mix       = In.kr(mixBus);
-    var feedback  = In.kr(feedbackBus);
-    var cutoff    = In.kr(cutoffBus).clip(20, 20000);
-    var reson     = (1 - In.kr(resonBus)).clip(0.01, 1);
+    s.sync;
 
-    var trig   = Impulse.ar(density);
-    var fbIn   = LocalIn.ar(2);
+    ~live = Synth(\e256_live, [
+        \cutoffBus,    ~buses[1].index,
+        \pitchBus,     ~buses[2].index,
+        \ampBus,       ~buses[3].index,
+        \roomBus,      ~buses[4].index,
+        \reverbMixBus, ~buses[5].index,
+        \mixBus,       ~buses[6].index
+    ]);
 
-    var grains = TGrains.ar(2,
-      trigger:   trig,
-      bufnum:    buf,
-      rate:      rate   + LFNoise1.kr(4).bipolar(rateRand * 0.5),
-      centerPos: pos    + LFNoise1.kr(3).bipolar(posRand),
-      dur:       grainDur,
-      pan:       LFNoise1.kr(5).bipolar(panSpread),
-      amp:       0.5
-    );
+    MIDIdef.cc(\e256_live, { |val, num|
+        var pair = ~specs[num];
+        if (~handshake_done.not) {
+            ~handshake_done = true;
+            "── USB_INTERFACE_MODE confirmed (CC reçu) ──".postln;
+        };
+        if (pair.notNil) { ~buses[num].set(pair[0].map(val / 127.0)) };
+    });
 
-    var wet = RLPF.ar(grains + (fbIn * feedback), cutoff, reson);
-    var dry = Pan2.ar(SoundIn.ar(0));
-    LocalOut.ar(wet);
-    Out.ar(0, XFade2.ar(dry, wet * amp, mix * 2 - 1));
-  }).add;
+    CmdPeriod.add({
+        ~handshake_done = false;
+        ~amidi_port     = nil;
+        ~midi_poll.stop;
+        ~live.free;
+        ~buses.do { |b| b.free };
+        MIDIdef(\e256_live).free;
+        MIDIdef(\e256_sysex).free;
+        if (~midiOut.notNil) { ~midiOut.free; ~midiOut = nil };
+    });
 
-  s.sync;
-
-  // ── Lancement des synths ─────────────────────────────────────────────────
-  ~rec = Synth(\e256_recorder, [
-    \buf,       ~buf,
-    \freezeBus, ~buses[64].index
-  ]);
-
-  // after : granulaire tourne après le recorder dans le node tree
-  ~gran = Synth.after(~rec, \e256_granular, [
-    \buf,        ~buf,
-    \bufDurArg,  bufDur,
-    \durBus,     ~buses[1].index,
-    \densityBus, ~buses[2].index,
-    \rateBus,    ~buses[3].index,
-    \posBus,     ~buses[4].index,
-    \posRandBus, ~buses[5].index,
-    \rateRandBus,~buses[6].index,
-    \panBus,     ~buses[7].index,
-    \ampBus,     ~buses[8].index,
-    \mixBus,     ~buses[11].index,
-    \feedbackBus,~buses[12].index,
-    \cutoffBus,  ~buses[74].index,
-    \resonBus,   ~buses[71].index
-  ]);
-
-  // ── MIDI ─────────────────────────────────────────────────────────────────
-  MIDIClient.init;
-  ~midiSrc = MIDIClient.sources.detect { |src| src.device == "ETEXTILE_SYNTH" };
-  if (~midiSrc.notNil) {
-    MIDIIn.connect(0, ~midiSrc);
-    ~midiOut = MIDIOut.newByName("ETEXTILE_SYNTH", "MIDI 1");
-    ~midiOut.sysex(Int8Array[0xF0.asInteger, 0x7D, 0x01, 0x10, 0xF7.asInteger]); // USB_INTERFACE_MODE
-    "── ETEXTILE_SYNTH connected ──".postln;
-  } {
-    "WARNING: ETEXTILE_SYNTH not found — running without MIDI control".postln;
-  };
-
-  MIDIdef.cc(\e256_gran, { |val, num|
-    var pair = ~specs[num];
-    if (pair.notNil) {
-      ~buses[num].set(pair[0].map(val / 127.0));
-    };
-  });
-
-  // ── Nettoyage sur Cmd+. ──────────────────────────────────────────────────
-  CmdPeriod.add({
-    ~rec.free; ~gran.free; ~buf.free;
-    ~buses.do(_.free);
-    MIDIdef(\e256_gran).free;
-    if (~midiOut.notNil) { ~midiOut.free };
-  });
-
-  "── e256 granular synthesis ready ──".postln;
+    "── e256 live effect ready ──".postln;
 };
 
 ServerQuit.add({ 0.exit });

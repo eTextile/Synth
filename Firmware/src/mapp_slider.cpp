@@ -165,7 +165,7 @@ void mapping_slider_continue(blob_t* blob_ptr) {
       mapping_send_midi_msg_press(&touch_ptr->press, blob_ptr);
     }
   }
-  mapping_send_midi_msg_move(&touch_ptr->move, blob_ptr);
+  mapping_send_midi_msg_speed(&touch_ptr->speed, blob_ptr);
 };
 
 // Called when the blob leaves the slider or is lost (status == RELEASED).
@@ -354,18 +354,18 @@ void mapping_slider_create(const JsonObject &config) {
         }
       }
 
-      if (config["msg"][i]["move"].is<JsonObject>()) {
-        uint8_t vel_status = config["msg"][i]["move"]["midi"]["status"].as<uint8_t>();
+      if (config["msg"][i]["speed"].is<JsonObject>()) {
+        uint8_t vel_status = config["msg"][i]["speed"]["midi"]["status"].as<uint8_t>();
         midi_msg_status_unpack(vel_status, &status);
-        slider_ptr->params.touch[i].move.enabled     = (vel_status != 0) && (config["msg"][i]["move"]["enabled"] | true);
-        slider_ptr->params.touch[i].move.msg.type    = ControlChange;
-        slider_ptr->params.touch[i].move.msg.data1   = config["msg"][i]["move"]["midi"]["data1"].as<uint8_t>();
-        slider_ptr->params.touch[i].move.msg.data2   = 0;
-        slider_ptr->params.touch[i].move.msg.channel = status.channel;
-        slider_ptr->params.touch[i].move.limit.min   = config["msg"][i]["move"]["limit"]["min"].as<uint8_t>();
-        slider_ptr->params.touch[i].move.limit.max   = config["msg"][i]["move"]["limit"]["max"].as<uint8_t>();
+        slider_ptr->params.touch[i].speed.enabled     = (vel_status != 0) && (config["msg"][i]["speed"]["enabled"] | true);
+        slider_ptr->params.touch[i].speed.msg.type    = ControlChange;
+        slider_ptr->params.touch[i].speed.msg.data1   = config["msg"][i]["speed"]["midi"]["data1"].as<uint8_t>();
+        slider_ptr->params.touch[i].speed.msg.data2   = 0;
+        slider_ptr->params.touch[i].speed.msg.channel = status.channel;
+        slider_ptr->params.touch[i].speed.limit.min   = config["msg"][i]["speed"]["limit"]["min"].as<uint8_t>();
+        slider_ptr->params.touch[i].speed.limit.max   = config["msg"][i]["speed"]["limit"]["max"].as<uint8_t>();
       } else {
-        slider_ptr->params.touch[i].move.enabled = false;
+        slider_ptr->params.touch[i].speed.enabled = false;
       }
 
     }

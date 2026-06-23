@@ -68,7 +68,7 @@
 #define PI_OVER_2       (float)(PI / 2)
 #define LONG_HOLD 1500
 #define LEVEL_TIMEOUT 3000
-#define PENDING_MODE_TIMEOUT 4000
+#define PENDING_MODE_TIMEOUT 5000
 
 #define MIDI_THROTTLE_MS 33            // 30Hz — safe for hardware MIDI DIN with multiple simultaneous mapping streams
 #define MATRIX_MIDI_THROTTLE_MS 50     // 20Hz — throttle for raw/interp matrix SysEx stream over USB

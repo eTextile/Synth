@@ -126,7 +126,7 @@ e256_mode_t e256_m[18] = {
   {{HIGH, LOW, false}, 1000, 1000, true}, // [13] LOAD_MODE
   {{HIGH, LOW, false}, 1000, 1000, true}, // [14] FETCH_MODE
   {{LOW, HIGH, false}, 2000, 2000, true}, // [15] STANDALONE_MODE
-  {{LOW, HIGH, false}, 1000, 500, true},  // [16] USB_INTERFACE_MODE
+  {{LOW, HIGH, false}, 100, 100, true},   // [16] USB_INTERFACE_MODE
   {{HIGH, HIGH, false}, 5, 5, true}       // [17] ERROR_MODE
 };
 
@@ -273,7 +273,8 @@ static void update_buttons(void) {
   // FONCTION: PENDING_MODE (waiting for mode)
   // LEDs: blink slowly (500ms) alternately
   if (BUTTON_R.rose() && BUTTON_R.previousDuration() > LONG_HOLD) {
-    //set_mode(PENDING_MODE);
+    set_mode(PENDING_MODE);
+    boot_time = millis();
   }
 
   // ACTION: BUTTON_R short pressure

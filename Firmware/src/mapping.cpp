@@ -122,6 +122,22 @@ void mapping_send_midi_note_off(axis_t* axis_ptr) {
   llist_push_front(&llist_midi_out, &axis_ptr->msg);
 };
 
+static inline uint16_t _pos_to_val(axis_t* axis_ptr, float t) {
+  if (axis_ptr->msg.type == PitchBend) {
+    // 14-bit PitchBend: limit 0-127 scaled to 0-16383 (127 × 129 = 16383)
+    uint16_t pb14 = (uint16_t)roundf(
+      (float)axis_ptr->limit.min * 129.0f +
+      t * ((float)axis_ptr->limit.max - (float)axis_ptr->limit.min) * 129.0f
+    );
+    axis_ptr->msg.data1 = pb14 & 0x7F;        // LSB
+    axis_ptr->msg.data2 = (pb14 >> 7) & 0x7F; // MSB
+    return pb14;
+  }
+  uint8_t v = (uint8_t)roundf(axis_ptr->limit.min + t * (float)(axis_ptr->limit.max - axis_ptr->limit.min));
+  axis_ptr->msg.data2 = v;
+  return v;
+}
+
 void mapping_send_midi_msg_pos_x(rect_t* bounding_box_ptr, axis_t* axis_ptr, blob_t* blob_ptr, move_t move) {
   if (!axis_ptr->enabled) return;
   float t = constrain(
@@ -129,16 +145,12 @@ void mapping_send_midi_msg_pos_x(rect_t* bounding_box_ptr, axis_t* axis_ptr, blo
     (bounding_box_ptr->to.x - bounding_box_ptr->from.x),
     0.0f, 1.0f
   );
-  if (move == MOVE_LOG) {
-    t = logf(1.0f + t * 1.71828182f); // log curve [0,1]→[0,1]
-  }
-  axis_ptr->msg.data2 = (uint8_t)roundf(
-    axis_ptr->limit.min + t * (float)(axis_ptr->limit.max - axis_ptr->limit.min)
-  );
-  if (axis_ptr->msg.data2 != axis_ptr->last_val) {
+  if (move == MOVE_LOG) t = logf(1.0f + t * 1.71828182f);
+  uint16_t val = _pos_to_val(axis_ptr, t);
+  if (val != axis_ptr->last_val) {
     if ((frame_now - axis_ptr->midi_time_stamp) > MIDI_THROTTLE_MS) {
       llist_push_front(&llist_midi_out, &axis_ptr->msg);
-      axis_ptr->last_val = axis_ptr->msg.data2;
+      axis_ptr->last_val = val;
       axis_ptr->midi_time_stamp = frame_now;
     }
   }
@@ -151,16 +163,12 @@ void mapping_send_midi_msg_pos_y(rect_t* bounding_box_ptr, axis_t* axis_ptr, blo
     (bounding_box_ptr->to.y - bounding_box_ptr->from.y),
     0.0f, 1.0f
   );
-  if (move == MOVE_LOG) {
-    t = logf(1.0f + t * 1.71828182f); // log curve [0,1]→[0,1]
-  }
-  axis_ptr->msg.data2 = (uint8_t)roundf(
-    axis_ptr->limit.min + t * (float)(axis_ptr->limit.max - axis_ptr->limit.min)
-  );
-  if (axis_ptr->msg.data2 != axis_ptr->last_val) {
+  if (move == MOVE_LOG) t = logf(1.0f + t * 1.71828182f);
+  uint16_t val = _pos_to_val(axis_ptr, t);
+  if (val != axis_ptr->last_val) {
     if ((frame_now - axis_ptr->midi_time_stamp) > MIDI_THROTTLE_MS) {
       llist_push_front(&llist_midi_out, &axis_ptr->msg);
-      axis_ptr->last_val = axis_ptr->msg.data2;
+      axis_ptr->last_val = val;
       axis_ptr->midi_time_stamp = frame_now;
     }
   }
@@ -195,7 +203,7 @@ void mapping_send_midi_msg_size(axis_t* axis_ptr, blob_t* blob_ptr) {
   }
 };
 
-void mapping_send_midi_msg_move(axis_t* axis_ptr, blob_t* blob_ptr) {
+void mapping_send_midi_msg_speed(axis_t* axis_ptr, blob_t* blob_ptr) {
   if (!axis_ptr->enabled) return;
   axis_ptr->msg.data2 = (uint8_t)constrain((int)(blob_ptr->velocity.xy * 127.0f / VELOCITY_XY_MAX), 0, 127);
   if (axis_ptr->msg.data2 != axis_ptr->last_val) {

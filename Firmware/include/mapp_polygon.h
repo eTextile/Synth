@@ -7,7 +7,7 @@ typedef struct touch_polygon_s touch_polygon_t;
 struct touch_polygon_s {
   axis_t press;
   axis_t source[MAX_POLYGON_POINTS];
-  axis_t move;
+  axis_t speed;
 };
 
 typedef struct polygon_s polygon_t;

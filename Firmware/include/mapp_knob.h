@@ -8,7 +8,7 @@ struct knob_touch_s {
   axis_t press;
   axis_t radius;
   axis_t theta;
-  axis_t move;
+  axis_t speed;
 };
 
 typedef struct knob_s knob_t;

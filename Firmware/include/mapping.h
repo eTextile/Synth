@@ -47,7 +47,7 @@ struct axis_s {
   bool enabled;
   midi_msg_t msg;
   midi_limit_t limit;
-  uint8_t last_val;
+  uint16_t last_val; // 14-bit for PitchBend, 7-bit otherwise
   unsigned long int midi_time_stamp;
 };
 
@@ -60,14 +60,14 @@ struct axis_s {
 typedef struct touch_press_s touch_press_t;
 struct touch_press_s {
   axis_t press;
-  axis_t move;
+  axis_t speed;
 };
 
 typedef struct touch_linear_s touch_linear_t;
 struct touch_linear_s {
   axis_t press;
   axis_t pos;
-  axis_t move;
+  axis_t speed;
 };
 
 typedef struct touch_planar_s touch_planar_t;
@@ -76,7 +76,7 @@ struct touch_planar_s {
   axis_t pos_x;
   axis_t pos_y;
   axis_t size;
-  axis_t move;
+  axis_t speed;
 };
 
 extern llist_t llist_mappings;
@@ -135,6 +135,6 @@ void mapping_send_midi_msg_pos_x(rect_t* bounding_box_ptr, axis_t* axis_ptr, blo
 void mapping_send_midi_msg_pos_y(rect_t* bounding_box_ptr, axis_t* axis_ptr, blob_t* blob_ptr, move_t move = MOVE_LIN);
 void mapping_send_midi_msg_press(axis_t* axis_ptr, blob_t* blob_ptr);
 void mapping_send_midi_msg_size(axis_t* axis_ptr, blob_t* blob_ptr);
-void mapping_send_midi_msg_move(axis_t* axis_ptr, blob_t* blob_ptr);
+void mapping_send_midi_msg_speed(axis_t* axis_ptr, blob_t* blob_ptr);
 
 #endif /*__MAPPING_LIB_H__*/

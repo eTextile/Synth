@@ -124,7 +124,7 @@ void mapping_polygon_continue(blob_t* blob_ptr) {
       }
     }
   }
-  mapping_send_midi_msg_move(&touch_ptr->move, blob_ptr);
+  mapping_send_midi_msg_speed(&touch_ptr->speed, blob_ptr);
 };
 
 void mapping_polygon_stop(blob_t* blob_ptr) {
@@ -248,18 +248,18 @@ void mapping_polygon_create(const JsonObject &config) {
       polygon_ptr->params.touch[ti].source[vi].midi_time_stamp = 0;
     }
 
-    if (config["msg"][ti]["move"].is<JsonObject>()) {
-      uint8_t move_status = config["msg"][ti]["move"]["midi"]["status"].as<uint8_t>();
+    if (config["msg"][ti]["speed"].is<JsonObject>()) {
+      uint8_t move_status = config["msg"][ti]["speed"]["midi"]["status"].as<uint8_t>();
       midi_msg_status_unpack(move_status, &status);
-      polygon_ptr->params.touch[ti].move.enabled     = (move_status != 0) && (config["msg"][ti]["move"]["enabled"] | true);
-      polygon_ptr->params.touch[ti].move.msg.type    = ControlChange;
-      polygon_ptr->params.touch[ti].move.msg.data1   = config["msg"][ti]["move"]["midi"]["data1"].as<uint8_t>();
-      polygon_ptr->params.touch[ti].move.msg.data2   = 0;
-      polygon_ptr->params.touch[ti].move.msg.channel = status.channel;
-      polygon_ptr->params.touch[ti].move.limit.min   = config["msg"][ti]["move"]["limit"]["min"].as<uint8_t>();
-      polygon_ptr->params.touch[ti].move.limit.max   = config["msg"][ti]["move"]["limit"]["max"].as<uint8_t>();
+      polygon_ptr->params.touch[ti].speed.enabled     = (move_status != 0) && (config["msg"][ti]["speed"]["enabled"] | true);
+      polygon_ptr->params.touch[ti].speed.msg.type    = ControlChange;
+      polygon_ptr->params.touch[ti].speed.msg.data1   = config["msg"][ti]["speed"]["midi"]["data1"].as<uint8_t>();
+      polygon_ptr->params.touch[ti].speed.msg.data2   = 0;
+      polygon_ptr->params.touch[ti].speed.msg.channel = status.channel;
+      polygon_ptr->params.touch[ti].speed.limit.min   = config["msg"][ti]["speed"]["limit"]["min"].as<uint8_t>();
+      polygon_ptr->params.touch[ti].speed.limit.max   = config["msg"][ti]["speed"]["limit"]["max"].as<uint8_t>();
     } else {
-      polygon_ptr->params.touch[ti].move.enabled = false;
+      polygon_ptr->params.touch[ti].speed.enabled = false;
     }
   }
   llist_push_back(&llist_mappings, polygon_ptr);

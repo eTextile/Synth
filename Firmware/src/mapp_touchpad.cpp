@@ -99,7 +99,7 @@ void mapping_touchpad_continue(blob_t* blob_ptr) {
   mapping_send_midi_msg_pos_x(&touchpad_ptr->params.rect, &touch_ptr->pos_x, blob_ptr);
   mapping_send_midi_msg_pos_y(&touchpad_ptr->params.rect, &touch_ptr->pos_y, blob_ptr);
   mapping_send_midi_msg_size(&touch_ptr->size, blob_ptr);
-  mapping_send_midi_msg_move(&touch_ptr->move, blob_ptr);
+  mapping_send_midi_msg_speed(&touch_ptr->speed, blob_ptr);
 
   const MidiType _pt = touch_ptr->press.msg.type;
   if (_pt == ControlChange || _pt == AfterTouchPoly) {
@@ -219,18 +219,18 @@ void mapping_touchpad_create(const JsonObject &config) {
         touchpad_ptr->params.touch[i].size.enabled = false;
       }
 
-      if (config["msg"][i]["move"].is<JsonObject>()) {
-        uint8_t vel_status = config["msg"][i]["move"]["midi"]["status"].as<uint8_t>();
+      if (config["msg"][i]["speed"].is<JsonObject>()) {
+        uint8_t vel_status = config["msg"][i]["speed"]["midi"]["status"].as<uint8_t>();
         midi_msg_status_unpack(vel_status, &status);
-        touchpad_ptr->params.touch[i].move.enabled     = (vel_status != 0) && (config["msg"][i]["move"]["enabled"] | true);
-        touchpad_ptr->params.touch[i].move.msg.type    = ControlChange;
-        touchpad_ptr->params.touch[i].move.msg.data1   = config["msg"][i]["move"]["midi"]["data1"].as<uint8_t>();
-        touchpad_ptr->params.touch[i].move.msg.data2   = 0;
-        touchpad_ptr->params.touch[i].move.msg.channel = status.channel;
-        touchpad_ptr->params.touch[i].move.limit.min   = config["msg"][i]["move"]["limit"]["min"].as<uint8_t>();
-        touchpad_ptr->params.touch[i].move.limit.max   = config["msg"][i]["move"]["limit"]["max"].as<uint8_t>();
+        touchpad_ptr->params.touch[i].speed.enabled     = (vel_status != 0) && (config["msg"][i]["speed"]["enabled"] | true);
+        touchpad_ptr->params.touch[i].speed.msg.type    = ControlChange;
+        touchpad_ptr->params.touch[i].speed.msg.data1   = config["msg"][i]["speed"]["midi"]["data1"].as<uint8_t>();
+        touchpad_ptr->params.touch[i].speed.msg.data2   = 0;
+        touchpad_ptr->params.touch[i].speed.msg.channel = status.channel;
+        touchpad_ptr->params.touch[i].speed.limit.min   = config["msg"][i]["speed"]["limit"]["min"].as<uint8_t>();
+        touchpad_ptr->params.touch[i].speed.limit.max   = config["msg"][i]["speed"]["limit"]["max"].as<uint8_t>();
       } else {
-        touchpad_ptr->params.touch[i].move.enabled = false;
+        touchpad_ptr->params.touch[i].speed.enabled = false;
       }
 
       if (config["msg"][i]["press"]["chord"].is<JsonVariant>()) {
