@@ -78,7 +78,8 @@ void mapping_knob_start(blob_t* blob_ptr) {
     case NoteOn:
       mapping_send_midi_note_on(&touch_ptr->press, blob_ptr);
       break;
-    case MIDI_TYPE_CHORD: {
+    case MIDI_TYPE_CHORD_TRIGGER:
+    case MIDI_TYPE_CHORD_GATE: {
       if (!touch_ptr->press.enabled) break;
       uint8_t ti = (uint8_t)(touch_ptr - &knob_ptr->params.touch[0]);
       midi_send_chord_on(knob_ptr->chord_notes[ti], &knob_ptr->params.chord[ti],
@@ -175,12 +176,14 @@ void mapping_knob_stop(blob_t* blob_ptr) {
     case NoteOn:
       mapping_send_midi_note_off(&touch_ptr->press);
       break;
-    case MIDI_TYPE_CHORD: {
+    case MIDI_TYPE_CHORD_GATE: {
       if (!touch_ptr->press.enabled) break;
       uint8_t ti = (uint8_t)(touch_ptr - &knob_ptr->params.touch[0]);
       midi_send_chord_off(knob_ptr->chord_notes[ti], knob_ptr->params.chord[ti].type);
       break;
     }
+    case MIDI_TYPE_CHORD_TRIGGER:
+      break; // trigger-only — no note-off on release
     default:
       break;
   }
@@ -270,7 +273,7 @@ void mapping_knob_create(const JsonObject &config) {
       if (config["msg"][i]["press"]["chord"].is<JsonVariant>()) {
         knob_ptr->params.chord[i].type = config["msg"][i]["press"]["chord"].as<uint8_t>();
         knob_ptr->params.chord[i].note = config["msg"][i]["press"]["note"].as<uint8_t>();
-        knob_ptr->params.touch[i].press.msg.type = MIDI_TYPE_CHORD;
+        knob_ptr->params.touch[i].press.msg.type = config["msg"][i]["press"]["gate"].as<bool>() ? MIDI_TYPE_CHORD_GATE : MIDI_TYPE_CHORD_TRIGGER;
         knob_ptr->params.touch[i].press.enabled  = config["msg"][i]["press"]["enabled"] | true;
       } else {
         uint8_t press_status = config["msg"][i]["press"]["midi"]["status"].as<uint8_t>();

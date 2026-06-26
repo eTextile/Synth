@@ -39,8 +39,9 @@ struct midi_status_s {
   uint8_t channel;
 };
 
-// Chord press mode sentinel — matches web app 0xFE (outside standard MIDI range)
-#define MIDI_TYPE_CHORD ((MidiType)0xFE)
+// Chord press mode sentinels — match web app 0xFE/0xFD (outside standard MIDI range)
+#define MIDI_TYPE_CHORD_TRIGGER ((MidiType)0xFE) // trigger-only: chord_on on press, no note-off on release
+#define MIDI_TYPE_CHORD_GATE    ((MidiType)0xFD) // gate: chord_on on press, chord_off on release
 
 #define MAX_CHORD_NOTES 4
 

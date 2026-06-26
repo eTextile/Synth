@@ -92,7 +92,8 @@ void mapping_grid_start(blob_t* blob_ptr) {
       case NoteOn:
         mapping_send_midi_note_on(&grid_ptr->params.key[key_id].press, blob_ptr);
         break;
-      case MIDI_TYPE_CHORD: {
+      case MIDI_TYPE_CHORD_TRIGGER:
+      case MIDI_TYPE_CHORD_GATE: {
         uint8_t vel = (uint8_t)constrain((int)roundf(1.0f + constrain((blob_ptr->centroid.z - Z_MIN) / (float)(Z_MAX - Z_MIN), 0.0f, 1.0f) * 126.0f), 1, 127);
         midi_send_chord_on(grid_ptr->chord_notes[key_id], &grid_ptr->params.chord[key_id], grid_ptr->params.chan_out, vel);
         break;
@@ -134,14 +135,16 @@ void mapping_grid_continue(blob_t* blob_ptr) {
         case NoteOn:
           if (!grid_ptr->note_on_only[prev_id]) mapping_send_midi_note_off(&grid_ptr->params.key[prev_id].press);
           break;
-        case MIDI_TYPE_CHORD: midi_send_chord_off(grid_ptr->chord_notes[prev_id], grid_ptr->params.chord[prev_id].type); break;
+        case MIDI_TYPE_CHORD_GATE: midi_send_chord_off(grid_ptr->chord_notes[prev_id], grid_ptr->params.chord[prev_id].type); break;
+        case MIDI_TYPE_CHORD_TRIGGER: break;
         default: break;
       }
     }
     if (grid_ptr->params.key[key_id].press.enabled) {
       switch (grid_ptr->params.key[key_id].press.msg.type) {
         case NoteOn: mapping_send_midi_note_on(&grid_ptr->params.key[key_id].press, blob_ptr); break;
-        case MIDI_TYPE_CHORD: {
+        case MIDI_TYPE_CHORD_TRIGGER:
+        case MIDI_TYPE_CHORD_GATE: {
           uint8_t vel = (uint8_t)constrain((int)roundf(1.0f + constrain((blob_ptr->centroid.z - Z_MIN) / (float)(Z_MAX - Z_MIN), 0.0f, 1.0f) * 126.0f), 1, 127);
           midi_send_chord_on(grid_ptr->chord_notes[key_id], &grid_ptr->params.chord[key_id], grid_ptr->params.chan_out, vel);
           break;
@@ -162,7 +165,8 @@ void mapping_grid_stop(blob_t* blob_ptr) {
       case NoteOn:
         if (!grid_ptr->note_on_only[key_id]) mapping_send_midi_note_off(&grid_ptr->params.key[key_id].press);
         break;
-      case MIDI_TYPE_CHORD: midi_send_chord_off(grid_ptr->chord_notes[key_id], grid_ptr->params.chord[key_id].type); break;
+      case MIDI_TYPE_CHORD_GATE: midi_send_chord_off(grid_ptr->chord_notes[key_id], grid_ptr->params.chord[key_id].type); break;
+      case MIDI_TYPE_CHORD_TRIGGER: break; // trigger-only — no note-off on release
       default: break;
     }
   }
@@ -244,7 +248,7 @@ void mapping_grid_create(const JsonObject &config) {
     for (uint8_t i = 0; i < grid_ptr->params.keys; i++) {
       midi_status_t status;
       if (config["msg"][i]["press"]["chord"].is<JsonVariant>()) {
-        grid_ptr->params.key[i].press.msg.type = MIDI_TYPE_CHORD;
+        grid_ptr->params.key[i].press.msg.type = config["msg"][i]["press"]["gate"].as<bool>() ? MIDI_TYPE_CHORD_GATE : MIDI_TYPE_CHORD_TRIGGER;
         grid_ptr->params.key[i].press.enabled  = config["msg"][i]["press"]["enabled"] | true;
         grid_ptr->params.chord[i].type         = config["msg"][i]["press"]["chord"].as<uint8_t>();
         grid_ptr->params.chord[i].note         = config["msg"][i]["press"]["note"].as<uint8_t>();

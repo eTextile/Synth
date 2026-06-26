@@ -78,7 +78,8 @@ void mapping_touchpad_start(blob_t* blob_ptr) {
     case NoteOn:
       mapping_send_midi_note_on(&touch_ptr->press, blob_ptr);
       break;
-    case MIDI_TYPE_CHORD: {
+    case MIDI_TYPE_CHORD_TRIGGER:
+    case MIDI_TYPE_CHORD_GATE: {
       if (!touch_ptr->press.enabled) break;
       uint8_t ti = (uint8_t)(touch_ptr - &touchpad_ptr->params.touch[0]);
       midi_send_chord_on(touchpad_ptr->chord_notes[ti], &touchpad_ptr->params.chord[ti],
@@ -117,12 +118,14 @@ void mapping_touchpad_stop(blob_t* blob_ptr) {
     case NoteOn:
       if (!touchpad_ptr->note_on_only[slot]) mapping_send_midi_note_off(&touch_ptr->press);
       break;
-    case MIDI_TYPE_CHORD: {
+    case MIDI_TYPE_CHORD_GATE: {
       if (!touch_ptr->press.enabled) break;
       uint8_t ti = (uint8_t)(touch_ptr - &touchpad_ptr->params.touch[0]);
       midi_send_chord_off(touchpad_ptr->chord_notes[ti], touchpad_ptr->params.chord[ti].type);
       break;
     }
+    case MIDI_TYPE_CHORD_TRIGGER:
+      break; // trigger-only — no note-off on release
     default:
       break;
   }
@@ -235,7 +238,7 @@ void mapping_touchpad_create(const JsonObject &config) {
 
       if (config["msg"][i]["press"]["chord"].is<JsonVariant>()) {
         touchpad_ptr->params.touch[i].press.enabled  = config["msg"][i]["press"]["enabled"] | true;
-        touchpad_ptr->params.touch[i].press.msg.type = MIDI_TYPE_CHORD;
+        touchpad_ptr->params.touch[i].press.msg.type = config["msg"][i]["press"]["gate"].as<bool>() ? MIDI_TYPE_CHORD_GATE : MIDI_TYPE_CHORD_TRIGGER;
         touchpad_ptr->params.chord[i].type = config["msg"][i]["press"]["chord"].as<uint8_t>();
         touchpad_ptr->params.chord[i].note = config["msg"][i]["press"]["note"].as<uint8_t>();
       } else {
