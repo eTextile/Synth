@@ -47,6 +47,7 @@ const char* get_mode_name(mode_code_t code) {
     case STANDALONE_MODE: char_code = "STANDALONE_MODE"; break;
     case USB_INTERFACE_MODE: char_code = "USB_INTERFACE_MODE"; break;
     case ERROR_MODE: char_code = "ERROR_MODE"; break;
+    case BOOTLOADER_MODE: char_code = "BOOTLOADER_MODE"; break;
   }
   return char_code;
 };
@@ -109,7 +110,7 @@ const char* get_error_name(error_code_t code) {
   return char_code;
 };
 
-e256_mode_t e256_m[18] = {
+e256_mode_t e256_m[19] = {
   {{HIGH, LOW, false}, 50, 50, true},     // [0] PENDING_MODE
   {{HIGH, LOW, false}, 500, 500, true},   // [1] SYNC_MODE
   {{HIGH, LOW, false}, 15, 15, true},     // [2] CALIBRATE_MODE
@@ -127,8 +128,10 @@ e256_mode_t e256_m[18] = {
   {{HIGH, LOW, false}, 1000, 1000, true}, // [14] FETCH_MODE
   {{LOW, HIGH, false}, 2000, 2000, true}, // [15] STANDALONE_MODE
   {{LOW, HIGH, false}, 100, 100, true},   // [16] USB_INTERFACE_MODE
-  {{HIGH, HIGH, false}, 5, 5, true}       // [17] ERROR_MODE
+  {{HIGH, HIGH, false}, 5, 5, true},      // [17] ERROR_MODE
+  {{HIGH, HIGH, false}, 100, 100, true}  // [18] BOOTLOADER_MODE
 };
+
 
 // The E256 built-in encoder is used to adjust levels
 Encoder e256_e(ENCODER_PIN_A, ENCODER_PIN_B);

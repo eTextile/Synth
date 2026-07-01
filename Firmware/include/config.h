@@ -144,7 +144,8 @@ typedef enum mode_code_e {
   FETCH_MODE,      // Send mapping config file
   STANDALONE_MODE,     // Send mappings values over MIDI hardware (no USB)
   USB_INTERFACE_MODE, // Send mappings values over MIDI hardware + keep USB MIDI active
-  ERROR_MODE           // Unexpected behaviour
+  ERROR_MODE,          // Unexpected behaviour
+  BOOTLOADER_MODE      // Trigger HalfKay bootloader for firmware update
 } mode_code_t;
 
 extern mode_code_t e256_current_mode;
