@@ -26,6 +26,7 @@ void usb_midi_send_clock(void);
 void usb_midi_send_sysex_ack(uint8_t ack);
 void usb_midi_send_sysex_err(uint8_t err);
 void usb_midi_send_sysex_param(uint8_t param_id, uint8_t value);
+void usb_midi_send_sysex_version(void);
 
 
 #endif /*__USB_MIDI_IO_H__*/

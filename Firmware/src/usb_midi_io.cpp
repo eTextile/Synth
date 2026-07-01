@@ -168,6 +168,17 @@ void usb_midi_send_sysex_param(uint8_t param_id, uint8_t value) {
   while (usbMIDI.read());
 };
 
+void usb_midi_send_sysex_version(void) {
+  uint8_t vlen = (uint8_t)strlen(VERSION);
+  uint8_t buf[32];
+  buf[0] = SYSEX_DEVICE_ID;
+  buf[1] = SYSEX_PKT_VERSION;
+  memcpy(buf + 2, VERSION, vlen);
+  usbMIDI.sendSysEx(2 + vlen, buf, false);
+  usbMIDI.send_now();
+  while (usbMIDI.read());
+};
+
 // Store an incoming Note On from the USB host.
 // In THROUGH_MODE the message is forwarded directly to the hardware MIDI output.
 static void usb_midi_read_note_on(uint8_t channel, uint8_t note, uint8_t velocity) {
@@ -271,6 +282,7 @@ static void usb_read_system_exclusive(const uint8_t* data_ptr, uint16_t sysEx_ch
       case SYNC_MODE:
         set_mode(SYNC_MODE);
         usb_midi_send_sysex_ack((uint8_t)SYNC_MODE_DONE);
+        usb_midi_send_sysex_version();
         if (boot_config_err) { usb_midi_send_sysex_err(boot_config_err); boot_config_err = 0; }
         break;
 

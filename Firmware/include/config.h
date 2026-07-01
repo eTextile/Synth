@@ -89,6 +89,7 @@
 #define SYSEX_PKT_ERR    0x03  // firmware → web: error
 #define SYSEX_PKT_PARAM   0x04  // firmware → web: level parameter value
 #define SYSEX_PKT_MIDI_IN 0x05  // firmware → web: hardware MIDI IN forwarded message
+#define SYSEX_PKT_VERSION 0x06  // firmware → web: firmware version string (ASCII)
 
 // E256 MAPPING_LIB CONSTANTS
 #define MAX_BLOBS 16 // [1:16] How many blobs can be tracked at the same time
