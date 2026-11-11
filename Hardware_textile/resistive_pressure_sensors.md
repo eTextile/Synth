@@ -42,6 +42,7 @@ Piezo-resistive coatings are combined with highly resilient substrates such as o
   ----------------------------------------------------------------  ← conductive layer
 ```
 <div style="display:flex;align-items:center;gap:12px;"><img src="./docs/piezo_resistive.png" alt="Piezo-resistive layer"><span>← piezo-resistive layer</span></div>
+
 ```
   ----------------------------------------------------------------  ← conductive layer
 ```
